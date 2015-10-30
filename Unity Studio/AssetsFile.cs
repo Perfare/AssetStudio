@@ -1,0 +1,319 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Diagnostics; //remove this later
+
+namespace Unity_Studio
+{
+    public class AssetsFile
+    {
+        public EndianStream a_Stream;
+        public string filePath;
+        public int fileGen;
+        public string m_Version = "2.5.0f5";
+        public int[] version = new int[4] { 0, 0, 0, 0 };
+        public string[] buildType;
+        public int platform = 100663296;
+        //public EndianType endianType = EndianType.BigEndian;
+        //public List<AssetPreloadData> preloadTable = new List<AssetPreloadData>();
+        public Dictionary<long, AssetPreloadData> preloadTable = new Dictionary<long, AssetPreloadData>();
+        public List<GameObject> GameObjectList = new List<GameObject>();
+        public List<Transform> TransformList = new List<Transform>();
+        //public List<RectTransform> RectTransformList = new List<RectTransform>();
+        //public List<MeshFilter> MeshFilterList = new List<MeshFilter>();
+        //public List<SkinnedMeshRenderer> SkinnedMeshList = new List<SkinnedMeshRenderer>();
+        public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
+        public List<UnityShared> sharedAssetsList = new List<UnityShared>() {new UnityShared()};
+        private ClassIDReference UnityClassID = new ClassIDReference();
+
+        private bool baseDefinitions = false;
+
+        public class UnityShared
+        {
+            public int Index = -1; //actual index in main list
+            public string aName = "";
+            public string fileName = "";
+        }
+
+        public AssetsFile(string fileName, EndianStream fileStream)
+        {
+            //if (memFile != null) { Stream = new EndianStream(memFile, endianType); }
+            //else { Stream = new EndianStream(File.OpenRead(fileName), endianType); }
+            a_Stream = fileStream;
+
+            filePath = fileName;
+            int tableSize = a_Stream.ReadInt32();
+            int dataEnd = a_Stream.ReadInt32();
+            fileGen = a_Stream.ReadInt32();
+            int dataOffset = a_Stream.ReadInt32();
+            sharedAssetsList[0].fileName = Path.GetFileName(fileName); //reference itself because sharedFileIDs start from 1
+
+            switch (fileGen)
+            {
+                case 6:
+                    {
+                        a_Stream.Position = (dataEnd - tableSize);
+                        a_Stream.Position += 1;
+                        break;
+                    }
+                case 7://beta
+                    {
+                        a_Stream.Position = (dataEnd - tableSize);
+                        a_Stream.Position += 1;
+                        m_Version = a_Stream.ReadStringToNull();
+                        break;
+                    }
+                case 8:
+                    {
+                        a_Stream.Position = (dataEnd - tableSize);
+                        a_Stream.Position += 1;
+                        m_Version = a_Stream.ReadStringToNull();
+                        platform = a_Stream.ReadInt32();
+                        break;
+                    }
+                case 9:
+                    {
+                        a_Stream.Position += 4;//azero
+                        m_Version = a_Stream.ReadStringToNull();
+                        platform = a_Stream.ReadInt32();
+                        break;
+                    }
+                case 14:
+                case 15://not fully tested!s
+                    {
+                        a_Stream.Position += 4;//azero
+                        m_Version = a_Stream.ReadStringToNull();
+                        platform = a_Stream.ReadInt32();
+                        baseDefinitions = a_Stream.ReadBoolean();
+                        break;
+                    }
+                default:
+                    {
+                        //MessageBox.Show("Unsupported Unity version!", "Unity Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+            }
+
+            if (platform > 255 || platform < 0)
+            {
+                byte[] b32 = BitConverter.GetBytes(platform);
+                Array.Reverse(b32);
+                platform = BitConverter.ToInt32(b32, 0);
+                //endianType = EndianType.LittleEndian;
+                a_Stream.endian = EndianType.LittleEndian;
+            }
+
+            /*Platform list:
+               -2:  unitypackage
+                4:  OSX
+                5:  PC
+                6:  Web
+                7:  Web_streamed
+                9:  iOS
+                10: PS3(big)
+                11: Xbox360(big)
+                13: Android
+                16: Google_NaCl
+                21: WP8
+                25: Linux
+            */
+
+            int baseCount = a_Stream.ReadInt32();
+            for (int i = 0; i < baseCount; i++)
+            {
+                if (fileGen < 14)
+                {
+                    int baseType = a_Stream.ReadInt32();
+                    readBase();
+                }
+                else { readBase5(); }
+            }
+
+            if (fileGen >= 7 && fileGen < 14) {a_Stream.Position += 4;}//azero
+
+            int assetCount = a_Stream.ReadInt32();
+            if (fileGen >= 14) { a_Stream.AlignStream(4); }
+            
+            string assetIDfmt = "D" + assetCount.ToString().Length.ToString(); //format for unique ID
+
+            for (int i = 0; i < assetCount; i++)
+            {
+                AssetPreloadData asset = new AssetPreloadData();
+                if (fileGen < 14) { asset.m_PathID = a_Stream.ReadInt32(); }
+                else { asset.m_PathID = a_Stream.ReadInt64(); }
+                asset.Offset = a_Stream.ReadInt32();
+                asset.Offset += dataOffset;
+                asset.Size = a_Stream.ReadInt32();
+                asset.Type1 = a_Stream.ReadInt32();
+                asset.Type2 = a_Stream.ReadUInt16();
+                a_Stream.Position += 2;
+                if (fileGen >= 15) { int azero = a_Stream.ReadInt32(); }
+
+                asset.TypeString = asset.Type2.ToString();
+                if (UnityClassID.Names[asset.Type2] != null)
+                {
+                    asset.TypeString = UnityClassID.Names[asset.Type2];
+                }
+
+                asset.uniqueID = i.ToString(assetIDfmt);
+                
+                asset.exportSize = asset.Size;
+                asset.sourceFile = this;
+                
+                preloadTable.Add(asset.m_PathID, asset);
+
+                //this should be among the first nodes in mainData and it contains the version - useful for unity 2.x files
+                if (asset.Type2 == 141 && fileGen == 6)
+                {
+                    long nextAsset = a_Stream.Position;
+
+                    BuildSettings BSettings = new BuildSettings(asset);
+                    m_Version = BSettings.m_Version;
+
+                    a_Stream.Position = nextAsset;
+                }
+            }
+            
+            buildType = m_Version.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] strver = (m_Version.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+            version = Array.ConvertAll(strver, int.Parse);
+
+            if (fileGen >= 14)
+            {
+                int someCount = a_Stream.ReadInt32();
+                a_Stream.Position += someCount * 12;
+            }
+
+            int sharedFileCount = a_Stream.ReadInt32();
+            for (int i = 0; i < sharedFileCount; i++)
+            {
+                UnityShared shared = new UnityShared();
+                shared.aName = a_Stream.ReadStringToNull();
+                a_Stream.Position += 20;
+                string sharedFileName = a_Stream.ReadStringToNull(); //relative path
+                shared.fileName = sharedFileName.Replace("/", "\\");
+                sharedAssetsList.Add(shared);
+            }
+        }
+
+        private void readBase()
+        {
+            string baseFormat = a_Stream.ReadStringToNull();
+            string baseName = a_Stream.ReadStringToNull();
+            a_Stream.Position += 20;
+            int childrenCount = a_Stream.ReadInt32();
+            //Debug.WriteLine(baseFormat + " " + baseName + " " + childrenCount);
+            for (int i = 0; i < childrenCount; i++) { readBase(); }
+        }
+
+        private void readBase5()
+        {
+            int baseType = a_Stream.ReadInt32();
+            if (baseType < 0) { a_Stream.Position += 16; }
+            a_Stream.Position += 16;
+
+            if (baseDefinitions)
+            {
+                #region cmmon string array
+                string[] baseStrings = new string[1007];
+                baseStrings[0] = "AABB";
+                baseStrings[5] = "AnimationClip";
+                baseStrings[19] = "AnimationCurve";
+                baseStrings[49] = "Array";
+                baseStrings[55] = "Base";
+                baseStrings[60] = "BitField";
+                baseStrings[76] = "bool";
+                baseStrings[81] = "char";
+                baseStrings[86] = "ColorRGBA";
+                baseStrings[106] = "data";
+                baseStrings[138] = "FastPropertyName";
+                baseStrings[155] = "first";
+                baseStrings[161] = "float";
+                baseStrings[167] = "Font";
+                baseStrings[172] = "GameObject";
+                baseStrings[183] = "Generic Mono";
+                baseStrings[208] = "GUID";
+                baseStrings[222] = "int";
+                baseStrings[241] = "map";
+                baseStrings[245] = "Matrix4x4f";
+                baseStrings[262] = "NavMeshSettings";
+                baseStrings[263] = "MonoBehaviour";
+                baseStrings[277] = "MonoScript";
+                baseStrings[299] = "m_Curve";
+                baseStrings[349] = "m_Enabled";
+                baseStrings[374] = "m_GameObject";
+                baseStrings[427] = "m_Name";
+                baseStrings[490] = "m_Script";
+                baseStrings[519] = "m_Type";
+                baseStrings[526] = "m_Version";
+                baseStrings[543] = "pair";
+                baseStrings[548] = "PPtr<Component>";
+                baseStrings[564] = "PPtr<GameObject>";
+                baseStrings[581] = "PPtr<Material>";
+                baseStrings[616] = "PPtr<MonoScript>";
+                baseStrings[633] = "PPtr<Object>";
+                baseStrings[688] = "PPtr<Texture>";
+                baseStrings[702] = "PPtr<Texture2D>";
+                baseStrings[718] = "PPtr<Transform>";
+                baseStrings[741] = "Quaternionf";
+                baseStrings[753] = "Rectf";
+                baseStrings[778] = "second";
+                baseStrings[795] = "size";
+                baseStrings[800] = "SInt16";
+                baseStrings[814] = "int64";
+                baseStrings[840] = "string";
+                baseStrings[874] = "Texture2D";
+                baseStrings[884] = "Transform";
+                baseStrings[894] = "TypelessData";
+                baseStrings[907] = "UInt16";
+                baseStrings[928] = "UInt8";
+                baseStrings[934] = "unsigned int";
+                baseStrings[981] = "vector";
+                baseStrings[988] = "Vector2f";
+                baseStrings[997] = "Vector3f";
+                baseStrings[1006] = "Vector4f";
+                #endregion
+
+                int varCount = a_Stream.ReadInt32();
+                int stringSize = a_Stream.ReadInt32();
+
+                a_Stream.Position += varCount * 24;
+                string varStrings = Encoding.UTF8.GetString(a_Stream.ReadBytes(stringSize));
+
+                //can skip this
+                a_Stream.Position -= varCount * 24 + stringSize;
+                for (int i = 0; i < varCount; i++)
+                {
+                    ushort num0 = a_Stream.ReadUInt16();
+                    byte level = a_Stream.ReadByte();
+                    bool isArray = a_Stream.ReadBoolean();
+
+                    ushort varTypeIndex = a_Stream.ReadUInt16();
+                    ushort test = a_Stream.ReadUInt16();
+                    string varTypeStr;
+                    if (test == 0) //varType is an offset in the string block
+                    { varTypeStr = varStrings.Substring(varTypeIndex, varStrings.IndexOf('\0', varTypeIndex) - varTypeIndex); }//substringToNull
+                    else //varType is an index in an internal strig array
+                    { varTypeStr = baseStrings[varTypeIndex] != null ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
+
+                    ushort varNameIndex = a_Stream.ReadUInt16();
+                    test = a_Stream.ReadUInt16();
+                    string varNameStr;
+                    if (test == 0) { varNameStr = varStrings.Substring(varNameIndex, varStrings.IndexOf('\0', varNameIndex) - varNameIndex); }
+                    else { varNameStr = baseStrings[varNameIndex] != null ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
+
+                    int size = a_Stream.ReadInt32();
+                    int index = a_Stream.ReadInt32();
+                    int num1 = a_Stream.ReadInt32();
+
+                    for (int t = 0; t < level; t++) { Debug.Write("\t"); }
+                    Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
+                }
+                a_Stream.Position += stringSize;
+            }
+        }
+
+    }
+}
