@@ -83,10 +83,11 @@ namespace Unity_Studio
                     progressBar1.Value = 0;
                     progressBar1.Maximum = unityFiles.Count;
 
-                    foreach (var filename in openFileDialog1.FileNames)
+                    //use a for loop because list size can change
+                    for (int f = 0; f < unityFiles.Count; f++)
                     {
-                        StatusStripUpdate("Loading " + Path.GetFileName(filename));
-                        LoadAssetsFile(filename);
+                        StatusStripUpdate("Loading " + Path.GetFileName(unityFiles[f]));
+                        LoadAssetsFile(unityFiles[f]);
                     }
                 }
                 else
@@ -240,9 +241,7 @@ namespace Unity_Studio
                 foreach (var sharedFile in assetsFile.sharedAssetsList)
                 {
                     string sharedFilePath = Path.GetDirectoryName(fileName) + "\\" + sharedFile.fileName;
-
-                    //TODO add extra code to search for the shared file in case it doesn't exist in the main folder
-                    //or if it exists or the path is incorrect
+                    string sharedFileName = Path.GetFileName(sharedFile.fileName);
 
                     //var loadedSharedFile = assetsfileList.Find(aFile => aFile.filePath == sharedFilePath);
                     /*var loadedSharedFile = assetsfileList.Find(aFile => aFile.filePath.EndsWith(Path.GetFileName(sharedFile.fileName)));
@@ -255,12 +254,23 @@ namespace Unity_Studio
                     }*/
 
                     //searching in unityFiles would preserve desired order, but...
-                    var quedSharedFile = unityFiles.Find(uFile => uFile.EndsWith(Path.GetFileName(sharedFile.fileName)));
-                    if (quedSharedFile == null && File.Exists(sharedFilePath))
+                    var quedSharedFile = unityFiles.Find(uFile => String.Equals(Path.GetFileName(uFile), sharedFileName, StringComparison.OrdinalIgnoreCase));
+                    if (quedSharedFile == null)
                     {
-                        sharedFile.Index = unityFiles.Count;//this would get screwed if the file fails to load
-                        unityFiles.Add(sharedFilePath);
-                        progressBar1.Maximum++;
+                        //if (!File.Exists(sharedFilePath)) { sharedFilePath = Path.GetDirectoryName(fileName) + "\\" + sharedFileName; }
+                        if (!File.Exists(sharedFilePath))
+                        {
+                            var findFiles = Directory.GetFiles(Path.GetDirectoryName(fileName), sharedFileName, SearchOption.AllDirectories);
+                            if (findFiles.Length > 0) { sharedFilePath = findFiles[0]; }
+                        }
+
+                        if (File.Exists(sharedFilePath))
+                        {
+                            //this would get screwed if the file somehow fails to load
+                            sharedFile.Index = unityFiles.Count;
+                            unityFiles.Add(sharedFilePath);
+                            progressBar1.Maximum++;
+                        }
                     }
                     else { sharedFile.Index = unityFiles.IndexOf(quedSharedFile); }
                 }

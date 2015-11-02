@@ -334,10 +334,7 @@ namespace Unity_Studio
             }
 
             m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-            if (m_Name == "holotable_glow_mesh")
-            {
-                bool stop = true;
-            }
+            
             if (version[0] < 3 || (version[0] == 3 && version[1] < 5))
             {
                 m_Use16BitIndices = a_Stream.ReadBoolean();

@@ -34,7 +34,7 @@ namespace Unity_Studio
             if (sourceFile.version[0] < 5)
             {
                 m_Enabled = a_Stream.ReadBoolean();
-                m_CastShadows = a_Stream.ReadByte();
+                m_CastShadows = a_Stream.ReadByte();//bool
                 m_ReceiveShadows = a_Stream.ReadBoolean();
                 m_LightmapIndex = a_Stream.ReadByte();
             }
@@ -66,7 +66,7 @@ namespace Unity_Studio
                 a_Stream.Position += m_SubsetIndices_size * 4;
                 PPtr m_StaticBatchRoot = sourceFile.ReadPPtr();
 
-                if ((version[0] == 3 && version[1] >= 5) || version[0] >= 4)
+                if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))
                 {
                     bool m_UseLightProbes = a_Stream.ReadBoolean();
                     a_Stream.Position += 3; //alignment
@@ -75,10 +75,11 @@ namespace Unity_Studio
                     PPtr m_LightProbeAnchor = sourceFile.ReadPPtr();
                 }
 
-                if (version[0] >= 4 && version[1] >= 3)
+                if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
                 {
-                    if (version[1] >= 5) { int m_SortingLayer = a_Stream.ReadInt32(); }
-                    else { int m_SortingLayer = a_Stream.ReadInt16(); }
+                    if (version[0] == 4 && version[1] <= 3) { int m_SortingLayer = a_Stream.ReadInt16(); }
+                    else { int m_SortingLayer = a_Stream.ReadInt32(); }
+                    
                     int m_SortingOrder = a_Stream.ReadInt16();
                     a_Stream.AlignStream(4);
                 }
@@ -97,7 +98,7 @@ namespace Unity_Studio
 
             m_Mesh = sourceFile.ReadPPtr();
 
-            int m_Bones_size = a_Stream.ReadInt32();
+            /*int m_Bones_size = a_Stream.ReadInt32();
             for (int b = 0; b < m_Bones_size; b++)
             {
                 PPtr aBone = sourceFile.ReadPPtr();
@@ -118,7 +119,7 @@ namespace Unity_Studio
                 float[] m_Center = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
                 float[] m_Extent = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
                 bool m_DirtyAABB = a_Stream.ReadBoolean();
-            }
+            }*/
         }
     }
 }
