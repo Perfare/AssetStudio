@@ -334,6 +334,10 @@ namespace Unity_Studio
             }
 
             m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            if (m_Name == "holotable_glow_mesh")
+            {
+                bool stop = true;
+            }
             if (version[0] < 3 || (version[0] == 3 && version[1] < 5))
             {
                 m_Use16BitIndices = a_Stream.ReadBoolean();
@@ -781,6 +785,7 @@ namespace Unity_Studio
                 m_UV_Packed.m_Start = a_Stream.ReadSingle();
                 m_UV_Packed.m_Data = new byte[a_Stream.ReadInt32()];
                 a_Stream.Read(m_UV_Packed.m_Data, 0, m_UV_Packed.m_Data.Length);
+                a_Stream.AlignStream(4);
                 m_UV_Packed.m_BitSize = a_Stream.ReadByte();
                 a_Stream.Position += 3; //4 byte alignment
 
@@ -788,7 +793,7 @@ namespace Unity_Studio
                 {
                     uint[] m_UV_Unpacked = UnpackBitVector(m_UV_Packed);
                     int bitmax = 0;
-                    for (int b = 0; b < m_Vertices_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
+                    for (int b = 0; b < m_UV_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
 
                     m_UV1 = new float[m_VertexCount * 2];
                     
@@ -896,7 +901,7 @@ namespace Unity_Studio
                     {
                         uint[] m_FloatColors_Unpacked = UnpackBitVector(m_FloatColors);
                         int bitmax = 0;
-                        for (int b = 0; b < m_Vertices_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
+                        for (int b = 0; b < m_FloatColors.m_BitSize; b++) { bitmax |= (1 << b); }
 
                         m_Colors = new float[m_FloatColors.m_NumItems];
 

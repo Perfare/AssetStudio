@@ -2,10 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Unity_Studio
 {
-    class ClassIDReference
+    public class ClassStrStruct : ListViewItem
+    {
+        public int ID;
+        public string members;
+    }
+
+    public class ClassIDReference
     {
         public string[] Names = new string[1121];
         

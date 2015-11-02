@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Diagnostics; //remove this later
+//using System.Diagnostics; //remove this later
 
 namespace Unity_Studio
 {
@@ -19,14 +19,14 @@ namespace Unity_Studio
         //public EndianType endianType = EndianType.BigEndian;
         //public List<AssetPreloadData> preloadTable = new List<AssetPreloadData>();
         public Dictionary<long, AssetPreloadData> preloadTable = new Dictionary<long, AssetPreloadData>();
-        public List<GameObject> GameObjectList = new List<GameObject>();
-        public List<Transform> TransformList = new List<Transform>();
-        //public List<RectTransform> RectTransformList = new List<RectTransform>();
-        //public List<MeshFilter> MeshFilterList = new List<MeshFilter>();
-        //public List<SkinnedMeshRenderer> SkinnedMeshList = new List<SkinnedMeshRenderer>();
+        public Dictionary<long, GameObject> GameObjectList = new Dictionary<long, GameObject>();
+        public Dictionary<long, Transform> TransformList = new Dictionary<long, Transform>();
+
         public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
         public List<UnityShared> sharedAssetsList = new List<UnityShared>() {new UnityShared()};
         private ClassIDReference UnityClassID = new ClassIDReference();
+
+        public SortedDictionary<int, ClassStrStruct> ClassStructures = new SortedDictionary<int, ClassStrStruct>();
 
         private bool baseDefinitions = false;
 
@@ -58,7 +58,7 @@ namespace Unity_Studio
                         a_Stream.Position += 1;
                         break;
                     }
-                case 7://beta
+                case 7://Unity 3 beta
                     {
                         a_Stream.Position = (dataEnd - tableSize);
                         a_Stream.Position += 1;
@@ -81,7 +81,7 @@ namespace Unity_Studio
                         break;
                     }
                 case 14:
-                case 15://not fully tested!s
+                case 15://not fully tested!
                     {
                         a_Stream.Position += 4;//azero
                         m_Version = a_Stream.ReadStringToNull();
@@ -125,8 +125,18 @@ namespace Unity_Studio
             {
                 if (fileGen < 14)
                 {
-                    int baseType = a_Stream.ReadInt32();
-                    readBase();
+                    int classID = a_Stream.ReadInt32();
+                    string baseType = a_Stream.ReadStringToNull();
+                    string baseName = a_Stream.ReadStringToNull();
+                    a_Stream.Position += 20;
+                    int memberCount = a_Stream.ReadInt32();
+
+                    StringBuilder cb = new StringBuilder();
+                    for (int m = 0; m < memberCount; m++) { readBase(cb, 1); }
+
+                    var aClass = new ClassStrStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb.ToString() };
+                    aClass.SubItems.Add(classID.ToString());
+                    ClassStructures.Add(classID, aClass);
                 }
                 else { readBase5(); }
             }
@@ -134,12 +144,15 @@ namespace Unity_Studio
             if (fileGen >= 7 && fileGen < 14) {a_Stream.Position += 4;}//azero
 
             int assetCount = a_Stream.ReadInt32();
-            if (fileGen >= 14) { a_Stream.AlignStream(4); }
-            
+
+            #region asset preload table
             string assetIDfmt = "D" + assetCount.ToString().Length.ToString(); //format for unique ID
 
             for (int i = 0; i < assetCount; i++)
             {
+                //each table entry is aligned individually, not the whole table
+                if (fileGen >= 14) { a_Stream.AlignStream(4); }
+
                 AssetPreloadData asset = new AssetPreloadData();
                 if (fileGen < 14) { asset.m_PathID = a_Stream.ReadInt32(); }
                 else { asset.m_PathID = a_Stream.ReadInt64(); }
@@ -149,7 +162,17 @@ namespace Unity_Studio
                 asset.Type1 = a_Stream.ReadInt32();
                 asset.Type2 = a_Stream.ReadUInt16();
                 a_Stream.Position += 2;
-                if (fileGen >= 15) { int azero = a_Stream.ReadInt32(); }
+                if (fileGen >= 15)
+                {
+                    byte unknownByte = a_Stream.ReadByte();
+                    //this is a single byte, not an int32
+                    //the next entry is aligned after this
+                    //but not the last!
+                    if (unknownByte != 0)
+                    {
+                        bool investigate = true;
+                    }
+                }
 
                 asset.TypeString = asset.Type2.ToString();
                 if (UnityClassID.Names[asset.Type2] != null)
@@ -164,7 +187,7 @@ namespace Unity_Studio
                 
                 preloadTable.Add(asset.m_PathID, asset);
 
-                //this should be among the first nodes in mainData and it contains the version - useful for unity 2.x files
+                #region read BuildSettings to get version for unity 2.x files
                 if (asset.Type2 == 141 && fileGen == 6)
                 {
                     long nextAsset = a_Stream.Position;
@@ -174,16 +197,24 @@ namespace Unity_Studio
 
                     a_Stream.Position = nextAsset;
                 }
+                #endregion
             }
-            
+            #endregion
+
             buildType = m_Version.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
             string[] strver = (m_Version.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
             version = Array.ConvertAll(strver, int.Parse);
 
             if (fileGen >= 14)
             {
+                //this looks like a list of assets that need to be preloaded in memory before anytihng else
                 int someCount = a_Stream.ReadInt32();
-                a_Stream.Position += someCount * 12;
+                for (int i = 0; i < someCount; i++)
+                {
+                    int num1 = a_Stream.ReadInt32();
+                    a_Stream.AlignStream(4);
+                    long m_PathID = a_Stream.ReadInt64();
+                }
             }
 
             int sharedFileCount = a_Stream.ReadInt32();
@@ -198,20 +229,28 @@ namespace Unity_Studio
             }
         }
 
-        private void readBase()
+        private void readBase(StringBuilder cb, int level)
         {
-            string baseFormat = a_Stream.ReadStringToNull();
-            string baseName = a_Stream.ReadStringToNull();
-            a_Stream.Position += 20;
+            string varType = a_Stream.ReadStringToNull();
+            string varName = a_Stream.ReadStringToNull();
+            //a_Stream.Position += 20;
+            int size = a_Stream.ReadInt32();
+            int index = a_Stream.ReadInt32();
+            int isArray = a_Stream.ReadInt32();
+            int num0 = a_Stream.ReadInt32();
+            int num1 = a_Stream.ReadInt16();
+            int num2 = a_Stream.ReadInt16();
             int childrenCount = a_Stream.ReadInt32();
+
             //Debug.WriteLine(baseFormat + " " + baseName + " " + childrenCount);
-            for (int i = 0; i < childrenCount; i++) { readBase(); }
+            cb.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level)), varType, varName, size);
+            for (int i = 0; i < childrenCount; i++) { readBase(cb, level + 1); }
         }
 
         private void readBase5()
         {
-            int baseType = a_Stream.ReadInt32();
-            if (baseType < 0) { a_Stream.Position += 16; }
+            int classID = a_Stream.ReadInt32();
+            if (classID < 0) { a_Stream.Position += 16; }
             a_Stream.Position += 16;
 
             if (baseDefinitions)
@@ -281,8 +320,10 @@ namespace Unity_Studio
 
                 a_Stream.Position += varCount * 24;
                 string varStrings = Encoding.UTF8.GetString(a_Stream.ReadBytes(stringSize));
+                string className = "";
+                StringBuilder classVarStr = new StringBuilder();
 
-                //can skip this
+                //build Class Structures
                 a_Stream.Position -= varCount * 24 + stringSize;
                 for (int i = 0; i < varCount; i++)
                 {
@@ -308,11 +349,19 @@ namespace Unity_Studio
                     int index = a_Stream.ReadInt32();
                     int num1 = a_Stream.ReadInt32();
 
-                    for (int t = 0; t < level; t++) { Debug.Write("\t"); }
-                    Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
+                    if (index == 0) { className = varTypeStr + " " + varNameStr; }
+                    else { classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, size); }
+
+                    //for (int t = 0; t < level; t++) { Debug.Write("\t"); }
+                    //Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
                 }
                 a_Stream.Position += stringSize;
+
+                var aClass = new ClassStrStruct() { ID = classID, Text = className, members = classVarStr.ToString() };
+                aClass.SubItems.Add(classID.ToString());
+                ClassStructures.Add(classID, aClass);
             }
+
         }
 
     }

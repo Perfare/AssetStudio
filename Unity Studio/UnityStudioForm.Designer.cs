@@ -37,6 +37,12 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.extractBundleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buildClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dontLoadAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dontBuildHierarchyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniqueNames = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePreview = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,13 +62,16 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.treeSearch = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.assetListView = new System.Windows.Forms.ListView();
             this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listSearch = new System.Windows.Forms.TextBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.classesListView = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressbarPanel = new System.Windows.Forms.Panel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.previewPanel = new System.Windows.Forms.Panel();
@@ -79,8 +88,11 @@
             this.FMODplayButton = new System.Windows.Forms.Button();
             this.fontPreviewBox = new System.Windows.Forms.RichTextBox();
             this.textPreviewBox = new System.Windows.Forms.TextBox();
+            this.classPreviewPanel = new System.Windows.Forms.Panel();
+            this.classTextBox = new System.Windows.Forms.TextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.treeSearch = new System.Windows.Forms.TextBox();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFolderDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -94,13 +106,14 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.progressbarPanel.SuspendLayout();
             this.previewPanel.SuspendLayout();
             this.FMODpanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FMODprogressBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FMODvolumeBar)).BeginInit();
+            this.classPreviewPanel.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -108,6 +121,7 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.debugMenuItem,
             this.optionsToolStripMenuItem,
             this.exportToolStripMenuItem,
             this.helpToolStripMenuItem});
@@ -161,6 +175,53 @@
             this.extractFolderToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.extractFolderToolStripMenuItem.Text = "Extract folder...";
             this.extractFolderToolStripMenuItem.Click += new System.EventHandler(this.extractFolderToolStripMenuItem_Click);
+            // 
+            // debugMenuItem
+            // 
+            this.debugMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.buildClassStructuresMenuItem,
+            this.dontLoadAssetsMenuItem,
+            this.dontBuildHierarchyMenuItem,
+            this.toolStripSeparator2,
+            this.exportClassStructuresMenuItem});
+            this.debugMenuItem.Name = "debugMenuItem";
+            this.debugMenuItem.Size = new System.Drawing.Size(80, 20);
+            this.debugMenuItem.Text = "Diagnostics";
+            this.debugMenuItem.Visible = false;
+            // 
+            // buildClassStructuresMenuItem
+            // 
+            this.buildClassStructuresMenuItem.CheckOnClick = true;
+            this.buildClassStructuresMenuItem.Name = "buildClassStructuresMenuItem";
+            this.buildClassStructuresMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.buildClassStructuresMenuItem.Text = "Build class structures";
+            // 
+            // dontLoadAssetsMenuItem
+            // 
+            this.dontLoadAssetsMenuItem.CheckOnClick = true;
+            this.dontLoadAssetsMenuItem.Name = "dontLoadAssetsMenuItem";
+            this.dontLoadAssetsMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.dontLoadAssetsMenuItem.Text = "Don\'t load assets";
+            this.dontLoadAssetsMenuItem.CheckedChanged += new System.EventHandler(this.dontLoadAssetsMenuItem_CheckedChanged);
+            // 
+            // dontBuildHierarchyMenuItem
+            // 
+            this.dontBuildHierarchyMenuItem.CheckOnClick = true;
+            this.dontBuildHierarchyMenuItem.Name = "dontBuildHierarchyMenuItem";
+            this.dontBuildHierarchyMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.dontBuildHierarchyMenuItem.Text = "Don\'t build hierarchy tree";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
+            // 
+            // exportClassStructuresMenuItem
+            // 
+            this.exportClassStructuresMenuItem.Name = "exportClassStructuresMenuItem";
+            this.exportClassStructuresMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.exportClassStructuresMenuItem.Text = "Export class structures";
+            this.exportClassStructuresMenuItem.Click += new System.EventHandler(this.exportClassStructuresMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -321,6 +382,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.previewPanel);
+            this.splitContainer1.Panel2.Controls.Add(this.classPreviewPanel);
             this.splitContainer1.Panel2.Controls.Add(this.statusStrip1);
             this.splitContainer1.Panel2MinSize = 400;
             this.splitContainer1.Size = new System.Drawing.Size(1264, 658);
@@ -334,6 +396,7 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            //this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -354,20 +417,6 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Scene Hierarchy";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // treeSearch
-            // 
-            this.treeSearch.Dock = System.Windows.Forms.DockStyle.Top;
-            this.treeSearch.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.treeSearch.Location = new System.Drawing.Point(0, 0);
-            this.treeSearch.Name = "treeSearch";
-            this.treeSearch.Size = new System.Drawing.Size(410, 20);
-            this.treeSearch.TabIndex = 0;
-            this.treeSearch.Text = " Search ";
-            this.treeSearch.Enter += new System.EventHandler(this.treeSearch_Enter);
-            this.treeSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.treeSearch_KeyDown);
-            this.treeSearch.Leave += new System.EventHandler(this.treeSearch_Leave);
-            this.treeSearch.MouseEnter += new System.EventHandler(this.treeSearch_MouseEnter);
             // 
             // tabPage2
             // 
@@ -428,6 +477,43 @@
             this.listSearch.TextChanged += new System.EventHandler(this.ListSearchTextChanged);
             this.listSearch.Enter += new System.EventHandler(this.listSearch_Enter);
             this.listSearch.Leave += new System.EventHandler(this.listSearch_Leave);
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.classesListView);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(410, 608);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Asset Classes";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // classesListView
+            // 
+            this.classesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
+            this.classesListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.classesListView.FullRowSelect = true;
+            this.classesListView.Location = new System.Drawing.Point(0, 0);
+            this.classesListView.MultiSelect = false;
+            this.classesListView.Name = "classesListView";
+            this.classesListView.Size = new System.Drawing.Size(410, 608);
+            this.classesListView.TabIndex = 0;
+            this.classesListView.UseCompatibleStateImageBehavior = false;
+            this.classesListView.View = System.Windows.Forms.View.Details;
+            this.classesListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.classesListView_ItemSelectionChanged);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.DisplayIndex = 1;
+            this.columnHeader1.Text = "Name";
+            this.columnHeader1.Width = 328;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.DisplayIndex = 0;
+            this.columnHeader2.Text = "ID";
             // 
             // progressbarPanel
             // 
@@ -613,6 +699,28 @@
             this.textPreviewBox.Visible = false;
             this.textPreviewBox.WordWrap = false;
             // 
+            // classPreviewPanel
+            // 
+            this.classPreviewPanel.Controls.Add(this.classTextBox);
+            this.classPreviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.classPreviewPanel.Location = new System.Drawing.Point(0, 0);
+            this.classPreviewPanel.Name = "classPreviewPanel";
+            this.classPreviewPanel.Size = new System.Drawing.Size(838, 634);
+            this.classPreviewPanel.TabIndex = 3;
+            this.classPreviewPanel.Visible = false;
+            // 
+            // classTextBox
+            // 
+            this.classTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.classTextBox.Location = new System.Drawing.Point(0, 0);
+            this.classTextBox.Multiline = true;
+            this.classTextBox.Name = "classTextBox";
+            this.classTextBox.ReadOnly = true;
+            this.classTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.classTextBox.Size = new System.Drawing.Size(838, 634);
+            this.classTextBox.TabIndex = 3;
+            this.classTextBox.WordWrap = false;
+            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -632,6 +740,20 @@
             this.toolStripStatusLabel1.Text = "Ready to go";
             this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // treeSearch
+            // 
+            this.treeSearch.Dock = System.Windows.Forms.DockStyle.Top;
+            this.treeSearch.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.treeSearch.Location = new System.Drawing.Point(0, 0);
+            this.treeSearch.Name = "treeSearch";
+            this.treeSearch.Size = new System.Drawing.Size(410, 20);
+            this.treeSearch.TabIndex = 0;
+            this.treeSearch.Text = " Search ";
+            this.treeSearch.Enter += new System.EventHandler(this.treeSearch_Enter);
+            this.treeSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.treeSearch_KeyDown);
+            this.treeSearch.Leave += new System.EventHandler(this.treeSearch_Leave);
+            this.treeSearch.MouseEnter += new System.EventHandler(this.treeSearch_MouseEnter);
+            // 
             // timer
             // 
             this.timer.Interval = 10;
@@ -640,8 +762,8 @@
             // openFileDialog1
             // 
             this.openFileDialog1.Filter = "Unity asset files|level*; mainData; CustomAssetBundle-*; CAB-*; BuildPlayer-*; *." +
-    "assets; *.sharedAssets|Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundle; *.bundle; *." +
-    "bytes";
+    "assets; *.sharedAssets|Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundl" +
+    "e; *.bundle; *.bytes";
             this.openFileDialog1.Multiselect = true;
             this.openFileDialog1.RestoreDirectory = true;
             // 
@@ -672,6 +794,7 @@
             this.sceneTreeView.CheckBoxes = true;
             this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.sceneTreeView.HideSelection = false;
+            this.sceneTreeView.LineColor = System.Drawing.Color.Empty;
             this.sceneTreeView.Location = new System.Drawing.Point(0, 20);
             this.sceneTreeView.Name = "sceneTreeView";
             this.sceneTreeView.Size = new System.Drawing.Size(410, 588);
@@ -686,11 +809,13 @@
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(620, 400);
             this.Name = "UnityStudioForm";
             this.Text = "Unity Studio";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UnityStudioForm_FormClosing);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.UnityStudioForm_KeyDown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -699,10 +824,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
             this.progressbarPanel.ResumeLayout(false);
             this.previewPanel.ResumeLayout(false);
             this.previewPanel.PerformLayout();
@@ -710,6 +834,8 @@
             this.FMODpanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FMODprogressBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.FMODvolumeBar)).EndInit();
+            this.classPreviewPanel.ResumeLayout(false);
+            this.classPreviewPanel.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -777,6 +903,18 @@
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
         private GOHierarchy sceneTreeView;
         private System.Windows.Forms.ToolTip treeTip;
+        private System.Windows.Forms.ToolStripMenuItem debugMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem buildClassStructuresMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dontLoadAssetsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dontBuildHierarchyMenuItem;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.ListView classesListView;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.Panel classPreviewPanel;
+        private System.Windows.Forms.TextBox classTextBox;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
     }
 }
 

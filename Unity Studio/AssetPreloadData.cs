@@ -14,13 +14,11 @@ namespace Unity_Studio
         public int Type1;
         public ushort Type2;
 
-        //public string m_Name = "";
         public string TypeString;
         public int exportSize;
         public string InfoText;
 
         public AssetsFile sourceFile;
-        public int specificIndex = -1; //index in specific asset list
         public string uniqueID;
     }
 }

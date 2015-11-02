@@ -29,13 +29,22 @@ namespace Unity_Studio
             }
 
             m_GameObject = sourceFile.ReadPPtr();
-            m_Enabled = a_Stream.ReadBoolean();
-            m_CastShadows = a_Stream.ReadByte();
-            m_ReceiveShadows = a_Stream.ReadBoolean();
-            if (sourceFile.version[0] < 5) { m_LightmapIndex = a_Stream.ReadByte(); }
+
+            if (sourceFile.version[0] < 5)
+            {
+                m_Enabled = a_Stream.ReadBoolean();
+                m_CastShadows = a_Stream.ReadByte();
+                m_ReceiveShadows = a_Stream.ReadBoolean();
+                m_LightmapIndex = a_Stream.ReadByte();
+            }
             else
             {
-                a_Stream.Position += 5; //suspicious alignment, could be 2 alignments between bools
+                m_Enabled = a_Stream.ReadBoolean();
+                a_Stream.AlignStream(4);
+                m_CastShadows = a_Stream.ReadByte();
+                m_ReceiveShadows = a_Stream.ReadBoolean();
+                a_Stream.AlignStream(4);
+
                 m_LightmapIndex = a_Stream.ReadUInt16();
                 m_LightmapIndexDynamic = a_Stream.ReadUInt16();
             }

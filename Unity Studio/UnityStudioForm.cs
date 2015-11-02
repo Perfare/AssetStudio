@@ -34,7 +34,8 @@ namespace Unity_Studio
         private string productName = "";
         
         Dictionary<string, Dictionary<string, string>> jsonMats;
-        
+        Dictionary<string, SortedDictionary<int, ClassStrStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStrStruct>>();
+
         private FMOD.System system = null;
         private FMOD.Sound sound = null;
         private FMOD.Channel channel = null;
@@ -55,6 +56,10 @@ namespace Unity_Studio
         //return-to indices for tree search
         private int lastAFile = 0;
         private int lastGObject = 0;
+
+        //counters for progress bar
+        private int totalAssetCount = 0;
+        private int totalTreeNodes = 0;
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -95,6 +100,8 @@ namespace Unity_Studio
                         progressBar1.PerformStep();
                     }
                 }
+
+                progressBar1.Value = 0;
 
                 BuildAssetStrucutres();
             }
@@ -162,6 +169,8 @@ namespace Unity_Studio
                         LoadAssetsFile(fileName);
                     }
 
+                    progressBar1.Value = 0;
+
                     BuildAssetStrucutres();
                 }
                 else { StatusStripUpdate("Selected path deos not exist."); }
@@ -202,6 +211,8 @@ namespace Unity_Studio
                 //also by keeping the stream as a property of AssetsFile, it can be used later on to read assets
                 AssetsFile assetsFile = new AssetsFile(fileName, new EndianStream(File.OpenRead(fileName), EndianType.BigEndian));
                 //if (Path.GetFileName(fileName) == "mainData") { mainDataFile = assetsFile; }
+
+                totalAssetCount += assetsFile.preloadTable.Count;
 
                 assetsfileList.Add(assetsFile);
                 #region for 2.6.x find mainData and get string version
@@ -404,6 +415,69 @@ namespace Unity_Studio
 
 
 
+        private void UnityStudioForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.Alt && e.KeyCode == Keys.D)
+            {
+                debugMenuItem.Visible = !debugMenuItem.Visible;
+                buildClassStructuresMenuItem.Checked = debugMenuItem.Visible;
+                dontLoadAssetsMenuItem.Checked = debugMenuItem.Visible;
+                dontBuildHierarchyMenuItem.Checked = debugMenuItem.Visible;
+                if (tabControl1.TabPages.Contains(tabPage3)) { tabControl1.TabPages.Remove(tabPage3); }
+                else { tabControl1.TabPages.Add(tabPage3); }
+            }
+        }
+
+        private void dontLoadAssetsMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (dontLoadAssetsMenuItem.Checked)
+            {
+                dontBuildHierarchyMenuItem.Checked = true;
+                dontBuildHierarchyMenuItem.Enabled = false;
+            }
+            else { dontBuildHierarchyMenuItem.Enabled = true; }
+        }
+        
+        private void exportClassStructuresMenuItem_Click(object sender, EventArgs e)
+        {
+            if (AllClassStructures.Count > 0)
+            {
+                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = AllClassStructures.Count;
+
+                    var savePath = saveFolderDialog1.FileName;
+                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
+                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+
+                    foreach (var version in AllClassStructures)
+                    {
+                        if (version.Value.Count > 0)
+                        {
+                            string versionPath = savePath + "\\" + version.Key;
+                            Directory.CreateDirectory(versionPath);
+
+                            foreach (var uclass in version.Value)
+                            {
+                                string saveFile = versionPath + "\\" + uclass.Key + " " + uclass.Value.Text + ".txt";
+                                using (StreamWriter TXTwriter = new StreamWriter(saveFile))
+                                {
+                                    TXTwriter.Write(uclass.Value.members);
+                                }
+                            }
+                        }
+
+                        progressBar1.PerformStep();
+                    }
+
+                    StatusStripUpdate("Finished exporting class structures");
+                    progressBar1.Value = 0;
+                }
+            }
+        }
+
+
         private void enablePreview_Check(object sender, EventArgs e)
         {
             if (lastLoadedAsset != null)
@@ -523,202 +597,246 @@ namespace Unity_Studio
         private void BuildAssetStrucutres()
         {
             #region first loop - read asset data & create list
-            StatusStripUpdate("Building asset list...");
-            assetListView.BeginUpdate();
-
-            string fileIDfmt = "D" + assetsfileList.Count.ToString().Length.ToString();
-
-            foreach (var assetsFile in assetsfileList)
+            if (!dontLoadAssetsMenuItem.Checked)
             {
-                var a_Stream = assetsFile.a_Stream;
-                var fileGen = assetsFile.fileGen;
-                //var m_version = assetsFile.m_version;
-                var version = assetsFile.version;
-                string fileID = "1" + assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
+                StatusStripUpdate("Building asset list...");
+                assetListView.BeginUpdate();
+                progressBar1.Value = 0;
+                progressBar1.Maximum = totalAssetCount;
 
-                //ListViewGroup assetGroup = new ListViewGroup(Path.GetFileName(assetsFile.filePath));
+                string fileIDfmt = "D" + assetsfileList.Count.ToString().Length.ToString();
 
-                foreach (var asset in assetsFile.preloadTable.Values)
+                foreach (var assetsFile in assetsfileList)
                 {
-                    asset.uniqueID = fileID + asset.uniqueID;
-                    a_Stream.Position = asset.Offset;
+                    var a_Stream = assetsFile.a_Stream;
+                    var fileGen = assetsFile.fileGen;
+                    //var m_version = assetsFile.m_version;
+                    var version = assetsFile.version;
+                    string fileID = "1" + assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
 
-                    switch (asset.Type2)
+                    //ListViewGroup assetGroup = new ListViewGroup(Path.GetFileName(assetsFile.filePath));
+
+
+                    foreach (var asset in assetsFile.preloadTable.Values)
                     {
-                        case 1: //GameObject
-                            {
-                                GameObject m_GameObject = new GameObject(asset);
-                                
-                                //asset.Text = m_GameObject.m_Name;
-                                asset.specificIndex = assetsFile.GameObjectList.Count;
-                                assetsFile.GameObjectList.Add(m_GameObject);
-                                break;
-                            }
-                        case 4: //Transform
-                            {
-                                Transform m_Transform = new Transform(asset);
+                        asset.uniqueID = fileID + asset.uniqueID;
+                        a_Stream.Position = asset.Offset;
 
-                                asset.specificIndex = assetsFile.TransformList.Count;
-                                assetsFile.TransformList.Add(m_Transform);
-                                break;
-                            }
-                        case 224: //RectTransform
-                            {
-                                RectTransform m_Rect = new RectTransform(asset);
-
-                                asset.specificIndex = assetsFile.TransformList.Count;
-                                assetsFile.TransformList.Add(m_Rect.m_Transform);
-                                break;
-                            }
-                        //case 21: //Material
-                        case 28: //Texture2D
-                            {
-                                Texture2D m_Texture2D = new Texture2D(asset, false);
-
-                                asset.Text = m_Texture2D.m_Name;
-                                asset.exportSize = 128 + m_Texture2D.image_data_size;
-
-                                #region Get Info Text
-                                asset.InfoText = "Width: " + m_Texture2D.m_Width.ToString() + "\nHeight: " + m_Texture2D.m_Height.ToString() + "\nFormat: ";
-
-                                switch (m_Texture2D.m_TextureFormat)
+                        switch (asset.Type2)
+                        {
+                            case 1: //GameObject
                                 {
-                                    case 1: asset.InfoText += "Alpha8"; break;
-                                    case 2: asset.InfoText += "ARGB 4.4.4.4"; break;
-                                    case 3: asset.InfoText += "BGR 8.8.8"; break;
-                                    case 4: asset.InfoText += "GRAB 8.8.8.8"; break;
-                                    case 5: asset.InfoText += "BGRA 8.8.8.8"; break;
-                                    case 7: asset.InfoText += "RGB 5.6.5"; break;
-                                    case 10: asset.InfoText += "RGB DXT1"; break;
-                                    case 12: asset.InfoText += "ARGB DXT5"; break;
-                                    case 13: asset.InfoText += "RGBA 4.4.4.4"; break;
-                                    case 30: asset.InfoText += "PVRTC_RGB2"; asset.exportSize -= 76; break;
-                                    case 31: asset.InfoText += "PVRTC_RGBA2"; asset.exportSize -= 76; break;
-                                    case 32: asset.InfoText += "PVRTC_RGB4"; asset.exportSize = 52; break;
-                                    case 33: asset.InfoText += "PVRTC_RGBA4"; asset.exportSize -= 76; break;
-                                    case 34: asset.InfoText += "ETC_RGB4"; asset.exportSize -= 76; break;
-                                    default: asset.InfoText += "unknown"; asset.exportSize -= 128; break;
+                                    GameObject m_GameObject = new GameObject(asset);
+                                    assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
+                                    totalTreeNodes++;
+                                    break;
+                                }
+                            case 4: //Transform
+                                {
+                                    Transform m_Transform = new Transform(asset);
+                                    assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
+                                    break;
+                                }
+                            case 224: //RectTransform
+                                {
+                                    RectTransform m_Rect = new RectTransform(asset);
+                                    assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
+                                    break;
+                                }
+                            //case 21: //Material
+                            case 28: //Texture2D
+                                {
+                                    Texture2D m_Texture2D = new Texture2D(asset, false);
+
+                                    asset.Text = m_Texture2D.m_Name;
+                                    asset.exportSize = 128 + m_Texture2D.image_data_size;
+
+                                    #region Get Info Text
+                                    asset.InfoText = "Width: " + m_Texture2D.m_Width.ToString() + "\nHeight: " + m_Texture2D.m_Height.ToString() + "\nFormat: ";
+
+                                    switch (m_Texture2D.m_TextureFormat)
+                                    {
+                                        case 1: asset.InfoText += "Alpha8"; break;
+                                        case 2: asset.InfoText += "ARGB 4.4.4.4"; break;
+                                        case 3: asset.InfoText += "BGR 8.8.8"; break;
+                                        case 4: asset.InfoText += "GRAB 8.8.8.8"; break;
+                                        case 5: asset.InfoText += "BGRA 8.8.8.8"; break;
+                                        case 7: asset.InfoText += "RGB 5.6.5"; break;
+                                        case 10: asset.InfoText += "RGB DXT1"; break;
+                                        case 12: asset.InfoText += "ARGB DXT5"; break;
+                                        case 13: asset.InfoText += "RGBA 4.4.4.4"; break;
+                                        case 30: asset.InfoText += "PVRTC_RGB2"; asset.exportSize -= 76; break;
+                                        case 31: asset.InfoText += "PVRTC_RGBA2"; asset.exportSize -= 76; break;
+                                        case 32: asset.InfoText += "PVRTC_RGB4"; asset.exportSize = 52; break;
+                                        case 33: asset.InfoText += "PVRTC_RGBA4"; asset.exportSize -= 76; break;
+                                        case 34: asset.InfoText += "ETC_RGB4"; asset.exportSize -= 76; break;
+                                        default: asset.InfoText += "unknown"; asset.exportSize -= 128; break;
+                                    }
+
+                                    switch (m_Texture2D.m_FilterMode)
+                                    {
+                                        case 0: asset.InfoText += "\nFilter Mode: Point "; break;
+                                        case 1: asset.InfoText += "\nFilter Mode: Bilinear "; break;
+                                        case 2: asset.InfoText += "\nFilter Mode: Trilinear "; break;
+
+                                    }
+
+                                    asset.InfoText += "\nAnisotropic level: " + m_Texture2D.m_Aniso.ToString() + "\nMip map bias: " + m_Texture2D.m_MipBias.ToString();
+
+                                    switch (m_Texture2D.m_WrapMode)
+                                    {
+                                        case 0: asset.InfoText += "\nWrap mode: Repeat"; break;
+                                        case 1: asset.InfoText += "\nWrap mode: Clamp"; break;
+                                    }
+                                    #endregion
+
+                                    assetsFile.exportableAssets.Add(asset);
+                                    break;
+                                }
+                            case 49: //TextAsset
+                                {
+                                    TextAsset m_TextAsset = new TextAsset(asset, false);
+
+                                    asset.Text = m_TextAsset.m_Name;
+                                    asset.exportSize = m_TextAsset.exportSize;
+                                    assetsFile.exportableAssets.Add(asset);
+                                    break;
+                                }
+                            case 83: //AudioClip
+                                {
+                                    AudioClip m_AudioClip = new AudioClip(asset, false);
+
+                                    asset.Text = m_AudioClip.m_Name;
+                                    asset.exportSize = (int)m_AudioClip.m_Size;
+                                    assetsFile.exportableAssets.Add(asset);
+                                    break;
+                                }
+                            case 48: //Shader
+                            case 89: //CubeMap
+                            case 128: //Font
+                                {
+                                    asset.Text = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                                    assetsFile.exportableAssets.Add(asset);
+                                    break;
+                                }
+                            case 129: //PlayerSettings
+                                {
+                                    PlayerSettings plSet = new PlayerSettings(asset);
+                                    productName = plSet.productName;
+                                    base.Text = "Unity Studio - " + productName + " - " + assetsFile.m_Version;
+                                    break;
                                 }
 
-                                switch (m_Texture2D.m_FilterMode)
-                                {
-                                    case 0: asset.InfoText += "\nFilter Mode: Point "; break;
-                                    case 1: asset.InfoText += "\nFilter Mode: Bilinear "; break;
-                                    case 2: asset.InfoText += "\nFilter Mode: Trilinear "; break;
+                        }
 
-                                }
+                        if (asset.Text == "") { asset.Text = asset.TypeString + " #" + asset.uniqueID; }
+                        asset.SubItems.AddRange(new string[] { asset.TypeString, asset.exportSize.ToString() });
 
-                                asset.InfoText += "\nAnisotropic level: " + m_Texture2D.m_Aniso.ToString() + "\nMip map bias: " + m_Texture2D.m_MipBias.ToString();
-
-                                switch (m_Texture2D.m_WrapMode)
-                                {
-                                    case 0: asset.InfoText += "\nWrap mode: Repeat"; break;
-                                    case 1: asset.InfoText += "\nWrap mode: Clamp"; break;
-                                }
-                                #endregion
-
-                                assetsFile.exportableAssets.Add(asset);
-                                break;
-                            }
-                        case 49: //TextAsset
-                            {
-                                TextAsset m_TextAsset = new TextAsset(asset, false);
-
-                                asset.Text = m_TextAsset.m_Name;
-                                asset.exportSize = m_TextAsset.exportSize;
-                                assetsFile.exportableAssets.Add(asset);
-                                break;
-                            }
-                        case 83: //AudioClip
-                            {
-                                AudioClip m_AudioClip = new AudioClip(asset, false);
-
-                                asset.Text = m_AudioClip.m_Name;
-                                asset.exportSize = (int)m_AudioClip.m_Size;
-                                assetsFile.exportableAssets.Add(asset);
-                                break;
-                            }
-                        case 48: //Shader
-                        case 89: //CubeMap
-                        case 128: //Font
-                            {
-                                asset.Text = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                                assetsFile.exportableAssets.Add(asset);
-                                break;
-                            }
-                        case 129: //PlayerSettings
-                            {
-                                PlayerSettings plSet = new PlayerSettings(asset);
-                                productName = plSet.productName;
-                                base.Text = "Unity Studio - " + productName + " - " + assetsFile.m_Version ;
-                                break;
-                            }
-
+                        progressBar1.PerformStep();
                     }
 
-                    if (asset.Text == "") { asset.Text = asset.TypeString + " #" + asset.uniqueID; }
-                    asset.SubItems.AddRange(new string[] { asset.TypeString, asset.exportSize.ToString() });
+                    exportableAssets.AddRange(assetsFile.exportableAssets);
+                    //if (assetGroup.Items.Count > 0) { listView1.Groups.Add(assetGroup); }
                 }
 
-                exportableAssets.AddRange(assetsFile.exportableAssets);
-                //if (assetGroup.Items.Count > 0) { listView1.Groups.Add(assetGroup); }
+                visibleAssets = exportableAssets;
+                assetListView.VirtualListSize = visibleAssets.Count;
+
+                assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+                assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
+                resizeNameColumn();
+
+                assetListView.EndUpdate();
+                progressBar1.Value = 0;
             }
-
-            visibleAssets = exportableAssets;
-            assetListView.VirtualListSize = visibleAssets.Count;
-
-            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
-            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
-            resizeNameColumn();
-
-            assetListView.EndUpdate();
             #endregion
 
             #region second loop - build tree structure
-            StatusStripUpdate("Building tree structure...");
-            sceneTreeView.BeginUpdate();
-            foreach (var assetsFile in assetsfileList)
+            if (!dontBuildHierarchyMenuItem.Checked)
             {
-                GameObject fileNode = new GameObject(null);
-                fileNode.Text = Path.GetFileName(assetsFile.filePath);
+                StatusStripUpdate("Building tree structure...");
+                sceneTreeView.BeginUpdate();
+                progressBar1.Value = 0;
+                progressBar1.Maximum = totalTreeNodes;
 
-                foreach (var m_GameObject in assetsFile.GameObjectList)
+                foreach (var assetsFile in assetsfileList)
                 {
-                    var parentNode = fileNode;
-                    
-                    Transform m_Transform;
-                    if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out m_Transform))
+                    GameObject fileNode = new GameObject(null);
+                    fileNode.Text = Path.GetFileName(assetsFile.filePath);
+
+                    foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                     {
-                        Transform m_Father;
-                        if (assetsfileList.TryGetTransform(m_Transform.m_Father, out m_Father))
+                        var parentNode = fileNode;
+
+                        Transform m_Transform;
+                        if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out m_Transform))
                         {
-                            //GameObject Parent;
-                            if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
+                            Transform m_Father;
+                            if (assetsfileList.TryGetTransform(m_Transform.m_Father, out m_Father))
                             {
-                                //parentNode = Parent;
+                                //GameObject Parent;
+                                if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
+                                {
+                                    //parentNode = Parent;
+                                }
                             }
                         }
+
+                        parentNode.Nodes.Add(m_GameObject);
+                        progressBar1.PerformStep();
                     }
 
-                    parentNode.Nodes.Add(m_GameObject);
+
+                    if (fileNode.Nodes.Count == 0) { fileNode.Text += " (no children)"; }
+                    sceneTreeView.Nodes.Add(fileNode);
                 }
+                sceneTreeView.EndUpdate();
+                progressBar1.Value = 0;
 
+                if (File.Exists(mainPath + "\\materials.json"))
+                {
+                    string matLine = "";
+                    using (StreamReader reader = File.OpenText(mainPath + "\\materials.json"))
+                    { matLine = reader.ReadToEnd(); }
 
-                if (fileNode.Nodes.Count == 0) { fileNode.Text += " (no children)"; }
-                sceneTreeView.Nodes.Add(fileNode);
+                    jsonMats = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(matLine);
+                    //var jsonMats = new JavaScriptSerializer().DeserializeObject(matLine);
+                }
             }
-            sceneTreeView.EndUpdate();
             #endregion
 
-            if (File.Exists(mainPath + "\\materials.json"))
+            #region build list of class strucutres
+            if (buildClassStructuresMenuItem.Checked)
             {
-                string matLine = "";
-                using (StreamReader reader = File.OpenText(mainPath + "\\materials.json"))
-                { matLine = reader.ReadToEnd(); }
+                //group class structures by versionv
+                foreach (var assetsFile in assetsfileList)
+                {
+                    SortedDictionary<int, ClassStrStruct> curVer;
+                    if (AllClassStructures.TryGetValue(assetsFile.m_Version, out curVer))
+                    {
+                        foreach (var uClass in assetsFile.ClassStructures)
+                        {
+                            curVer[uClass.Key] = uClass.Value;
+                        }
+                    }
+                    else { AllClassStructures.Add(assetsFile.m_Version, assetsFile.ClassStructures); }
+                }
 
-                jsonMats = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(matLine);
-                //var jsonMats = new JavaScriptSerializer().DeserializeObject(matLine);
+                classesListView.BeginUpdate();
+                foreach (var version in AllClassStructures)
+                {
+                    ListViewGroup versionGroup = new ListViewGroup(version.Key);
+                    classesListView.Groups.Add(versionGroup);
+
+                    foreach (var uclass in version.Value)
+                    {
+                        uclass.Value.Group = versionGroup;
+                        classesListView.Items.Add(uclass.Value);
+                    }
+                }
+                classesListView.EndUpdate();
             }
+            #endregion
 
             StatusStripUpdate("Finished loading " + assetsfileList.Count.ToString() + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count).ToString() + " exportable assets.");
             
@@ -731,13 +849,23 @@ namespace Unity_Studio
         {
             e.Item = visibleAssets[e.ItemIndex];
         }
-
-
+        
 
         private void tabPageSelected(object sender, TabControlEventArgs e)
         {
-            if (e.TabPageIndex == 0) { treeSearch.Select(); }
-            else if (e.TabPageIndex == 1) { listSearch.Select(); }
+            switch (e.TabPageIndex)
+            {
+                case 0: treeSearch.Select(); break;
+                case 1:
+                    classPreviewPanel.Visible = false;
+                    previewPanel.Visible = true;
+                    listSearch.Select();
+                    break;
+                case 2:
+                    previewPanel.Visible = false;
+                    classPreviewPanel.Visible = true;
+                    break;
+            }
         }
 
         private void recurseTreeCheck(TreeNodeCollection start)
@@ -780,7 +908,7 @@ namespace Unity_Studio
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (e.Modifiers == Keys.Control) //toggle all matching nodes //skip children?
+                if (e.Control) //toggle all matching nodes //skip children?
                 {
                     sceneTreeView.BeginUpdate();
                     //loop assetsFileList?
@@ -956,14 +1084,29 @@ namespace Unity_Studio
         }
 
 
+        private void classesListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (e.IsSelected)
+            {
+                classTextBox.Text = ((ClassStrStruct)classesListView.SelectedItems[0]).members;
+            }
+        }
+
+
         private void splitContainer1_Resize(object sender, EventArgs e)
         {
-            resizeNameColumn();
+            switch (tabControl1.TabIndex)
+            {
+                case 1: resizeNameColumn(); break;
+            }
         }
 
         private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
         {
-            resizeNameColumn();
+            switch (tabControl1.TabIndex)
+            {
+                case 1: resizeNameColumn(); break;
+            }
         }
 
 
@@ -1645,7 +1788,7 @@ namespace Unity_Studio
                 #region write Models, collect Mesh & Material objects
                 foreach (var assetsFile in assetsfileList)
                 {
-                    foreach (var m_GameObject in assetsFile.GameObjectList)
+                    foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                     {
                         if (m_GameObject.Checked || allNodes)
                         {
@@ -2819,7 +2962,10 @@ namespace Unity_Studio
 
             assetListView.VirtualListSize = 0;
             assetListView.Items.Clear();
-            assetListView.Groups.Clear();
+            //assetListView.Groups.Clear();
+
+            classesListView.Items.Clear();
+            classesListView.Groups.Clear();
 
             previewPanel.BackgroundImage = global::Unity_Studio.Properties.Resources.preview;
             previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
@@ -2830,7 +2976,7 @@ namespace Unity_Studio
             lastSelectedItem = null;
             lastLoadedAsset = null;
 
-            FMODinit();
+            //FMODinit();
 
         }
 

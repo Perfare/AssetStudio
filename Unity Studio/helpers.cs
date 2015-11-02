@@ -40,10 +40,7 @@ namespace Unity_Studio
                 AssetsFile sourceFile = assetsfileList[m_elm.m_FileID];
 
                 //TryGetValue should be safe because m_PathID is 0 when initialized and PathID values range from 1
-                if (sourceFile.preloadTable.TryGetValue(m_elm.m_PathID, out result))
-                {
-                    return true;
-                }
+                if (sourceFile.preloadTable.TryGetValue(m_elm.m_PathID, out result)) { return true; }
             }
 
             return false;
@@ -53,14 +50,11 @@ namespace Unity_Studio
         {
             m_Transform = null;
 
-            AssetPreloadData TransformPD;
-            if (assetsfileList.TryGetPD(m_elm, out TransformPD))
+            if (m_elm != null && m_elm.m_FileID >= 0 && m_elm.m_FileID < assetsfileList.Count)
             {
-                if (TransformPD.specificIndex >= 0 && TransformPD.specificIndex < TransformPD.sourceFile.TransformList.Count)
-                {
-                    m_Transform = TransformPD.sourceFile.TransformList[TransformPD.specificIndex];
-                    return true;
-                }
+                AssetsFile sourceFile = assetsfileList[m_elm.m_FileID];
+
+                if (sourceFile.TransformList.TryGetValue(m_elm.m_PathID, out m_Transform)) { return true; }
             }
 
             return false;
@@ -70,14 +64,11 @@ namespace Unity_Studio
         {
             m_GameObject = null;
 
-            AssetPreloadData GameObjectPD;
-            if (assetsfileList.TryGetPD(m_elm, out GameObjectPD))
+            if (m_elm != null && m_elm.m_FileID >= 0 && m_elm.m_FileID < assetsfileList.Count)
             {
-                if (GameObjectPD.specificIndex >= 0 && GameObjectPD.specificIndex < GameObjectPD.sourceFile.GameObjectList.Count)
-                {
-                    m_GameObject = GameObjectPD.sourceFile.GameObjectList[GameObjectPD.specificIndex];
-                    return true;
-                }
+                AssetsFile sourceFile = assetsfileList[m_elm.m_FileID];
+
+                if (sourceFile.GameObjectList.TryGetValue(m_elm.m_PathID, out m_GameObject)) { return true; }
             }
 
             return false;

@@ -48,8 +48,17 @@ namespace Unity_Studio
 
             if (sourceFile.version[0] > 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] >= 3)) { m_CustomRenderQueue = a_Stream.ReadInt32(); }
 
-            //m_SavedProperties
-            m_TexEnvs = new TexEnv[a_Stream.ReadInt32()];
+            if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 1)
+            {
+                string[][] stringTagMap = new string[a_Stream.ReadInt32()][];
+                for (int i = 0; i < stringTagMap.Length; i++)
+                {
+                    stringTagMap[i] = new string[2] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()), a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
+                }
+            }
+
+                //m_SavedProperties
+                m_TexEnvs = new TexEnv[a_Stream.ReadInt32()];
             for (int i = 0; i < m_TexEnvs.Length; i++)
             {
                 TexEnv m_TexEnv = new TexEnv()

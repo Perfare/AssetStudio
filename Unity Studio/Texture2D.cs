@@ -12,7 +12,7 @@ namespace Unity_Studio
         public int m_Height;
         public int m_CompleteImageSize;
         public int m_TextureFormat;
-        public bool m_MipMap;
+        public bool m_MipMap = false;
         public bool m_IsReadable;
         public bool m_ReadAllowed;
         public int m_ImageCount;
@@ -81,10 +81,19 @@ namespace Unity_Studio
             else if (m_TextureFormat < 35) { extension = ".pvr"; }
             else { extension = "_" + m_Width.ToString() + "x" + m_Height.ToString() + "." + m_TextureFormat.ToString() + ".tex"; }
 
-            m_MipMap = a_Stream.ReadBoolean();
+            if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 2))
+            { m_MipMap = a_Stream.ReadBoolean(); }
+            else
+            {
+                dwFlags += 0x20000;
+                dwMipMapCount = a_Stream.ReadInt32();//is this with or without main image?
+                dwCaps += 0x400008;
+            }
+
             m_IsReadable = a_Stream.ReadBoolean(); //2.6.0 and up
             m_ReadAllowed = a_Stream.ReadBoolean(); //3.0.0 and up
-            a_Stream.Position += 1; //4 byte alignment
+            a_Stream.AlignStream(4);
+
             m_ImageCount = a_Stream.ReadInt32();
             m_TextureDimension = a_Stream.ReadInt32();
             //m_TextureSettings

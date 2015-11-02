@@ -9,7 +9,7 @@ namespace Unity_Studio
     {
         public PPtr m_GameObject;
         public bool m_Enabled;
-        public bool m_CastShadows;
+        public byte m_CastShadows;
         public bool m_ReceiveShadows;
         public ushort m_LightmapIndex;
         public ushort m_LightmapIndexDynamic;
@@ -31,18 +31,27 @@ namespace Unity_Studio
             }
 
             m_GameObject = sourceFile.ReadPPtr();
-            m_Enabled = a_Stream.ReadBoolean();
-            m_CastShadows = a_Stream.ReadBoolean();
-            m_ReceiveShadows = a_Stream.ReadBoolean();
-            if (sourceFile.version[0] < 5) { m_LightmapIndex = a_Stream.ReadByte(); }
+            if (sourceFile.version[0] < 5)
+            {
+                m_Enabled = a_Stream.ReadBoolean();
+                m_CastShadows = a_Stream.ReadByte();
+                m_ReceiveShadows = a_Stream.ReadBoolean();
+                m_LightmapIndex = a_Stream.ReadByte();
+            }
             else
             {
-                a_Stream.Position += 5; //suspicious alignment, could be 2 alignments between bools
+                m_Enabled = a_Stream.ReadBoolean();
+                a_Stream.AlignStream(4);
+                m_CastShadows = a_Stream.ReadByte();
+                m_ReceiveShadows = a_Stream.ReadBoolean();
+                a_Stream.AlignStream(4);
+
                 m_LightmapIndex = a_Stream.ReadUInt16();
                 m_LightmapIndexDynamic = a_Stream.ReadUInt16();
             }
 
             if (version[0] >= 3) { a_Stream.Position += 16; } //m_LightmapTilingOffset vector4d
+            if (sourceFile.version[0] >= 5) { a_Stream.Position += 16; } //Vector4f m_LightmapTilingOffsetDynamic
 
             m_Materials = new PPtr[a_Stream.ReadInt32()];
             for (int m = 0; m < m_Materials.Length; m++)
