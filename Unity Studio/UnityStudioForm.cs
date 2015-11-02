@@ -53,9 +53,9 @@ namespace Unity_Studio
         private bool isTypeSorted = false;
         private bool isSizeSorted = false;
 
-        //return-to indices for tree search
-        private int lastAFile = 0;
-        private int lastGObject = 0;
+        //tree search
+        private int nextGObject = 0;
+        List<GameObject> treeSrcResults = new List<GameObject>();
 
         //counters for progress bar
         private int totalAssetCount = 0;
@@ -878,19 +878,6 @@ namespace Unity_Studio
             }
         }
 
-        private void recurseTreeCheck(TreeNodeCollection start)
-        {
-            foreach (GameObject GObject in start)
-            {
-                if (GObject.Text.Like(treeSearch.Text))
-                {
-                    GObject.Checked = !GObject.Checked;
-                    if (GObject.Checked) { GObject.EnsureVisible(); }
-                }
-                else { recurseTreeCheck(GObject.Nodes); }
-            }
-        }
-
         private void treeSearch_MouseEnter(object sender, EventArgs e)
         {
             treeTip.Show("Search with * ? widcards. Enter to scroll through results, Ctrl+Enter to select all results.", treeSearch, 5000);
@@ -914,59 +901,57 @@ namespace Unity_Studio
             }
         }
 
+        private void recurseTreeCheck(TreeNodeCollection start)
+        {
+            foreach (GameObject GObject in start)
+            {
+                if (GObject.Text.Like(treeSearch.Text))
+                {
+                    GObject.Checked = !GObject.Checked;
+                    if (GObject.Checked) { GObject.EnsureVisible(); }
+                }
+                else { recurseTreeCheck(GObject.Nodes); }
+            }
+        }
+        
+        private void treeSearch_TextChanged(object sender, EventArgs e)
+        {
+            treeSrcResults.Clear();
+            nextGObject = 0;
+        }
+        
         private void treeSearch_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (e.Control) //toggle all matching nodes //skip children?
+                if (treeSrcResults.Count == 0)
+                {
+                    foreach (var aFile in assetsfileList)
+                    {
+                        foreach (var GObject in aFile.GameObjectList.Values)
+                        {
+                            if (GObject.Text.Like(treeSearch.Text)) { treeSrcResults.Add(GObject); }
+                        }
+                    }
+                }
+
+
+                if (e.Control) //toggle all matching nodes
                 {
                     sceneTreeView.BeginUpdate();
-                    //loop assetsFileList?
-                    /*foreach (var AFile in assetsfileList)
-                    {
-                        foreach (var GObject in AFile.GameObjectList)
-                        {
-                            if (GObject.Text.Like(treeSearch.Text))
-                            {
-                                GObject.Checked = true;
-                                GObject.EnsureVisible();
-                            }
-                        }
-                    }*/
-
-                    //loop TreeView to avoid checking children already checked by parent
+                    //loop TreeView recursively to avoid children already checked by parent
                     recurseTreeCheck(sceneTreeView.Nodes);
                     sceneTreeView.EndUpdate();
                 }
                 else //make visible one by one
                 {
-                    bool foundNode = false;
-
-                    while (!foundNode && lastAFile < assetsfileList.Count)
+                    if (treeSrcResults.Count > 0)
                     {
-                        var AFile = assetsfileList[lastAFile];
-
-                        while (!foundNode && lastGObject < AFile.GameObjectList.Count)
-                        {
-                            var GObject = AFile.GameObjectList[lastGObject];
-                            if (GObject.Text.Like(treeSearch.Text))
-                            {
-                                foundNode = true;
-
-                                GObject.EnsureVisible();
-                                sceneTreeView.SelectedNode = GObject;
-
-                                lastGObject++;
-                                return;
-                            }
-
-                            lastGObject++;
-                        }
-
-                        lastAFile++;
-                        lastGObject = 0;
+                        if (nextGObject > treeSrcResults.Count) { nextGObject = 0; }
+                        treeSrcResults[nextGObject].EnsureVisible();
+                        sceneTreeView.SelectedNode = treeSrcResults[nextGObject];
+                        nextGObject++;
                     }
-                    lastAFile = 0;
                 }
             }
         }
@@ -2171,7 +2156,7 @@ namespace Unity_Studio
                         }
                         #endregion
 
-                        #region UV
+                        #region UV1
                         //does FBX support UVW coordinates?
                         if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length > 0)
                         {
@@ -2203,7 +2188,8 @@ namespace Unity_Studio
 
                             ob.Append("\n\t\t\t}\n\t\t}");
                         }
-
+                        #endregion
+                        #region UV2
                         if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length > 0)
                         {
                             ob.Append("\n\t\tLayerElementUV: 1 {");
@@ -2227,6 +2213,70 @@ namespace Unity_Studio
                                 for (int v = 0; v < remf2Verts; v++)
                                 {
                                     ob.AppendFormat("{0},{1},", m_Mesh.m_UV2[f2Lines * 120 + v * 2], 1 - m_Mesh.m_UV2[f2Lines * 120 + v * 2 + 1]);
+                                }
+                            }
+                            else { ob.Length--; }//remove last newline
+                            ob.Length--;//remove last comma
+
+                            ob.Append("\n\t\t\t}\n\t\t}");
+                        }
+                        #endregion
+                        #region UV3
+                        if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV3 != null && m_Mesh.m_UV3.Length > 0)
+                        {
+                            ob.Append("\n\t\tLayerElementUV: 2 {");
+                            ob.Append("\n\t\t\tVersion: 101");
+                            ob.Append("\n\t\t\tName: \"UVChannel_3\"");
+                            ob.Append("\n\t\t\tMappingInformationType: \"ByVertice\"");
+                            ob.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+                            ob.AppendFormat("\n\t\t\tUV: *{0} {{\n\t\t\ta: ", m_Mesh.m_UV3.Length);
+
+                            for (int l = 0; l < f2Lines; l++)
+                            {
+                                for (int v = 0; v < 60; v++)
+                                {
+                                    ob.AppendFormat("{0},{1},", m_Mesh.m_UV3[l * 120 + v * 2], 1 - m_Mesh.m_UV3[l * 120 + v * 2 + 1]);
+                                }
+                                ob.Append("\n");
+                            }
+
+                            if (remf2Verts != 0)
+                            {
+                                for (int v = 0; v < remf2Verts; v++)
+                                {
+                                    ob.AppendFormat("{0},{1},", m_Mesh.m_UV3[f2Lines * 120 + v * 2], 1 - m_Mesh.m_UV3[f2Lines * 120 + v * 2 + 1]);
+                                }
+                            }
+                            else { ob.Length--; }//remove last newline
+                            ob.Length--;//remove last comma
+
+                            ob.Append("\n\t\t\t}\n\t\t}");
+                        }
+                        #endregion
+                        #region UV4
+                        if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV4 != null && m_Mesh.m_UV4.Length > 0)
+                        {
+                            ob.Append("\n\t\tLayerElementUV: 3 {");
+                            ob.Append("\n\t\t\tVersion: 101");
+                            ob.Append("\n\t\t\tName: \"UVChannel_4\"");
+                            ob.Append("\n\t\t\tMappingInformationType: \"ByVertice\"");
+                            ob.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+                            ob.AppendFormat("\n\t\t\tUV: *{0} {{\n\t\t\ta: ", m_Mesh.m_UV4.Length);
+
+                            for (int l = 0; l < f2Lines; l++)
+                            {
+                                for (int v = 0; v < 60; v++)
+                                {
+                                    ob.AppendFormat("{0},{1},", m_Mesh.m_UV4[l * 120 + v * 2], 1 - m_Mesh.m_UV4[l * 120 + v * 2 + 1]);
+                                }
+                                ob.Append("\n");
+                            }
+
+                            if (remf2Verts != 0)
+                            {
+                                for (int v = 0; v < remf2Verts; v++)
+                                {
+                                    ob.AppendFormat("{0},{1},", m_Mesh.m_UV4[f2Lines * 120 + v * 2], 1 - m_Mesh.m_UV4[f2Lines * 120 + v * 2 + 1]);
                                 }
                             }
                             else { ob.Length--; }//remove last newline
@@ -2322,6 +2372,28 @@ namespace Unity_Studio
                             ob.Append("\n\t\t\t\tTypedIndex: 1");
                             ob.Append("\n\t\t\t}");
                             ob.Append("\n\t\t}"); //Layer 1 end
+                        }
+
+                        if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV3 != null && m_Mesh.m_UV3.Length > 0)
+                        {
+                            ob.Append("\n\t\tLayer: 2 {");
+                            ob.Append("\n\t\t\tVersion: 100");
+                            ob.Append("\n\t\t\tLayerElement:  {");
+                            ob.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+                            ob.Append("\n\t\t\t\tTypedIndex: 2");
+                            ob.Append("\n\t\t\t}");
+                            ob.Append("\n\t\t}"); //Layer 2 end
+                        }
+
+                        if ((bool)Properties.Settings.Default["exportUVs"] && m_Mesh.m_UV4 != null && m_Mesh.m_UV4.Length > 0)
+                        {
+                            ob.Append("\n\t\tLayer: 3 {");
+                            ob.Append("\n\t\t\tVersion: 100");
+                            ob.Append("\n\t\t\tLayerElement:  {");
+                            ob.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+                            ob.Append("\n\t\t\t\tTypedIndex: 3");
+                            ob.Append("\n\t\t\t}");
+                            ob.Append("\n\t\t}"); //Layer 3 end
                         }
                         #endregion
 
@@ -2986,7 +3058,7 @@ namespace Unity_Studio
             lastSelectedItem = null;
             lastLoadedAsset = null;
 
-            //FMODinit();
+            FMODinit();
 
         }
 

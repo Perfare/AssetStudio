@@ -116,6 +116,8 @@ namespace Unity_Studio
         public float[] m_Colors;
         public float[] m_UV1;
         public float[] m_UV2;
+        public float[] m_UV3;
+        public float[] m_UV4;
         public float[] m_Tangents;
 
         public class SubMesh
@@ -553,7 +555,7 @@ namespace Unity_Studio
                         m_Channels[c].dimension = a_Stream.ReadByte();
 
                         //calculate stride for Unity 5
-                        singleStreamStride += m_Channels[c].dimension * (m_Channels[c].format % 2 == 0 ? 4 : 2);//fingers crossed!
+                        singleStreamStride += m_Channels[c].dimension * (4 / (int)Math.Pow(2, m_Channels[c].format));
                     }
 
                     if (version[0] < 5)
@@ -586,7 +588,7 @@ namespace Unity_Studio
                 #endregion
 
                 #region compute FvF
-                byte valueBufferSize = 0;
+                int valueBufferSize = 0;
                 byte[] valueBuffer;
                 float[] dstArray;
 
@@ -601,11 +603,16 @@ namespace Unity_Studio
                         {
                             var m_Stream = m_Streams[m_Channel.stream];
 
-                            for (int b = 0; b < 6; b++)
+                            for (int b = 0; b < 8; b++)
                             {
                                 if (m_Stream.channelMask.Get(b))
                                 {
-                                    switch (m_Channel.format)
+                                    // in Unity 4.x the colors channel has 1 dimension, as in 1 color with 4 components
+                                    if (b == 2 && m_Channel.format == 2) { m_Channel.dimension = 4; }
+
+                                    valueBufferSize = 4 / (int)Math.Pow(2, m_Channel.format);
+
+                                    /*switch (m_Channel.format)
                                     {
                                         case 0: //32bit
                                             valueBufferSize = 4;
@@ -615,9 +622,9 @@ namespace Unity_Studio
                                             break;
                                         case 2: //8bit
                                             valueBufferSize = 1;
-                                            m_Channel.dimension = 4;//these are actually groups of 4 components
+                                            m_Channel.dimension = 4;//in older versions this is 1, as in 1 color with 4 components
                                             break;
-                                    }
+                                    }*/
 
                                     valueBuffer = new byte[valueBufferSize];
                                     dstArray = new float[m_VertexCount * m_Channel.dimension];
@@ -634,22 +641,29 @@ namespace Unity_Studio
 
                                     switch (b)
                                     {
-                                        case 0://1
+                                        case 0:
                                             m_Vertices = dstArray;
                                             break;
-                                        case 1://2
+                                        case 1:
                                             m_Normals = dstArray;
                                             break;
-                                        case 2://4
+                                        case 2:
                                             m_Colors = dstArray;
                                             break;
-                                        case 3://8
+                                        case 3:
                                             m_UV1 = dstArray;
                                             break;
-                                        case 4://16
+                                        case 4:
                                             m_UV2 = dstArray;
                                             break;
-                                        case 5://32
+                                        case 5:
+                                            if (version[0] == 5) { m_UV3 = dstArray; }
+                                            else { m_Tangents = dstArray; }
+                                            break;
+                                        case 6:
+                                            m_UV4 = dstArray;
+                                            break;
+                                        case 7:
                                             m_Tangents = dstArray;
                                             break;
                                     }
@@ -799,12 +813,30 @@ namespace Unity_Studio
                         m_UV1[v] = (float)m_UV_Unpacked[v] / bitmax * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
                     }
 
-                    if (m_UV_Packed.m_NumItems == m_VertexCount * 4)
+                    if (m_UV_Packed.m_NumItems >= m_VertexCount * 4)
                     {
                         m_UV2 = new float[m_VertexCount * 2];
                         for (uint v = 0; v < m_VertexCount * 2; v++)
                         {
                             m_UV2[v] = (float)m_UV_Unpacked[v + m_VertexCount * 2] / bitmax * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
+                        }
+
+                        if (m_UV_Packed.m_NumItems >= m_VertexCount * 6)
+                        {
+                            m_UV3 = new float[m_VertexCount * 2];
+                            for (uint v = 0; v < m_VertexCount * 2; v++)
+                            {
+                                m_UV3[v] = (float)m_UV_Unpacked[v + m_VertexCount * 4] / bitmax * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
+                            }
+
+                            if (m_UV_Packed.m_NumItems == m_VertexCount * 8)
+                            {
+                                m_UV4 = new float[m_VertexCount * 2];
+                                for (uint v = 0; v < m_VertexCount * 2; v++)
+                                {
+                                    m_UV4[v] = (float)m_UV_Unpacked[v + m_VertexCount * 6] / bitmax * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
+                                }
+                            }
                         }
                     }
                 }
