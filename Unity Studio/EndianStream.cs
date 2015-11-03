@@ -163,21 +163,24 @@ namespace Unity_Studio
 
         public string ReadAlignedString(int length)
         {
-            
-            byte[] stringData = new byte[length];
-            base.Read(stringData, 0, length);
-            var result = System.Text.Encoding.UTF8.GetString(stringData); //must verify strange characters in PS3
-
-            /*string result = "";
-            char c;
-            for (int i = 0; i < length; i++)
+            if (length > 0 && length < (base.BaseStream.Length - base.BaseStream.Position))//crude failsafe
             {
-                c = (char)base.ReadByte();
-                result += c.ToString();
-            }*/
+                byte[] stringData = new byte[length];
+                base.Read(stringData, 0, length);
+                var result = System.Text.Encoding.UTF8.GetString(stringData); //must verify strange characters in PS3
 
-            AlignStream(4);
-            return result;
+                /*string result = "";
+                char c;
+                for (int i = 0; i < length; i++)
+                {
+                    c = (char)base.ReadByte();
+                    result += c.ToString();
+                }*/
+
+                AlignStream(4);
+                return result;
+            }
+            else { return ""; }
         }
  
         public string ReadStringToNull()

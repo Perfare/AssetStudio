@@ -609,7 +609,6 @@ namespace Unity_Studio
             #region first loop - read asset data & create list
             if (!dontLoadAssetsMenuItem.Checked)
             {
-                StatusStripUpdate("Building asset list...");
                 assetListView.BeginUpdate();
                 progressBar1.Value = 0;
                 progressBar1.Maximum = totalAssetCount;
@@ -618,6 +617,8 @@ namespace Unity_Studio
 
                 foreach (var assetsFile in assetsfileList)
                 {
+                    StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
+
                     var a_Stream = assetsFile.a_Stream;
                     var fileGen = assetsFile.fileGen;
                     //var m_version = assetsFile.m_version;
@@ -764,13 +765,13 @@ namespace Unity_Studio
             #region second loop - build tree structure
             if (!dontBuildHierarchyMenuItem.Checked)
             {
-                StatusStripUpdate("Building tree structure...");
                 sceneTreeView.BeginUpdate();
                 progressBar1.Value = 0;
                 progressBar1.Maximum = totalTreeNodes;
 
                 foreach (var assetsFile in assetsfileList)
                 {
+                    StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
                     fileNode.Text = Path.GetFileName(assetsFile.filePath);
 
@@ -1049,6 +1050,7 @@ namespace Unity_Studio
             fontPreviewBox.Visible = false;
             FMODpanel.Visible = false;
             lastLoadedAsset = null;
+            StatusStripUpdate("");
 
             FMOD.RESULT result;
             if (sound != null)
@@ -1147,6 +1149,7 @@ namespace Unity_Studio
                             previewPanel.BackgroundImage = imageTexture;
                             previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
                         }
+                        else { StatusStripUpdate("Unsupported image for preview. Try to export."); }
                         break;
                     }
                 #endregion
@@ -1202,7 +1205,7 @@ namespace Unity_Studio
                             ERRCHECK(result);
                             FMODinfoLabel.Text = FMODfrequency.ToString() + " Hz";
                         }
-                        else { StatusStripUpdate("Unsuported format"); }
+                        else { StatusStripUpdate("Unsuported audio format"); }
                         break;
                     }
                 #endregion
@@ -1225,7 +1228,7 @@ namespace Unity_Studio
                     {
                         unityFont m_Font = new unityFont(asset);
                         
-                        if (m_Font.extension != ".otf" && m_Font.m_FontData.Length > 0)
+                        if (m_Font.extension != ".otf" && m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
                             Marshal.Copy(m_Font.m_FontData, 0, data, m_Font.m_FontData.Length);
@@ -1266,6 +1269,7 @@ namespace Unity_Studio
                             fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
                             fontPreviewBox.Visible = true;
                         }
+                        else { StatusStripUpdate("Unsupported font for preview. Try to export."); }
 
                         break;
                     }
@@ -2921,25 +2925,28 @@ namespace Unity_Studio
                     {
                         unityFont m_Font = new unityFont(asset);
 
-                        string fontPath = exportPath + "\\" + asset.Text;
-                        if (uniqueNames.Checked) { fontPath += " #" + asset.uniqueID; }
-                        fontPath += m_Font.extension;
-
-                        if (File.Exists(fontPath))
+                        if (m_Font.m_FontData != null)
                         {
-                            StatusStripUpdate("Font file " + Path.GetFileName(fontPath) + " already exists");
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Exporting Font: " + Path.GetFileName(fontPath));
+                            string fontPath = exportPath + "\\" + asset.Text;
+                            if (uniqueNames.Checked) { fontPath += " #" + asset.uniqueID; }
+                            fontPath += m_Font.extension;
 
-                            using (BinaryWriter writer = new BinaryWriter(File.Open(fontPath, FileMode.Create)))
+                            if (File.Exists(fontPath))
                             {
-                                writer.Write(m_Font.m_FontData);
-                                writer.Close();
+                                StatusStripUpdate("Font file " + Path.GetFileName(fontPath) + " already exists");
                             }
+                            else
+                            {
+                                StatusStripUpdate("Exporting Font: " + Path.GetFileName(fontPath));
 
-                            exportCount += 1;
+                                using (BinaryWriter writer = new BinaryWriter(File.Open(fontPath, FileMode.Create)))
+                                {
+                                    writer.Write(m_Font.m_FontData);
+                                    writer.Close();
+                                }
+
+                                exportCount += 1;
+                            }
                         }
                         break;
                     }

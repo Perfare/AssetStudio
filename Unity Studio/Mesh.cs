@@ -81,11 +81,11 @@ So Unity adds a -90 degree rotation, similar to the FBX PreRotation, to bring th
 Except it does it as a regular rotation, and combines it with any other rotations in the Transform asset.
 
 Converting from Unity back to FBX, the same vertex conversion cannot be applied because we have to take into account the rotation.
-Option 0: convert vertices and transformations as -X,Y,Z and set FBX option to Y-up without PreRotation!
+Option 0: export vertices and transformations as -X,Y,Z and set FBX option to Y-up without PreRotation!
 the result will be Max Z = FBX Y, Max -Y = FBX Z, Max X = FBX X => final order -X -Z Y
-Option 1: convert vertices and transformations as -X,-Z,Y and set FBX options as "Z-up".
+Option 1: export vertices and transformations as -X,-Z,Y and set FBX options as "Z-up".
 The -90 rotation exported from Unity will bring the model in correct orientation.
-Option 2: convert vertices and transformations as -X,-Y,-Z, add -90 PreRotation to every Mesh Node and set FBX options as "Y-up".
+Option 2: export vertices and transformations as -X,-Y,-Z, add -90 PreRotation to every Mesh Node and set FBX options as "Y-up".
 The -90 rotation from Unity plus the -90 PreRotation will bring the model in correct orientation.
 Remember though that the PreRotation is baked into the Geometry.
 

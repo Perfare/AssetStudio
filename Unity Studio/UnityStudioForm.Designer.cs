@@ -100,6 +100,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.saveFolderDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
+            this.FMODcopyright = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -552,6 +553,7 @@
             // 
             this.FMODpanel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.FMODpanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.FMODpanel.Controls.Add(this.FMODcopyright);
             this.FMODpanel.Controls.Add(this.FMODinfoLabel);
             this.FMODpanel.Controls.Add(this.FMODtimerLabel);
             this.FMODpanel.Controls.Add(this.FMODstatusLabel);
@@ -801,6 +803,16 @@
             this.saveFolderDialog1.RestoreDirectory = true;
             this.saveFolderDialog1.Title = "Browse for folder";
             // 
+            // FMODcopyright
+            // 
+            this.FMODcopyright.AutoSize = true;
+            this.FMODcopyright.ForeColor = System.Drawing.SystemColors.ControlLight;
+            this.FMODcopyright.Location = new System.Drawing.Point(117, 187);
+            this.FMODcopyright.Name = "FMODcopyright";
+            this.FMODcopyright.Size = new System.Drawing.Size(283, 13);
+            this.FMODcopyright.TabIndex = 9;
+            this.FMODcopyright.Text = "Audio Engine supplied by FMOD by Firelight Technologies.";
+            // 
             // UnityStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -917,6 +929,7 @@
         private System.Windows.Forms.TextBox classTextBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
+        private System.Windows.Forms.Label FMODcopyright;
     }
 }
 
