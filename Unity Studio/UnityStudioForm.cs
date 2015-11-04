@@ -14,10 +14,9 @@ using Tao.DevIl;
 using System.Web.Script.Serialization;
 
 
-//Load parent nodes even if they are not selected to provide transformations?
-//For extracting bundles, first check if file exists then decompress
-
-//rigurous search for search files; look into Path.Combine
+/*TODO
+Load parent nodes even if they are not selected to provide transformations?
+For extracting bundles, first check if file exists then decompress*/
 
 namespace Unity_Studio
 {
@@ -25,8 +24,8 @@ namespace Unity_Studio
     {
         private List<string> unityFiles = new List<string>(); //files to load
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
-        private List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all listItems while the list is being filtered
-        private List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the listView
+        private List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
+        private List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
         private AssetPreloadData lastSelectedItem = null;
         private AssetPreloadData lastLoadedAsset = null;
         //private AssetsFile mainDataFile = null;
@@ -40,7 +39,6 @@ namespace Unity_Studio
         private FMOD.Sound sound = null;
         private FMOD.Channel channel = null;
         private FMOD.SoundGroup masterSoundGroup = null;
-        
         private FMOD.MODE loopMode = FMOD.MODE.LOOP_OFF;
         private uint FMODlenms = 0;
         private float FMODVolume = 0.8f;
@@ -48,10 +46,11 @@ namespace Unity_Studio
 
         private Bitmap imageTexture = null;
 
-        private bool startFilter = false;
-        private bool isNameSorted = false;
-        private bool isTypeSorted = false;
-        private bool isSizeSorted = false;
+        //asset list sortign helpers
+        private int firstSortColumn = -1;
+        private int secondSortColumn = 0;
+        private bool reverseSort = false;
+        private bool enableFiltering = false;
 
         //tree search
         private int nextGObject = 0;
@@ -753,9 +752,10 @@ namespace Unity_Studio
                 visibleAssets = exportableAssets;
                 assetListView.VirtualListSize = visibleAssets.Count;
 
-                assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
-                assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
-                resizeNameColumn();
+                //won't work because ListView is not visible
+                //assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+                //assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
+                //resizeAssetListColumns();
 
                 assetListView.EndUpdate();
                 progressBar1.Value = 0;
@@ -868,6 +868,7 @@ namespace Unity_Studio
             {
                 case 0: treeSearch.Select(); break;
                 case 1:
+                    resizeAssetListColumns(); //required because the ListView is not visible on app launch
                     classPreviewPanel.Visible = false;
                     previewPanel.Visible = true;
                     listSearch.Select();
@@ -966,9 +967,62 @@ namespace Unity_Studio
         }
 
         
+        private void resizeAssetListColumns()
+        {
+            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.HeaderSize);
+            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.HeaderSize);
+            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
+
+            var test = SystemInformation.VerticalScrollBarWidth;
+            var vscroll = ((float)visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
+            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (vscroll ? 25 : 5);
+        }
+
+        private void tabPage2_Resize(object sender, EventArgs e)
+        {
+            resizeAssetListColumns();
+        }
+
+        /*private void splitContainer1_Resize(object sender, EventArgs e)
+        {
+            switch (tabControl1.SelectedIndex)
+            {
+                case 1: resizeAssetListColumns(); break;
+            }
+        }
+
+        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            switch (tabControl1.SelectedIndex)
+            {
+                case 1: resizeAssetListColumns(); break;
+            }
+        }*/
+
+        private void listSearch_Enter(object sender, EventArgs e)
+        {
+            if (listSearch.Text == " Filter ")
+            {
+                listSearch.Text = "";
+                listSearch.ForeColor = System.Drawing.SystemColors.WindowText;
+                enableFiltering = true;
+            }
+        }
+
+        private void listSearch_Leave(object sender, EventArgs e)
+        {
+            if (listSearch.Text == "")
+            {
+                enableFiltering = false;
+                listSearch.Text = " Filter ";
+                listSearch.ForeColor = System.Drawing.SystemColors.GrayText;
+            }
+        }
+
         private void ListSearchTextChanged(object sender, EventArgs e)
         {
-            if (startFilter)
+            if (enableFiltering)
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
@@ -979,65 +1033,49 @@ namespace Unity_Studio
             }
         }
 
-        private void listSearch_Enter(object sender, EventArgs e)
-        {
-            if (listSearch.Text == " Filter ")
-            {
-                listSearch.Text = "";
-                listSearch.ForeColor = System.Drawing.SystemColors.WindowText;
-                startFilter = true;
-            }
-        }
-
-        private void listSearch_Leave(object sender, EventArgs e)
-        {
-            if (listSearch.Text == "")
-            {
-                startFilter = false;
-                listSearch.Text = " Filter ";
-                listSearch.ForeColor = System.Drawing.SystemColors.GrayText;
-            }
-        }
 
         private void assetListView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
+            if (firstSortColumn != e.Column)
+            {
+                reverseSort = false;
+                secondSortColumn = firstSortColumn;
+            }
+            else { reverseSort = !reverseSort; }
+            firstSortColumn = e.Column;
+
             assetListView.BeginUpdate();
             assetListView.SelectedIndices.Clear();
             switch (e.Column)
             {
                 case 0:
-                    if (isNameSorted) { visibleAssets.Reverse(); }
-                    else
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        visibleAssets.Sort((x, y) => x.Text.CompareTo(y.Text));
-                        isNameSorted = true;
-                    }
-
+                        int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
+                        if (xdiff != 0) return xdiff;
+                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.exportSize.CompareTo(b.exportSize);
+                    });
                     break;
                 case 1:
-                    if (isTypeSorted) { visibleAssets.Reverse(); }
-                    else
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        visibleAssets.Sort((x, y) => x.TypeString.CompareTo(y.TypeString));
-                        isTypeSorted = true;
-                    }
+                        int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
+                        if (xdiff != 0) return xdiff;
+                        else return secondSortColumn == 2 ? a.exportSize.CompareTo(b.exportSize) : a.Text.CompareTo(b.Text);
+                    });
                     break;
                 case 2:
-                    if (isSizeSorted) { visibleAssets.Reverse(); }
-                    else
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        visibleAssets.Sort((x, y) => x.exportSize.CompareTo(y.exportSize));
-                        isSizeSorted = true;
-                    }
+                        int xdiff = reverseSort ? b.exportSize.CompareTo(a.exportSize) : a.exportSize.CompareTo(b.exportSize);
+                        if (xdiff != 0) return xdiff;
+                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
+                    });
                     break;
             }
             assetListView.EndUpdate();
-        }
 
-        private void resizeNameColumn()
-        {
-            var vscroll = ((float)assetListView.VirtualListSize / (float)assetListView.Height) > 0.0567f;
-            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (vscroll ? 25 : 5);
+            resizeAssetListColumns();
         }
 
         private void selectAsset(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -1086,23 +1124,6 @@ namespace Unity_Studio
             if (e.IsSelected)
             {
                 classTextBox.Text = ((ClassStrStruct)classesListView.SelectedItems[0]).members;
-            }
-        }
-
-
-        private void splitContainer1_Resize(object sender, EventArgs e)
-        {
-            switch (tabControl1.TabIndex)
-            {
-                case 1: resizeNameColumn(); break;
-            }
-        }
-
-        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-            switch (tabControl1.TabIndex)
-            {
-                case 1: resizeNameColumn(); break;
             }
         }
 
@@ -1158,7 +1179,7 @@ namespace Unity_Studio
                     {
                         AudioClip m_AudioClip = new AudioClip(asset, true);
 
-                        if (m_AudioClip.m_Type != 22 && m_AudioClip.m_Type != 1)
+                        if (m_AudioClip.m_Type == 13 && m_AudioClip.m_Type == 14 && m_AudioClip.m_Type == 20)
                         {
                             //MemoryStream memoryStream = new MemoryStream(m_AudioData, true);
                             //System.Media.SoundPlayer soundPlayer = new System.Media.SoundPlayer(memoryStream);
@@ -3030,7 +3051,6 @@ namespace Unity_Studio
             enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
             openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
             assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
-            resizeNameColumn();
         }
 
         private void resetForm()
@@ -3064,6 +3084,10 @@ namespace Unity_Studio
             fontPreviewBox.Visible = false;
             lastSelectedItem = null;
             lastLoadedAsset = null;
+            firstSortColumn = -1;
+            secondSortColumn = 0;
+            reverseSort = false;
+            enableFiltering = false;
 
             FMODinit();
 

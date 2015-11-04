@@ -62,7 +62,6 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.sceneTreeView = new Unity_Studio.GOHierarchy();
             this.treeSearch = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.assetListView = new System.Windows.Forms.ListView();
@@ -75,6 +74,7 @@
             this.previewPanel = new System.Windows.Forms.Panel();
             this.assetInfoLabel = new System.Windows.Forms.Label();
             this.FMODpanel = new System.Windows.Forms.Panel();
+            this.FMODcopyright = new System.Windows.Forms.Label();
             this.FMODinfoLabel = new System.Windows.Forms.Label();
             this.FMODtimerLabel = new System.Windows.Forms.Label();
             this.FMODstatusLabel = new System.Windows.Forms.Label();
@@ -100,7 +100,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.saveFolderDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
-            this.FMODcopyright = new System.Windows.Forms.Label();
+            this.sceneTreeView = new Unity_Studio.GOHierarchy();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -391,8 +391,6 @@
             this.splitContainer1.SplitterDistance = 420;
             this.splitContainer1.TabIndex = 2;
             this.splitContainer1.TabStop = false;
-            this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer1_SplitterMoved);
-            this.splitContainer1.Resize += new System.EventHandler(this.splitContainer1_Resize);
             // 
             // tabControl1
             // 
@@ -419,17 +417,6 @@
             this.tabPage1.Text = "Scene Hierarchy";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // sceneTreeView
-            // 
-            this.sceneTreeView.CheckBoxes = true;
-            this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sceneTreeView.HideSelection = false;
-            this.sceneTreeView.Location = new System.Drawing.Point(0, 20);
-            this.sceneTreeView.Name = "sceneTreeView";
-            this.sceneTreeView.Size = new System.Drawing.Size(410, 588);
-            this.sceneTreeView.TabIndex = 1;
-            this.sceneTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.sceneTreeView_AfterCheck);
-            // 
             // treeSearch
             // 
             this.treeSearch.Dock = System.Windows.Forms.DockStyle.Top;
@@ -455,6 +442,7 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Asset List";
             this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabPage2.Resize += new System.EventHandler(this.tabPage2_Resize);
             // 
             // assetListView
             // 
@@ -491,6 +479,7 @@
             // columnHeaderSize
             // 
             this.columnHeaderSize.Text = "Size";
+            this.columnHeaderSize.Width = 23;
             // 
             // listSearch
             // 
@@ -568,6 +557,16 @@
             this.FMODpanel.Size = new System.Drawing.Size(400, 200);
             this.FMODpanel.TabIndex = 2;
             this.FMODpanel.Visible = false;
+            // 
+            // FMODcopyright
+            // 
+            this.FMODcopyright.AutoSize = true;
+            this.FMODcopyright.ForeColor = System.Drawing.SystemColors.ControlLight;
+            this.FMODcopyright.Location = new System.Drawing.Point(117, 187);
+            this.FMODcopyright.Name = "FMODcopyright";
+            this.FMODcopyright.Size = new System.Drawing.Size(283, 13);
+            this.FMODcopyright.TabIndex = 9;
+            this.FMODcopyright.Text = "Audio Engine supplied by FMOD by Firelight Technologies.";
             // 
             // FMODinfoLabel
             // 
@@ -803,15 +802,16 @@
             this.saveFolderDialog1.RestoreDirectory = true;
             this.saveFolderDialog1.Title = "Browse for folder";
             // 
-            // FMODcopyright
+            // sceneTreeView
             // 
-            this.FMODcopyright.AutoSize = true;
-            this.FMODcopyright.ForeColor = System.Drawing.SystemColors.ControlLight;
-            this.FMODcopyright.Location = new System.Drawing.Point(117, 187);
-            this.FMODcopyright.Name = "FMODcopyright";
-            this.FMODcopyright.Size = new System.Drawing.Size(283, 13);
-            this.FMODcopyright.TabIndex = 9;
-            this.FMODcopyright.Text = "Audio Engine supplied by FMOD by Firelight Technologies.";
+            this.sceneTreeView.CheckBoxes = true;
+            this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.sceneTreeView.HideSelection = false;
+            this.sceneTreeView.Location = new System.Drawing.Point(0, 20);
+            this.sceneTreeView.Name = "sceneTreeView";
+            this.sceneTreeView.Size = new System.Drawing.Size(410, 588);
+            this.sceneTreeView.TabIndex = 1;
+            this.sceneTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.sceneTreeView_AfterCheck);
             // 
             // UnityStudioForm
             // 

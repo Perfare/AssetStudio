@@ -105,6 +105,10 @@ namespace Unity_Studio
                     extension = ".fsb";
                     preloadData.InfoText += "FSB";
                     break;
+                case 2://FSB5
+                    extension = ".fsb";
+                    preloadData.InfoText += "FSB";
+                    break;
                 case 13:
                     extension = ".mp3";
                     preloadData.InfoText += "MP3";
