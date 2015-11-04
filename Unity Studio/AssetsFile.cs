@@ -16,6 +16,7 @@ namespace Unity_Studio
         public int[] version = new int[4] { 0, 0, 0, 0 };
         public string[] buildType;
         public int platform = 100663296;
+        public string platformStr = "";
         //public EndianType endianType = EndianType.BigEndian;
         //public List<AssetPreloadData> preloadTable = new List<AssetPreloadData>();
         public Dictionary<long, AssetPreloadData> preloadTable = new Dictionary<long, AssetPreloadData>();
@@ -105,21 +106,22 @@ namespace Unity_Studio
                 a_Stream.endian = EndianType.LittleEndian;
             }
 
-            /*Platform list:
-               -2:  unitypackage
-                4:  OSX
-                5:  PC
-                6:  Web
-                7:  Web_streamed
-                9:  iOS
-                10: PS3(big)
-                11: Xbox360(big)
-                13: Android
-                16: Google_NaCl
-                21: WP8
-                25: Linux
-            */
-
+            switch (platform)
+            {
+                case -2: platformStr = "Unity Package"; break;
+                case 4: platformStr = "OSX"; break;
+                case 5: platformStr = "PC"; break;
+                case 6: platformStr = "Web"; break;
+                case 7: platformStr = "Web streamed"; break;
+                case 9: platformStr = "iOS"; break;
+                case 10: platformStr = "PS3"; break;
+                case 11: platformStr = "Xbox 360"; break;
+                case 13: platformStr = "Android"; break;
+                case 16: platformStr = "Google NaCl"; break;
+                case 21: platformStr = "WP8"; break;
+                case 25: platformStr = "Linux"; break;
+            }
+            
             int baseCount = a_Stream.ReadInt32();
             for (int i = 0; i < baseCount; i++)
             {

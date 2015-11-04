@@ -16,7 +16,9 @@ using System.Web.Script.Serialization;
 
 /*TODO
 Load parent nodes even if they are not selected to provide transformations?
-For extracting bundles, first check if file exists then decompress*/
+For extracting bundles, first check if file exists then decompress
+Double-check channelgroup argument in new FMOD Studio API system.playSound method
+*/
 
 namespace Unity_Studio
 {
@@ -39,6 +41,7 @@ namespace Unity_Studio
         private FMOD.Sound sound = null;
         private FMOD.Channel channel = null;
         private FMOD.SoundGroup masterSoundGroup = null;
+        //private FMOD.ChannelGroup channelGroup = null;
         private FMOD.MODE loopMode = FMOD.MODE.LOOP_OFF;
         private uint FMODlenms = 0;
         private float FMODVolume = 0.8f;
@@ -46,7 +49,7 @@ namespace Unity_Studio
 
         private Bitmap imageTexture = null;
 
-        //asset list sortign helpers
+        //asset list sorting helpers
         private int firstSortColumn = -1;
         private int secondSortColumn = 0;
         private bool reverseSort = false;
@@ -518,33 +521,27 @@ namespace Unity_Studio
                         {
                             FMODpanel.Visible = !FMODpanel.Visible;
 
-                            FMOD.RESULT result;
-
-                            if (channel != null)
+                            if (sound != null && channel != null)
                             {
+                                FMOD.RESULT result;
+
                                 bool playing = false;
-                                result = channel.isPlaying(ref playing);
+                                result = channel.isPlaying(out playing);
                                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                                 {
                                     ERRCHECK(result);
                                 }
 
-                                if (playing)
+                                if (playing) //stop previous sound
                                 {
                                     result = channel.stop();
                                     ERRCHECK(result);
 
-                                    //channel = null;
-                                    timer.Stop();
-                                    FMODtimerLabel.Text = "0:00.0 / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100); ;
-                                    FMODstatusLabel.Text = "Stopped";
-                                    FMODprogressBar.Value = 0;
-                                    FMODpauseButton.Text = "Pause";
-                                    //FMODinfoLabel.Text = "";
+                                    FMODreset();
                                 }
                                 else if (enablePreview.Checked)
                                 {
-                                    result = system.playSound(FMOD.CHANNELINDEX.FREE, sound, false, ref channel);
+                                    result = system.playSound(sound, null, false, out channel);
                                     ERRCHECK(result);
 
                                     timer.Start();
@@ -733,7 +730,7 @@ namespace Unity_Studio
                                 {
                                     PlayerSettings plSet = new PlayerSettings(asset);
                                     productName = plSet.productName;
-                                    base.Text = "Unity Studio - " + productName + " - " + assetsFile.m_Version;
+                                    base.Text = "Unity Studio - " + productName + " - " + assetsFile.m_Version + " - " + assetsFile.platformStr; ;
                                     break;
                                 }
 
@@ -1090,18 +1087,7 @@ namespace Unity_Studio
             lastLoadedAsset = null;
             StatusStripUpdate("");
 
-            FMOD.RESULT result;
-            if (sound != null)
-            {
-                result = sound.release();
-                ERRCHECK(result);
-            }
-            sound = null;
-            timer.Stop();
-            FMODtimerLabel.Text = "0:00.0 / 0:00.0";
-            FMODstatusLabel.Text = "Stopped";
-            FMODprogressBar.Value = 0;
-            FMODinfoLabel.Text = "";
+            FMODreset();
 
             lastSelectedItem = (AssetPreloadData)e.Item;
 
@@ -1179,54 +1165,39 @@ namespace Unity_Studio
                     {
                         AudioClip m_AudioClip = new AudioClip(asset, true);
 
-                        if (m_AudioClip.m_Type == 13 && m_AudioClip.m_Type == 14 && m_AudioClip.m_Type == 20)
+                        //MemoryStream memoryStream = new MemoryStream(m_AudioData, true);
+                        //System.Media.SoundPlayer soundPlayer = new System.Media.SoundPlayer(memoryStream);
+                        //soundPlayer.Play();
+
+                        FMOD.RESULT result;
+                        FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
+                        
+                        exinfo.cbsize = Marshal.SizeOf(exinfo);
+                        exinfo.length = (uint)m_AudioClip.m_Size;
+
+                        result = system.createSound(m_AudioClip.m_AudioData, (FMOD.MODE.OPENMEMORY | loopMode), ref exinfo, out sound);
+                        if (ERRCHECK(result)) { break; }
+
+                        result = sound.getLength(out FMODlenms, FMOD.TIMEUNIT.MS);
+                        if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                         {
-                            //MemoryStream memoryStream = new MemoryStream(m_AudioData, true);
-                            //System.Media.SoundPlayer soundPlayer = new System.Media.SoundPlayer(memoryStream);
-                            //soundPlayer.Play();
-
-                            //uint version = 0;
-                            FMOD.RESULT result;
-                            FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
-
-                            /*result = FMOD.Factory.System_Create(ref system);
-                            ERRCHECK(result);
-
-                            result = system.getVersion(ref version);
-                            ERRCHECK(result);
-                            if (version < FMOD.VERSION.number)
-                            {
-                                MessageBox.Show("Error!  You are using an old version of FMOD " + version.ToString("X") + ".  This program requires " + FMOD.VERSION.number.ToString("X") + ".");
-                                Application.Exit();
-                            }
-
-                            result = system.init(1, FMOD.INITFLAGS.NORMAL, (IntPtr)null);
-                            ERRCHECK(result);*/
-
-                            exinfo.cbsize = Marshal.SizeOf(exinfo);
-                            exinfo.length = (uint)m_AudioClip.m_Size;
-
-                            result = system.createSound(m_AudioClip.m_AudioData, (FMOD.MODE.HARDWARE | FMOD.MODE.OPENMEMORY | loopMode), ref exinfo, ref sound);
-                            ERRCHECK(result);
-
-                            result = system.playSound(FMOD.CHANNELINDEX.FREE, sound, false, ref channel);
-                            ERRCHECK(result);
-
-                            result = sound.getLength(ref FMODlenms, FMOD.TIMEUNIT.MS);
-                            if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
-                            {
-                                ERRCHECK(result);
-                            }
-
-                            timer.Start();
-                            FMODstatusLabel.Text = "Playing";
-                            FMODpanel.Visible = true;
-
-                            result = channel.getFrequency(ref FMODfrequency);
-                            ERRCHECK(result);
-                            FMODinfoLabel.Text = FMODfrequency.ToString() + " Hz";
+                            if (ERRCHECK(result)) { break; }
                         }
-                        else { StatusStripUpdate("Unsuported audio format"); }
+
+                        result = system.playSound(sound, null, false, out channel);
+                        if (ERRCHECK(result)) { break; }
+
+                        timer.Start();
+                        FMODstatusLabel.Text = "Playing";
+                        FMODpanel.Visible = true;
+
+                        //result = channel.getChannelGroup(out channelGroup);
+                        //if (ERRCHECK(result)) { break; }
+
+                        result = channel.getFrequency(out FMODfrequency);
+                        ERRCHECK(result);
+
+                        FMODinfoLabel.Text = FMODfrequency.ToString() + " Hz";
                         break;
                     }
                 #endregion
@@ -1337,25 +1308,15 @@ namespace Unity_Studio
 
         private void FMODinit()
         {
+            FMODreset();
+
             FMOD.RESULT result;
-            timer.Stop();
-            FMODtimerLabel.Text = "0:00.0 / 0:00.0";
-            FMODstatusLabel.Text = "Stopped";
-            FMODprogressBar.Value = 0;
-
-            if (sound != null)
-            {
-                result = sound.release();
-                ERRCHECK(result);
-                sound = null;
-            }
-
             uint version = 0;
 
-            result = FMOD.Factory.System_Create(ref system);
-            ERRCHECK(result);
+            result = FMOD.Factory.System_Create(out system);
+            if (ERRCHECK(result)) { return; }
 
-            result = system.getVersion(ref version);
+            result = system.getVersion(out version);
             ERRCHECK(result);
             if (version < FMOD.VERSION.number)
             {
@@ -1364,53 +1325,75 @@ namespace Unity_Studio
             }
 
             result = system.init(1, FMOD.INITFLAGS.NORMAL, (IntPtr)null);
-            ERRCHECK(result);
+            if (ERRCHECK(result)) { return; }
 
-            result = system.getMasterSoundGroup(ref masterSoundGroup);
-            ERRCHECK(result);
+            //result = system.getMasterChannelGroup(out channelGroup);
+            //if (ERRCHECK(result)) { return; }
+
+            result = system.getMasterSoundGroup(out masterSoundGroup);
+            if (ERRCHECK(result)) { return; }
 
             result = masterSoundGroup.setVolume(FMODVolume);
-            ERRCHECK(result);
+            if (ERRCHECK(result)) { return; }
+        }
+
+        private void FMODreset()
+        {
+            FMOD.RESULT result;
+            timer.Stop();
+            FMODprogressBar.Value = 0;
+            FMODtimerLabel.Text = "0:00.0 / 0:00.0";
+            FMODstatusLabel.Text = "Stopped";
+            FMODinfoLabel.Text = "";
+
+            if (sound != null)
+            {
+                result = sound.release();
+                if (result != FMOD.RESULT.OK) { StatusStripUpdate("FMOD error! " + result + " - " + FMOD.Error.String(result)); }
+                sound = null;
+            }
         }
 
         private void FMODplayButton_Click(object sender, EventArgs e)
         {
             FMOD.RESULT result;
-            if (channel != null)
+            if (sound != null && channel != null)
             {
                 timer.Start();
                 bool playing = false;
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 if (playing)
                 {
                     result = channel.stop();
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
 
-                    result = system.playSound(FMOD.CHANNELINDEX.FREE, sound, false, ref channel);
-                    ERRCHECK(result);
+                    result = system.playSound(sound, null, false, out channel);
+                    if (ERRCHECK(result)) { return; }
 
                     FMODpauseButton.Text = "Pause";
                 }
                 else
                 {
-                    result = system.playSound(FMOD.CHANNELINDEX.FREE, sound, false, ref channel);
-                    ERRCHECK(result);
+                    result = system.playSound(sound, null, false, out channel);
+                    if (ERRCHECK(result)) { return; }
                     FMODstatusLabel.Text = "Playing";
                     //FMODinfoLabel.Text = FMODfrequency.ToString();
 
-                    uint newms = 0;
-
-                    newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
-
-                    result = channel.setPosition(newms, FMOD.TIMEUNIT.MS);
-                    if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
+                    if (FMODprogressBar.Value > 0)
                     {
-                        ERRCHECK(result);
+                        uint newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
+
+                        result = channel.setPosition(newms, FMOD.TIMEUNIT.MS);
+                        if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
+                        {
+                            if (ERRCHECK(result)) { return; }
+                        }
+
                     }
                 }
             }
@@ -1420,23 +1403,23 @@ namespace Unity_Studio
         {
             FMOD.RESULT result;
 
-            if (channel != null)
+            if (sound != null && channel != null)
             {
                 bool playing = false;
                 bool paused = false;
 
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 if (playing)
                 {
-                    result = channel.getPaused(ref paused);
-                    ERRCHECK(result);
+                    result = channel.getPaused(out paused);
+                    if (ERRCHECK(result)) { return; }
                     result = channel.setPaused(!paused);
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
 
                     //FMODstatusLabel.Text = (!paused ? "Paused" : playing ? "Playing" : "Stopped");
                     //FMODpauseButton.Text = (!paused ? "Resume" : playing ? "Pause" : "Pause");
@@ -1463,23 +1446,23 @@ namespace Unity_Studio
             if (channel != null)
             {
                 bool playing = false;
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 if (playing)
                 {
                     result = channel.stop();
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                     //channel = null;
+                    //don't FMODreset, it will nullify the sound
                     timer.Stop();
-                    FMODtimerLabel.Text = "0:00.0 / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100); ;
-                    FMODstatusLabel.Text = "Stopped";
                     FMODprogressBar.Value = 0;
+                    FMODtimerLabel.Text = "0:00.0 / 0:00.0";
+                    FMODstatusLabel.Text = "Stopped";
                     FMODpauseButton.Text = "Pause";
-                    //FMODinfoLabel.Text = "";
                 }
             }
         }
@@ -1500,29 +1483,29 @@ namespace Unity_Studio
             if (sound != null)
             {
                 result = sound.setMode(loopMode);
-                ERRCHECK(result);
+                if (ERRCHECK(result)) { return; }
             }
 
             if (channel != null)
             {
                 bool playing = false;
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 bool paused = false;
-                result = channel.getPaused(ref paused);
+                result = channel.getPaused(out paused);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 if (playing || paused)
                 {
                     result = channel.setMode(loopMode);
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
                 /*else
                 {
@@ -1541,39 +1524,14 @@ namespace Unity_Studio
             FMODVolume = Convert.ToSingle(FMODvolumeBar.Value) / 10;
 
             result = masterSoundGroup.setVolume(FMODVolume);
-            ERRCHECK(result);
-
-            /*if (channel != null)
-            {
-                bool playing = false;
-                result = channel.isPlaying(ref playing);
-                if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
-                {
-                    ERRCHECK(result);
-                }
-
-                bool paused = false;
-                result = channel.getPaused(ref paused);
-                if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
-                {
-                    ERRCHECK(result);
-                }
-
-                if (playing || paused)
-                {
-                    result = channel.setVolume(FMODVolume);
-                    ERRCHECK(result);
-                }
-            }*/
+            if (ERRCHECK(result)) { return; }
         }
 
         private void FMODprogressBar_Scroll(object sender, EventArgs e)
         {
-            uint newms = 0;
-
             if (channel != null)
             {
-                newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
+                uint newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
                 FMODtimerLabel.Text = (newms / 1000 / 60) + ":" + (newms / 1000 % 60) + "." + (newms / 10 % 100) + "/" + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
             }
         }
@@ -1585,25 +1543,24 @@ namespace Unity_Studio
 
         private void FMODprogressBar_MouseUp(object sender, MouseEventArgs e)
         {
-            FMOD.RESULT result;
-            uint newms = 0;
-
             if (channel != null)
             {
-                newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
+                FMOD.RESULT result;
+                
+                uint newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
 
                 result = channel.setPosition(newms, FMOD.TIMEUNIT.MS);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 bool playing = false;
 
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
-                    ERRCHECK(result);
+                    if (ERRCHECK(result)) { return; }
                 }
 
                 if (playing) { timer.Start(); }
@@ -1619,19 +1576,19 @@ namespace Unity_Studio
 
             if (channel != null)
             {
-                result = channel.getPosition(ref ms, FMOD.TIMEUNIT.MS);
+                result = channel.getPosition(out ms, FMOD.TIMEUNIT.MS);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     ERRCHECK(result);
                 }
 
-                result = channel.isPlaying(ref playing);
+                result = channel.isPlaying(out playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     ERRCHECK(result);
                 }
 
-                result = channel.getPaused(ref paused);
+                result = channel.getPaused(out paused);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     ERRCHECK(result);
@@ -1649,14 +1606,17 @@ namespace Unity_Studio
             }
         }
 
-        private void ERRCHECK(FMOD.RESULT result)
+        private bool ERRCHECK(FMOD.RESULT result)
         {
             if (result != FMOD.RESULT.OK)
             {
-                FMODinit();
-                MessageBox.Show("FMOD error! " + result + " - " + FMOD.Error.String(result));
+                //FMODinit();
+                FMODreset();
+                StatusStripUpdate("FMOD error! " + result + " - " + FMOD.Error.String(result));
                 //Environment.Exit(-1);
+                return true;
             }
+            else { return false; }
         }
 
 
@@ -3051,6 +3011,7 @@ namespace Unity_Studio
             enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
             openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
             assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
+            FMODinit();
         }
 
         private void resetForm()
@@ -3089,7 +3050,8 @@ namespace Unity_Studio
             reverseSort = false;
             enableFiltering = false;
 
-            FMODinit();
+            //FMODinit();
+            FMODreset();
 
         }
 

@@ -103,9 +103,9 @@ namespace Unity_Studio
             {
                 case 1:
                     extension = ".fsb";
-                    preloadData.InfoText += "FSB";
+                    preloadData.InfoText += "FSB with substreams";
                     break;
-                case 2://FSB5
+                case 2:
                     extension = ".fsb";
                     preloadData.InfoText += "FSB";
                     break;

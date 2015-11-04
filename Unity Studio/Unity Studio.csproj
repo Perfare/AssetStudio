@@ -139,6 +139,9 @@
     <Compile Include="FBXExport.Designer.cs">
       <DependentUpon>FBXExport.cs</DependentUpon>
     </Compile>
+    <Compile Include="FMOD Studio API\fmod.cs" />
+    <Compile Include="FMOD Studio API\fmod_dsp.cs" />
+    <Compile Include="FMOD Studio API\fmod_errors.cs" />
     <Compile Include="Font.cs" />
     <Compile Include="GOHierarchy.cs">
       <SubType>Component</SubType>
@@ -146,10 +149,6 @@
     <Compile Include="Lz4DecoderStream.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="Mesh.cs" />
-    <Compile Include="FMOD\fmod.cs" />
-    <Compile Include="FMOD\fmod_dsp.cs" />
-    <Compile Include="FMOD\fmod_errors.cs" />
-    <Compile Include="FMOD\fmod_memoryinfo.cs" />
     <Compile Include="GameObject.cs" />
     <Compile Include="helpers.cs" />
     <Compile Include="PlayerSettings.cs" />
@@ -160,25 +159,21 @@
     <Compile Include="TextAsset.cs" />
     <Compile Include="Texture2D.cs" />
     <Compile Include="Transform.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AssetsFile.cs" />
     <Compile Include="UnityStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UnityStudioForm.Designer.cs">
       <DependentUpon>UnityStudioForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AssetsFile.cs" />
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="FBXExport.resx">
       <DependentUpon>FBXExport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UnityStudioForm.resx">
-      <DependentUpon>UnityStudioForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -190,6 +185,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="UnityStudioForm.resx">
+      <DependentUpon>UnityStudioForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -222,6 +221,7 @@
   <ItemGroup>
     <Content Include="unity.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
