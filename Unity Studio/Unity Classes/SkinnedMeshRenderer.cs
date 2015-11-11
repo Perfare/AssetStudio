@@ -15,6 +15,7 @@ namespace Unity_Studio
         public ushort m_LightmapIndexDynamic;
         public PPtr[] m_Materials;
         public PPtr m_Mesh;
+        public PPtr[] m_Bones;
 
         public SkinnedMeshRenderer(AssetPreloadData preloadData)
         {
@@ -98,28 +99,38 @@ namespace Unity_Studio
 
             m_Mesh = sourceFile.ReadPPtr();
 
-            /*int m_Bones_size = a_Stream.ReadInt32();
-            for (int b = 0; b < m_Bones_size; b++)
+            m_Bones = new PPtr[a_Stream.ReadInt32()];
+            for (int b = 0; b < m_Bones.Length; b++)
             {
-                PPtr aBone = sourceFile.ReadPPtr();
+                m_Bones[b] = sourceFile.ReadPPtr();
             }
 
             if (version[0] < 3)
             {
-                int m_BindPose_size = a_Stream.ReadInt32();
-                a_Stream.Position += m_BindPose_size * 16 * 4;//Matrix4x4f
+                int m_BindPose = a_Stream.ReadInt32();
+                a_Stream.Position += m_BindPose * 16 * 4;//Matrix4x4f
             }
-            else if (version[0] >= 3 && version[1] >= 4)
+            else
             {
-                if (version[1] >= 5)
+                if (version[0] >= 4 || (version[0] == 4 && version[1] >= 3))
+                {
+                    int m_BlendShapeWeights = a_Stream.ReadInt32();
+                    a_Stream.Position += m_BlendShapeWeights * 4; //floats
+                }
+
+                if (version[0] >= 4 || (version[0] >= 3 && version[1] >= 5))
                 {
                     PPtr m_RootBone = sourceFile.ReadPPtr();
                 }
-                //AABB
-                float[] m_Center = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-                float[] m_Extent = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-                bool m_DirtyAABB = a_Stream.ReadBoolean();
-            }*/
+
+                if (version[0] >= 4 || (version[0] == 3 && version[1] >= 4))
+                {
+                    //AABB
+                    float[] m_Center = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    float[] m_Extent = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    bool m_DirtyAABB = a_Stream.ReadBoolean();
+                }
+            }
         }
     }
 }

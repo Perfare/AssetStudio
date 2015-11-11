@@ -9,8 +9,8 @@ namespace Unity_Studio
     class AudioClip
     {
         public string m_Name;
-        public int m_Format = 0;
-        public int m_Type;
+        public int m_Format;
+        public int m_Type = -1;
         public bool m_3D;
         public bool m_UseHardware;
 
@@ -25,14 +25,14 @@ namespace Unity_Studio
         public bool m_PreloadAudioData;
         public bool m_LoadInBackground;
         public bool m_Legacy3D;
-        public int m_CompressionFormat;
+        public int m_CompressionFormat = -1;
 
         public string m_Source;
         public long m_Offset;
         public long m_Size;
         public byte[] m_AudioData;
         
-        public string extension;
+        public string extension = "";
 
         public AudioClip(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -73,8 +73,7 @@ namespace Unity_Studio
             }
             else
             {
-                m_LoadType = a_Stream.ReadInt32();
-                m_Type = m_LoadType;
+                m_LoadType = a_Stream.ReadInt32();//Decompress on load, Compressed in memory, Streaming
                 m_Channels = a_Stream.ReadInt32();
                 m_Frequency = a_Stream.ReadInt32();
                 m_BitsPerSample = a_Stream.ReadInt32();
@@ -97,17 +96,13 @@ namespace Unity_Studio
             }
 
             #region Info Text & extension
-            preloadData.InfoText = "Format: " + m_Format + "\nType: ";
+            preloadData.InfoText = "Compression format: ";
 
             switch (m_Type)
             {
-                case 1:
-                    extension = ".fsb";
-                    preloadData.InfoText += "FSB with substreams";
-                    break;
                 case 2:
-                    extension = ".fsb";
-                    preloadData.InfoText += "FSB";
+                    extension = ".aif";
+                    preloadData.InfoText += "AIFF";
                     break;
                 case 13:
                     extension = ".mp3";
@@ -125,11 +120,29 @@ namespace Unity_Studio
                     extension = ".wav";
                     preloadData.InfoText += "Xbox360 WAV";
                     break;
-                default:
-                    preloadData.InfoText += "Unknown type " + m_Type;
+            }
+
+            switch (m_CompressionFormat)
+            {
+                case 0:
+                    extension = ".fsb";
+                    preloadData.InfoText += "PCM";
+                    break;
+                case 1:
+                    extension = ".fsb";
+                    preloadData.InfoText += "Vorbis";
+                    break;
+                case 2:
+                    extension = ".fsb";
+                    preloadData.InfoText += "ADPCM";
+                    break;
+                case 3:
+                    extension = ".fsb";
+                    preloadData.InfoText += "MP3";//not sure
                     break;
             }
 
+            if (extension == "") { preloadData.InfoText += "Unknown"; }
             preloadData.InfoText += "\n3D: " + m_3D.ToString();
             #endregion
 

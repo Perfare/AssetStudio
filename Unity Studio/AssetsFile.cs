@@ -53,20 +53,20 @@ namespace Unity_Studio
 
             switch (fileGen)
             {
-                case 6:
+                case 6://2.5.0 - 2.6.1
                     {
                         a_Stream.Position = (dataEnd - tableSize);
                         a_Stream.Position += 1;
                         break;
                     }
-                case 7://Unity 3 beta
+                case 7://3.0.0 beta
                     {
                         a_Stream.Position = (dataEnd - tableSize);
                         a_Stream.Position += 1;
                         m_Version = a_Stream.ReadStringToNull();
                         break;
                     }
-                case 8:
+                case 8://3.0.0 - 3.4.2
                     {
                         a_Stream.Position = (dataEnd - tableSize);
                         a_Stream.Position += 1;
@@ -74,15 +74,15 @@ namespace Unity_Studio
                         platform = a_Stream.ReadInt32();
                         break;
                     }
-                case 9:
+                case 9://3.5.0 - 4.6.x
                     {
                         a_Stream.Position += 4;//azero
                         m_Version = a_Stream.ReadStringToNull();
                         platform = a_Stream.ReadInt32();
                         break;
                     }
-                case 14:
-                case 15://not fully tested!
+                case 14://5.0.0 beta and final
+                case 15://5.0.1 and up
                     {
                         a_Stream.Position += 4;//azero
                         m_Version = a_Stream.ReadStringToNull();

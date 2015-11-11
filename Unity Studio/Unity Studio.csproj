@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>unity.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\unity.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -128,37 +128,37 @@
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
     <Compile Include="AssetPreloadData.cs" />
-    <Compile Include="AudioClip.cs" />
-    <Compile Include="BuildSettings.cs" />
+    <Compile Include="Unity Classes\AudioClip.cs" />
+    <Compile Include="Unity Classes\BuildSettings.cs" />
     <Compile Include="BundleFile.cs" />
     <Compile Include="ClassIDReference.cs" />
     <Compile Include="EndianStream.cs" />
-    <Compile Include="FBXExport.cs">
+    <Compile Include="ExportOptions.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FBXExport.Designer.cs">
-      <DependentUpon>FBXExport.cs</DependentUpon>
+    <Compile Include="ExportOptions.Designer.cs">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
     </Compile>
     <Compile Include="FMOD Studio API\fmod.cs" />
     <Compile Include="FMOD Studio API\fmod_dsp.cs" />
     <Compile Include="FMOD Studio API\fmod_errors.cs" />
-    <Compile Include="Font.cs" />
+    <Compile Include="Unity Classes\Font.cs" />
     <Compile Include="GOHierarchy.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Lz4DecoderStream.cs" />
-    <Compile Include="Material.cs" />
-    <Compile Include="Mesh.cs" />
-    <Compile Include="GameObject.cs" />
+    <Compile Include="Unity Classes\Material.cs" />
+    <Compile Include="Unity Classes\Mesh.cs" />
+    <Compile Include="Unity Classes\GameObject.cs" />
     <Compile Include="helpers.cs" />
-    <Compile Include="PlayerSettings.cs" />
-    <Compile Include="RectTransform.cs" />
-    <Compile Include="Renderer.cs" />
-    <Compile Include="SkinnedMeshRenderer.cs" />
-    <Compile Include="MeshFilter.cs" />
-    <Compile Include="TextAsset.cs" />
-    <Compile Include="Texture2D.cs" />
-    <Compile Include="Transform.cs" />
+    <Compile Include="Unity Classes\PlayerSettings.cs" />
+    <Compile Include="Unity Classes\RectTransform.cs" />
+    <Compile Include="Unity Classes\Renderer.cs" />
+    <Compile Include="Unity Classes\SkinnedMeshRenderer.cs" />
+    <Compile Include="Unity Classes\MeshFilter.cs" />
+    <Compile Include="Unity Classes\TextAsset.cs" />
+    <Compile Include="Unity Classes\Texture2D.cs" />
+    <Compile Include="Unity Classes\Transform.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AssetsFile.cs" />
@@ -172,8 +172,8 @@
       <DependentUpon>AboutBox.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FBXExport.resx">
-      <DependentUpon>FBXExport.cs</DependentUpon>
+    <EmbeddedResource Include="ExportOptions.resx">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -219,7 +219,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="unity.ico" />
+    <Content Include="7zip\7z.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="FMOD Studio API\fmod.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\unity.ico" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

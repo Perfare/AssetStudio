@@ -21,6 +21,8 @@ namespace Unity_Studio
             exportTangents.Checked = (bool)Properties.Settings.Default["exportTangents"];
             exportUVs.Checked = (bool)Properties.Settings.Default["exportUVs"];
             exportColors.Checked = (bool)Properties.Settings.Default["exportColors"];
+            exportDeformers.Checked = (bool)Properties.Settings.Default["exportDeformers"];
+            convertDummies.Checked = (bool)Properties.Settings.Default["convertDummies"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             upAxis.SelectedIndex = (int)Properties.Settings.Default["upAxis"];
             showExpOpt.Checked = (bool)Properties.Settings.Default["showExpOpt"];
@@ -38,6 +40,7 @@ namespace Unity_Studio
             Properties.Settings.Default["exportTangents"] = exportTangents.Checked;
             Properties.Settings.Default["exportUVs"] = exportUVs.Checked;
             Properties.Settings.Default["exportColors"] = exportColors.Checked;
+            Properties.Settings.Default["exportDeformers"] = exportDeformers.Checked;
             Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
             Properties.Settings.Default["upAxis"] = upAxis.SelectedIndex;
             this.DialogResult = DialogResult.OK;
@@ -48,6 +51,12 @@ namespace Unity_Studio
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void exportDeformers_CheckedChanged(object sender, EventArgs e)
+        {
+            exportOpnions_CheckedChanged(sender, e);
+            convertDummies.Enabled = exportDeformers.Checked;
         }
     }
 }

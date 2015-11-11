@@ -166,5 +166,29 @@ namespace Unity_Studio.Properties {
                 this["showExpOpt"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportDeformers {
+            get {
+                return ((bool)(this["exportDeformers"]));
+            }
+            set {
+                this["exportDeformers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool convertDummies {
+            get {
+                return ((bool)(this["convertDummies"]));
+            }
+            set {
+                this["convertDummies"] = value;
+            }
+        }
     }
 }

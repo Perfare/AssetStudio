@@ -29,10 +29,11 @@
         private void InitializeComponent()
         {
             this.includeBox = new System.Windows.Forms.GroupBox();
+            this.convertDummies = new System.Windows.Forms.CheckBox();
             this.embedBox = new System.Windows.Forms.CheckBox();
             this.lightsBox = new System.Windows.Forms.CheckBox();
             this.camerasBox = new System.Windows.Forms.CheckBox();
-            this.animationBox = new System.Windows.Forms.CheckBox();
+            this.exportDeformers = new System.Windows.Forms.CheckBox();
             this.geometryBox = new System.Windows.Forms.GroupBox();
             this.exportColors = new System.Windows.Forms.CheckBox();
             this.exportUVs = new System.Windows.Forms.CheckBox();
@@ -56,23 +57,35 @@
             // includeBox
             // 
             this.includeBox.AutoSize = true;
+            this.includeBox.Controls.Add(this.convertDummies);
             this.includeBox.Controls.Add(this.embedBox);
             this.includeBox.Controls.Add(this.lightsBox);
             this.includeBox.Controls.Add(this.camerasBox);
-            this.includeBox.Controls.Add(this.animationBox);
+            this.includeBox.Controls.Add(this.exportDeformers);
             this.includeBox.Controls.Add(this.geometryBox);
-            this.includeBox.Location = new System.Drawing.Point(13, 13);
+            this.includeBox.Location = new System.Drawing.Point(12, 12);
             this.includeBox.Name = "includeBox";
-            this.includeBox.Size = new System.Drawing.Size(359, 262);
+            this.includeBox.Size = new System.Drawing.Size(360, 285);
             this.includeBox.TabIndex = 0;
             this.includeBox.TabStop = false;
             this.includeBox.Text = "Include";
+            // 
+            // convertDummies
+            // 
+            this.convertDummies.AutoSize = true;
+            this.convertDummies.Location = new System.Drawing.Point(14, 178);
+            this.convertDummies.Name = "convertDummies";
+            this.convertDummies.Size = new System.Drawing.Size(205, 17);
+            this.convertDummies.TabIndex = 5;
+            this.convertDummies.Text = "Convert Deforming Dummies to Bones";
+            this.convertDummies.UseVisualStyleBackColor = true;
+            this.convertDummies.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
             // 
             // embedBox
             // 
             this.embedBox.AutoSize = true;
             this.embedBox.Enabled = false;
-            this.embedBox.Location = new System.Drawing.Point(14, 226);
+            this.embedBox.Location = new System.Drawing.Point(14, 249);
             this.embedBox.Name = "embedBox";
             this.embedBox.Size = new System.Drawing.Size(91, 17);
             this.embedBox.TabIndex = 4;
@@ -83,7 +96,7 @@
             // 
             this.lightsBox.AutoSize = true;
             this.lightsBox.Enabled = false;
-            this.lightsBox.Location = new System.Drawing.Point(14, 202);
+            this.lightsBox.Location = new System.Drawing.Point(14, 225);
             this.lightsBox.Name = "lightsBox";
             this.lightsBox.Size = new System.Drawing.Size(54, 17);
             this.lightsBox.TabIndex = 3;
@@ -94,23 +107,23 @@
             // 
             this.camerasBox.AutoSize = true;
             this.camerasBox.Enabled = false;
-            this.camerasBox.Location = new System.Drawing.Point(14, 178);
+            this.camerasBox.Location = new System.Drawing.Point(14, 201);
             this.camerasBox.Name = "camerasBox";
             this.camerasBox.Size = new System.Drawing.Size(67, 17);
             this.camerasBox.TabIndex = 2;
             this.camerasBox.Text = "Cameras";
             this.camerasBox.UseVisualStyleBackColor = true;
             // 
-            // animationBox
+            // exportDeformers
             // 
-            this.animationBox.AutoSize = true;
-            this.animationBox.Enabled = false;
-            this.animationBox.Location = new System.Drawing.Point(14, 154);
-            this.animationBox.Name = "animationBox";
-            this.animationBox.Size = new System.Drawing.Size(72, 17);
-            this.animationBox.TabIndex = 1;
-            this.animationBox.Text = "Animation";
-            this.animationBox.UseVisualStyleBackColor = true;
+            this.exportDeformers.AutoSize = true;
+            this.exportDeformers.Location = new System.Drawing.Point(14, 154);
+            this.exportDeformers.Name = "exportDeformers";
+            this.exportDeformers.Size = new System.Drawing.Size(98, 17);
+            this.exportDeformers.TabIndex = 1;
+            this.exportDeformers.Text = "Skin Deformers";
+            this.exportDeformers.UseVisualStyleBackColor = true;
+            this.exportDeformers.CheckedChanged += new System.EventHandler(this.exportDeformers_CheckedChanged);
             // 
             // geometryBox
             // 
@@ -155,7 +168,6 @@
             // exportTangents
             // 
             this.exportTangents.AutoSize = true;
-            this.exportTangents.Enabled = false;
             this.exportTangents.Location = new System.Drawing.Point(7, 44);
             this.exportTangents.Name = "exportTangents";
             this.exportTangents.Size = new System.Drawing.Size(71, 17);
@@ -184,7 +196,7 @@
             this.advancedBox.Controls.Add(this.upAxis);
             this.advancedBox.Controls.Add(this.scaleFactor);
             this.advancedBox.Controls.Add(this.scaleLabel);
-            this.advancedBox.Location = new System.Drawing.Point(12, 281);
+            this.advancedBox.Location = new System.Drawing.Point(12, 303);
             this.advancedBox.Name = "advancedBox";
             this.advancedBox.Size = new System.Drawing.Size(360, 80);
             this.advancedBox.TabIndex = 5;
@@ -240,7 +252,7 @@
             // 
             // fbxOKbutton
             // 
-            this.fbxOKbutton.Location = new System.Drawing.Point(216, 367);
+            this.fbxOKbutton.Location = new System.Drawing.Point(216, 389);
             this.fbxOKbutton.Name = "fbxOKbutton";
             this.fbxOKbutton.Size = new System.Drawing.Size(75, 23);
             this.fbxOKbutton.TabIndex = 6;
@@ -251,7 +263,7 @@
             // fbxCancel
             // 
             this.fbxCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.fbxCancel.Location = new System.Drawing.Point(297, 367);
+            this.fbxCancel.Location = new System.Drawing.Point(297, 389);
             this.fbxCancel.Name = "fbxCancel";
             this.fbxCancel.Size = new System.Drawing.Size(75, 23);
             this.fbxCancel.TabIndex = 7;
@@ -267,11 +279,11 @@
             // showExpOpt
             // 
             this.showExpOpt.AutoSize = true;
-            this.showExpOpt.Location = new System.Drawing.Point(12, 371);
+            this.showExpOpt.Location = new System.Drawing.Point(12, 393);
             this.showExpOpt.Name = "showExpOpt";
-            this.showExpOpt.Size = new System.Drawing.Size(127, 17);
+            this.showExpOpt.Size = new System.Drawing.Size(179, 17);
             this.showExpOpt.TabIndex = 8;
-            this.showExpOpt.Text = "Show for each export";
+            this.showExpOpt.Text = "Show this dialog for every export";
             this.showExpOpt.UseVisualStyleBackColor = true;
             // 
             // ExportOptions
@@ -280,7 +292,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.fbxCancel;
-            this.ClientSize = new System.Drawing.Size(384, 401);
+            this.ClientSize = new System.Drawing.Size(384, 421);
             this.Controls.Add(this.showExpOpt);
             this.Controls.Add(this.fbxCancel);
             this.Controls.Add(this.fbxOKbutton);
@@ -315,7 +327,7 @@
         private System.Windows.Forms.CheckBox embedBox;
         private System.Windows.Forms.CheckBox lightsBox;
         private System.Windows.Forms.CheckBox camerasBox;
-        private System.Windows.Forms.CheckBox animationBox;
+        private System.Windows.Forms.CheckBox exportDeformers;
         private System.Windows.Forms.GroupBox geometryBox;
         private System.Windows.Forms.CheckBox exportColors;
         private System.Windows.Forms.CheckBox exportUVs;
@@ -327,5 +339,6 @@
         private System.Windows.Forms.Button fbxCancel;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.CheckBox showExpOpt;
+        private System.Windows.Forms.CheckBox convertDummies;
     }
 }

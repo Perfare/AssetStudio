@@ -93,7 +93,7 @@ But since the -90 rotation from Unity is a regular type, it will show up in the 
 Also, re-importing this FBX in Unity will now produce a (-90)+(-90)=-180 rotation.
 This is an unfortunate eyesore, but nothing more, the orientation will be fine.
 
-In theory, one could add +90 degrees rotation to GameObjects that link to Mesh assets (but not other types) and use a different conversion for vertex components.
+In theory, one could add +90 degrees rotation to GameObjects that link to Mesh assets (but not other types) to cancel out the Unity rotation.
 The problem is you can never know where the Unity mesh originated from. If it came from a left-handed format such as OBJ, there wouldn't have been any conversion and it wouldn't have that -90 degree adjustment.
 So it would "fix" meshes that were originally sourced form FBX, but would still have the "extra" rotation in mehses sourced from left-handed formats.
 */
@@ -107,10 +107,13 @@ namespace Unity_Studio
         public List<SubMesh> m_SubMeshes = new List<SubMesh>();
         public List<uint> m_Indices = new List<uint>(); //use a list because I don't always know the facecount for triangle strips
         public List<int> m_materialIDs = new List<int>();
-        public uint m_VertexCount;
+        private uint[] m_IndexBuffer;
         private ChannelInfo[] m_Channels;
         private StreamInfo[] m_Streams;
-        private uint[] m_IndexBuffer;
+        public List<BoneInfluence>[] m_Skin;
+        //public Dictionary<int, float>[] m_Skin;
+        public float[][,] m_BindPose;
+        public uint m_VertexCount;
         public float[] m_Vertices;
         public float[] m_Normals;
         public float[] m_Colors;
@@ -128,6 +131,12 @@ namespace Unity_Studio
             public uint triangleCount;
             public uint firstVertex;
             public uint vertexCount;
+        }
+
+        public class BoneInfluence
+        {
+            public float weight;
+            public int boneIndex;
         }
 
         public class ChannelInfo
@@ -362,6 +371,7 @@ namespace Unity_Studio
             }
             #endregion
 
+            #region subMeshes
             int m_SubMeshes_size = a_Stream.ReadInt32();
             for (int s = 0; s < m_SubMeshes_size; s++)
             {
@@ -380,53 +390,67 @@ namespace Unity_Studio
                     a_Stream.Position += 24; //Axis-Aligned Bounding Box
                 }
             }
+            #endregion
 
-            #region m_Shapes for 4.1.0 and later, excluding 4.1.0 alpha
-            if (version [0] >= 5 || (version[0] == 4 && (version[1] > 1 || (version[1] == 1 && MeshPD.sourceFile.buildType[0] != "a"))))
+            #region BlendShapeData
+            #region 4.1.0 to 4.2.x, excluding 4.1.0 alpha
+            if (version[0] == 4 && ((version[1] == 1 && MeshPD.sourceFile.buildType[0] != "a") || 
+                                    (version[1] > 1 && version[1] <= 2)))
             {
-                if (version[0] == 4 && version[1] <= 2) //4.1.0f4 - 4.2.2f1
+                int m_Shapes_size = a_Stream.ReadInt32();
+                if (m_Shapes_size > 0)
                 {
-                    int m_Shapes_size = a_Stream.ReadInt32();
-                    if (m_Shapes_size > 0)
-                    {
-                        bool stop = true;
-                    }
-                    for (int s = 0; s < m_Shapes_size; s++) //untested
-                    {
-                        string shape_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                        a_Stream.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
-                    }
-
-                    int m_ShapeVertices_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
+                    bool stop = true;
                 }
-                else //4.3.0 and later
+                for (int s = 0; s < m_Shapes_size; s++) //untested
                 {
-                    int m_ShapeVertices_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
-
-                    int shapes_size = a_Stream.ReadInt32();
-                    a_Stream.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
-
-                    int channels_size = a_Stream.ReadInt32();
-                    for (int c = 0; c < channels_size; c++)
-                    {
-                        string channel_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                        a_Stream.Position += 12; //uint nameHash; int frameIndex, frameCount
-                    }
-
-                    int fullWeights_size = a_Stream.ReadInt32();
-                    a_Stream.Position += fullWeights_size * 4; //floats
-
-                    int m_BindPose_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_BindPose_size * 16 * 4; //matrix 4x4
-
-                    int m_BoneNameHashes_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_BoneNameHashes_size * 4; //uints
-
-                    uint m_RootBoneNameHash = a_Stream.ReadUInt32();
+                    string shape_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                    a_Stream.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
                 }
+
+                int m_ShapeVertices_size = a_Stream.ReadInt32();
+                a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
             }
+            #endregion
+            #region 4.3.0 and later
+            else if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
+            {
+                int m_ShapeVertices_size = a_Stream.ReadInt32();
+                if (m_ShapeVertices_size > 0)
+                {
+                    bool stop = true;
+                }
+                a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
+
+                int shapes_size = a_Stream.ReadInt32();
+                a_Stream.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
+
+                int channels_size = a_Stream.ReadInt32();
+                for (int c = 0; c < channels_size; c++)
+                {
+                    string channel_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                    a_Stream.Position += 12; //uint nameHash; int frameIndex, frameCount
+                }
+
+                int fullWeights_size = a_Stream.ReadInt32();
+                a_Stream.Position += fullWeights_size * 4; //floats
+
+                m_BindPose = new float[a_Stream.ReadInt32()][,];
+                for (int i = 0; i < m_BindPose.Length; i++)
+                {
+                    m_BindPose[i] = new float[4,4] {
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                }
+
+                int m_BoneNameHashes_size = a_Stream.ReadInt32();
+                a_Stream.Position += m_BoneNameHashes_size * 4; //uints
+
+                uint m_RootBoneNameHash = a_Stream.ReadUInt32();
+            }
+            #endregion
             #endregion
 
             #region Index Buffer for 2.6.0 and later
@@ -454,7 +478,7 @@ namespace Unity_Studio
                 {
                     m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
                     for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = a_Stream.ReadUInt32(); }
-                    //align??
+                    a_Stream.AlignStream(4);//untested
                 }
             }
             #endregion
@@ -466,11 +490,32 @@ namespace Unity_Studio
                 m_Vertices = new float[m_VertexCount * 3];
                 for (int v = 0; v < m_VertexCount * 3; v++) { m_Vertices[v] = a_Stream.ReadSingle(); }
 
-                int m_Skin_size = a_Stream.ReadInt32();
-                a_Stream.Position += m_Skin_size * 32; //4x float weights & 4x int boneIndices
+                m_Skin = new List<BoneInfluence>[a_Stream.ReadInt32()];
+                //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
+                for (int s = 0; s < m_Skin.Length; s++)
+                {
+                    m_Skin[s] = new List<BoneInfluence>();
+                    for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = a_Stream.ReadSingle() }); }
+                    for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = a_Stream.ReadInt32(); }
 
-                int m_BindPose_size = a_Stream.ReadInt32();
-                a_Stream.Position += m_BindPose_size * 16 * 4; //matrix 4x4
+                    /*m_Skin[s] = new Dictionary<int, float>();
+                    float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    for (int i = 0; i < 4; i++)
+                    {
+                        int boneIndex = a_Stream.ReadInt32();
+                        m_Skin[s][boneIndex] = weights[i];
+                    }*/
+                }
+
+                m_BindPose = new float[a_Stream.ReadInt32()][,];
+                for (int i = 0; i < m_BindPose.Length; i++)
+                {
+                    m_BindPose[i] = new float[4, 4] {
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                }
 
                 int m_UV1_size = a_Stream.ReadInt32();
                 m_UV1 = new float[m_UV1_size * 2];
@@ -507,13 +552,35 @@ namespace Unity_Studio
             else
             {
                 #region read vertex stream
-                int m_Skin_size = a_Stream.ReadInt32();
-                a_Stream.Position += m_Skin_size * 32; //4x float weights & 4x int boneIndices
-
-                if (version[0] <= 3 || (version[0] == 4 && version[1] <= 2))
+                m_Skin = new List<BoneInfluence>[a_Stream.ReadInt32()];
+                //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
+                for (int s = 0; s < m_Skin.Length; s++)
                 {
-                    int m_BindPose_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_BindPose_size * 16 * 4; //matrix 4x4
+                    m_Skin[s] = new List<BoneInfluence>();
+                    for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = a_Stream.ReadSingle() }); }
+                    for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = a_Stream.ReadInt32(); }
+
+                    /*m_Skin[s] = new Dictionary<int, float>();
+                    float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    for (int i = 0; i < 4; i++)
+                    {
+                        int boneIndex = a_Stream.ReadInt32();
+                        m_Skin[s][boneIndex] = weights[i];
+                    }*/
+                }
+
+
+                if (version[0] == 3 || (version[0] == 4 && version[1] <= 2))
+                {
+                    m_BindPose = new float[a_Stream.ReadInt32()][,];
+                    for (int i = 0; i < m_BindPose.Length; i++)
+                    {
+                        m_BindPose[i] = new float[4, 4] {
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                    }
                 }
 
                 int m_CurrentChannels = a_Stream.ReadInt32();//defined as uint in Unity
@@ -588,15 +655,15 @@ namespace Unity_Studio
                 #endregion
 
                 #region compute FvF
-                int valueBufferSize = 0;
-                byte[] valueBuffer;
-                float[] dstArray;
+                int componentByteSize = 0;
+                byte[] componentBytes;
+                float[] componentsArray;
 
+                #region 4.0.0 and later
                 if (m_Channels != null)
                 {
                     //it is better to loop channels instead of streams
                     //because channels are likely to be sorted by vertex property
-                    #region 4.0.0 and later
                     foreach (var m_Channel in m_Channels)
                     {
                         if (m_Channel.dimension > 0)
@@ -610,7 +677,7 @@ namespace Unity_Studio
                                     // in Unity 4.x the colors channel has 1 dimension, as in 1 color with 4 components
                                     if (b == 2 && m_Channel.format == 2) { m_Channel.dimension = 4; }
 
-                                    valueBufferSize = 4 / (int)Math.Pow(2, m_Channel.format);
+                                    componentByteSize = 4 / (int)Math.Pow(2, m_Channel.format);
 
                                     /*switch (m_Channel.format)
                                     {
@@ -626,51 +693,38 @@ namespace Unity_Studio
                                             break;
                                     }*/
 
-                                    valueBuffer = new byte[valueBufferSize];
-                                    dstArray = new float[m_VertexCount * m_Channel.dimension];
+                                    componentBytes = new byte[componentByteSize];
+                                    componentsArray = new float[m_VertexCount * m_Channel.dimension];
 
                                     for (int v = 0; v < m_VertexCount; v++)
                                     {
+                                        int vertexOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v;
                                         for (int d = 0; d < m_Channel.dimension; d++)
                                         {
-                                            int m_DataSizeOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v + valueBufferSize * d;
-                                            Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, valueBuffer, 0, valueBufferSize);
-                                            dstArray[v * m_Channel.dimension + d] = bytesToFloat(valueBuffer);
+                                            int componentOffset = vertexOffset + componentByteSize * d;
+                                            Buffer.BlockCopy(m_DataSize, componentOffset, componentBytes, 0, componentByteSize);
+                                            componentsArray[v * m_Channel.dimension + d] = bytesToFloat(componentBytes);
                                         }
                                     }
 
                                     switch (b)
                                     {
-                                        case 0:
-                                            m_Vertices = dstArray;
-                                            break;
-                                        case 1:
-                                            m_Normals = dstArray;
-                                            break;
-                                        case 2:
-                                            m_Colors = dstArray;
-                                            break;
-                                        case 3:
-                                            m_UV1 = dstArray;
-                                            break;
-                                        case 4:
-                                            m_UV2 = dstArray;
-                                            break;
+                                        case 0: m_Vertices = componentsArray; break;
+                                        case 1: m_Normals = componentsArray; break;
+                                        case 2: m_Colors = componentsArray; break;
+                                        case 3: m_UV1 = componentsArray; break;
+                                        case 4: m_UV2 = componentsArray; break;
                                         case 5:
-                                            if (version[0] == 5) { m_UV3 = dstArray; }
-                                            else { m_Tangents = dstArray; }
+                                            if (version[0] == 5) { m_UV3 = componentsArray; }
+                                            else { m_Tangents = componentsArray; }
                                             break;
-                                        case 6:
-                                            m_UV4 = dstArray;
-                                            break;
-                                        case 7:
-                                            m_Tangents = dstArray;
-                                            break;
+                                        case 6: m_UV4 = componentsArray; break;
+                                        case 7: m_Tangents = componentsArray; break;
                                     }
 
-                                    m_Stream.channelMask.Set(b, false); //is this needed?
-                                    valueBuffer = null;
-                                    dstArray = null;
+                                    m_Stream.channelMask.Set(b, false);
+                                    componentBytes = null;
+                                    componentsArray = null;
                                     break; //go to next channel
                                 }
                             }
@@ -697,63 +751,52 @@ namespace Unity_Studio
                                 {
                                     case 0:
                                     case 1:
-                                        valueBufferSize = 4;
+                                        componentByteSize = 4;
                                         m_Channel.dimension = 3;
                                         break;
                                     case 2:
-                                        valueBufferSize = 1;
+                                        componentByteSize = 1;
                                         m_Channel.dimension = 4;
                                         break;
                                     case 3:
                                     case 4:
-                                        valueBufferSize = 4;
+                                        componentByteSize = 4;
                                         m_Channel.dimension = 2;
                                         break;
                                     case 5:
-                                        valueBufferSize = 4;
+                                        componentByteSize = 4;
                                         m_Channel.dimension = 4;
                                         break;
                                 }
 
-                                valueBuffer = new byte[valueBufferSize];
-                                dstArray = new float[m_VertexCount * m_Channel.dimension];
+                                componentBytes = new byte[componentByteSize];
+                                componentsArray = new float[m_VertexCount * m_Channel.dimension];
 
                                 for (int v = 0; v < m_VertexCount; v++)
                                 {
+                                    int vertexOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v;
                                     for (int d = 0; d < m_Channel.dimension; d++)
                                     {
-                                        int m_DataSizeOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v + valueBufferSize * d;
-                                        Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, valueBuffer, 0, valueBufferSize);
-                                        dstArray[v * m_Channel.dimension + d] = bytesToFloat(valueBuffer);
+                                        int m_DataSizeOffset = vertexOffset + componentByteSize * d;
+                                        Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, componentBytes, 0, componentByteSize);
+                                        componentsArray[v * m_Channel.dimension + d] = bytesToFloat(componentBytes);
                                     }
                                 }
 
                                 switch (b)
                                 {
-                                    case 0:
-                                        m_Vertices = dstArray;
-                                        break;
-                                    case 1:
-                                        m_Normals = dstArray;
-                                        break;
-                                    case 2:
-                                        m_Colors = dstArray;
-                                        break;
-                                    case 3:
-                                        m_UV1 = dstArray;
-                                        break;
-                                    case 4:
-                                        m_UV2 = dstArray;
-                                        break;
-                                    case 5:
-                                        m_Tangents = dstArray;
-                                        break;
+                                    case 0: m_Vertices = componentsArray; break;
+                                    case 1: m_Normals = componentsArray; break;
+                                    case 2: m_Colors = componentsArray; break;
+                                    case 3: m_UV1 = componentsArray; break;
+                                    case 4: m_UV2 = componentsArray; break;
+                                    case 5: m_Tangents = componentsArray; break;
                                 }
 
-                                m_Channel.offset += (byte)(m_Channel.dimension * valueBufferSize); //strides larger than 255 are unlikely
-                                m_Stream.channelMask.Set(b, false); //is this needed?
-                                valueBuffer = null;
-                                dstArray = null;
+                                m_Channel.offset += (byte)(m_Channel.dimension * componentByteSize); //safe to cast as byte because strides larger than 255 are unlikely
+                                m_Stream.channelMask.Set(b, false);
+                                componentBytes = null;
+                                componentsArray = null;
                             }
                         }
                     }
@@ -800,7 +843,7 @@ namespace Unity_Studio
                 m_UV_Packed.m_BitSize = a_Stream.ReadByte();
                 a_Stream.Position += 3; //4 byte alignment
 
-                if (m_UV_Packed.m_NumItems > 0)
+                if (m_UV_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportUVs"])
                 {
                     uint[] m_UV_Unpacked = UnpackBitVector(m_UV_Packed);
                     int bitmax = 0;
@@ -890,7 +933,7 @@ namespace Unity_Studio
                 m_NormalSigns_packed.m_BitSize = a_Stream.ReadByte();
                 a_Stream.Position += 3; //4 byte alignment
 
-                if (m_Normals_Packed.m_NumItems > 0)
+                if (m_Normals_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportNormals"])
                 {
                     uint[] m_Normals_Unpacked = UnpackBitVector(m_Normals_Packed);
                     uint[] m_NormalSigns = UnpackBitVector(m_NormalSigns_packed);
@@ -906,13 +949,29 @@ namespace Unity_Studio
                     }
                 }
 
-                PackedBitVector m_TangentSigns = new PackedBitVector();
-                m_TangentSigns.m_NumItems = a_Stream.ReadUInt32();
-                m_TangentSigns.m_Data = new byte[a_Stream.ReadInt32()];
-                a_Stream.Read(m_TangentSigns.m_Data, 0, m_TangentSigns.m_Data.Length);
+                PackedBitVector m_TangentSigns_packed = new PackedBitVector();
+                m_TangentSigns_packed.m_NumItems = a_Stream.ReadUInt32();
+                m_TangentSigns_packed.m_Data = new byte[a_Stream.ReadInt32()];
+                a_Stream.Read(m_TangentSigns_packed.m_Data, 0, m_TangentSigns_packed.m_Data.Length);
                 a_Stream.AlignStream(4);
-                m_TangentSigns.m_BitSize = a_Stream.ReadByte();
+                m_TangentSigns_packed.m_BitSize = a_Stream.ReadByte();
                 a_Stream.Position += 3; //4 byte alignment
+                
+                if (m_Tangents_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportTangents"])
+                {
+                    uint[] m_Tangents_Unpacked = UnpackBitVector(m_Tangents_Packed);
+                    uint[] m_TangentSigns = UnpackBitVector(m_TangentSigns_packed);
+                    int bitmax = 0;
+                    for (int b = 0; b < m_Tangents_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
+                    m_Tangents = new float[m_Tangents_Packed.m_NumItems / 2 * 3];
+                    for (int v = 0; v < m_Tangents_Packed.m_NumItems / 2; v++)
+                    {
+                        m_Tangents[v * 3] = (float)((double)m_Tangents_Unpacked[v * 2] / bitmax) * m_Tangents_Packed.m_Range + m_Tangents_Packed.m_Start;
+                        m_Tangents[v * 3 + 1] = (float)((double)m_Tangents_Unpacked[v * 2 + 1] / bitmax) * m_Tangents_Packed.m_Range + m_Tangents_Packed.m_Start;
+                        m_Tangents[v * 3 + 2] = (float)Math.Sqrt(1 - m_Tangents[v * 3] * m_Tangents[v * 3] - m_Tangents[v * 3 + 1] * m_Tangents[v * 3 + 1]);
+                        if (m_TangentSigns[v] == 0) { m_Tangents[v * 3 + 2] *= -1; }
+                    }
+                }
 
                 if (version[0] >= 5)
                 {
@@ -926,7 +985,7 @@ namespace Unity_Studio
                     m_FloatColors.m_BitSize = a_Stream.ReadByte();
                     a_Stream.Position += 3; //4 byte alignment
 
-                    if (m_FloatColors.m_NumItems > 0)
+                    if (m_FloatColors.m_NumItems > 0 && (bool)Properties.Settings.Default["exportColors"])
                     {
                         uint[] m_FloatColors_Unpacked = UnpackBitVector(m_FloatColors);
                         int bitmax = 0;
