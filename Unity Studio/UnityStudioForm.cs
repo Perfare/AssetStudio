@@ -619,7 +619,7 @@ namespace Unity_Studio
                     var fileGen = assetsFile.fileGen;
                     //var m_version = assetsFile.m_version;
                     var version = assetsFile.version;
-                    string fileID = "1" + assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
+                    string fileID = assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
 
                     //ListViewGroup assetGroup = new ListViewGroup(Path.GetFileName(assetsFile.filePath));
 
@@ -1684,6 +1684,19 @@ namespace Unity_Studio
                 HashSet<AssetPreloadData> Textures = new HashSet<AssetPreloadData>();
 
                 int DeformerCount = 0;
+                /*
+                uniqueIDs can begin with zero, so they are preceded by a number specific to their type
+                this will also make it easier to debug FBX files
+                1: Model
+                2: NodeAttribute
+                3: Geometry
+                4: Deformer
+                5: CollectionExclusive
+                6: Material
+                7: Texture
+                8: Video
+                9: 
+                */
 
                 #region loop nodes and collect objects for export
                 foreach (var assetsFile in assetsfileList)
@@ -1705,8 +1718,10 @@ namespace Unity_Studio
                                 {
                                     Meshes.Add(MeshPD);
                                     
+                                    //write connections here and Mesh objects separately without having to backtrack through their MEshFilter to het the GameObject ID
+                                    //also note that MeshFilters are not unique, they cannot be used for instancing geometry
                                     cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
-                                    cb2.AppendFormat("\n\tC: \"OO\",{0},{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
+                                    cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
                                 }
                             }
 
@@ -1723,7 +1738,7 @@ namespace Unity_Studio
                                     {
                                         Materials.Add(MaterialPD);
                                         cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                        cb2.AppendFormat("\n\tC: \"OO\",{0},{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                                        cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
                                     }
                                 }
                             }
@@ -1744,7 +1759,7 @@ namespace Unity_Studio
                                     {
                                         Materials.Add(MaterialPD);
                                         cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                        cb2.AppendFormat("\n\tC: \"OO\",{0},{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                                        cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
                                     }
                                 }
 
@@ -1806,7 +1821,7 @@ namespace Unity_Studio
                 {
                     Material m_Material = new Material(MaterialPD);
 
-                    mb.AppendFormat("\n\tMaterial: {0}, \"Material::{1}\", \"\" {{", MaterialPD.uniqueID, m_Material.m_Name);
+                    mb.AppendFormat("\n\tMaterial: 6{0}, \"Material::{1}\", \"\" {{", MaterialPD.uniqueID, m_Material.m_Name);
                     mb.Append("\n\t\tVersion: 102");
                     mb.Append("\n\t\tShadingModel: \"phong\"");
                     mb.Append("\n\t\tMultiLayer: 0");
@@ -1859,8 +1874,8 @@ namespace Unity_Studio
                     foreach (var m_TexEnv in m_Material.m_TexEnvs)
                     {
                         AssetPreloadData TexturePD;
-                        if (assetsfileList.TryGetPD(m_TexEnv.m_Texture, out TexturePD)) { }
-                        else if (jsonMats != null)
+                        #region get Porsche material from json
+                        if (!assetsfileList.TryGetPD(m_TexEnv.m_Texture, out TexturePD) && jsonMats != null)
                         {
                             Dictionary<string, string> matProp;
                             if (jsonMats.TryGetValue(m_Material.m_Name, out matProp))
@@ -1879,13 +1894,15 @@ namespace Unity_Studio
                                 }
                             }
                         }
+                        #endregion
 
-                        if (TexturePD != null)
+                        if (TexturePD != null && TexturePD.Type2 == 28)
                         {
                             Textures.Add(TexturePD);
 
                             cb2.AppendFormat("\n\n\t;Texture::, Material::{0}", m_Material.m_Name);
-                            cb2.AppendFormat("\n\tC: \"OP\",{0},{1}, \"", TexturePD.uniqueID, MaterialPD.uniqueID);
+                            cb2.AppendFormat("\n\tC: \"OP\",7{0},6{1}, \"", TexturePD.uniqueID, MaterialPD.uniqueID);
+
                             switch (m_TexEnv.name)
                             {
                                 case "_MainTex":
@@ -2032,14 +2049,13 @@ namespace Unity_Studio
                 {
                     if (m_GameObject.m_MeshFilter == null && m_GameObject.m_SkinnedMeshRenderer == null)
                     {
-                        //NodeAttribute objects will have the same GameObject ID preceded by "2"
                         if ((bool)Properties.Settings.Default["exportDeformers"] && (bool)Properties.Settings.Default["convertDummies"] && LimbNodes.Contains(m_GameObject))
                         {
                             ob.AppendFormat("\n\tNodeAttribute: 2{0}, \"NodeAttribute::\", \"LimbNode\" {{", m_GameObject.uniqueID);
                             ob.Append("\n\t\tTypeFlags: \"Skeleton\"");
                             ob.Append("\n\t}");
 
-                            ob.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"LimbNode\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"LimbNode\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
                         }
                         else
                         {
@@ -2047,16 +2063,16 @@ namespace Unity_Studio
                             ob.Append("\n\t\tTypeFlags: \"Null\"");
                             ob.Append("\n\t}");
 
-                            ob.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"Null\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Null\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
                         }
 
                         //connect NodeAttribute to Model
                         cb.AppendFormat("\n\n\t;NodeAttribute::, Model::{0}", m_GameObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",2{0},{0}", m_GameObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",2{0},1{0}", m_GameObject.uniqueID);
                     }
                     else
                     {
-                        ob.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"Mesh\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                        ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Mesh\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
                     }
 
                     ob.Append("\n\t\tVersion: 232");
@@ -2086,12 +2102,12 @@ namespace Unity_Studio
                     if (GameObjects.Contains(parentObject))
                     {
                         cb.AppendFormat("\n\n\t;Model::{0}, Model::{1}", m_GameObject.m_Name, parentObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",{0},{1}", m_GameObject.uniqueID, parentObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",1{0},1{1}", m_GameObject.uniqueID, parentObject.uniqueID);
                     }
                     else
                     {
                         cb.AppendFormat("\n\n\t;Model::{0}, Model::RootNode", m_GameObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",{0},0", m_GameObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",1{0},0", m_GameObject.uniqueID);
                     }
 
 
@@ -2135,40 +2151,39 @@ namespace Unity_Studio
                         { FBXwriter.Write(ob); ob.Clear(); }
 
                         cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
-                        cb2.AppendFormat("\n\tC: \"OO\",{0},{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
+                        cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
                         
                         if ((bool)Properties.Settings.Default["exportDeformers"])
                         {
                             //add BindPose node
                             pb.Append("\n\t\tPoseNode:  {");
-                            pb.AppendFormat("\n\t\t\tNode: {0}", m_GameObject.uniqueID);
+                            pb.AppendFormat("\n\t\t\tNode: 1{0}", m_GameObject.uniqueID);
                             //pb.Append("\n\t\t\tMatrix: *16 {");
                             //pb.Append("\n\t\t\t\ta: ");
                             //pb.Append("\n\t\t\t} ");
                             pb.Append("\n\t\t}");
 
-                            //write DisplayLayer with SkinnedMeshRenderer ID preceded by "3"
-                            ob.AppendFormat("\n\tCollectionExclusive: 3{0}, \"DisplayLayer::{0}\", \"DisplayLayer\" {{", SkinnedMeshPD.uniqueID);
+                            ob.AppendFormat("\n\tCollectionExclusive: 5{0}, \"DisplayLayer::{1}\", \"DisplayLayer\" {{", SkinnedMeshPD.uniqueID, m_GameObject.m_Name);
                             ob.Append("\n\t\tProperties70:  {");
                             ob.Append("\n\t\t}");
                             ob.Append("\n\t}");
 
                             //connect Model to DisplayLayer
                             cb2.AppendFormat("\n\n\t;Model::{0}, DisplayLayer::", m_GameObject.m_Name);
-                            cb2.AppendFormat("\n\tC: \"OO\",{0},3{1}", m_GameObject.uniqueID, SkinnedMeshPD.uniqueID);
+                            cb2.AppendFormat("\n\tC: \"OO\",1{0},5{1}", m_GameObject.uniqueID, SkinnedMeshPD.uniqueID);
                             
                             //write Deformers
-                            if (m_Mesh.m_Skin.Length > 0)
+                            if (m_Mesh.m_Skin.Length > 0 && m_Mesh.m_BindPose.Length >= m_SkinnedMeshRenderer.m_Bones.Length)
                             {
                                 //write main Skin Deformer
-                                ob.AppendFormat("\n\tDeformer: {0}, \"Deformer::\", \"Skin\" {{", SkinnedMeshPD.uniqueID);
+                                ob.AppendFormat("\n\tDeformer: 4{0}, \"Deformer::\", \"Skin\" {{", SkinnedMeshPD.uniqueID);
                                 ob.Append("\n\t\tVersion: 101");
                                 ob.Append("\n\t\tLink_DeformAcuracy: 50");
                                 ob.Append("\n\t}"); //Deformer end
 
                                 //connect Skin Deformer to Geometry
-                                cb2.Append("\n\t;Deformer::, Geometry::");
-                                cb2.AppendFormat("\n\tC: \"OO\",{0},{1}", SkinnedMeshPD.uniqueID, MeshPD.uniqueID);
+                                cb2.Append("\n\n\t;Deformer::, Geometry::");
+                                cb2.AppendFormat("\n\tC: \"OO\",4{0},3{1}", SkinnedMeshPD.uniqueID, MeshPD.uniqueID);
 
                                 for (int b = 0; b < m_SkinnedMeshRenderer.m_Bones.Length; b++)
                                 {
@@ -2225,8 +2240,8 @@ namespace Unity_Studio
                                                 wb.Length--;//remove last comma
                                             }
 
-                                            //SubDeformer objects need unique IDs because 2 or more deformers can be attached to the same bone
-                                            ob.AppendFormat("\n\tDeformer: 1{0}{1}, \"SubDeformer::\", \"Cluster\" {{", b, SkinnedMeshPD.uniqueID);
+                                            //SubDeformer objects need unique IDs because 2 or more deformers can be linked to the same bone
+                                            ob.AppendFormat("\n\tDeformer: 4{0}{1}, \"SubDeformer::\", \"Cluster\" {{", b, SkinnedMeshPD.uniqueID);
                                             ob.Append("\n\t\tVersion: 100");
                                             ob.Append("\n\t\tUserData: \"\", \"\"");
 
@@ -2253,14 +2268,18 @@ namespace Unity_Studio
 
                                             //connect SubDeformer to Skin Deformer
                                             cb2.Append("\n\n\t;SubDeformer::, Deformer::");
-                                            cb2.AppendFormat("\n\tC: \"OO\",1{0}{1},{1}", b, SkinnedMeshPD.uniqueID);
+                                            cb2.AppendFormat("\n\tC: \"OO\",4{0}{1},4{1}", b, SkinnedMeshPD.uniqueID);
 
-                                            //connect dummy to SubDeformer
+                                            //connect dummy Model to SubDeformer
                                             cb2.AppendFormat("\n\n\t;Model::{0}, SubDeformer::", m_Bone.m_Name);
-                                            cb2.AppendFormat("\n\tC: \"OO\",{0},1{1}{2}", m_Bone.uniqueID, b, SkinnedMeshPD.uniqueID);
+                                            cb2.AppendFormat("\n\tC: \"OO\",1{0},4{1}{2}", m_Bone.uniqueID, b, SkinnedMeshPD.uniqueID);
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                bool stop = true;
                             }
                         }
                     }
@@ -2272,7 +2291,7 @@ namespace Unity_Studio
                     {
                         //add BindPose node
                         pb.Append("\n\t\tPoseNode:  {");
-                        pb.AppendFormat("\n\t\t\tNode: {0}", m_Bone.uniqueID);
+                        pb.AppendFormat("\n\t\t\tNode: 1{0}", m_Bone.uniqueID);
                         //pb.Append("\n\t\t\tMatrix: *16 {");
                         //pb.Append("\n\t\t\t\ta: ");
                         //pb.Append("\n\t\t\t} ");
@@ -2342,7 +2361,7 @@ namespace Unity_Studio
                     }
                     #endregion
 
-                    ob.AppendFormat("\n\tTexture: {0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
+                    ob.AppendFormat("\n\tTexture: 7{0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"TextureVideoClip\"");
                     ob.Append("\n\t\tVersion: 202");
                     ob.AppendFormat("\n\t\tTextureName: \"Texture::{0}\"", TexturePD.Text);
@@ -2355,8 +2374,7 @@ namespace Unity_Studio
                     ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPath));
                     ob.Append("\n\t}");
 
-                    //Video ID is prefixed by 1
-                    ob.AppendFormat("\n\tVideo: 1{0}, \"Video::{1}\", \"Clip\" {{", TexturePD.uniqueID, TexturePD.Text);
+                    ob.AppendFormat("\n\tVideo: 8{0}, \"Video::{1}\", \"Clip\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"Clip\"");
                     ob.Append("\n\t\tProperties70:  {");
                     ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texPath);
@@ -2367,7 +2385,7 @@ namespace Unity_Studio
 
                     //connect video to texture
                     cb.AppendFormat("\n\n\t;Video::{0}, Texture::{0}", TexturePD.Text);
-                    cb.AppendFormat("\n\tC: \"OO\",1{0},{1}", TexturePD.uniqueID, TexturePD.uniqueID);
+                    cb.AppendFormat("\n\tC: \"OO\",8{0},7{1}", TexturePD.uniqueID, TexturePD.uniqueID);
                 }
                 #endregion
 
@@ -2388,7 +2406,7 @@ namespace Unity_Studio
             {
                 StatusStripUpdate("Writing Geometry: " + m_Mesh.m_Name);
 
-                ob.AppendFormat("\n\tGeometry: {0}, \"Geometry::\", \"Mesh\" {{", MeshID);
+                ob.AppendFormat("\n\tGeometry: 3{0}, \"Geometry::\", \"Mesh\" {{", MeshID);
                 ob.Append("\n\t\tProperties70:  {");
                 var randomColor = RandomColorGenerator(m_Mesh.m_Name);
                 ob.AppendFormat("\n\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",{0},{1},{2}", ((float)randomColor[0] / 255), ((float)randomColor[1] / 255), ((float)randomColor[2] / 255));

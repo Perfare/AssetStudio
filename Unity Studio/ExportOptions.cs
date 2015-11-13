@@ -23,6 +23,7 @@ namespace Unity_Studio
             exportColors.Checked = (bool)Properties.Settings.Default["exportColors"];
             exportDeformers.Checked = (bool)Properties.Settings.Default["exportDeformers"];
             convertDummies.Checked = (bool)Properties.Settings.Default["convertDummies"];
+            convertDummies.Enabled = (bool)Properties.Settings.Default["exportDeformers"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             upAxis.SelectedIndex = (int)Properties.Settings.Default["upAxis"];
             showExpOpt.Checked = (bool)Properties.Settings.Default["showExpOpt"];
