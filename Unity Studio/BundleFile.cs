@@ -8,10 +8,9 @@ using Lz4;
 
 namespace Unity_Studio
 {
-    public class BundleFile : IDisposable
+    public class BundleFile
     {
-        private EndianStream Stream;
-        public byte ver1;
+        public int ver1;
         public string ver2;
         public string ver3;
         public List<MemoryAssetsFile> MemoryAssetsFileList = new List<MemoryAssetsFile>();
@@ -52,84 +51,101 @@ namespace Unity_Studio
                     }
                 }
 
-                Stream = new EndianStream(new MemoryStream(filebuffer), EndianType.BigEndian);
+                using (var b_Stream = new EndianStream(new MemoryStream(filebuffer), EndianType.BigEndian))
+                {
+                    readBundle(b_Stream);
+                }
             }
-            else { Stream = new EndianStream(File.OpenRead(fileName), EndianType.BigEndian); }
-
-            long magicHeader = Stream.ReadInt64();
-
-            if (magicHeader == -361700864190383366 || magicHeader == 6155973689634940258 || magicHeader == 6155973689634611575)
+            else
             {
-                int dummy = Stream.ReadInt32();
-                ver1 = Stream.ReadByte();
-                ver2 = Stream.ReadStringToNull();
-                ver3 = Stream.ReadStringToNull();
+                using (var b_Stream = new EndianStream(File.OpenRead(fileName), EndianType.BigEndian))
+                {
+                    readBundle(b_Stream);
+                }
+            }
+        }
+
+        private void readBundle(EndianStream b_Stream)
+        {
+            var header = b_Stream.ReadStringToNull();
+
+            if (header == "UnityWeb" || header == "UnityRaw" || header == "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA")
+            {
+                ver1 = b_Stream.ReadInt32();
+                ver2 = b_Stream.ReadStringToNull();
+                ver3 = b_Stream.ReadStringToNull();
+                if (ver1 < 6) { int bundleSize = b_Stream.ReadInt32(); }
+                else
+                {
+                    long bundleSize = b_Stream.ReadInt64();
+                    return;
+                }
+                short dummy2 = b_Stream.ReadInt16();
+                int offset = b_Stream.ReadInt16();
+                int dummy3 = b_Stream.ReadInt32();
+                int lzmaChunks = b_Stream.ReadInt32();
+
                 int lzmaSize = 0;
-                int fileSize = Stream.ReadInt32();
-                short dummy2 = Stream.ReadInt16();
-                int offset = Stream.ReadInt16();
-                int dummy3 = Stream.ReadInt32();
-                int lzmaChunks = Stream.ReadInt32();
+                long streamSize = 0;
 
                 for (int i = 0; i < lzmaChunks; i++)
                 {
-                    lzmaSize = Stream.ReadInt32();
-                    fileSize = Stream.ReadInt32();
+                    lzmaSize = b_Stream.ReadInt32();
+                    streamSize = b_Stream.ReadInt32();
                 }
 
-                Stream.Position = offset;
-                switch (magicHeader)
+                b_Stream.Position = offset;
+                switch (header)
                 {
-                    case -361700864190383366: //.bytes
-                    case 6155973689634940258: //UnityWeb
+                    case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA": //.bytes
+                    case "UnityWeb":
                         {
                             byte[] lzmaBuffer = new byte[lzmaSize];
-                            Stream.Read(lzmaBuffer, 0, lzmaSize);
-                            Stream.Close();
-                            Stream.Dispose();
+                            b_Stream.Read(lzmaBuffer, 0, lzmaSize);
 
-                            Stream = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(lzmaBuffer)), EndianType.BigEndian);
-                            offset = 0;
+                            using (var lzmaStream = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(lzmaBuffer)), EndianType.BigEndian))
+                            {
+                                getFiles(lzmaStream, 0);
+                            }
                             break;
                         }
-                    case 6155973689634611575: //UnityRaw
+                    case "UnityRaw":
                         {
-
+                            getFiles(b_Stream, offset);
                             break;
                         }
                 }
 
-                int fileCount = Stream.ReadInt32();
-                for (int i = 0; i < fileCount; i++)
-                {
-                    MemoryAssetsFile memFile = new MemoryAssetsFile();
-                    memFile.fileName = Stream.ReadStringToNull();
-                    int fileOffset = Stream.ReadInt32();
-                    fileOffset += offset;
-                    fileSize = Stream.ReadInt32();
-                    long nextFile = Stream.Position;
-                    Stream.Position = fileOffset;
 
-                    byte[] buffer = new byte[fileSize];
-                    Stream.Read(buffer, 0, fileSize);
-                    memFile.memStream = new MemoryStream(buffer);
-                    MemoryAssetsFileList.Add(memFile);
-                    Stream.Position = nextFile;
-                }
             }
-
-            Stream.Close();
+            else if (header == "UnityFS")
+            {
+                ver1 = b_Stream.ReadInt32();
+                ver2 = b_Stream.ReadStringToNull();
+                ver3 = b_Stream.ReadStringToNull();
+                long bundleSize = b_Stream.ReadInt64();
+            }
         }
 
-        ~BundleFile()
+        private void getFiles(EndianStream f_Stream, int offset)
         {
-            Dispose();
-        }
+            int fileCount = f_Stream.ReadInt32();
+            for (int i = 0; i < fileCount; i++)
+            {
+                MemoryAssetsFile memFile = new MemoryAssetsFile();
+                memFile.fileName = f_Stream.ReadStringToNull();
+                int fileOffset = f_Stream.ReadInt32();
+                fileOffset += offset;
+                int fileSize = f_Stream.ReadInt32();
+                long nextFile = f_Stream.Position;
+                f_Stream.Position = fileOffset;
 
-        public void Dispose()
-        {
-            Stream.Dispose();
-            GC.SuppressFinalize(this);
+                byte[] buffer = new byte[fileSize];
+                f_Stream.Read(buffer, 0, fileSize);
+                memFile.memStream = new MemoryStream(buffer);
+                MemoryAssetsFileList.Add(memFile);
+                f_Stream.Position = nextFile;
+            }
         }
     }
 }

@@ -583,6 +583,8 @@ namespace Unity_Studio
 
                 BitArray m_CurrentChannels = new BitArray(new int[1] { a_Stream.ReadInt32() });
                 m_VertexCount = a_Stream.ReadInt32();
+                //int singleStreamStride = 0;//used tor unity 5
+                int streamCount = 0;
 
                 #region streams for 3.5.0 - 3.5.7
                 if (version[0] < 4)
@@ -608,9 +610,6 @@ namespace Unity_Studio
                 #region channels and streams for 4.0.0 and later
                 else
                 {
-                    //int singleStreamStride = 0;//used tor unity 5
-                    int streamCount = 0;
-
                     m_Channels = new ChannelInfo[a_Stream.ReadInt32()];
                     for (int c = 0; c < m_Channels.Length; c++)
                     {
@@ -639,28 +638,49 @@ namespace Unity_Studio
                             m_Streams[s].frequency = a_Stream.ReadUInt16();
                         }
                     }
-                    else //create streams
-                    {
-                        m_Streams = new StreamInfo[streamCount];
-                        for (int s = 0; s < streamCount; s++)
-                        {
-                            m_Streams[s] = new StreamInfo();
-                            m_Streams[s].channelMask = new BitArray(new int[1] { 0 });
-                            m_Streams[s].offset = 0;
-                            if (s > 0) { m_Streams[s].offset = m_Streams[s - 1].offset + m_Streams[s - 1].stride * m_VertexCount; }
-                            m_Streams[s].stride = 0;
-                            foreach (var m_Channel in m_Channels)
-                            {
-                                if (m_Channel.stream == s) { m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format)); }
-                            }
-                        }
-                    }
                 }
                 #endregion
 
                 //actual Vertex Buffer
                 byte[] m_DataSize = new byte[a_Stream.ReadInt32()];
                 a_Stream.Read(m_DataSize, 0, m_DataSize.Length);
+
+                if (version[0] >= 5) //create streams
+                {
+                    m_Streams = new StreamInfo[streamCount];
+                    for (int s = 0; s < streamCount; s++)
+                    {
+                        m_Streams[s] = new StreamInfo();
+                        m_Streams[s].channelMask = new BitArray(new int[1] { 0 });
+                        m_Streams[s].offset = 0;
+                        m_Streams[s].stride = 0;
+
+                        foreach (var m_Channel in m_Channels)
+                        {
+                            if (m_Channel.stream == s) { m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format)); }
+                        }
+
+                        if (s > 0)
+                        {
+                            m_Streams[s].offset = m_Streams[s - 1].offset + m_Streams[s - 1].stride * m_VertexCount;
+                            //sometimes there are 8 bytes between streams
+                            //this is NOT an alignment, even if sometimes it may seem so
+
+                            if (streamCount == 2) { m_Streams[s].offset = m_DataSize.Length - m_Streams[s].stride * m_VertexCount; }
+                            else
+                            {
+                                m_VertexCount = 0;
+                                return;
+                            }
+
+                            /*var absoluteOffset = a_Stream.Position + 4 + m_Streams[s].offset;
+                            if ((absoluteOffset % m_Streams[s].stride) != 0)
+                            {
+                                m_Streams[s].offset += m_Streams[s].stride - (int)(absoluteOffset % m_Streams[s].stride);
+                            }*/
+                        }
+                    }
+                }
                 #endregion
 
                 #region compute FvF

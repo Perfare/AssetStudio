@@ -18,6 +18,7 @@ using System.Web.Script.Serialization;
 Load parent nodes even if they are not selected to provide transformations?
 For extracting bundles, first check if file exists then decompress
 Double-check channelgroup argument in new FMOD Studio API system.playSound method
+Font index error in Dreamfall Chapters
 */
 
 namespace Unity_Studio
@@ -33,7 +34,8 @@ namespace Unity_Studio
         //private AssetsFile mainDataFile = null;
         private string mainPath = "";
         private string productName = "";
-        
+        private string[] fileTypes = new string[7] { "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
+
         Dictionary<string, Dictionary<string, string>> jsonMats;
         Dictionary<string, SortedDictionary<int, ClassStrStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStrStruct>>();
 
@@ -133,7 +135,6 @@ namespace Unity_Studio
                     //TODO find a way to read data directly instead of merging files
                     MergeSplitAssets(mainPath);
                     
-                    string[] fileTypes = new string[7] { "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
                     for (int t = 0; t < fileTypes.Length; t++)
                     {
                         string[] fileNames = Directory.GetFiles(mainPath, fileTypes[t], SearchOption.AllDirectories);
@@ -284,56 +285,60 @@ namespace Unity_Studio
         {
             StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + "...");
 
-            using (BundleFile b_File = new BundleFile(bundleFileName))
+            BundleFile b_File = new BundleFile(bundleFileName);
+
+            List<AssetsFile> b_assetsfileList = new List<AssetsFile>();
+
+            foreach (var memFile in b_File.MemoryAssetsFileList) //filter unity files
             {
-                List<AssetsFile> b_assetsfileList = new List<AssetsFile>();
-
-                foreach (var memFile in b_File.MemoryAssetsFileList) //filter unity files
+                bool validAssetsFile = false;
+                switch (Path.GetExtension(memFile.fileName))
                 {
-                    bool validAssetsFile = false;
-                    switch (Path.GetExtension(memFile.fileName))
-                    {
-                        case ".assets":
-                        case ".sharedAssets":
-                            validAssetsFile = true;
-                            break;
-                        case "":
-                            if (memFile.fileName == "mainData" || Regex.IsMatch(memFile.fileName, "level.*?") || Regex.IsMatch(memFile.fileName, "CustomAssetBundle-.*?") || Regex.IsMatch(memFile.fileName, "CAB-.*?") || Regex.IsMatch(memFile.fileName, "BuildPlayer-.*?")) { validAssetsFile = true; }
-                            break;
-                    }
-
-                    if (validAssetsFile)
-                    {
-                        StatusStripUpdate("Loading " + memFile.fileName);
-                        memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName; //add path for extract location
-
-                        AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
-                        if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
-                        {
-                            //make use of the bundle file version
-                            assetsFile.m_Version = b_File.ver3;
-                            assetsFile.version = Array.ConvertAll((b_File.ver3.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
-                            assetsFile.buildType = b_File.ver3.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
-                        }
-
-                        b_assetsfileList.Add(assetsFile);
-                    }
-                    else
-                    {
-                        memFile.memStream.Close();
-                    }
+                    case ".assets":
+                    case ".sharedAssets":
+                        validAssetsFile = true;
+                        break;
+                    case "":
+                        validAssetsFile = (memFile.fileName == "mainData" || 
+                                            Regex.IsMatch(memFile.fileName, "level.*?") || 
+                                            Regex.IsMatch(memFile.fileName, "CustomAssetBundle-.*?") || 
+                                            Regex.IsMatch(memFile.fileName, "CAB-.*?") || 
+                                            Regex.IsMatch(memFile.fileName, "BuildPlayer-.*?"));
+                        break;
                 }
 
-                assetsfileList.AddRange(b_assetsfileList);//will the streams still be available for reading data?
-
-                foreach (var assetsFile in b_assetsfileList)
+                if (validAssetsFile)
                 {
-                    foreach (var sharedFile in assetsFile.sharedAssetsList)
+                    StatusStripUpdate("Loading " + memFile.fileName);
+                    //create dummy path to be used for asset extraction
+                    memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
+
+                    AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
+                    if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
                     {
-                        sharedFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + sharedFile.fileName;
-                        var loadedSharedFile = b_assetsfileList.Find(aFile => aFile.filePath == sharedFile.fileName);
-                        if (loadedSharedFile != null) { sharedFile.Index = assetsfileList.IndexOf(loadedSharedFile); }
+                        //make use of the bundle file version
+                        assetsFile.m_Version = b_File.ver3;
+                        assetsFile.version = Array.ConvertAll((b_File.ver3.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
+                        assetsFile.buildType = b_File.ver3.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
                     }
+
+                    b_assetsfileList.Add(assetsFile);
+                }
+                else
+                {
+                    memFile.memStream.Close();
+                }
+            }
+
+            assetsfileList.AddRange(b_assetsfileList);//will the streams still be available for reading data?
+
+            foreach (var assetsFile in b_assetsfileList)
+            {
+                foreach (var sharedFile in assetsFile.sharedAssetsList)
+                {
+                    sharedFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + sharedFile.fileName;
+                    var loadedSharedFile = b_assetsfileList.Find(aFile => aFile.filePath == sharedFile.fileName);
+                    if (loadedSharedFile != null) { sharedFile.Index = assetsfileList.IndexOf(loadedSharedFile); }
                 }
             }
         }
@@ -395,29 +400,29 @@ namespace Unity_Studio
             string extractPath = bundleFileName + "_unpacked\\";
             Directory.CreateDirectory(extractPath);
 
-            using (BundleFile b_File = new BundleFile(bundleFileName))
+            BundleFile b_File = new BundleFile(bundleFileName);
+
+            foreach (var memFile in b_File.MemoryAssetsFileList)
             {
-                foreach (var memFile in b_File.MemoryAssetsFileList)
+                string filePath = extractPath + memFile.fileName.Replace('/', '\\');
+                if (!Directory.Exists(Path.GetDirectoryName(filePath)))
                 {
-                    string filePath = extractPath + memFile.fileName.Replace('/','\\');
-                    if (!Directory.Exists(Path.GetDirectoryName(filePath)))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-                    }
-                    if (File.Exists(filePath))
-                    {
-                        StatusStripUpdate("File " + memFile.fileName + " already exists");
-                    }
-                    else
-                    {
-                        StatusStripUpdate("Extracting " + Path.GetFileName(memFile.fileName));
-                        extractedCount += 1;
+                }
+                if (File.Exists(filePath))
+                {
+                    StatusStripUpdate("File " + memFile.fileName + " already exists");
+                }
+                else
+                {
+                    StatusStripUpdate("Extracting " + Path.GetFileName(memFile.fileName));
+                    extractedCount += 1;
 
-                        using (FileStream file = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write))
-                        {
-                            memFile.memStream.WriteTo(file);
-                        }
+                    using (FileStream file = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write))
+                    {
+                        memFile.memStream.WriteTo(file);
+                        memFile.memStream.Close();
                     }
                 }
             }
@@ -1039,6 +1044,7 @@ namespace Unity_Studio
         {
             if (firstSortColumn != e.Column)
             {
+                //sorting column has been changed
                 reverseSort = false;
                 secondSortColumn = firstSortColumn;
             }
@@ -1074,6 +1080,7 @@ namespace Unity_Studio
                     });
                     break;
             }
+
             assetListView.EndUpdate();
 
             resizeAssetListColumns();
@@ -1859,6 +1866,11 @@ namespace Unity_Studio
                                 mb.AppendFormat("\n\t\t\tP: \"ShininessExponent\", \"Number\", \"\", \"A\",{0}", m_Float.second);
                                 mb.AppendFormat("\n\t\t\tP: \"Shininess\", \"Number\", \"\", \"A\",{0}", m_Float.second);
                                 break;
+                            case "_Transparency":
+                                mb.Append("\n\t\t\tP: \"TransparentColor\", \"Color\", \"\", \"A\",1,1,1");
+                                mb.AppendFormat("\n\t\t\tP: \"TransparencyFactor\", \"Number\", \"\", \"A\",{0}", m_Float.second);
+                                mb.AppendFormat("\n\t\t\tP: \"Opacity\", \"Number\", \"\", \"A\",{0}", (1 - m_Float.second));
+                                break;
                             default:
                                 mb.AppendFormat("\n;\t\t\tP: \"{0}\", \"Number\", \"\", \"A\",{1}", m_Float.first, m_Float.second);
                                 break;
@@ -1914,9 +1926,11 @@ namespace Unity_Studio
                                     cb2.Append("SpecularColor\"");
                                     break;
                                 case "_NormalMap":
-                                case "_BumpMap":
                                 case "gNormalSampler":
                                     cb2.Append("NormalMap\"");
+                                    break;
+                                case "_BumpMap":
+                                    cb2.Append("Bump\"");
                                     break;
                                 default:
                                     cb2.AppendFormat("{0}\"", m_TexEnv.name);
@@ -2143,6 +2157,10 @@ namespace Unity_Studio
                     AssetPreloadData MeshPD;
                     if (assetsfileList.TryGetGameObject(m_SkinnedMeshRenderer.m_GameObject, out m_GameObject) && assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out MeshPD))
                     {
+                        //generate unique Geometry ID for instanced mesh objects
+                        //I should find a way to preserve instances at least when exportDeformers is not selected
+                        var keepID = MeshPD.uniqueID;
+                        MeshPD.uniqueID = SkinnedMeshPD.uniqueID;
                         Mesh m_Mesh = new Mesh(MeshPD);
                         MeshFBX(m_Mesh, MeshPD.uniqueID, ob);
                         
@@ -2282,6 +2300,8 @@ namespace Unity_Studio
                                 bool stop = true;
                             }
                         }
+
+                        MeshPD.uniqueID = keepID;
                     }
                 }
                 
