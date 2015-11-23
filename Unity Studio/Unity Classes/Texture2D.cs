@@ -26,6 +26,7 @@ namespace Unity_Studio
         public int m_ColorSpace;
         public byte[] image_data;
 
+
         public int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
         //public int dwHeight;
         //public int dwWidth;
@@ -56,7 +57,6 @@ namespace Unity_Studio
         public int pvrMetaDataSize = 0x0;
 
         public int image_data_size;
-        string extension;
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -77,10 +77,6 @@ namespace Unity_Studio
             m_CompleteImageSize = a_Stream.ReadInt32();
             m_TextureFormat = a_Stream.ReadInt32();
             
-            if (m_TextureFormat < 30) { extension = ".dds"; }
-            else if (m_TextureFormat < 35) { extension = ".pvr"; }
-            else { extension = "_" + m_Width.ToString() + "x" + m_Height.ToString() + "." + m_TextureFormat.ToString() + ".tex"; }
-
             if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 2))
             { m_MipMap = a_Stream.ReadBoolean(); }
             else
@@ -235,7 +231,7 @@ namespace Unity_Studio
                                     image_data[i * 2 + 1] = b0;
                                 }
                             }
-                            
+
                             dwFlags2 = 0x40;
                             dwRGBBitCount = 0x10;
                             dwRBitMask = 0xF800;
@@ -305,6 +301,9 @@ namespace Unity_Studio
                             dwABitMask = 0xF000;
                             break;
                         }
+                    case 28: //DXT1 Crunched
+                    case 29: //DXT1 Crunched
+                        break;
                     case 30: //PVRTC_RGB2
                         {
                             pvrPixelFormat = 0x0;
@@ -331,6 +330,52 @@ namespace Unity_Studio
                             break;
                         }
                 }
+            }
+            else
+            {
+                preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
+                preloadData.exportSize = image_data_size;
+
+                switch (m_TextureFormat)
+                {
+                    case 1: preloadData.InfoText += "Alpha8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 2: preloadData.InfoText += "ARGB 4.4.4.4"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 3: preloadData.InfoText += "BGR 8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 4: preloadData.InfoText += "GRAB 8.8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 5: preloadData.InfoText += "BGRA 8.8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 7: preloadData.InfoText += "RGB 5.6.5"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 10: preloadData.InfoText += "DXT1"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 12: preloadData.InfoText += "DXT5"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 13: preloadData.InfoText += "RGBA 4.4.4.4"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case 28: preloadData.InfoText += "DXT1 Crunched"; preloadData.extension = ".crn"; break;
+                    case 29: preloadData.InfoText += "DXT5 Crunched"; preloadData.extension = ".crn"; break;
+                    case 30: preloadData.InfoText += "PVRTC_RGB2"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    case 31: preloadData.InfoText += "PVRTC_RGBA2"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    case 32: preloadData.InfoText += "PVRTC_RGB4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    case 33: preloadData.InfoText += "PVRTC_RGBA4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    case 34: preloadData.InfoText += "ETC_RGB4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    default: preloadData.InfoText += "unknown"; preloadData.extension = ".tex"; break;
+                }
+
+                switch (m_FilterMode)
+                {
+                    case 0: preloadData.InfoText += "\nFilter Mode: Point "; break;
+                    case 1: preloadData.InfoText += "\nFilter Mode: Bilinear "; break;
+                    case 2: preloadData.InfoText += "\nFilter Mode: Trilinear "; break;
+
+                }
+
+                preloadData.InfoText += "\nAnisotropic level: " + m_Aniso.ToString() + "\nMip map bias: " + m_MipBias.ToString();
+
+                switch (m_WrapMode)
+                {
+                    case 0: preloadData.InfoText += "\nWrap mode: Repeat"; break;
+                    case 1: preloadData.InfoText += "\nWrap mode: Clamp"; break;
+                }
+
+                if (m_Name != "") { preloadData.Text = m_Name; }
+                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
             }
         }
     }

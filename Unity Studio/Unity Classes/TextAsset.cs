@@ -11,14 +11,12 @@ namespace Unity_Studio
         public byte[] m_Script;
         public string m_PathName;
 
-        public int exportSize;
-        public string extension = ".txt";
-
         public TextAsset(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
             var a_Stream = preloadData.sourceFile.a_Stream;
             a_Stream.Position = preloadData.Offset;
+            preloadData.extension = ".txt";
 
             if (sourceFile.platform == -2)
             {
@@ -37,7 +35,7 @@ namespace Unity_Studio
                 a_Stream.Read(m_Script, 0, m_Script_size);
 
                 if (m_Script[0] == 93) { m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script); }
-                if (m_Script[0] == 60 || (m_Script[0] == 239 && m_Script[1] == 187 && m_Script[2] == 191 && m_Script[3] == 60)) { extension = ".xml"; }
+                if (m_Script[0] == 60 || (m_Script[0] == 239 && m_Script[1] == 187 && m_Script[2] == 191 && m_Script[3] == 60)) { preloadData.extension = ".xml"; }
             }
             else
             {
@@ -45,12 +43,16 @@ namespace Unity_Studio
                 if (lzmaTest == 93)
                 {
                     a_Stream.Position += 4;
-                    exportSize = a_Stream.ReadInt32(); //actualy int64
+                    preloadData.exportSize = a_Stream.ReadInt32(); //actualy int64
                     a_Stream.Position -= 8;
                 }
-                else { exportSize = m_Script_size; }
+                else { preloadData.exportSize = m_Script_size; }
 
                 a_Stream.Position += m_Script_size - 1;
+
+                if (m_Name != "") { preloadData.Text = m_Name; }
+                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
             }
             a_Stream.AlignStream(4);
 

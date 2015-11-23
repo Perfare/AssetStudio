@@ -17,6 +17,7 @@ namespace Unity_Studio
         public string TypeString;
         public int exportSize;
         public string InfoText;
+        public string extension;
 
         public AssetsFile sourceFile;
         public string uniqueID;

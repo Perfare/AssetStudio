@@ -31,8 +31,6 @@ namespace Unity_Studio
         public long m_Offset;
         public long m_Size;
         public byte[] m_AudioData;
-        
-        public string extension = "";
 
         public AudioClip(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -94,58 +92,7 @@ namespace Unity_Studio
                 m_Size = a_Stream.ReadInt64();
                 m_CompressionFormat = a_Stream.ReadInt32();
             }
-
-            #region Info Text & extension
-            preloadData.InfoText = "Compression format: ";
-
-            switch (m_Type)
-            {
-                case 2:
-                    extension = ".aif";
-                    preloadData.InfoText += "AIFF";
-                    break;
-                case 13:
-                    extension = ".mp3";
-                    preloadData.InfoText += "MP3";
-                    break;
-                case 14:
-                    extension = ".ogg";
-                    preloadData.InfoText += "Ogg Vorbis";
-                    break;
-                case 20:
-                    extension = ".wav";
-                    preloadData.InfoText += "WAV";
-                    break;
-                case 22: //xbox encoding
-                    extension = ".wav";
-                    preloadData.InfoText += "Xbox360 WAV";
-                    break;
-            }
-
-            switch (m_CompressionFormat)
-            {
-                case 0:
-                    extension = ".fsb";
-                    preloadData.InfoText += "PCM";
-                    break;
-                case 1:
-                    extension = ".fsb";
-                    preloadData.InfoText += "Vorbis";
-                    break;
-                case 2:
-                    extension = ".fsb";
-                    preloadData.InfoText += "ADPCM";
-                    break;
-                case 3:
-                    extension = ".fsb";
-                    preloadData.InfoText += "MP3";//not sure
-                    break;
-            }
-
-            if (extension == "") { preloadData.InfoText += "Unknown"; }
-            preloadData.InfoText += "\n3D: " + m_3D.ToString();
-            #endregion
-
+            
             if (readSwitch)
             {
                 m_AudioData = new byte[m_Size];
@@ -163,6 +110,66 @@ namespace Unity_Studio
                         reader.Close();
                     }
                 }
+            }
+            else
+            {
+                preloadData.InfoText = "Compression format: ";
+
+                switch (m_Type)
+                {
+                    case 2:
+                        preloadData.extension = ".aif";
+                        preloadData.InfoText += "AIFF";
+                        break;
+                    case 13:
+                        preloadData.extension = ".mp3";
+                        preloadData.InfoText += "MP3";
+                        break;
+                    case 14:
+                        preloadData.extension = ".ogg";
+                        preloadData.InfoText += "Ogg Vorbis";
+                        break;
+                    case 20:
+                        preloadData.extension = ".wav";
+                        preloadData.InfoText += "WAV";
+                        break;
+                    case 22: //xbox encoding
+                        preloadData.extension = ".wav";
+                        preloadData.InfoText += "Xbox360 WAV";
+                        break;
+                }
+
+                switch (m_CompressionFormat)
+                {
+                    case 0:
+                        preloadData.extension = ".fsb";
+                        preloadData.InfoText += "PCM";
+                        break;
+                    case 1:
+                        preloadData.extension = ".fsb";
+                        preloadData.InfoText += "Vorbis";
+                        break;
+                    case 2:
+                        preloadData.extension = ".fsb";
+                        preloadData.InfoText += "ADPCM";
+                        break;
+                    case 3:
+                        preloadData.extension = ".fsb";
+                        preloadData.InfoText += "MP3";//not sure
+                        break;
+                }
+
+                if (preloadData.extension == "")
+                {
+                    preloadData.extension = ".AudioClip";
+                    preloadData.InfoText += "Unknown";
+                }
+                preloadData.InfoText += "\n3D: " + m_3D.ToString();
+
+                if (m_Name != "") { preloadData.Text = m_Name; }
+                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.exportSize = (int)m_Size;
+                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, m_Size.ToString() });
             }
         }
     }

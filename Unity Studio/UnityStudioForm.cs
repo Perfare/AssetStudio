@@ -15,7 +15,6 @@ using System.Web.Script.Serialization;
 
 
 /*TODO
-Load parent nodes even if they are not selected to provide transformations?
 For extracting bundles, first check if file exists then decompress
 Double-check channelgroup argument in new FMOD Studio API system.playSound method
 Font index error in Dreamfall Chapters
@@ -67,6 +66,7 @@ namespace Unity_Studio
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
+        System.Drawing.Text.PrivateFontCollection pfc = new System.Drawing.Text.PrivateFontCollection();
 
         //[DllImport("PVRTexLib.dll")]
         //private static extern void test();
@@ -620,10 +620,6 @@ namespace Unity_Studio
                 {
                     StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
 
-                    var a_Stream = assetsFile.a_Stream;
-                    var fileGen = assetsFile.fileGen;
-                    //var m_version = assetsFile.m_version;
-                    var version = assetsFile.version;
                     string fileID = assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
 
                     //ListViewGroup assetGroup = new ListViewGroup(Path.GetFileName(assetsFile.filePath));
@@ -632,7 +628,6 @@ namespace Unity_Studio
                     foreach (var asset in assetsFile.preloadTable.Values)
                     {
                         asset.uniqueID = fileID + asset.uniqueID;
-                        a_Stream.Position = asset.Offset;
 
                         switch (asset.Type2)
                         {
@@ -659,75 +654,26 @@ namespace Unity_Studio
                             case 28: //Texture2D
                                 {
                                     Texture2D m_Texture2D = new Texture2D(asset, false);
-
-                                    asset.Text = m_Texture2D.m_Name;
-                                    asset.exportSize = 128 + m_Texture2D.image_data_size;
-
-                                    #region Get Info Text
-                                    asset.InfoText = "Width: " + m_Texture2D.m_Width.ToString() + "\nHeight: " + m_Texture2D.m_Height.ToString() + "\nFormat: ";
-
-                                    switch (m_Texture2D.m_TextureFormat)
-                                    {
-                                        case 1: asset.InfoText += "Alpha8"; break;
-                                        case 2: asset.InfoText += "ARGB 4.4.4.4"; break;
-                                        case 3: asset.InfoText += "BGR 8.8.8"; break;
-                                        case 4: asset.InfoText += "GRAB 8.8.8.8"; break;
-                                        case 5: asset.InfoText += "BGRA 8.8.8.8"; break;
-                                        case 7: asset.InfoText += "RGB 5.6.5"; break;
-                                        case 10: asset.InfoText += "RGB DXT1"; break;
-                                        case 12: asset.InfoText += "ARGB DXT5"; break;
-                                        case 13: asset.InfoText += "RGBA 4.4.4.4"; break;
-                                        case 30: asset.InfoText += "PVRTC_RGB2"; asset.exportSize -= 76; break;
-                                        case 31: asset.InfoText += "PVRTC_RGBA2"; asset.exportSize -= 76; break;
-                                        case 32: asset.InfoText += "PVRTC_RGB4"; asset.exportSize = 52; break;
-                                        case 33: asset.InfoText += "PVRTC_RGBA4"; asset.exportSize -= 76; break;
-                                        case 34: asset.InfoText += "ETC_RGB4"; asset.exportSize -= 76; break;
-                                        default: asset.InfoText += "unknown"; asset.exportSize -= 128; break;
-                                    }
-
-                                    switch (m_Texture2D.m_FilterMode)
-                                    {
-                                        case 0: asset.InfoText += "\nFilter Mode: Point "; break;
-                                        case 1: asset.InfoText += "\nFilter Mode: Bilinear "; break;
-                                        case 2: asset.InfoText += "\nFilter Mode: Trilinear "; break;
-
-                                    }
-
-                                    asset.InfoText += "\nAnisotropic level: " + m_Texture2D.m_Aniso.ToString() + "\nMip map bias: " + m_Texture2D.m_MipBias.ToString();
-
-                                    switch (m_Texture2D.m_WrapMode)
-                                    {
-                                        case 0: asset.InfoText += "\nWrap mode: Repeat"; break;
-                                        case 1: asset.InfoText += "\nWrap mode: Clamp"; break;
-                                    }
-                                    #endregion
-
                                     assetsFile.exportableAssets.Add(asset);
                                     break;
                                 }
+                            case 48: //Shader
                             case 49: //TextAsset
                                 {
                                     TextAsset m_TextAsset = new TextAsset(asset, false);
-
-                                    asset.Text = m_TextAsset.m_Name;
-                                    asset.exportSize = m_TextAsset.exportSize;
                                     assetsFile.exportableAssets.Add(asset);
                                     break;
                                 }
                             case 83: //AudioClip
                                 {
                                     AudioClip m_AudioClip = new AudioClip(asset, false);
-
-                                    asset.Text = m_AudioClip.m_Name;
-                                    asset.exportSize = (int)m_AudioClip.m_Size;
                                     assetsFile.exportableAssets.Add(asset);
                                     break;
                                 }
-                            case 48: //Shader
-                            case 89: //CubeMap
+                            //case 89: //CubeMap
                             case 128: //Font
                                 {
-                                    asset.Text = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                                    unityFont m_Font = new unityFont(asset, false);
                                     assetsFile.exportableAssets.Add(asset);
                                     break;
                                 }
@@ -738,11 +684,10 @@ namespace Unity_Studio
                                     base.Text = "Unity Studio - " + productName + " - " + assetsFile.m_Version + " - " + assetsFile.platformStr;
                                     break;
                                 }
+                            case 0:
+                                break;
 
                         }
-
-                        if (asset.Text == "") { asset.Text = asset.TypeString + " #" + asset.uniqueID; }
-                        asset.SubItems.AddRange(new string[] { asset.TypeString, asset.exportSize.ToString() });
 
                         progressBar1.PerformStep();
                     }
@@ -859,7 +804,8 @@ namespace Unity_Studio
             
             progressBar1.Value = 0;
             treeSearch.Select();
-            TexEnv dsd = new TexEnv();
+            
+            saveFolderDialog1.InitialDirectory = mainPath;
         }
 
         private void assetListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -1094,6 +1040,7 @@ namespace Unity_Studio
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
             fontPreviewBox.Visible = false;
+            pfc.Dispose();
             FMODpanel.Visible = false;
             lastLoadedAsset = null;
             StatusStripUpdate("");
@@ -1229,48 +1176,51 @@ namespace Unity_Studio
                 #region Font
                 case 128: //Font
                     {
-                        unityFont m_Font = new unityFont(asset);
+                        unityFont m_Font = new unityFont(asset, true);
                         
-                        if (m_Font.extension != ".otf" && m_Font.m_FontData != null)
+                        if (asset.extension != ".otf" && m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
                             Marshal.Copy(m_Font.m_FontData, 0, data, m_Font.m_FontData.Length);
 
-                            System.Drawing.Text.PrivateFontCollection pfc = new System.Drawing.Text.PrivateFontCollection();
                             // We HAVE to do this to register the font to the system (Weird .NET bug !)
                             uint cFonts = 0;
                             AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
 
+                            pfc = new System.Drawing.Text.PrivateFontCollection();
                             pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
-                            System.Runtime.InteropServices.Marshal.FreeCoTaskMem(data);
+                            Marshal.FreeCoTaskMem(data);
 
-                            //textPreviewBox.Font = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                            //textPreviewBox.Text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWYZ\r\n1234567890.:,;'\"(!?)+-*/=\r\nThe quick brown fox jumps over the lazy dog. 1234567890";
-                            fontPreviewBox.SelectionStart = 0;
-                            fontPreviewBox.SelectionLength = 80;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 81;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 138;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 195;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 252;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 309;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 366;
-                            fontPreviewBox.SelectionLength = 56;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
-                            fontPreviewBox.SelectionStart = 423;
-                            fontPreviewBox.SelectionLength = 55;
-                            fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
-                            fontPreviewBox.Visible = true;
+                            if (pfc.Families.Length > 0)
+                            {
+                                //textPreviewBox.Font = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                //textPreviewBox.Text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWYZ\r\n1234567890.:,;'\"(!?)+-*/=\r\nThe quick brown fox jumps over the lazy dog. 1234567890";
+                                fontPreviewBox.SelectionStart = 0;
+                                fontPreviewBox.SelectionLength = 80;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 81;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 138;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 195;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 252;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 309;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 366;
+                                fontPreviewBox.SelectionLength = 56;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
+                                fontPreviewBox.SelectionStart = 423;
+                                fontPreviewBox.SelectionLength = 55;
+                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
+                                fontPreviewBox.Visible = true;
+                            }
                         }
                         else { StatusStripUpdate("Unsupported font for preview. Try to export."); }
 
@@ -2158,7 +2108,9 @@ namespace Unity_Studio
                     if (assetsfileList.TryGetGameObject(m_SkinnedMeshRenderer.m_GameObject, out m_GameObject) && assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out MeshPD))
                     {
                         //generate unique Geometry ID for instanced mesh objects
-                        //I should find a way to preserve instances at least when exportDeformers is not selected
+                        //instanced skinned geometry is possible in FBX, but all instances are linked to the same skeleton nodes
+                        //TODO: create instances if deformer option is not selected
+                        //find a way to test if a mesh instance was loaded previously and if it uses the same skeleton, then create instance or copy
                         var keepID = MeshPD.uniqueID;
                         MeshPD.uniqueID = SkinnedMeshPD.uniqueID;
                         Mesh m_Mesh = new Mesh(MeshPD);
@@ -2331,55 +2283,21 @@ namespace Unity_Studio
                 foreach (var TexturePD in Textures)
                 {
                     Texture2D m_Texture2D = new Texture2D(TexturePD, true);
-                    
-                    #region extract texture
-                    string texPath = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\" + TexturePD.Text;
-//TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
-                    if (uniqueNames.Checked) { texPath += " #" + TexturePD.uniqueID; }
-                    if (m_Texture2D.m_TextureFormat < 30) { texPath += ".dds"; }
-                    else if (m_Texture2D.m_TextureFormat < 35) { texPath += ".pvr"; }
-                    else { texPath += "_" + m_Texture2D.m_Width.ToString() + "x" + m_Texture2D.m_Height.ToString() + "." + m_Texture2D.m_TextureFormat.ToString() + ".tex"; }
 
-                    if (File.Exists(texPath))
+                    //TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
+                    string texFilename = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\" + TexturePD.Text;
+                    if (uniqueNames.Checked) { texFilename += " #" + TexturePD.uniqueID; }
+                    texFilename += TexturePD.extension;
+
+                    if (File.Exists(texFilename))
                     {
-                        StatusStripUpdate("Texture file " + Path.GetFileName(texPath) + " already exists");
+                        StatusStripUpdate("Texture file " + Path.GetFileName(texFilename) + " already exists");
                     }
                     else
                     {
-                        StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(texPath));
-
-                        switch (m_Texture2D.m_TextureFormat)
-                        {
-                            case 1: //Alpha8
-                            case 2: //A4R4G4B4
-                            case 3: //B8G8R8 //confirmed on X360, iOS //PS3 unsure
-                            case 4: //G8R8A8B8 //confirmed on X360, iOS
-                            case 5: //B8G8R8A8 //confirmed on X360, PS3, Web, iOS
-                            case 7: //R5G6B5 //confirmed switched on X360; confirmed on iOS
-                            case 10: //DXT1
-                            case 12: //DXT5
-                            case 13: //R4G4B4A4, iOS (only?)
-                                WriteDDS(texPath, m_Texture2D);
-                                break;
-                            case 30: //PVRTC_RGB2
-                            case 31: //PVRTC_RGBA2
-                            case 32: //PVRTC_RGB4
-                            case 33: //PVRTC_RGBA4
-                            case 34: //ETC_RGB4
-                                WritePVR(texPath, m_Texture2D);
-                                break;
-                            default:
-                                {
-                                    using (BinaryWriter writer = new BinaryWriter(File.Open(texPath, FileMode.Create)))
-                                    {
-                                        writer.Write(m_Texture2D.image_data);
-                                        writer.Close();
-                                    }
-                                    break;
-                                }
-                        }
+                        StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(texFilename));
+                        ExportTexture(m_Texture2D, texFilename);
                     }
-                    #endregion
 
                     ob.AppendFormat("\n\tTexture: 7{0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"TextureVideoClip\"");
@@ -2390,17 +2308,17 @@ namespace Unity_Studio
                     ob.Append("\n\t\t\tP: \"UseMaterial\", \"bool\", \"\", \"\",1");
                     ob.Append("\n\t\t}");
                     ob.AppendFormat("\n\t\tMedia: \"Video::{0}\"", TexturePD.Text);
-                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPath);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPath));
+                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texFilename);
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texFilename));
                     ob.Append("\n\t}");
 
                     ob.AppendFormat("\n\tVideo: 8{0}, \"Video::{1}\", \"Clip\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"Clip\"");
                     ob.Append("\n\t\tProperties70:  {");
-                    ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texPath);
+                    ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texFilename);
                     ob.Append("\n\t\t}");
-                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPath);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPath));
+                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texFilename);
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texFilename));
                     ob.Append("\n\t}");
 
                     //connect video to texture
@@ -2853,35 +2771,86 @@ namespace Unity_Studio
 
         private void ExportAssets_Click(object sender, EventArgs e)
         {
-            if (exportableAssets.Count > 0)
+            if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
             {
-                saveFolderDialog1.InitialDirectory = mainPath;
-                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                var savePath = saveFolderDialog1.FileName;
+                if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
+                { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+
+                bool exportAll = ((ToolStripItem)sender).Name == "exportAllAssetsMenuItem";
+                bool exportFiltered = ((ToolStripItem)sender).Name == "exportFilteredAssetsMenuItem";
+                bool exportSelected = ((ToolStripItem)sender).Name == "exportSelectedAssetsMenuItem";
+
+                int toExport = 0;
+                int exportedCount = 0;
+
+                //looping assetsFiles will optimize HDD access
+                //but will also have a small performance impact when exporting only a couple of selected assets
+                foreach (var assetsFile in assetsfileList)
                 {
-                    var savePath = saveFolderDialog1.FileName;
-                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
-                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
-                    //Directory.CreateDirectory(saveFolderDialog1.FileName);//this will be created later, when grouping is determined
+                    string exportpath = savePath + "\\";
+                    if (assetGroupOptions.SelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(assetsFile.filePath) + "_export\\"; }
 
-                    switch (((ToolStripItem)sender).Name)
+                    foreach (var asset in assetsFile.exportableAssets)
                     {
-                        case "exportAllAssetsMenuItem":
-                            ExportAll(savePath, assetGroupOptions.SelectedIndex);
-                            break;
-                        case "exportFilteredAssetsMenuItem":
-                            ExportFiltered(visibleAssets, savePath, assetGroupOptions.SelectedIndex);
-                            break;
-                        case "exportSelectedAssetsMenuItem":
-                            List<AssetPreloadData> selectedAssetList = new List<AssetPreloadData>();
-                            var selIndices = assetListView.SelectedIndices;
-                            foreach (int index in selIndices) { selectedAssetList.Add((AssetPreloadData)assetListView.Items[index]); }
-                            ExportFiltered(selectedAssetList, savePath, assetGroupOptions.SelectedIndex);
-                            break;
-                    }
+                        if (exportAll ||
+                            visibleAssets.Exists(x => x.uniqueID == asset.uniqueID) && (exportFiltered || 
+                                                                                        exportSelected && asset.Index >= 0 && assetListView.SelectedIndices.Contains(asset.Index)))
+                        {
+                            toExport++;
+                            if (assetGroupOptions.SelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
 
-                    if (openAfterExport.Checked) { System.Diagnostics.Process.Start(savePath); }
+                            //AudioClip and Texture2D extensions are set when the list is built
+                            //so their overwrite tests can be done without loading them again
+
+                            switch (asset.Type2)
+                            {
+                                case 28:
+                                    if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                    { ExportTexture(new Texture2D(asset, true), exportpath + asset.Text + asset.extension); exportedCount++; }
+                                    break;
+                                case 83:
+                                    if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                    { ExportAudioClip(new AudioClip(asset, true), exportpath + asset.Text + asset.extension); exportedCount++; }
+                                    break;
+                                case 48:
+                                    if (!ExportFileExists(exportpath + asset.Text + ".txt", asset.TypeString))
+                                    { ExportText(new TextAsset(asset, true), exportpath + asset.Text + ".txt"); exportedCount++; }
+                                    break;
+                                case 49:
+                                    TextAsset m_TextAsset = new TextAsset(asset, true);
+                                    if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                    { ExportText(m_TextAsset, exportpath + asset.Text + asset.extension); exportedCount++; }
+                                    break;
+                                case 128:
+                                    unityFont m_Font = new unityFont(asset, true);
+                                    if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                    { ExportFont(m_Font, exportpath + asset.Text + asset.extension); exportedCount++; }
+                                    break;
+                            }
+                        }
+                    }
                 }
 
+                string statusText = "";
+                switch (exportedCount)
+                {
+                    case 0:
+                        statusText = "Nothing exported.";
+                        break;
+                    case 1:
+                        statusText = toolStripStatusLabel1.Text + " finished.";
+                        break;
+                    default:
+                        statusText = "Finished exporting " + exportedCount.ToString() + " assets.";
+                        break;
+                }
+                
+                if (toExport > exportedCount) { statusText += " " + (toExport - exportedCount).ToString() + " assets skipped (not extractable or files already exist)"; }
+
+                StatusStripUpdate(statusText);
+
+                if (openAfterExport.Checked && exportedCount > 0) { System.Diagnostics.Process.Start(savePath); }
             }
             else
             {
@@ -2889,311 +2858,133 @@ namespace Unity_Studio
             }
         }
 
-        private void ExportAll(string selectedPath, int groupFiles)
+        private void ExportTexture (Texture2D m_Texture2D, string exportFilename)
         {
-            int exportedCount = 0;
-
-            foreach (var assetsFile in assetsfileList)
+            switch (m_Texture2D.m_TextureFormat)
             {
-                if (assetsFile.exportableAssets.Count > 0)
-                {
-                    string exportpath = selectedPath;
-                    if (groupFiles == 1) { exportpath += "\\" + Path.GetFileNameWithoutExtension(assetsFile.filePath) + "_export"; }
-                    Directory.CreateDirectory(exportpath);
-
-                    foreach (var asset in assetsFile.exportableAssets)
+                #region DDS
+                case 1: //Alpha8
+                case 2: //A4R4G4B4
+                case 3: //B8G8R8 //confirmed on X360, iOS //PS3 unsure
+                case 4: //G8R8A8B8 //confirmed on X360, iOS
+                case 5: //B8G8R8A8 //confirmed on X360, PS3, Web, iOS
+                case 7: //R5G6B5 //confirmed switched on X360; confirmed on iOS
+                case 10: //DXT1
+                case 12: //DXT5
+                case 13: //R4G4B4A4, iOS (only?)
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
                     {
-                        if (groupFiles == 0)
-                        {
-                            switch (asset.Type2)
-                            {
-                                case 28:
-                                    exportpath = selectedPath + "\\Texture2D";
-                                    break;
-                                case 83:
-                                    exportpath = selectedPath + "\\AudioClip";
-                                    break;
-                                case 48:
-                                    exportpath = selectedPath + "\\Shader";
-                                    break;
-                                case 49:
-                                    exportpath = selectedPath + "\\TextAsset";
-                                    break;
-                                case 128:
-                                    exportpath = selectedPath + "\\Font";
-                                    break;
-                            }
-                            Directory.CreateDirectory(exportpath);
-                        }
-                        exportedCount += ExportAsset(asset, exportpath);
+                        writer.Write(0x20534444);
+                        writer.Write(0x7C);
+                        writer.Write(m_Texture2D.dwFlags);
+                        writer.Write(m_Texture2D.m_Height);
+                        writer.Write(m_Texture2D.m_Width);
+                        writer.Write(m_Texture2D.dwPitchOrLinearSize); //should be main tex size without mips);
+                        writer.Write((int)0); //dwDepth not implemented
+                        writer.Write(m_Texture2D.dwMipMapCount);
+                        writer.Write(new byte[44]); //dwReserved1[11]
+                        writer.Write(m_Texture2D.dwSize);
+                        writer.Write(m_Texture2D.dwFlags2);
+                        writer.Write(m_Texture2D.dwFourCC);
+                        writer.Write(m_Texture2D.dwRGBBitCount);
+                        writer.Write(m_Texture2D.dwRBitMask);
+                        writer.Write(m_Texture2D.dwGBitMask);
+                        writer.Write(m_Texture2D.dwBBitMask);
+                        writer.Write(m_Texture2D.dwABitMask);
+                        writer.Write(m_Texture2D.dwCaps);
+                        writer.Write(m_Texture2D.dwCaps2);
+                        writer.Write(new byte[12]); //dwCaps3&4 & dwReserved2
+
+                        writer.Write(m_Texture2D.image_data);
+                        writer.Close();
                     }
-                }
+                    break;
+                #endregion
+                #region PVR
+                case 30: //PVRTC_RGB2
+                case 31: //PVRTC_RGBA2
+                case 32: //PVRTC_RGB4
+                case 33: //PVRTC_RGBA4
+                case 34: //ETC_RGB4
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
+                    {
+                        writer.Write(m_Texture2D.pvrVersion);
+                        writer.Write(m_Texture2D.pvrFlags);
+                        writer.Write(m_Texture2D.pvrPixelFormat);
+                        writer.Write(m_Texture2D.pvrColourSpace);
+                        writer.Write(m_Texture2D.pvrChannelType);
+                        writer.Write(m_Texture2D.m_Height);
+                        writer.Write(m_Texture2D.m_Width);
+                        writer.Write(m_Texture2D.pvrDepth);
+                        writer.Write(m_Texture2D.pvrNumSurfaces);
+                        writer.Write(m_Texture2D.pvrNumFaces);
+                        writer.Write(m_Texture2D.dwMipMapCount);
+                        writer.Write(m_Texture2D.pvrMetaDataSize);
+
+                        writer.Write(m_Texture2D.image_data);
+                        writer.Close();
+                    }
+                    break;
+                #endregion
+                case 28: //DXT1 Crunched
+                case 29: //DXT1 Crunched
+                default:
+                    using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
+                    {
+                        writer.Write(m_Texture2D.image_data);
+                        writer.Close();
+                    }
+                    break;
             }
-            string statusText = "Finished exporting " + exportedCount.ToString() + " assets.";
-            if ((exportableAssets.Count - exportedCount) > 0) { statusText += " " + (exportableAssets.Count - exportedCount).ToString() + " assets skipped (not extractable or files already exist)"; }
-            StatusStripUpdate(statusText);
+        }
+        
+        private void ExportAudioClip(AudioClip m_AudioClip, string exportFilename)
+        {
+            using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
+            {
+                writer.Write(m_AudioClip.m_AudioData);
+                writer.Close();
+            }
         }
 
-        private void ExportFiltered(List<AssetPreloadData> filteredAssetList, string selectedPath, int groupFiles)
+        private void ExportText(TextAsset m_TextAsset, string exportFilename)
         {
-            if (filteredAssetList.Count > 0)
+            using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
             {
-                int exportedCount = 0;
+                writer.Write(m_TextAsset.m_Script);
+                writer.Close();
+            }
+        }
 
-                foreach (var asset in filteredAssetList)
-                {
-                    string exportpath = selectedPath;
-                    if (groupFiles == 1) { exportpath += "\\" + Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export"; }
-                    else if (groupFiles == 0)
-                    {
-                        switch (asset.Type2)
-                        {
-                            case 28:
-                                exportpath = selectedPath + "\\Texture2D";
-                                break;
-                            case 83:
-                                exportpath = selectedPath + "\\AudioClip";
-                                break;
-                            case 48:
-                                exportpath = selectedPath + "\\Shader";
-                                break;
-                            case 49:
-                                exportpath = selectedPath + "\\TextAsset";
-                                break;
-                            case 128:
-                                exportpath = selectedPath + "\\Font";
-                                break;
-                        }
-                    }
+        private void ExportFont(unityFont m_Font, string exportFilename)
+        {
+            using (BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create)))
+            {
+                writer.Write(m_Font.m_FontData);
+                writer.Close();
+            }
+        }
 
-                    Directory.CreateDirectory(exportpath);
-                    exportedCount += ExportAsset(asset, exportpath);
-                }
-                
-                string statusText = "Finished exporting " + exportedCount.ToString() + " assets.";
-                if ((filteredAssetList.Count - exportedCount) > 0) { statusText += " " + (filteredAssetList.Count - exportedCount).ToString() + " assets skipped (not extractable or files already exist)"; }
-                StatusStripUpdate(statusText);
+        private bool ExportFileExists(string filename, string assetType)
+        {
+            if (File.Exists(filename))
+            {
+                StatusStripUpdate(assetType + " file " + Path.GetFileName(filename) + " already exists");
+                return true;
             }
             else
             {
-                StatusStripUpdate("No exportable assets selected or filtered");
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                
+                StatusStripUpdate("Exporting " + assetType + Path.GetFileName(filename));
+                return false;
             }
         }
 
-        private int ExportAsset(AssetPreloadData asset, string exportPath)
+        public void StatusStripUpdate(string statusText)
         {
-            int exportCount = 0;
-            
-            switch (asset.Type2)
-            {
-                #region Texture2D
-                case 28: //Texture2D
-                    {
-                        Texture2D m_Texture2D = new Texture2D(asset, true);
-                        
-                        string texPath = exportPath + "\\" + asset.Text;
-                        if (uniqueNames.Checked) { texPath += " #" + asset.uniqueID; }
-                        if (m_Texture2D.m_TextureFormat < 30) { texPath += ".dds"; }
-                        else if (m_Texture2D.m_TextureFormat < 35) { texPath += ".pvr"; }
-                        else { texPath += "_" + m_Texture2D.m_Width.ToString() + "x" + m_Texture2D.m_Height.ToString() + "." + m_Texture2D.m_TextureFormat.ToString() + ".tex"; }
-
-                        if (File.Exists(texPath))
-                        {
-                            StatusStripUpdate("Texture file " + Path.GetFileName(texPath) + " already exists");
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(texPath));
-                            exportCount += 1;
-
-                            switch (m_Texture2D.m_TextureFormat)
-                            {
-                                case 1: //Alpha8
-                                case 2: //A4R4G4B4
-                                case 3: //B8G8R8 //confirmed on X360, iOS //PS3 unsure
-                                case 4: //G8R8A8B8 //confirmed on X360, iOS
-                                case 5: //B8G8R8A8 //confirmed on X360, PS3, Web, iOS
-                                case 7: //R5G6B5 //confirmed switched on X360; confirmed on iOS
-                                case 10: //DXT1
-                                case 12: //DXT5
-                                case 13: //R4G4B4A4, iOS (only?)
-                                    WriteDDS(texPath, m_Texture2D);
-                                    break;
-                                case 30: //PVRTC_RGB2
-                                case 31: //PVRTC_RGBA2
-                                case 32: //PVRTC_RGB4
-                                case 33: //PVRTC_RGBA4
-                                case 34: //ETC_RGB4
-                                    WritePVR(texPath, m_Texture2D);
-                                    break;
-                                default:
-                                    {
-                                        using (BinaryWriter writer = new BinaryWriter(File.Open(texPath, FileMode.Create)))
-                                        {
-                                            writer.Write(m_Texture2D.image_data);
-                                            writer.Close();
-                                        }
-                                        break;
-                                    }
-                            }
-                        }
-                        break;
-                    }
-                #endregion
-                #region AudioClip
-                case 83: //AudioClip
-                    {
-                        AudioClip m_AudioClip = new AudioClip(asset, true);
-                        
-                        string audPath = exportPath + "\\" + asset.Text;
-                        if (uniqueNames.Checked) { audPath += " #" + asset.uniqueID; }
-                        audPath += m_AudioClip.extension;
-
-                        if (File.Exists(audPath))
-                        {
-                            StatusStripUpdate("Audio file " + Path.GetFileName(audPath) + " already exists");
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Exporting AudioClip: " + Path.GetFileName(audPath));
-                            exportCount += 1;
-                            
-                            using (BinaryWriter writer = new BinaryWriter(File.Open(audPath, FileMode.Create)))
-                            {
-                                writer.Write(m_AudioClip.m_AudioData);
-                                writer.Close();
-                            }
-
-                        }
-                        break;
-                    }
-                #endregion
-                #region Shader & TextAsset
-                case 48: //Shader
-                case 49: //TextAsset
-                    {
-                        TextAsset m_TextAsset = new TextAsset(asset, true);
-
-                        string textAssetPath = exportPath + "\\" + asset.Text;
-                        if (uniqueNames.Checked) { textAssetPath += " #" + asset.uniqueID; }
-                        textAssetPath += m_TextAsset.extension;
-
-                        if (File.Exists(textAssetPath))
-                        {
-                            StatusStripUpdate("TextAsset file " + Path.GetFileName(textAssetPath) + " already exists");
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Exporting TextAsset: " + Path.GetFileName(textAssetPath));
-                            exportCount += 1;
-
-                            using (BinaryWriter writer = new BinaryWriter(File.Open(textAssetPath, FileMode.Create)))
-                            {
-                                writer.Write(m_TextAsset.m_Script);
-                                writer.Close();
-                            }
-                        }
-                        break;
-                    }
-                #endregion
-                #region Font
-                case 128: //Font
-                    {
-                        unityFont m_Font = new unityFont(asset);
-
-                        if (m_Font.m_FontData != null)
-                        {
-                            string fontPath = exportPath + "\\" + asset.Text;
-                            if (uniqueNames.Checked) { fontPath += " #" + asset.uniqueID; }
-                            fontPath += m_Font.extension;
-
-                            if (File.Exists(fontPath))
-                            {
-                                StatusStripUpdate("Font file " + Path.GetFileName(fontPath) + " already exists");
-                            }
-                            else
-                            {
-                                StatusStripUpdate("Exporting Font: " + Path.GetFileName(fontPath));
-
-                                using (BinaryWriter writer = new BinaryWriter(File.Open(fontPath, FileMode.Create)))
-                                {
-                                    writer.Write(m_Font.m_FontData);
-                                    writer.Close();
-                                }
-
-                                exportCount += 1;
-                            }
-                        }
-                        break;
-                    }
-                #endregion
-                /*default:
-                    {
-                        string assetPath = exportPath + "\\" + asset.Name + "." + asset.TypeString;
-                        byte[] assetData = new byte[asset.Size];
-                        Stream.Read(assetData, 0, asset.Size);
-                        using (BinaryWriter writer = new BinaryWriter(File.Open(assetPath, FileMode.Create)))
-                        {
-                            writer.Write(assetData);
-                            writer.Close();
-                        }
-                        exportCount += 1;
-                        break;
-                    }*/
-            }
-            return exportCount;
-        }
-
-        private void WriteDDS(string DDSfile, Texture2D m_Texture2D)
-        {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(DDSfile, FileMode.Create)))
-            {
-                writer.Write(0x20534444);
-                writer.Write(0x7C);
-                writer.Write(m_Texture2D.dwFlags);
-                writer.Write(m_Texture2D.m_Height);
-                writer.Write(m_Texture2D.m_Width);
-                writer.Write(m_Texture2D.dwPitchOrLinearSize); //should be main tex size without mips);
-                writer.Write((int)0); //dwDepth not implemented
-                writer.Write(m_Texture2D.dwMipMapCount);
-                writer.Write(new byte[44]); //dwReserved1[11]
-                writer.Write(m_Texture2D.dwSize);
-                writer.Write(m_Texture2D.dwFlags2);
-                writer.Write(m_Texture2D.dwFourCC);
-                writer.Write(m_Texture2D.dwRGBBitCount);
-                writer.Write(m_Texture2D.dwRBitMask);
-                writer.Write(m_Texture2D.dwGBitMask);
-                writer.Write(m_Texture2D.dwBBitMask);
-                writer.Write(m_Texture2D.dwABitMask);
-                writer.Write(m_Texture2D.dwCaps);
-                writer.Write(m_Texture2D.dwCaps2);
-                writer.Write(new byte[12]); //dwCaps3&4 & dwReserved2
-
-                writer.Write(m_Texture2D.image_data);
-                writer.Close();
-            }
-        }
-
-        private void WritePVR(string PVRfile, Texture2D m_Texture2D)
-        {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(PVRfile, FileMode.Create)))
-            {
-                writer.Write(m_Texture2D.pvrVersion);
-                writer.Write(m_Texture2D.pvrFlags);
-                writer.Write(m_Texture2D.pvrPixelFormat);
-                writer.Write(m_Texture2D.pvrColourSpace);
-                writer.Write(m_Texture2D.pvrChannelType);
-                writer.Write(m_Texture2D.m_Height);
-                writer.Write(m_Texture2D.m_Width);
-                writer.Write(m_Texture2D.pvrDepth);
-                writer.Write(m_Texture2D.pvrNumSurfaces);
-                writer.Write(m_Texture2D.pvrNumFaces);
-                writer.Write(m_Texture2D.dwMipMapCount);
-                writer.Write(m_Texture2D.pvrMetaDataSize);
-
-                writer.Write(m_Texture2D.image_data);
-                writer.Close();
-            }
+            toolStripStatusLabel1.Text = statusText;
+            statusStrip1.Update();
         }
 
 
@@ -3258,12 +3049,6 @@ namespace Unity_Studio
             Properties.Settings.Default.Save();
 
             foreach (var assetsFile in assetsfileList) { assetsFile.a_Stream.Dispose(); } //is this needed?*/
-        }
-
-        public void StatusStripUpdate(string statusText)
-        {
-            toolStripStatusLabel1.Text = statusText;
-            statusStrip1.Update();
         }
     }
 }

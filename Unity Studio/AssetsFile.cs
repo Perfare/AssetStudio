@@ -176,7 +176,6 @@ namespace Unity_Studio
                     }
                 }
 
-                asset.TypeString = asset.Type2.ToString();
                 if (UnityClassID.Names[asset.Type2] != null)
                 {
                     asset.TypeString = UnityClassID.Names[asset.Type2];
