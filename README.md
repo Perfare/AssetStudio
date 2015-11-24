@@ -1,7 +1,6 @@
-**Unity Studio** is a tool meant for exploring, extracting and exporting assets from Unity games and apps.
+**Unity Studio** is a tool for exploring, extracting and exporting assets from Unity games and apps.
 
-It was built on a few years of research and reverse engineering, with more than 400 apps and games tested from every version and every platform.
-As such, it is compatible with Unity builds starting from 2.5.0 up until 5.2.2, the latest version to date, and platforms ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS.
+It is the continuation of my Unity Importer script for 3ds Max, and comprises all my research and reverse engineering of Unity file formats. It has been thoroughly tested with Unity builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with Unity builds from 2.5.0 up to the latest version.
 
 #### Current features
 
