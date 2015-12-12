@@ -4,7 +4,7 @@ It is the continuation of my Unity Importer script for 3ds Max, and comprises al
 
 #### Current features
 
-* Export to FBX, with complete hierarchy, transformations, materials and textures. At the moment, geometry is exported with normals UV coordinates and vertex colors, but no animation data.
+* Export to FBX, with complete hierarchy, transformations, materials and textures. Geometry is exported with normals, tangents, UV coordinates, vertex colors and deformers. Skeleton nodes can be exported either as bones or dummy deformers..
 * Extraction of assets that can be used as standalone resources:
   * Textures: DDS (Alpha8bpp, ARGB16bpp, RGB24bpp, ARGB32bpp, BGRA32bpp, RGB565, DXT1, DXT5, RGBA16bpp)
   * PVR (PVRTC_RGB2, PVRTC_RGBA2, PVRTC_RGBA4, PVRTC_RGB4, ETC_RGB4)
