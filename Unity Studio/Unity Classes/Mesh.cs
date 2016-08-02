@@ -399,7 +399,7 @@ namespace Unity_Studio
                 int m_Shapes_size = a_Stream.ReadInt32();
                 if (m_Shapes_size > 0)
                 {
-                    bool stop = true;
+                    //bool stop = true;
                 }
                 for (int s = 0; s < m_Shapes_size; s++) //untested
                 {
@@ -417,7 +417,7 @@ namespace Unity_Studio
                 int m_ShapeVertices_size = a_Stream.ReadInt32();
                 if (m_ShapeVertices_size > 0)
                 {
-                    bool stop = true;
+                    //bool stop = true;
                 }
                 a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
 

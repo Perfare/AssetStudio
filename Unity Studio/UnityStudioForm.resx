@@ -172,7 +172,7 @@ Check this option to add a unique numeric identifier at the end of each filename
         XTesb3QPLh88M+QwdP6m681Lt7xuXbu94vbgcOjwnZHokdE77DtTd1PuvriXeW/h/sYH6AdFD6UeVjxS
         fNTws+7PbaOWo6fHXMf6Hwc/vj/OGn/2S8Yv7ycKnpCfVEyqTDZPmU2dmnafvvF05dOJZ+nPFmYKf5X+
         tfa5zvMffnP8rX82YnbiBf/Fp99LXsq/PPRq2aueuYC5R69TXy/MF72Rf3P4LeNt37vwd5MLWe+x7ys/
-        6H7o/ujz8cGn1E+f/gUDmPP8usTo0wAAAAlwSFlzAAALEwAACxMBAJqcGAAAHOJJREFUeF7t3Q2V5TYS
+        6H7o/ujz8cGn1E+f/gUDmPP8usTo0wAAAAlwSFlzAAALDwAACw8BkvkDpQAAHOJJREFUeF7t3Q2V5TYS
         huGFEAiBsBACIRACIRACIRACIRACYSEEwjLI+pvTmtWoX0lVtuy+Pfp8znN2R23plmVV+ef2ZP71zz//
         mNmmsNHM9oCNZrYHbDSzPWCjme0BG81sD9hoZnvARjPbAzaa2R6w0cz2gI1mtgdsNLM9YKOZ7QEbzWwP
         2Ghme8BGM9sDNprZHrDRzPaAjWa2B2w0sz1go5ntARvNbA/YaGZ7wEYz2wM2mtkesNHM9oCNZrYHbDSz
@@ -326,6 +326,9 @@ The quick brown fox jumps over the lazy dog. 1234567890</value>
   <metadata name="openFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>636, 17</value>
   </metadata>
+  <data name="openFileDialog1.Filter" xml:space="preserve">
+    <value>Unity asset files|level*; globalgamemanagers; mainData; CustomAssetBundle-*; CAB-*; BuildPlayer-*; *.assets; *.sharedAssets|Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundle; *.bundle; *.bytes</value>
+  </data>
   <metadata name="openFolderDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>169, 17</value>
   </metadata>

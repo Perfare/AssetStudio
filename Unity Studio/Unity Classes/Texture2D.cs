@@ -26,10 +26,11 @@ namespace Unity_Studio
         public int m_ColorSpace;
         public byte[] image_data;
 
-
+        //DDS Start
+        public byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
         public int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
-        //public int dwHeight;
-        //public int dwWidth;
+        //public int dwHeight; m_Height
+        //public int dwWidth; m_Width
         public int dwPitchOrLinearSize = 0x0;
         public int dwMipMapCount = 0x1;
         public int dwSize = 0x20;
@@ -42,20 +43,45 @@ namespace Unity_Studio
         public int dwABitMask;
         public int dwCaps = 0x1000;
         public int dwCaps2 = 0x0;
-
+        //DDS End
+        //PVR Start
         public int pvrVersion = 0x03525650;
         public int pvrFlags = 0x0;
         public long pvrPixelFormat;
         public int pvrColourSpace = 0x0;
         public int pvrChannelType = 0x0;
-        //public int pvrHeight;
-        //public int pvrWidth;
+        //public int pvrHeight; m_Height
+        //public int pvrWidth; m_Width
         public int pvrDepth = 0x1;
         public int pvrNumSurfaces = 0x1; //For texture arrays
         public int pvrNumFaces = 0x1; //For cube maps
-        //public int pvrMIPMapCount;
+        //public int pvrMIPMapCount; dwMipMapCount
         public int pvrMetaDataSize = 0x0;
-
+        //PVR End
+        //KTX Start
+        public int glType = 0;
+        public int glTypeSize = 1;
+        public int glFormat = 0;
+        public int glInternalFormat;
+        public int glBaseInternalFormat;
+        //public int pixelWidth; m_Width
+        //public int pixelHeight; m_Height
+        public int pixelDepth = 0;
+        public int numberOfArrayElements = 0;
+        public int numberOfFaces = 1;
+        public int numberOfMipmapLevels = 1;
+        public int bytesOfKeyValueData = 0;
+        //KTX End
+        //ASTC Start
+        public byte[] astc_magicnum = { 0x13, 0xab, 0xa1, 0x5c };
+        public byte astc_x;
+        public byte astc_y;
+        public byte astc_z = 1;
+        public byte[] astc_width = new byte[3];
+        public byte[] astc_height = new byte[3];
+        public byte[] astc_length = new byte[3] { 1, 0, 0 };//I don't know what this is.
+        //ASTC END
+        //Texture data
         public int image_data_size;
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
@@ -76,7 +102,7 @@ namespace Unity_Studio
             m_Height = a_Stream.ReadInt32();
             m_CompleteImageSize = a_Stream.ReadInt32();
             m_TextureFormat = a_Stream.ReadInt32();
-            
+
             if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 2))
             { m_MipMap = a_Stream.ReadBoolean(); }
             else
@@ -115,23 +141,37 @@ namespace Unity_Studio
 
             if (readSwitch)
             {
-
                 image_data = new byte[image_data_size];
                 a_Stream.Read(image_data, 0, image_data_size);
 
-                switch (m_TextureFormat)
+                switch ((TextureFormat)m_TextureFormat)
                 {
-                    case 1: //Alpha8
+                    case TextureFormat.Alpha8: //test pass
                         {
-                            dwFlags2 = 0x2;
+                            /*dwFlags2 = 0x2;
                             dwRGBBitCount = 0x8;
                             dwRBitMask = 0x0;
                             dwGBitMask = 0x0;
                             dwBBitMask = 0x0;
+                            dwABitMask = 0x0; *///透明通道丢失?
+                            //转ARGB32
+                            var bytes = Enumerable.Repeat<byte>(0xFF, image_data_size * 4).ToArray();
+                            for (int i = 0; i < image_data_size; i++)
+                            {
+                                bytes[i * 4] = image_data[i];
+                            }
+                            image_data = bytes;
+                            image_data_size = image_data_size * 4;
+                            bytes = null;
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF00;
+                            dwGBitMask = 0xFF0000;
+                            dwBBitMask = -16777216;
                             dwABitMask = 0xFF;
                             break;
                         }
-                    case 2: //A4R4G4B4
+                    case TextureFormat.ARGB4444: //test pass
                         {
                             if (sourceFile.platform == 11) //swap bytes for Xbox confirmed, PS3 not encountered
                             {
@@ -140,15 +180,6 @@ namespace Unity_Studio
                                     byte b0 = image_data[i * 2];
                                     image_data[i * 2] = image_data[i * 2 + 1];
                                     image_data[i * 2 + 1] = b0;
-                                }
-                            }
-                            else if (sourceFile.platform == 13) //swap bits for android
-                            {
-                                for (int i = 0; i < (image_data_size / 2); i++)
-                                {
-                                    byte[] argb = BitConverter.GetBytes((BitConverter.ToInt32((new byte[4] { image_data[i * 2], image_data[i * 2 + 1], image_data[i * 2], image_data[i * 2 + 1] }), 0)) >> 4);
-                                    image_data[i * 2] = argb[0];
-                                    image_data[i * 2 + 1] = argb[1];
                                 }
                             }
 
@@ -160,67 +191,37 @@ namespace Unity_Studio
                             dwABitMask = 0xF000;
                             break;
                         }
-                    case 3: //B8G8R8 //confirmed on X360, iOS //PS3 unsure
+                    case TextureFormat.RGB24: //test pass
                         {
-                            for (int i = 0; i < (image_data_size / 3); i++)
-                            {
-                                byte b0 = image_data[i * 3];
-                                image_data[i * 3] = image_data[i * 3 + 2];
-                                //image_data[i * 3 + 1] stays the same
-                                image_data[i * 3 + 2] = b0;
-
-                            }
-
                             dwFlags2 = 0x40;
                             dwRGBBitCount = 0x18;
-                            dwRBitMask = 0xFF0000;
+                            dwRBitMask = 0xFF;
                             dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
+                            dwBBitMask = 0xFF0000;
                             dwABitMask = 0x0;
                             break;
                         }
-                    case 4: //G8R8A8B8 //confirmed on X360, iOS
+                    case TextureFormat.RGBA32: //test pass
                         {
-                            for (int i = 0; i < (image_data_size / 4); i++)
-                            {
-                                byte b0 = image_data[i * 4];
-                                image_data[i * 4] = image_data[i * 4 + 2];
-                                //image_data[i * 4 + 1] stays the same
-                                image_data[i * 4 + 2] = b0;
-                                //image_data[i * 4 + 3] stays the same
-
-                            }
-
                             dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
+                            dwRBitMask = 0xFF;
                             dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
+                            dwBBitMask = 0xFF0000;
                             dwABitMask = -16777216;
                             break;
                         }
-                    case 5: //B8G8R8A8 //confirmed on X360, PS3, Web, iOS
+                    case TextureFormat.ARGB32://test pass
                         {
-                            for (int i = 0; i < (image_data_size / 4); i++)
-                            {
-                                byte b0 = image_data[i * 4];
-                                byte b1 = image_data[i * 4 + 1];
-                                image_data[i * 4] = image_data[i * 4 + 3];
-                                image_data[i * 4 + 1] = image_data[i * 4 + 2];
-                                image_data[i * 4 + 2] = b1;
-                                image_data[i * 4 + 3] = b0;
-
-                            }
-
                             dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            dwRBitMask = 0xFF00;
+                            dwGBitMask = 0xFF0000;
+                            dwBBitMask = -16777216;
+                            dwABitMask = 0xFF;
                             break;
                         }
-                    case 7: //R5G6B5 //confirmed switched on X360; confirmed on iOS
+                    case TextureFormat.RGB565: //test pass
                         {
                             if (sourceFile.platform == 11)
                             {
@@ -240,7 +241,9 @@ namespace Unity_Studio
                             dwABitMask = 0x0;
                             break;
                         }
-                    case 10: //DXT1
+                    case TextureFormat.R16:
+                        break;
+                    case TextureFormat.DXT1: //DXT1
                         {
                             if (sourceFile.platform == 11) //X360 only, PS3 not
                             {
@@ -262,7 +265,7 @@ namespace Unity_Studio
                             dwABitMask = 0x0;
                             break;
                         }
-                    case 12: //DXT5
+                    case TextureFormat.DXT5: //DXT5
                         {
                             if (sourceFile.platform == 11) //X360, PS3 not
                             {
@@ -284,51 +287,182 @@ namespace Unity_Studio
                             dwABitMask = 0x0;
                             break;
                         }
-                    case 13: //R4G4B4A4, iOS (only?)
+                    case TextureFormat.RGBA4444: //test pass
                         {
-                            for (int i = 0; i < (image_data_size / 2); i++)
-                            {
-                                byte[] argb = BitConverter.GetBytes((BitConverter.ToInt32((new byte[4] { image_data[i * 2], image_data[i * 2 + 1], image_data[i * 2], image_data[i * 2 + 1] }), 0)) >> 4);
-                                image_data[i * 2] = argb[0];
-                                image_data[i * 2 + 1] = argb[1];
-                            }
-
                             dwFlags2 = 0x41;
                             dwRGBBitCount = 0x10;
-                            dwRBitMask = 0xF00;
-                            dwGBitMask = 0xF0;
-                            dwBBitMask = 0xF;
-                            dwABitMask = 0xF000;
+                            dwRBitMask = 0xF000;
+                            dwGBitMask = 0xF00;
+                            dwBBitMask = 0xF0;
+                            dwABitMask = 0xF;
                             break;
                         }
-                    case 28: //DXT1 Crunched
-                    case 29: //DXT1 Crunched
+                    case TextureFormat.BGRA32: //test pass
+                        {
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
+                            break;
+                        }
+                    case TextureFormat.RHalf:
+                    case TextureFormat.RGHalf:
+                    case TextureFormat.RGBAHalf:
+                    case TextureFormat.RFloat:
+                    case TextureFormat.RGFloat:
+                    case TextureFormat.RGBAFloat:
                         break;
-                    case 30: //PVRTC_RGB2
+                    case TextureFormat.YUY2:
+                        {
+                            pvrPixelFormat = 0x11;
+                            break;
+                        }
+                    case TextureFormat.DXT1Crunched: //DXT1 Crunched
+                    case TextureFormat.DXT5Crunched: //DXT1 Crunched
+                        break;
+                    case TextureFormat.PVRTC_RGB2: //test pass
                         {
                             pvrPixelFormat = 0x0;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
-                    case 31: //PVRTC_RGBA2
+                    case TextureFormat.PVRTC_RGBA2: //test pass
                         {
                             pvrPixelFormat = 0x1;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case 32: //PVRTC_RGB4
+                    case TextureFormat.PVRTC_RGB4: //test pass
                         {
                             pvrPixelFormat = 0x2;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
-                    case 33: //PVRTC_RGBA4
+                    case TextureFormat.PVRTC_RGBA4: //test pass
                         {
                             pvrPixelFormat = 0x3;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case 34: //ETC_RGB4
+                    case TextureFormat.ETC_RGB4: //test pass
                         {
                             pvrPixelFormat = 0x16;
+                            glInternalFormat = KTXHeader.GL_ETC1_RGB8_OES;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
+                    case TextureFormat.ATC_RGB4: //can use QCompress to convert
+                        {
+                            glInternalFormat = KTXHeader.GL_ATC_RGB_AMD;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
+                            break;
+                        }
+                    case TextureFormat.ATC_RGBA8: //can use QCompress to convert
+                        {
+                            glInternalFormat = KTXHeader.GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
+                            break;
+                        }
+                    case TextureFormat.EAC_R:
+                        {
+                            pvrPixelFormat = 25;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_R11_EAC;
+                            glBaseInternalFormat = KTXHeader.GL_RED;
+                            break;
+                        }
+                    case TextureFormat.EAC_R_SIGNED:
+                        {
+                            pvrPixelFormat = 25;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_R11_EAC;
+                            glBaseInternalFormat = KTXHeader.GL_RED;
+                            break;
+                        }
+                    case TextureFormat.EAC_RG:
+                        {
+                            pvrPixelFormat = 26;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RG11_EAC;
+                            glBaseInternalFormat = KTXHeader.GL_RG;
+                            break;
+                        }
+                    case TextureFormat.EAC_RG_SIGNED:
+                        {
+                            pvrPixelFormat = 26;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_RG11_EAC;
+                            glBaseInternalFormat = KTXHeader.GL_RG;
+                            break;
+                        }
+                    case TextureFormat.ETC2_RGB:  //test pass
+                        {
+                            pvrPixelFormat = 22;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGB8_ETC2;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
+                            break;
+                        }
+                    case TextureFormat.ETC2_RGBA1:  //test pass
+                        {
+                            pvrPixelFormat = 24;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
+                            break;
+                        }
+                    case TextureFormat.ETC2_RGBA8:  //test pass
+                        {
+                            pvrPixelFormat = 23;
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA8_ETC2_EAC;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_4x4: //test pass
+                    case TextureFormat.ASTC_RGBA_4x4: //test pass
+                        {
+                            astc_x = 4;
+                            astc_y = 4;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_5x5: //test pass
+                    case TextureFormat.ASTC_RGBA_5x5: //test pass
+                        {
+                            astc_x = 5;
+                            astc_y = 5;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_6x6: //test pass
+                    case TextureFormat.ASTC_RGBA_6x6: //test pass
+                        {
+                            astc_x = 6;
+                            astc_y = 6;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_8x8: //test pass
+                    case TextureFormat.ASTC_RGBA_8x8: //test pass
+                        {
+                            astc_x = 8;
+                            astc_y = 8;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_10x10: //test pass
+                    case TextureFormat.ASTC_RGBA_10x10: //test pass
+                        {
+                            astc_x = 10;
+                            astc_y = 10;
+                            break;
+                        }
+                    case TextureFormat.ASTC_RGB_12x12: //test pass
+                    case TextureFormat.ASTC_RGBA_12x12: //test pass
+                        {
+                            astc_x = 12;
+                            astc_y = 12;
+                            break;
+                        }
+                    case TextureFormat.ETC_RGB4_3DS:
+                    case TextureFormat.ETC_RGBA8_3DS:
+                        break;
                 }
             }
             else
@@ -336,25 +470,69 @@ namespace Unity_Studio
                 preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
                 preloadData.exportSize = image_data_size;
 
-                switch (m_TextureFormat)
+                string type = ((TextureFormat)m_TextureFormat).ToString();
+                preloadData.InfoText += type;
+
+                switch ((TextureFormat)m_TextureFormat)
                 {
-                    case 1: preloadData.InfoText += "Alpha8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 2: preloadData.InfoText += "ARGB 4.4.4.4"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 3: preloadData.InfoText += "BGR 8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 4: preloadData.InfoText += "GRAB 8.8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 5: preloadData.InfoText += "BGRA 8.8.8.8"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 7: preloadData.InfoText += "RGB 5.6.5"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 10: preloadData.InfoText += "DXT1"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 12: preloadData.InfoText += "DXT5"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 13: preloadData.InfoText += "RGBA 4.4.4.4"; preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
-                    case 28: preloadData.InfoText += "DXT1 Crunched"; preloadData.extension = ".crn"; break;
-                    case 29: preloadData.InfoText += "DXT5 Crunched"; preloadData.extension = ".crn"; break;
-                    case 30: preloadData.InfoText += "PVRTC_RGB2"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
-                    case 31: preloadData.InfoText += "PVRTC_RGBA2"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
-                    case 32: preloadData.InfoText += "PVRTC_RGB4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
-                    case 33: preloadData.InfoText += "PVRTC_RGBA4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
-                    case 34: preloadData.InfoText += "ETC_RGB4"; preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
-                    default: preloadData.InfoText += "unknown"; preloadData.extension = ".tex"; break;
+                    case TextureFormat.Alpha8:
+                    case TextureFormat.ARGB4444:
+                    case TextureFormat.RGB24:
+                    case TextureFormat.RGBA32:
+                    case TextureFormat.ARGB32:
+                    case TextureFormat.RGB565:
+                    case TextureFormat.DXT1:
+                    case TextureFormat.DXT5:
+                    case TextureFormat.RGBA4444:
+                    case TextureFormat.BGRA32:
+                        preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                    case TextureFormat.DXT1Crunched:
+                    case TextureFormat.DXT5Crunched:
+                        preloadData.extension = ".crn"; break;
+                    case TextureFormat.YUY2:
+                    case TextureFormat.PVRTC_RGB2:
+                    case TextureFormat.PVRTC_RGBA2:
+                    case TextureFormat.PVRTC_RGB4:
+                    case TextureFormat.PVRTC_RGBA4:
+                    case TextureFormat.ETC_RGB4:
+                    case TextureFormat.ETC2_RGB:
+                    case TextureFormat.ETC2_RGBA1:
+                    case TextureFormat.ETC2_RGBA8:
+                    case TextureFormat.EAC_R:
+                    case TextureFormat.EAC_R_SIGNED:
+                    case TextureFormat.EAC_RG:
+                    case TextureFormat.EAC_RG_SIGNED:
+                        preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    //case TextureFormat.PVRTC_RGB2:
+                    //case TextureFormat.PVRTC_RGBA2:
+                    //case TextureFormat.PVRTC_RGB4:
+                    //case TextureFormat.PVRTC_RGBA4:
+                    case TextureFormat.ATC_RGB4:
+                    case TextureFormat.ATC_RGBA8:
+                        //case TextureFormat.ETC_RGB4:
+                        //case TextureFormat.ETC2_RGB:
+                        //case TextureFormat.ETC2_RGBA1:
+                        //case TextureFormat.ETC2_RGBA8:
+                        //case TextureFormat.EAC_R:
+                        //case TextureFormat.EAC_R_SIGNED:
+                        //case TextureFormat.EAC_RG:
+                        //case TextureFormat.EAC_RG_SIGNED:
+                        preloadData.extension = ".ktx"; preloadData.exportSize += 68; break;
+                    case TextureFormat.ASTC_RGB_4x4:
+                    case TextureFormat.ASTC_RGB_5x5:
+                    case TextureFormat.ASTC_RGB_6x6:
+                    case TextureFormat.ASTC_RGB_8x8:
+                    case TextureFormat.ASTC_RGB_10x10:
+                    case TextureFormat.ASTC_RGB_12x12:
+                    case TextureFormat.ASTC_RGBA_4x4:
+                    case TextureFormat.ASTC_RGBA_5x5:
+                    case TextureFormat.ASTC_RGBA_6x6:
+                    case TextureFormat.ASTC_RGBA_8x8:
+                    case TextureFormat.ASTC_RGBA_10x10:
+                    case TextureFormat.ASTC_RGBA_12x12:
+                        preloadData.extension = ".astc"; preloadData.exportSize += 10; break;
+                    default:
+                        preloadData.extension = "_" + type + ".tex"; break;
                 }
 
                 switch (m_FilterMode)
@@ -378,5 +556,107 @@ namespace Unity_Studio
                 preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
             }
         }
+    }
+
+
+    public enum TextureFormat
+    {
+        Alpha8 = 1,
+        ARGB4444,
+        RGB24,
+        RGBA32,
+        ARGB32,
+        RGB565 = 7,
+        R16 = 9,
+        DXT1,
+        DXT5 = 12,
+        RGBA4444,
+        BGRA32,
+        RHalf,
+        RGHalf,
+        RGBAHalf,
+        RFloat,
+        RGFloat,
+        RGBAFloat,
+        YUY2,
+        DXT1Crunched = 28,
+        DXT5Crunched,
+        PVRTC_RGB2,
+        PVRTC_RGBA2,
+        PVRTC_RGB4,
+        PVRTC_RGBA4,
+        ETC_RGB4,
+        ATC_RGB4,
+        ATC_RGBA8,
+        EAC_R = 41,
+        EAC_R_SIGNED,
+        EAC_RG,
+        EAC_RG_SIGNED,
+        ETC2_RGB,
+        ETC2_RGBA1,
+        ETC2_RGBA8,
+        ASTC_RGB_4x4,
+        ASTC_RGB_5x5,
+        ASTC_RGB_6x6,
+        ASTC_RGB_8x8,
+        ASTC_RGB_10x10,
+        ASTC_RGB_12x12,
+        ASTC_RGBA_4x4,
+        ASTC_RGBA_5x5,
+        ASTC_RGBA_6x6,
+        ASTC_RGBA_8x8,
+        ASTC_RGBA_10x10,
+        ASTC_RGBA_12x12,
+        ETC_RGB4_3DS,
+        ETC_RGBA8_3DS
+    }
+}
+
+public class KTXHeader
+{
+    public static byte[] IDENTIFIER = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
+    public static byte[] ENDIANESS_LE = new byte[] { 1, 2, 3, 4 };
+    public static byte[] ENDIANESS_BE = new byte[] { 4, 3, 2, 1 };
+
+    // constants for glInternalFormat
+    public static int GL_ETC1_RGB8_OES = 0x8D64;
+
+    public static int GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
+    public static int GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG = 0x8C01;
+    public static int GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
+    public static int GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
+
+    public static int GL_ATC_RGB_AMD = 0x8C92;
+    public static int GL_ATC_RGBA_EXPLICIT_ALPHA_AMD = 0x8C93;
+    public static int GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
+
+    public static int GL_COMPRESSED_RGB8_ETC2 = 0x9274;
+    public static int GL_COMPRESSED_SRGB8_ETC2 = 0x9275;
+    public static int GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9276;
+    public static int GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9277;
+    public static int GL_COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
+    public static int GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 0x9279;
+    public static int GL_COMPRESSED_R11_EAC = 0x9270;
+    public static int GL_COMPRESSED_SIGNED_R11_EAC = 0x9271;
+    public static int GL_COMPRESSED_RG11_EAC = 0x9272;
+    public static int GL_COMPRESSED_SIGNED_RG11_EAC = 0x9273;
+
+    // constants for glBaseInternalFormat
+    public static int GL_RED = 0x1903;
+    public static int GL_GREEN = 0x1904;
+    public static int GL_BLUE = 0x1905;
+    public static int GL_ALPHA = 0x1906;
+    public static int GL_RGB = 0x1907;
+    public static int GL_RGBA = 0x1908;
+    public static int GL_RG = 0x8227;
+
+    public static int getMipMapCount(int width, int height)
+    {
+        int mipMapCount = 1;
+        for (int dim = Math.Max(width, height); dim > 1; dim /= 2)
+        {
+            mipMapCount++;
+        }
+        return mipMapCount;
     }
 }

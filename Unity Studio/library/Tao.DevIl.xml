@@ -1,0 +1,3441 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Tao.DevIl</name>
+    </assembly>
+    <members>
+        <member name="T:Tao.DevIl.Ilut">
+            <summary>
+                DevIL (Developer's Image Library) ILUT binding for .NET.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.CALLING_CONVENTION">
+            <summary>
+                Specifies the calling convention.
+            </summary>
+            <remarks>
+                Specifies <see cref="F:System.Runtime.InteropServices.CallingConvention.Winapi"/>.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_NATIVE_LIBRARY">
+            <summary>
+            Specifies the DevIL ILUT native library used in the bindings
+            </summary>
+            <remarks>
+            The Windows dll is specified here universally - note that
+            under Mono the non-windows native library can be mapped using
+            the ".config" file mechanism.  Kudos to the Mono team for this
+            simple yet elegant solution.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_VERSION_1_6_8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_VERSION">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_OPENGL_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_ALL_ATTRIB_BITS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_INVALID_ENUM">
+            <summary>
+            An unacceptable enumerated value was passed to a function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_OUT_OF_MEMORY">
+            <summary>
+            Could not allocate enough memory in an operation.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_INVALID_VALUE">
+            <summary>
+            An invalid value was passed to a function or was in a file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_ILLEGAL_OPERATION">
+            <summary>
+            The operation attempted is not allowable in the current state. The function returns with no ill side effects.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_INVALID_PARAM">
+            <summary>
+            An invalid parameter was passed to a function, such as a NULL pointer.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_COULD_NOT_OPEN_FILE">
+            <summary>
+            Could not open the file specified. The file may already be open by another app or may not exist.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_STACK_OVERFLOW">
+            <summary>
+            One of the internal stacks was already filled, and the user tried to add on to the full stack.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_STACK_UNDERFLOW">
+            <summary>
+            One of the internal stacks was empty, and the user tried to empty the already empty stack.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_BAD_DIMENSIONS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_NOT_SUPPORTED">
+            <summary>
+            A type is valid but not supported in the current build.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_PALETTE_MODE">
+            <summary>
+            Whether ilut uses palettes or converts the image to truecolour before sending it to the renderer.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_OPENGL_CONV">
+            <summary>
+            Whether to use GL_RGB8 or GL_RGB, etc. when passing data to OpenGL only.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_MIPLEVELS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_MAXTEX_WIDTH">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_MAXTEX_HEIGHT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_MAXTEX_DEPTH">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_GL_USE_S3TC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_USE_DXTC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_GL_GEN_S3TC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_GEN_DXTC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_S3TC_FORMAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_DXTC_FORMAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_POOL">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_ALPHA_KEY_COLOR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_D3D_ALPHA_KEY_COLOUR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_GL_AUTODETECT_TEXTURE_TARGET">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_VERSION_NUM">
+            <summary>
+            Returns the version number of the shared library. This can be checked against the ILUT_VERSION #define
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_VENDOR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_OPENGL">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_ALLEGRO">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_WIN32">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_DIRECT3D8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilut.ILUT_DIRECT3D9">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutDisable(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutEnable(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetBoolean(System.Int32)">
+            <summary>
+            The ilutGetBooleanv return the value of a selected mode.
+            </summary>
+            <param name="Mode">The selected mode.</param>
+            <returns>The ilutGetBoolean returns the value of a selected mode.</returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetBooleanv(System.Int32,System.Byte@)">
+            <summary>
+            The ilutGetBoolean return the value of a selected mode.
+            </summary>
+            <param name="Mode">The ilutGetBoolean returns the value of a selected mode.</param>
+            <param name="Param">Used to store the return values.</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetBooleanv(System.Int32,System.Byte[])">
+            <summary>
+            The ilutGetBoolean return the value of a selected mode.
+            </summary>
+            <param name="Mode">The ilutGetBoolean returns the value of a selected mode.</param>
+            <param name="Param">Used to store the return values.</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetInteger(System.Int32)">
+            <summary>
+            The ilutGetInteger return the value of a selected mode.
+            </summary>
+            <param name="Mode">The ilutGetBoolean returns the value of a selected mode.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetIntegerv(System.Int32,System.Int32@)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <param name="Param"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetString(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="StringName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutInit">
+            <summary>
+            The ilutInit function initializes ILUT.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutIsDisabled(System.Int32)">
+            <summary>
+            ilutIsDisabled returns whether the mode indicated by Mode is disabled.
+            </summary>
+            <param name="Mode">Indicates an OpenIL mode</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutIsEnabled(System.Int32)">
+            <summary>
+            ilutIsEnabled returns whether the mode indicated by Mode is enabled.
+            </summary>
+            <param name="Mode">Indicates an OpenIL mode</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutPopAttrib">
+            <summary>
+            ilutPopAttrib pops the last pushed stack entry off the stack and copies the bits specified when pushed by ilutPushAttrib to the previous set of states.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutPushAttrib(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Bits"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSetInteger(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <param name="Param"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutRenderer(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Renderer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLBindTexImage">
+            <summary>
+            The ilutGLBindTexImage function binds an image to a generated OpenGL texture.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLBindMipmaps">
+            <summary>
+            The ilutGLBindMipmaps function binds an image to an OpenGL texture and creates mipmaps, generates a texture via glGenTextures, binds the current OpenIL image to it, generates mipmaps via gluBuild2DMipmaps and returns the texture name. This function is a more general purpose version of ilutOglBindTexImage.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLBuildMipmaps">
+            <summary>
+            ilutGLBuildMipmaps generates mipmaps via gluBuild2DMipmaps from an image. This function is similar to ilutGLTexImage but creates mipmaps.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLLoadImage(System.String)">
+            <summary>
+            ilutGLLoadImage loads an image directly to an OpenGL texture, skipping the use of OpenIL image names.
+            </summary>
+            <param name="FileName">Name of the image to load</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLScreen">
+            <summary>
+            ilutGLScreen copies the current OpenGL window contents to the current bound image, effectively taking a screenshot. The new image attributes are that of the current OpenGL window's.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLScreenie">
+            <summary>
+            ilutGLScreen copies the current OpenGL window contents to a temporary image, effectively taking a screenshot. The screenshot image is then saved to disk as screen0.tga - screen127.tga (the lowest name it can find). This is just a convenience function that uses ilutGLScreen.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLSaveImage(System.String,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <param name="TexID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLSetTex(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="TexID"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLTexImage(System.Int32)">
+            <summary>
+            The ilutGLTexImage function binds an image to an OpenGL texture, simply calls glTexImage2D with the current bound image's data and attributes.
+            </summary>
+            <param name="Level">Texture level to place the image at. 0 is the base image level, and anything lower is a mipmap. Use ilActiveMipmap to access OpenIL's mipmaps.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGLSubTex(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="TexID"></param>
+            <param name="XOff"></param>
+            <param name="YOff"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutAllegLoadImage(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutConvertToAlleg(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Pal"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutConvertToSDLSurface(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSDLSurfaceLoadImage(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSDLSurfaceFromBitmap(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Bitmap"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutConvertToBBitmap">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutConvertToHBitmap(System.IntPtr)">
+            <summary>
+            ilutConvertToHBitmap creates a Windows bitmap handle (HBITMAP) copy of the current image, for direct use in Windows.
+            </summary>
+            <param name="hDC">The ilutGetBoolean returns the value of a selected mode.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutConvertSliceToHBitmap(System.IntPtr,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="hDC"></param>
+            <param name="slice"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutFreePaddedData(System.Byte[])">
+            <summary>
+            
+            </summary>
+            <param name="Data"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutFreePaddedData(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Data"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetBmpInfo(System.IntPtr)">
+            <summary>
+            ilutGetBmpInfo fills a BITMAPINFO struct with the current image's information. The BITMAPINFO struct is used commonly used in Windows applications.
+            </summary>
+            <param name="Info">BITMAPINFO struct pointer to be filled.</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetHPal">
+            <summary>
+            The ilutGetHPal function returns a Windows-friendly palette. If the current bound image has a palette, ilutGetHPal returns a Windows-compatible copy of the current image's palette in HPAL format.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetPaddedData">
+            <summary>
+            ilutGetPaddedData gets a copy of the current image's data, but pads it to be DWORD-aligned, just how Windows likes it. Almost all Windows functions that use images expect the images to be DWORD-aligned. The caller is responsible for freeing the memory returned by ilutGetPaddedData.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutGetWinClipboard">
+            <summary>
+            ilutGetWinClipboard copies the contents of the Windows clipboard to the current bound image, resizing as necessary.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutLoadResource(System.IntPtr,System.Int32,System.String,System.Int32)">
+            <summary>
+            ilutLoadResource is a Windows-specific function that loads a resource as the current bound image. This feature allows you to have images directly in your .exe and not worry whether a particular file is present on the user's harddrive. An alternative, more portable solution is to use ilSave with IL_CHEAD as the Type parameter.
+            </summary>
+            <param name="hInst">The application-s HINSTANCE</param>
+            <param name="ID">The resource identifier of the resource to be loaded</param>
+            <param name="ResourceType">The type of user-defined resource (name used when creating)</param>
+            <param name="Type">The type of image to be loaded. Use IL_TYPE_UNKNOWN to let OpenIL determine the type</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSetHBitmap(System.IntPtr)">
+            <summary>
+            ilutSetHBitmap copies Bitmap to the current bound image in a format OpenIL can understand. The image can then be used just as if you had loaded an image via ilLoadImage. This function is the opposite of ilutConvertToHBitmap.
+            </summary>
+            <param name="Bitmap">Bitmap to copy to the current bound image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSetHPal(System.IntPtr)">
+            <summary>
+            ilutSetHPal sets the current iamge's palette from a logical Windows palette handle specified in Pal. If the current image is not colour-indexed, the palette is still loaded, though it will never be used.
+            </summary>
+            <param name="Pal">A Windows palette to set the palette from</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutSetWinClipboard">
+            <summary>
+            ilutSetWinClipboard copies the current bound image to the Windows clipboard.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutWinLoadImage(System.String,System.IntPtr)">
+            <summary>
+            loads an image directly to a Win32 HBITMAP, skipping the use of OpenIL image names.
+            </summary>
+            <param name="FileName">Name of the image to load</param>
+            <param name="hDC">Device context the bitmap should reside in</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutWinLoadUrl(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="Url"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutWinPrint(System.Int32,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="XPos"></param>
+            <param name="YPos"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="hDC"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutWinSaveImage(System.String,System.IntPtr)">
+            <summary>
+            ilutWinSaveImage saves Bitmap to FileName. This function is the complement of ilutWinLoadImage.
+            </summary>
+            <param name="FileName">Name of the image file to save to</param>
+            <param name="Bitmap">Win32 HBITMAP to save from</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8Texture(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolumeTexture(System.IntPtr)">
+            <summary>
+            The ilutD3D8VolumeTexture function creates a Direct3D 8 texture (IDirect3DVolumeTexture8) from the current bound image.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8TexFromFile(System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="FileName"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolTexFromFile(System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            ilutD3D8VolTexFromFile loads the file named by FileName and converts it to a Direct3D 8 volume texture (IDirect3DVolumeTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFile but for a volume texture.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="FileName">File to create the texture from.</param>
+            <param name="Texture">Address of a pointer to an IDirect3DVolumeTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8TexFromFileInMemory(System.IntPtr,System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            ilutD3D8TexFromFileInMemory loads the file present in Lump and converts it to a Direct3D 8 texture (IDirect3DTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFileInMemory.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="Lump">Location of memory file.</param>
+            <param name="Size">Size of Lump in bytes</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolTexFromFileInMemory(System.IntPtr,System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            ilutD3D8VolTexFromFileInMemory loads the file present in Lump and converts it to a Direct3D 8 volume texture (IDirect3DVolumeTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFileInMemory but for a volume texture.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="Lump">Location of memory file.</param>
+            <param name="Size">Size of Lump in bytes</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8TexFromFileInMemory(System.IntPtr,System.Byte[],System.Int32,System.IntPtr)">
+            <summary>
+            ilutD3D8TexFromFileInMemory loads the file present in Lump and converts it to a Direct3D 8 texture (IDirect3DTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFileInMemory.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="Lump">Location of memory file.</param>
+            <param name="Size">Size of Lump in bytes</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolTexFromFileInMemory(System.IntPtr,System.Byte[],System.Int32,System.IntPtr)">
+            <summary>
+            ilutD3D8VolTexFromFileInMemory loads the file present in Lump and converts it to a Direct3D 8 volume texture (IDirect3DVolumeTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFileInMemory but for a volume texture.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="Lump">Location of memory file.</param>
+            <param name="Size">Size of Lump in bytes</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8TexFromFileHandle(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            ilutD3D8TexFromFileInMemory loads the file present in Lump and converts it to a Direct3D 8 texture (IDirect3DTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFile but with a file handle.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="File">File handle containing the image file</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolTexFromFileHandle(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            ilutD3D8VolTexFromFileHandle loads the file present in File and converts it to a Direct3D 8 volume texture (IDirect3DVolumeTexture8). This function creates the texture, so the pointer does not even have to be allocated beforehand. This function is functionally equivalent to D3DX's D3DXCreateTextureFromFile but with a file handle and a volume texture.
+            </summary>
+            <param name="Device">Pointer to an IDirect3DDevice8 interface, representing the device to be associated with the texture.</param>
+            <param name="File">File handle containing the image file</param>
+            <param name="Texture">Address of a pointer to an IDirect3DTexture8 interface, representing the created texture object.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8TexFromResource(System.IntPtr,System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="SrcModule"></param>
+            <param name="SrcResource"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8VolTexFromResource(System.IntPtr,System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="SrcModule"></param>
+            <param name="SrcResource"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D8LoadSurface(System.IntPtr,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Surface"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9Texture(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolumeTexture(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexture(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexFromFile(System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="FileName"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexFromFileInMemory(System.IntPtr,System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexFromFileInMemory(System.IntPtr,System.Byte[],System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexFromFileHandle(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="File"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9CubeTexFromResource(System.IntPtr,System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="SrcModule"></param>
+            <param name="SrcResource"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9TexFromFile(System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="FileName"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolTexFromFile(System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="FileName"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9TexFromFileInMemory(System.IntPtr,System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolTexFromFileInMemory(System.IntPtr,System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9TexFromFileInMemory(System.IntPtr,System.Byte[],System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolTexFromFileInMemory(System.IntPtr,System.Byte[],System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9TexFromFileHandle(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="File"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolTexFromFileHandle(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="File"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9TexFromResource(System.IntPtr,System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="SrcModule"></param>
+            <param name="SrcResource"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9VolTexFromResource(System.IntPtr,System.IntPtr,System.String,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="SrcModule"></param>
+            <param name="SrcResource"></param>
+            <param name="Texture"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilut.ilutD3D9LoadSurface(System.IntPtr,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Device"></param>
+            <param name="Surface"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il">
+            <summary>
+                DevIL (Developer's Image Library) IL binding for .NET, implementing DevIL 1.6.8 RC2.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.CALLING_CONVENTION">
+            <summary>
+                Specifies the calling convention.
+            </summary>
+            <remarks>
+                Specifies <see cref="F:System.Runtime.InteropServices.CallingConvention.Winapi"/>.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Il.DEVIL_NATIVE_LIBRARY">
+            <summary>
+            Specifies the DevIL native library used in the bindings
+            </summary>
+            <remarks>
+            The Windows dll is specified here universally - note that
+            under Mono the non-windows native library can be mapped using
+            the ".config" file mechanism.  Kudos to the Mono team for this
+            simple yet elegant solution.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FALSE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TRUE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COLOUR_INDEX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COLOR_INDEX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_RGB">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_RGBA">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BGR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BGRA">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LUMINANCE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LUMINANCE_ALPHA">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BYTE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_UNSIGNED_BYTE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SHORT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_UNSIGNED_SHORT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_UNSIGNED_INT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FLOAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DOUBLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_VENDOR">
+            <summary>
+            Describes the OpenIL vendor and should be used only with ilGetString
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LOAD_EXT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SAVE_EXT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_VERSION_1_6_8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_VERSION">
+            <summary>
+            Used to retrive a string describing the current OpenIL version.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ORIGIN_BIT">
+            <summary>
+            Preserves the origin state set by ilOriginFunc.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_BIT">
+            <summary>
+            Preserves whether OpenIL is allowed to overwrite files when saving (set by ilEnable, ilDisable).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_BIT">
+            <summary>
+            d to truecolour images (set by <see cref="M:Tao.DevIl.Il.ilEnable(System.Int32)"/>, <see cref="M:Tao.DevIl.Il.ilDisable(System.Int32)"/>).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FORMAT_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TYPE_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LOADFAIL_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FORMAT_SPECIFIC_BIT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ALL_ATTRIB_BITS">
+            <summary>
+            Preserves all OpenIL states and attributes.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_NONE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_RGB24">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_RGB32">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_RGBA32">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_BGR24">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_BGR32">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PAL_BGRA32">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TYPE_UNKNOWN">
+            <summary>
+            Tells OpenIL to try to determine the type of image present in FileName, File or Lump.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BMP">
+            <summary>
+            Microsoft bitmap .
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUT">
+            <summary>
+            Dr. Halo .cut image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DOOM">
+            <summary>
+            Doom texture.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DOOM_FLAT">
+            <summary>
+            Doom flat (floor).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ICO">
+            <summary>
+            Microsoft icon (.ico).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JPG">
+            <summary>
+            Jpeg.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JFIF">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LBM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PCD">
+            <summary>
+            Kodak PhotoCD image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PCX">
+            <summary>
+             .pcx Image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PIC">
+            <summary>
+            Softimage Pic image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG">
+            <summary>
+            Portable Network Graphics (.png) image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNM">
+            <summary>
+            Portable AnyMap (.pbm, .pgm or .ppm).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SGI">
+            <summary>
+            SGI (.bw, .rgb, .rgba or .sgi).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA">
+            <summary>
+            TrueVision Targa.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TIF">
+            <summary>
+            TIFF (.tif or .tiff) image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CHEAD">
+            <summary>
+            C Header.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_RAW">
+            <summary>
+            Raw data with a 13-byte header.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_MDL">
+            <summary>
+            Half-Life model file (.mdl).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_WAL">
+            <summary>
+            Quake .wal texture.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIF">
+            <summary>
+            Homeworld image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_MNG">
+            <summary>
+            Load a Multiple Network Graphics (.mng).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JNG">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_GIF">
+            <summary>
+            Graphics Interchange Format file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DDS">
+            <summary>
+            DirectDraw Surface image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DCX">
+            <summary>
+            .dcx image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PSD">
+            <summary>
+            PhotoShop (.psd) file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_EXIF">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PSP">
+            <summary>
+            Paint Shop Pro file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PIX">
+            <summary>
+            Alias | Wavefront .pix file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PXR">
+            <summary>
+            Pxrar (.pxr) file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_XPM">
+            <summary>
+            .xpm file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_HDR">
+            <summary>
+            RADIANCE High Dynamic Range Image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JASC_PAL">
+            <summary>
+            Load the file into the current image's palette as a Paint Shop Pro (Jasc) palette.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NO_ERROR">
+            <summary>
+            No detectable error has occured.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_ENUM">
+            <summary>
+            An invalid value have been used, which was not part of the set of values that can be used. In the function documentation there should be a more specific descriptionanation.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_OUT_OF_MEMORY">
+            <summary>
+            Could not allocate enough memory for the image data.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FORMAT_NOT_SUPPORTED">
+            <summary>
+            The format a function tried to use was not able to be used by that function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INTERNAL_ERROR">
+            <summary>
+            A serious error has occurred.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_VALUE">
+            <summary>
+            An invalid value was passed to a function or was in a file.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ILLEGAL_OPERATION">
+            <summary>
+            The operation attempted is not allowable in the current state. The function returns with no ill side effects. Generally there is currently no image bound or it has been deleted via ilDeleteImages. You should use ilGenImages and ilBindImage before calling the function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ILLEGAL_FILE_VALUE">
+            <summary>
+            An illegal value was found in a file trying to be loaded.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_FILE_HEADER">
+            <summary>
+             	s header was incorrect.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_PARAM">
+            <summary>
+            An invalid value have been used, which was not part of the set of values that can be used. In the function documentation there should be a more specific descriptionanation.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COULD_NOT_OPEN_FILE">
+            <summary>
+            Could not open the file specified. The file may already be open by another app or may not exist.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_EXTENSION">
+            <summary>
+            The extension of the specified filename was not correct for the type of image-loading function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_ALREADY_EXISTS">
+            <summary>
+            The filename specified already belongs to another file. To overwrite files by default read more at ilEnable function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_OUT_FORMAT_SAME">
+            <summary>
+            Tried to convert an image from its format to the same format.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_STACK_OVERFLOW">
+            <summary>
+            One of the internal stacks was already filled, and the user tried to add on to the full stack.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_STACK_UNDERFLOW">
+            <summary>
+            One of the internal stacks was empty, and the user tried to empty the already empty stack.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INVALID_CONVERSION">
+            <summary>
+            During a conversion destination format and/or dest type was an invalid identifier. In the function documentation there should be a more specific descriptionanation.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BAD_DIMENSIONS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_READ_ERROR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_WRITE_ERROR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIB_GIF_ERROR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIB_JPEG_ERROR">
+            <summary>
+            An error occurred in the libjpeg library.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIB_PNG_ERROR">
+            <summary>
+            An error occurred in the libpng library.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIB_TIFF_ERROR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LIB_MNG_ERROR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_UNKNOWN_ERROR">
+            <summary>
+            No function sets this yet, but it is possible (not probable) it may be used in the future.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ORIGIN_SET">
+            <summary>
+            nabled, the origin is specified at an absolute position, and all images loaded or saved adhere to this set origin. For more information, check out ilOriginFunc.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ORIGIN_LOWER_LEFT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ORIGIN_UPPER_LEFT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ORIGIN_MODE">
+            <summary>
+            Returns the current origin position.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FORMAT_SET">
+            <summary>
+            Returns whether all images loaded are converted to a specific format.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FORMAT_MODE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TYPE_SET">
+            <summary>
+            Returns whether all images loaded are converted to a specific type.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TYPE_MODE">
+            <summary>
+            Returns the type images are converted to upon loading.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_OVERWRITE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FILE_MODE">
+            <summary>
+            Returns whether file overwriting when saving is enabled.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CONV_PAL">
+            <summary>
+            d images to their base types, e.g. converting to a bgra image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DEFAULT_ON_FAIL">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_USE_KEY_COLOUR">
+            <summary>
+            Returns whether OpenIL uses a key colour (not used yet).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_USE_KEY_COLOR">
+            <summary>
+            Returns whether OpenIL uses a key colour (not used yet).
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SAVE_INTERLACED">
+            <summary>
+            /
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_INTERLACE_MODE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_QUANTIZATION_MODE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_WU_QUANT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NEU_QUANT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NEU_QUANT_SAMPLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_MAX_QUANT_INDEXS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_FASTEST">
+            <summary>
+            Makes the target use a faster but more memory-intensive algorithm.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_LESS_MEM">
+            <summary>
+            Makes the target use less memory but a potentially slower algorithm.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DONT_CARE">
+            <summary>
+            The client does not have a preference.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_MEM_SPEED_HINT">
+            <summary>
+            Controls the memory used vs. speed tradeoff.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_USE_COMPRESSION">
+            <summary>
+            Specifies that OpenIL should use compression when saving, if possible.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NO_COMPRESSION">
+            <summary>
+            Specifies that OpenIL should never use compression when saving.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESSION_HINT">
+            <summary>
+            Controls whether compression is used when saving images.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SUB_NEXT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SUB_MIPMAP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SUB_LAYER">
+            <summary>
+            /
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_MODE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_NONE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_RLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_LZO">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_COMPRESS_ZLIB">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA_CREATE_STAMP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JPG_QUALITY">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG_INTERLACE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA_RLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_BMP_RLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SGI_RLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA_ID_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA_AUTHNAME_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TGA_AUTHCOMMENT_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG_AUTHNAME_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG_TITLE_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG_DESCRIPTION_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TIF_DESCRIPTION_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TIF_HOSTCOMPUTER_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TIF_DOCUMENTNAME_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_TIF_AUTHNAME_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_JPG_SAVE_FORMAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CHEAD_HEADER_STRING">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PCD_PICNUM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PNG_ALPHA_INDEX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXTC_FORMAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT1">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT2">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT4">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT5">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXT_NO_COMP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_KEEP_DXTC_DATA">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_DXTC_DATA_FORMAT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_3DC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_RXGB">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ATI1N">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_POSITIVEX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_NEGATIVEX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_POSITIVEY">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_NEGATIVEY">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_POSITIVEZ">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUBEMAP_NEGATIVEZ">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_VERSION_NUM">
+            <summary>
+            Returns the version number of the shared library. This can be checked against the IL_VERSION #define.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_WIDTH">
+            <summary>
+            s width.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_HEIGHT">
+            <summary>
+            s height.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_DEPTH">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_SIZE_OF_DATA">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_BPP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_BYTES_PER_PIXEL">
+            <summary>
+            s data.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_BITS_PER_PIXEL">
+            <summary>
+            s data.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_FORMAT">
+            <summary>
+            Returns the current image format.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_TYPE">
+            <summary>
+            Returns the current images type.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PALETTE_TYPE">
+            <summary>
+            Returns the palette type of the current image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PALETTE_SIZE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PALETTE_BPP">
+            <summary>
+            Returns the bytes per pixel of the current images palette.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PALETTE_NUM_COLS">
+            <summary>
+            Returns the number of colours of the current images palette.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_PALETTE_BASE_TYPE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NUM_IMAGES">
+            <summary>
+            Returns the number of images in the current image animation chain.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NUM_MIPMAPS">
+            <summary>
+            Returns the number of mipmaps of the current image.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_NUM_LAYERS">
+            <summary>
+            /
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ACTIVE_IMAGE">
+            <summary>
+            Returns the current image number.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ACTIVE_MIPMAP">
+            <summary>
+            Returns the current mipmap number.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_ACTIVE_LAYER">
+            <summary>
+            Returns the current layer number.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_CUR_IMAGE">
+            <summary>
+            Returns the current bound image name.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_DURATION">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_PLANESIZE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_BPC">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_OFFX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_OFFY">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_CUBEFLAGS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_ORIGIN">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_IMAGE_CHANNELS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SEEK_SET">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SEEK_CUR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_SEEK_END">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Il.IL_EOF">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilActiveImage(System.Int32)">
+            <summary>
+            ilActiveImage sets the current image to be an image in an animation chain
+            </summary>
+            <param name="Number">Animation numer to select as current.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilActiveLayer(System.Int32)">
+            <summary>
+            ilActiveLayer is not yet used.
+            </summary>
+            <param name="Number">Layer number to select as current.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilActiveMipmap(System.Int32)">
+            <summary>
+            ilActiveMipmap sets a mipmap of the image as the current mipmap. Currently, the only way to generate mipmaps is by calling iluBuildMipmaps. If neither function has been called for the current image, no mipmaps exist for it. If Number is 0, then the current base image is set.
+            </summary>
+            <param name="Number">Mipmap level to select as current.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilApplyPal(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilApplyProfile(System.String,System.String)">
+            <summary>
+            iluApplyProfile applies a colour profile (files with extension .icm) to the currently bound image. InProfile describes the current image's colour space, and OutProfile describes the colour space to convert the currently bound image to. If InProfile is NULL, DevIL attempts to use the colour profile present in the image, if one is present, else it returns IL_FALSE.
+            </summary>
+            <param name="InProfile">Profile file describing the colour space the image is in.</param>
+            <param name="OutProfile">Profile file describing the colour space to convert the image to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilBindImage(System.Int32)">
+            <summary>
+            s, with zero being reserved as the default image. The default image is generated by ilCreateDefaultTex. The only reason the default image would be NULL is if OpenIL could not create the default image, due to memory constraints of the system, so always heed the IL_OUT_OF_MEMORY error. Any dimension image may be bound with ilBindImage. When ilBindImage is called, the bound image remains bound until ilBindImage is called again with a different value in Image.
+            </summary>
+            <param name="Image">The name of an image.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilBlit(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Source"></param>
+            <param name="DestX"></param>
+            <param name="DestY"></param>
+            <param name="DestZ"></param>
+            <param name="SrcX"></param>
+            <param name="SrcY"></param>
+            <param name="SrcZ"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="Depth"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilClearColour(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            ilClearColour sets the current clearing colour to be used by future calls to ilClearImage. iluRotate and iluEnlargeCanvas both use these values to clear blank space in images, too.
+            </summary>
+            <param name="Red">Amount of red to clear to.</param>
+            <param name="Green">Amount of green to clear to.</param>
+            <param name="Blue">Amount of blue to clear to.</param>
+            <param name="Alpha">Amount of alpha to clear to.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilClearImage">
+            <summary>
+            ilClearImage simply clears the image to the colours specified in ilClearColour. If the current image is of format IL_COLOR_INDEX, the image is cleared to all zeros, and the palette is changed to one entry of all zeros. If the current image is of format IL_LUMINANCE, the image is cleared to all zeros.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilCloneCurImage">
+            <summary>
+            ilCloneCurImage creates a copy of the current image and returns the id of the new image. If a subimage of the current image is currently selected via ilActiveImage, ilActiveLayer or ilActiveMipmap, the subimage is copied, not the base image.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilCompressFunc(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilConvertImage(System.Int32,System.Int32)">
+            <summary>
+            ilConvertImage converts the current bound image from its format/type to DestFormat and DestType. Almost all conversions are allowable.
+            </summary>
+            <param name="DestFormat">The format the current image should be converted to.</param>
+            <param name="DestType">The type the current image should be converted to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilConvertPal(System.Int32)">
+            <summary>
+            ilIsImage returns whether the image name in Image is a valid image in use. If the image name in Image is in use, ilIsImage returns IL_TRUE. If Image is 0, ilIsImage returns IL_FALSE, because the default image is a special image and is never returned by ilGenImages. If the image name has been deleted by ilDeleteImages or never generated byilGenImages, IL_FALSE is returned.
+            </summary>
+            <param name="DestFormat">The format the current image palette should be converted to. Accepted Values are: <see cref="F:Tao.DevIl.Il.IL_PAL_RGB24"/>, <see cref="F:Tao.DevIl.Il.IL_PAL_RGB32"/>, <see cref="F:Tao.DevIl.Il.IL_PAL_RGBA32"/>, <see cref="F:Tao.DevIl.Il.IL_PAL_BGR24"/>, <see cref="F:Tao.DevIl.Il.IL_PAL_BGR32"/>, <see cref="F:Tao.DevIl.Il.IL_PAL_BGRA32"/>.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilCopyImage(System.Int32)">
+            <summary>
+            ilCopyImage copies the attributes and data from the image named in Src. The same image bound before calling ilCopyImage remains bound afterward.
+            </summary>
+            <param name="Src">Name of an image to copy to the current image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilCopyPixels(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            s width, height or depth number of pixels will be copied to Data.
+            </summary>
+            <param name="XOff">Where to begin copying pixels from in the x direction.</param>
+            <param name="YOff">Where to begin copying pixels from in the y direction.</param>
+            <param name="ZOff">Where to begin copying pixels from in the z direction.</param>
+            <param name="Width">How many pixels to copy in the x direction.</param>
+            <param name="Height">How many pixels to copy in the y direction.</param>
+            <param name="Depth">How many pixels to copy in the z direction.</param>
+            <param name="Format">The desired format the output should be.</param>
+            <param name="Type">The desired type the output should be.</param>
+            <param name="Data">User-defined buffer to copy the image data to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilCreateSubImage(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <param name="Num"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilDefaultImage">
+            <summary>
+            ilDefaultImage creates an ugly 64x64 image of 8x8 black and yellow squares to form a checkerboard pattern. In future versions of OpenIL, there may be an option that will load this image if an image-loading function failed (unless memory could not be allocated). This way, the user can easily tell if an image was not loaded. Plus, the calling program can continue normally, even though it will have an ugly image.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilDeleteImage(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Num"></param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilDeleteImages(System.Int32,System.Int32@)">
+            <summary>
+            ilDeleteImages deletes Num image names specified in Image. After a texture is deleted, its characteristics and dimensions are undefined, and the name may be reused byilGenImages. ilDeleteImages ignores zeros and out-of-bounds image names. If the current image is deleted, the binding reverts to the default image (image name of 0).
+            </summary>
+            <param name="Num">Number of image names to delete.</param>
+            <param name="Image">Pointer to image names to delete.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilDeleteImages(System.Int32,System.Int32[])">
+            <summary>
+            ilDeleteImages deletes Num image names specified in Images. After a texture is deleted, its characteristics and dimensions are undefined, and the name may be reused byilGenImages. ilDeleteImages ignores zeros and out-of-bounds image names. If the current image is deleted, the binding reverts to the default image (image name of 0).
+            </summary>
+            <param name="Num">Number of image names to delete.</param>
+            <param name="Images">Pointer to image names to delete.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilDisable(System.Int32)">
+            <summary>
+            s OpenGL counterpart glDisable.
+            </summary>
+            <param name="Mode">Mode to disable.</param>
+            <returns></returns>
+            <remarks>
+            <para><see cref="F:Tao.DevIl.Il.IL_CONV_PAL"/> - When enabled, OpenIL automatically converts palette'd images to their base types, e.g. converting to a bgra image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FILE_OVERWRITE"/> - If enabled while saving, OpenIL will overwrite existing files, else <see cref="F:Tao.DevIl.Il.IL_FILE_ALREADY_EXISTS"/> is set, and the image is not saved.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_SET"/> - When enabled, the origin is specified at an absolute position, and all images loaded or saved adhere to this set origin. For more information, check out <see cref="M:Tao.DevIl.Il.ilOriginFunc(System.Int32)"/>. </para>
+            </remarks>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilEnable(System.Int32)">
+            <summary>
+            s OpenGL counterpart glEnable.
+            </summary>
+            <param name="Mode">Mode to enable.</param>
+            <returns></returns>
+            <remarks>
+            <para><see cref="F:Tao.DevIl.Il.IL_CONV_PAL"/> - When enabled, OpenIL automatically converts palette'd images to their base types, e.g. converting to a bgra image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FILE_OVERWRITE"/> - If enabled while saving, OpenIL will overwrite existing files, else <see cref="F:Tao.DevIl.Il.IL_FILE_ALREADY_EXISTS"/> is set, and the image is not saved.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_SET"/> - When enabled, the origin is specified at an absolute position, and all images loaded or saved adhere to this set origin. For more information, check out <see cref="M:Tao.DevIl.Il.ilOriginFunc(System.Int32)"/>. </para>
+            </remarks>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilFormatFunc(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGenImages(System.Int32,System.Int32@)">
+            <summary>
+            ilGenImages stores Num image names in Images. The names stored are not necessarily contiguous, and names can have been deleted via ilDeleteImages beforehand. The image names stored in Images can be used with ilBindImage after calling ilGenImages. After calling ilGenImages, all image dimensions and features are undefined.
+            </summary>
+            <param name="Num">Number of image names to generate.</param>
+            <param name="Images">Pointer in which the generated image names are stored.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGenImages(System.Int32,System.Int32[])">
+            <summary>
+            ilGenImages stores Num image names in Images. The names stored are not necessarily contiguous, and names can have been deleted via ilDeleteImages beforehand. The image names stored in Images can be used with ilBindImage after calling ilGenImages. After calling ilGenImages, all image dimensions and features are undefined.
+            </summary>
+            <param name="Num">Number of image names to generate.</param>
+            <param name="Images">Pointer in which the generated image names are stored.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGenImage">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetAlpha(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetBoolean(System.Int32)">
+            <summary>
+            ilGetBoolean returns the value of a selected mode.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <returns></returns>
+            <remarks>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_IMAGE"/> - Returns the current image number.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_LAYER"/> - Returns the current layer number.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_MIPMAP"/> - Returns the current mipmap number..</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_CONV_PAL"/> - Returns whether palette'd images are converted to their base palettes types on load - e.g. converted to a bgra image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_CUR_IMAGE"/> - Returns the current bound image name.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FILE_MODE"/> - Returns whether file overwriting when saving is enabled.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FORMAT_MODE"/> - Returns the format images are converted to upon loading.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FORMAT_SET"/> - Returns whether all images loaded are converted to a specific format.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_BITS_PER_PIXEL"/> - Returns the bits per pixel of the current image's data.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_BYTES_PER_PIXEL"/> - Returns the bytes per pixel of the current image's data.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_FORMAT"/> - Returns the current image's format.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_HEIGHT"/> - Returns the current image's height.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_TYPE"/> - Returns the current image's type.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_WIDTH"/> - Returns the current image's width.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_NUM_IMAGES"/> - Returns the number of images in the current image animation chain.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_NUM_MIPMAPS"/> - Returns the number of mipmaps of the current image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_MODE"/> - Returns the current origin position.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_SET"/> - Returns whether all images loaded and saved adhere to a specific origin.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_BPP"/> - Returns the bytes per pixel of the current image's palette.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_NUM_COLS"/> - Returns the number of colours of the current image's palette.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_TYPE"/> - Returns the palette type of the current image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_TYPE_MODE"/> - Returns the type images are converted to upon loading.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_TYPE_SET"/> - Returns whether all images loaded are converted to a specific type.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_USE_KEY_COLOUR"/> - Returns whether OpenIL uses a key colour (not used yet).</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_VERSION_NUM"/> - Returns the version number of the shared library. This can be checked against the <see cref="F:Tao.DevIl.Il.IL_VERSION"/> #define.</para>
+            </remarks>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetBooleanv(System.Int32,System.Boolean@)">
+            <summary>
+            ilGetBooleanv function returns the mode value in the Param parameter.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <param name="Param">Array where the values are stored</param>
+            <remarks>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_IMAGE"/> - Returns the current image number.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_LAYER"/> - Returns the current layer number.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ACTIVE_MIPMAP"/> - Returns the current mipmap number..</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_CONV_PAL"/> - Returns whether palette'd images are converted to their base palettes types on load - e.g. converted to a bgra image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_CUR_IMAGE"/> - Returns the current bound image name.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FILE_MODE"/> - Returns whether file overwriting when saving is enabled.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FORMAT_MODE"/> - Returns the format images are converted to upon loading.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_FORMAT_SET"/> - Returns whether all images loaded are converted to a specific format.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_BITS_PER_PIXEL"/> - Returns the bits per pixel of the current image's data.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_BYTES_PER_PIXEL"/> - Returns the bytes per pixel of the current image's data.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_FORMAT"/> - Returns the current image's format.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_HEIGHT"/> - Returns the current image's height.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_TYPE"/> - Returns the current image's type.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_IMAGE_WIDTH"/> - Returns the current image's width.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_NUM_IMAGES"/> - Returns the number of images in the current image animation chain.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_NUM_MIPMAPS"/> - Returns the number of mipmaps of the current image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_MODE"/> - Returns the current origin position.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_ORIGIN_SET"/> - Returns whether all images loaded and saved adhere to a specific origin.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_BPP"/> - Returns the bytes per pixel of the current image's palette.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_NUM_COLS"/> - Returns the number of colours of the current image's palette.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_PALETTE_TYPE"/> - Returns the palette type of the current image.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_TYPE_MODE"/> - Returns the type images are converted to upon loading.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_TYPE_SET"/> - Returns whether all images loaded are converted to a specific type.</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_USE_KEY_COLOUR"/> - Returns whether OpenIL uses a key colour (not used yet).</para>
+            <para><see cref="F:Tao.DevIl.Il.IL_VERSION_NUM"/> - Returns the version number of the shared library. This can be checked against the <see cref="F:Tao.DevIl.Il.IL_VERSION"/> #define.</para>
+            </remarks>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetData">
+            <summary>
+            s data to allow direct access and modification to the contents of the image.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetDXTCData(System.IntPtr,System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Buffer"></param>
+            <param name="BufferSize"></param>
+            <param name="DXTCFormat"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetError">
+            <summary>
+            Errors that occur in ILU and ILUT are also reported through ilGetError. ilGetError only returns something other than IL_NO_ERROR if detectable errors have occurred.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetInteger(System.Int32)">
+            <summary>
+            ilGetInteger returns the value of a selected mode.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetIntegerv(System.Int32,System.Int32@)">
+            <summary>
+            ilGetIntegerv function returns the mode value in the Param parameter.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <param name="Param">Array where the values are stored</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetIntegerv(System.Int32,System.Int32[])">
+            <summary>
+            ilGetIntegerv function returns the mode value in the Param parameter.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <param name="Param">Array where the values are stored</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetLumpPos">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetPalette">
+            <summary>
+            ilGetPalette returns an unsigned byte pointer to the current bound image's palette (if one exists) to allow direct access and modification to the contents of the palette.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilGetString(System.Int32)">
+            <summary>
+            ilGetString returns a constant human-readable string describing the current OpenIL implementation.
+            </summary>
+            <param name="StringName">Describes the string to be retrieved.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilHint(System.Int32,System.Int32)">
+            <summary>
+            s behaviour, in order to optimize either speed, memory, compression or quality, depending wholly on what the user desires.
+            </summary>
+            <param name="Target">An enum indicating what behaviour of the library is to be controlled.</param>
+            <param name="Mode">The desired behaviour.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilInit">
+            <summary>
+            ilInit starts DevIL and must be called prior to using DevIL, or else DevIL will probably crash when you attempt to use it.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsDisabled(System.Int32)">
+            <summary>
+            ilIsDisabled returns whether the mode indicated by Mode is disabled.
+            </summary>
+            <param name="Mode">Indicates an OpenIL mode</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsEnabled(System.Int32)">
+            <summary>
+            ilIsEnabled returns whether the mode indicated by Mode is enabled.
+            </summary>
+            <param name="Mode">Indicates an OpenIL mode</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsImage(System.Int32)">
+            <summary>
+            ilIsImage returns whether the image name in Image is a valid image in use. If the image name in Image is in use, ilIsImage returns IL_TRUE. If Image is 0, ilIsImage returns IL_FALSE, because the default image is a special image and is never returned by ilGenImages. If the image name has been deleted by ilDeleteImages or never generated byilGenImages, IL_FALSE is returned.
+            </summary>
+            <param name="Image">An image name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsValid(System.Int32,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsValidF(System.Int32,System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <param name="File"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsValidL(System.Int32,System.IntPtr,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilIsValidL(System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Type"></param>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilKeyColour(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="Red"></param>
+            <param name="Green"></param>
+            <param name="Blue"></param>
+            <param name="Alpha"></param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoad(System.Int32,System.String)">
+            <summary>
+            ilLoad can be used much in the same way ilLoadImage is used, except with ilLoad, it is possible to force OpenIL to load a file as a specific image format, no matter what the extension.
+            </summary>
+            <param name="Type">Format Specification</param>
+            <param name="FileName">File to load the image</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadF(System.Int32,System.IntPtr)">
+            <summary>
+            ilLoadF loads an image from a previously opened file
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="File">Pointer to a previous opened file</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadImage(System.String)">
+            <summary>
+            The ilLoadImage function allows a general interface to the specific internal file-loading routines. The approach ilLoadImage takes toward determining image types is three-pronged. First, it finds the extension and checks to see if any user-registered functions (registered through ilRegisterLoad) match the extension. If nothing matches, it takes the extension and determines which function to call based on it. Lastly, it attempts to identify the image based on various image header verification functions, such as ilIsValidPngF. If all this checking fails, IL_FALSE is returned with no modification to the current bound image.
+            </summary>
+            <param name="FileName">Specifies which file to load an image from.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadL(System.Int32,System.IntPtr,System.Int32)">
+            <summary>
+            ilLoadL loads an image from a memory lump
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="Lump">Lump Address</param>
+            <param name="Size">Lump size</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadL(System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            ilLoadL loads an image from a memory lump
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="Lump">Lump Address</param>
+            <param name="Size">Lump size</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadPal(System.String)">
+            <summary>
+            ilLoadPal simply loads a palette from the file specified by FileName into the current bound image's palette. If the current bound image is not of type IL_COLOR_INDEX, the palette is not used, but it is loaded nonetheless. ilLoadPal can load .col, Halo and Jasc PSP palette files.
+            </summary>
+            <param name="FileName">Filename to load the palette data from.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilModAlpha(System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="AlphaValue"></param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilOriginFunc(System.Int32)">
+            <summary>
+            ilOriginFunc sets the origin to be used when loading all images, so that any image with a different origin will be flipped to have the set origin. This behaviour is actually disabled by default but can be enabled using ilEnable with the IL_ORIGIN_SET parameter.
+            </summary>
+            <param name="Mode">Specifies the origin to be used</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilOverlayImage(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            The ilOverlayImage function copies the image named by Src onto the current bound image. XCoord, YCoord and ZCoord are allowed to be any number, even negative numbers, for if you want to start copying Src in the middle of it to the current image's left side. If the image named by Src has alpha components, then blending will occur, instead of just a simple overlay.
+            </summary>
+            <param name="Source">The image to copy.</param>
+            <param name="XCoord">The starting x position of the current image to copy Src to.</param>
+            <param name="YCoord">The starting y position of the current image to copy Src to.</param>
+            <param name="ZCoord">The starting z position of the current image to copy Src to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilPopAttrib">
+            <summary>
+            ilPopAttrib pops the last pushed stack entry off the stack and copies the bits specified when pushed by ilPushAttrib to the previous set of states.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilPushAttrib(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Bits">Attribute bits to push.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterFormat(System.Int32)">
+            <summary>
+            ilRegisterFormat tells OpenIL what format the current registered image is in. This function is to be used from within functions that have been registered via ilRegisterLoad
+            </summary>
+            <param name="Format">The format that the registered image is in.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterLoad(System.String,Tao.DevIl.Il.IL_LOADPROC)">
+            <summary>
+            ilRegisterLoad allows the user to register functions for use by OpenIL, when loading unknown image types. The user can also override the default internal loading functions by passing their extension in Ext when using ilLoadImage. ilRegisterLoad allows the user to use their own loading functions while using OpenIL's capabilities, or to extend OpenIL when it does not support a specific image format
+            </summary>
+            <param name="Ext">Extension of the image type to load</param>
+            <param name="Load">Pointer to a loading function</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterMipNum(System.Int32)">
+            <summary>
+            ilRegisterMipNum tells OpenIL the number of mipmaps the current image has. The mipmaps can then be chosen and modified via ilActiveMipmap. This function is to be used from within functions that have been registered via ilRegisterLoad.
+            </summary>
+            <param name="Num">Number of mipmaps to create.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterNumImages(System.Int32)">
+            <summary>
+            ilRegisterNumImages tells OpenIL the number of images in the current image's animation chain. The "next" images can then be chosen and modified via ilActiveImage. This function is to be used from within functions that have been registered via ilRegisterLoad.
+            </summary>
+            <param name="Num">Number of images in the animation chain to create.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterOrigin(System.Int32)">
+            <summary>
+            ilRegisterFormat tells OpenIL what format the current registered image is in. This function is to be used from within functions that have been registered via ilRegisterLoad
+            </summary>
+            <param name="Origin">The new Origin of the image</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterPal(System.IntPtr,System.Int32,System.Int32)">
+            <summary>
+            The ilRegisterPal function registers the current image's palette.
+            </summary>
+            <param name="Pal">Pointer to palette to be copied to the current image</param>
+            <param name="Size">Size of Pal in bytes</param>
+            <param name="Type">Type of the palette.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterSave(System.String,Tao.DevIl.Il.IL_SAVEPROC)">
+            <summary>
+            ilRegisterType tells OpenIL what datatype the current registered image uses. This function is to be used from within functions that have been registered via ilRegisterLoad.
+            </summary>
+            <param name="Ext">Extension of the image type to save</param>
+            <param name="Save">Pointer to a saving function</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRegisterType(System.Int32)">
+            <summary>
+            ilRegisterType tells OpenIL what datatype the current registered image uses. This function is to be used from within functions that have been registered via ilRegisterLoad.
+            </summary>
+            <param name="Type">The type the current image should be converted to.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRemoveLoad(System.String)">
+            <summary>
+            ilRemoveLoad removes a registered extension handler from the registered load functions list. Use this function when a new handler for an extension needs to be registered.
+            </summary>
+            <param name="Ext">Extension to remove (e.g. tga).</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilRemoveSave(System.String)">
+            <summary>
+            ilRemoveSave removes a registered extension handler from the registered save functions list. Use this function when a new handler for an extension needs to be registered.
+            </summary>
+            <param name="Ext">Extension to remove (e.g. tga).</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilResetMemory">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilResetRead">
+            <summary>
+            ilResetRead resets the reading functions set by ilSetRead.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilResetWrite">
+            <summary>
+            ilResetWrite resets the writing functions set by ilSetWrite.
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSave(System.Int32,System.String)">
+            <summary>
+            ilSave can be used much in the same way ilSaveImage is used, except with ilSave, it is possible to force OpenIL to save a file as a specific image format, no matter what the extension.
+            </summary>
+            <param name="Type">Image format.</param>
+            <param name="FileName">The filename of the file to save to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveF(System.Int32,System.IntPtr)">
+            <summary>
+            ilSaveF saves an image to a previously opened file
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="File">Pointer to a previous opened file</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveImage(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName">Specifies which file to save an image to</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveL(System.Int32,System.IntPtr,System.Int32)">
+            <summary>
+            ilSaveL saves an image to a memory lump
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="Lump">Lump Address</param>
+            <param name="Size">Lump size</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveL(System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            ilSaveL saves an image to a memory lump
+            </summary>
+            <param name="Type">Image format</param>
+            <param name="Lump">Lump Address</param>
+            <param name="Size">Lump size</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSavePal(System.String)">
+            <summary>
+            If the current bound image has a palette, ilSavePal saves the current image's palette to the file specified by FileName. Currently, OpenIL only supports saving to Paint Shop Pro .pal files.
+            </summary>
+            <param name="FileName">Filename to save the palette data to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetAlpha(System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="AlphaValue"></param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetData(System.IntPtr)">
+            <summary>
+            ilSetData just updates the current bound image data (bound by ilBindImage) with new data of the same size. This way new memory does not have to be allocated, so transfers are much faster.
+            </summary>
+            <param name="Data">Specifies the new image data to update the image with.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetDuration(System.Int32)">
+            <summary>
+            ilSetDuration allows you to set how long to show the currently bound image. This function can also change the durations of individual images in animation chains.
+            </summary>
+            <param name="Duration">Number of milliseconds to play the currently bound image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetInteger(System.Int32,System.Int32)">
+            <summary>
+            The ilSetInteger function sets the value of a selected mode. it's the ilGetInteger's counterpart
+            </summary>
+            <param name="Mode">The mode value to be modified.</param>
+            <param name="Param">The value to set the mode with.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetMemory(Tao.DevIl.Il.mAlloc,Tao.DevIl.Il.mFree)">
+            <summary>
+            ilSetMemory was created to let DevIL users override the default memory allocation and deallocation functions present in DevIL. This support can be useful if you are using your own optimized memory handler or anything similar.
+            </summary>
+            <param name="AllocFunc">Specifies a function to override DevIL's allocation function.</param>
+            <param name="FreeFunc">Specifies a function to override DevIL's deallocation function.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetPixels(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            ilCopyPixels has very simple behaviour. It simply copies a block of pixels from the Data buffer to the current image's data. XOff, YOff and ZOff can be used to skip a certain number of pixels in each respective direction. If XOff + Width, YOff + Height and/or ZOff + Depth is greater than the current image's width, height or depth, only the current image's width, height or depth number of pixels will be copied to the current image's data buffer.
+            </summary>
+            <param name="XOff">Where to begin copying pixels to in the x direction.</param>
+            <param name="YOff">Where to begin copying pixels to in the y direction.</param>
+            <param name="ZOff">Where to begin copying pixels to in the z direction.</param>
+            <param name="Width">How many pixels to copy in the x direction.</param>
+            <param name="Height">How many pixels to copy in the y direction.</param>
+            <param name="Depth">How many pixels to copy in the z direction.</param>
+            <param name="Format">The format the input is.</param>
+            <param name="Type">The type the input is.</param>
+            <param name="Data">User-defined buffer to copy the image data to.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetRead(Tao.DevIl.Il.fOpenRProc,Tao.DevIl.Il.fCloseRProc,Tao.DevIl.Il.fEofProc,Tao.DevIl.Il.fGetcProc,Tao.DevIl.Il.fReadProc,Tao.DevIl.Il.fSeekRProc,Tao.DevIl.Il.fTellRProc)">
+            <summary>
+             datatype ILHANDLE is passed to these functions when used, so any internal datatype used by the differing language (or file handle) can be used.
+            </summary>
+            <param name="Open">Pointer to a function to open a file.</param>
+            <param name="Close">Pointer to a function to close a file.</param>
+            <param name="Eof">Pointer to a function that returns IL_TRUE if the end of file is reached.</param>
+            <param name="Getc">Pointer to a function to return one byte from a file.</param>
+            <param name="Read">Pointer to a function to read multiple bytes from a file.</param>
+            <param name="Seek">Pointer to a function to change position in a file.</param>
+            <param name="Tell">Pointer to a function to report the position in a file.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetString(System.Int32,System.String)">
+            <summary>
+            ilSetString gives DevIL users the option to set strings in certain file formats that have fields for strings, making DevIL highly customizable. Choose one of the acceptable parameters for Mode and specify any string you want. If the string is too long, it will be truncated when writing to the file.
+            </summary>
+            <param name="Mode">Specifies the string to be set.</param>
+            <param name="str">String to use for setting a string field of a specified image format.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSetWrite(Tao.DevIl.Il.fOpenWProc,Tao.DevIl.Il.fCloseWProc,Tao.DevIl.Il.fPutcProc,Tao.DevIl.Il.fSeekWProc,Tao.DevIl.Il.fTellWProc,Tao.DevIl.Il.fWriteProc)">
+            <summary>
+            ilSetWrite allows you to override the default DevIL saving functions with your own. You are virtually unlimited in how your functions work, as long as they have the same behaviour as DevIL's default saving functions. All the functions work on the ILHANDLE type, which is a just a void pointer.
+            </summary>
+            <param name="Open">Pointer to a function to open a file.</param>
+            <param name="Close">Pointer to a function to close a file.</param>
+            <param name="Putc">Pointer to a function to write one byte to a file.</param>
+            <param name="Seek">Pointer to a function to change position in a file.</param>
+            <param name="Tell">Pointer to a function to report the position in a file.</param>
+            <param name="Write">Pointer to a function to write multiple bytes to a file.</param>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilShutDown">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilTexImage(System.Int32,System.Int32,System.Int32,System.Byte,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            Any current image data is destroyed by ilTexImage and replaced by a new image with the attributes specified. The new image data has undefined values. To set the new image data to a certain value, use ilClearImage or ilClearImageTo.
+            </summary>
+            <param name="Width">Specifies the new image width. This cannot be 0.</param>
+            <param name="Height">Specifies the new image height. This cannot be 0.</param>
+            <param name="Depth">Specifies the new image depth. Anything greater than 1 will make the image 3d. This cannot be 0.</param>
+            <param name="numChannels">Specifies the new channels. Common values are 3 and 4.</param>
+            <param name="Format">Specifies the data format this image has. For a list of values this can be, see the See Also section.</param>
+            <param name="Type">Specifies the data format this image has. For a list of values this can be, see the See Also section.</param>
+            <param name="Data">Specifies data that should be copied to the new image. If this parameter is NULL, no data is copied, and the new image data consists of undefined values.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilTypeFromExt(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilTypeFunc(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadData(System.String,System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="Depth"></param>
+            <param name="Bpp"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadDataF(System.IntPtr,System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            
+            </summary>
+            <param name="File"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="Depth"></param>
+            <param name="Bpp"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadDataL(System.IntPtr,System.Int32,System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            
+            </summary>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="Depth"></param>
+            <param name="Bpp"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadDataL(System.Byte[],System.Int32,System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            
+            </summary>
+            <param name="Lump"></param>
+            <param name="Size"></param>
+            <param name="Width"></param>
+            <param name="Height"></param>
+            <param name="Depth"></param>
+            <param name="Bpp"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveData(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilLoadFromJpegStruct(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="JpegDecompressorPtr"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Il.ilSaveFromJpegStruct(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="JpegCompressorPtr"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fCloseRProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+        </member>
+        <member name="T:Tao.DevIl.Il.fEofProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fGetcProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fOpenRProc">
+            <summary>
+            
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fReadProc">
+            <summary>
+            
+            </summary>
+            <param name="ptr"></param>
+            <param name="a"></param>
+            <param name="b"></param>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fSeekRProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <param name="a"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fTellRProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fCloseWProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+        </member>
+        <member name="T:Tao.DevIl.Il.fOpenWProc">
+            <summary>
+            
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fPutcProc">
+            <summary>
+            
+            </summary>
+            <param name="byt"></param>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fSeekWProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <param name="a"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fTellWProc">
+            <summary>
+            
+            </summary>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.fWriteProc">
+            <summary>
+            
+            </summary>
+            <param name="ptr"></param>
+            <param name="a"></param>
+            <param name="b"></param>
+            <param name="handle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.mAlloc">
+            <summary>
+            
+            </summary>
+            <param name="a"></param>
+        </member>
+        <member name="T:Tao.DevIl.Il.mFree">
+            <summary>
+            
+            </summary>
+            <param name="ptr"></param>
+        </member>
+        <member name="T:Tao.DevIl.Il.IL_LOADPROC">
+            <summary>
+            
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Il.IL_SAVEPROC">
+            <summary>
+            
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.Ilu">
+            <summary>
+                DevIL (Developer's Image Library) ILU binding for .NET.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.CALLING_CONVENTION">
+            <summary>
+                Specifies the calling convention.
+            </summary>
+            <remarks>
+                Specifies <see cref="F:System.Runtime.InteropServices.CallingConvention.Cdecl"/> for Windows and
+                Linux.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_NATIVE_LIBRARY">
+            <summary>
+            Specifies the DevIL ILU native library used in the bindings
+            </summary>
+            <remarks>
+            The Windows dll is specified here universally - note that
+            under Mono the non-windows native library can be mapped using
+            the ".config" file mechanism.  Kudos to the Mono team for this
+            simple yet elegant solution.
+            </remarks>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_VERSION_1_6_8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_VERSION">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_FILTER">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_NEAREST">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_LINEAR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_BILINEAR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_BOX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_TRIANGLE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_BELL">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_BSPLINE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_LANCZOS3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_SCALE_MITCHELL">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_INVALID_ENUM">
+            <summary>
+            A Parameter was invalid or out of range
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_OUT_OF_MEMORY">
+            <summary>
+            Could not allocate enough memory in an operation
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_INTERNAL_ERROR">
+            <summary>
+            A serious error has occurred.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_INVALID_VALUE">
+            <summary>
+            An invalid value was passed to a function or was in a file
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_ILLEGAL_OPERATION">
+            <summary>
+            	The operation attempted is not allowable in the current state. The function returns with no ill side effects. Generally there is currently no image bound or it has been deleted via ilDeleteImages. You should use ilGenImages and ilBindImage before calling the function.
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_INVALID_PARAM">
+            <summary>
+            A Parameter was invalid or out of range
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_PLACEMENT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_LOWER_LEFT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_LOWER_RIGHT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_UPPER_LEFT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_UPPER_RIGHT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_CENTER">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_CONVOLUTION_MATRIX">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_VERSION_NUM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.Ilu.ILU_VENDOR">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluAlienify">
+            <summary>
+            The story behind this function is actually sorta funny. I had been using a picture of me (contact me if you want it! =) as a test image, and I started working on some colour matrix filters. Well, my first attempt screwed-up, because I had changed the equations to accomodate my bgr image, but I transposed the equations entirely wrong. I got a really neat output, though, where I looked like an alien. =) I decided to keep the screw-up and placed it in iluAlienify. I can't say I've ever run across a filter like this before.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluBlurAvg(System.Int32)">
+            <summary>
+            iluBlurAvg blurs an image using an averaging convolution filter. The filter is applied up to Iter number of times, giving more of a blurring effect the higher Iter is.
+            </summary>
+            <param name="Iter">Number of iterations of blurring to perform.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluBlurGaussian(System.Int32)">
+            <summary>
+            iluBlurGaussian blurs an image using a Gaussian convolution filter, which usually gives better results than the filter used by iluBlurAvg. The filter is applied up to Iter number of times, giving more of a blurring effect the higher Iter is.
+            </summary>
+            <param name="Iter">Number of iterations of blurring to perform.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluBuildMipmaps">
+            <summary>
+            iluBuildMipmaps generates power-of-2 mipmaps for an image. If the image does not have power-of-2 dimensions, then the image is resized via iluScale. Mipmaps are then generated for the image, down to a 1x1 image. To use the mipmaps, see ilActiveMipmap.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluColoursUsed">
+            <summary>
+            iluColoursUsed creates a copy of the image data, quicksorts it and counts the number of unique colours in the image. This value is returned without affecting the original image.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluCompareImage(System.Int32)">
+            <summary>
+            iluCompareImage compares the current image to the image having the name in Comp. If both images are identical, IL_TRUE is returned. IL_FALSE is returned if the images are not identical. The bound image before calling this function remains the bound image after calling ilCompareImage.
+            </summary>
+            <param name="Comp">The image to compare with.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluContrast(System.Single)">
+            <summary>
+            iluContrast changes the contrast of an image by using interpolation and extrapolation. Common values for Contrast are in the range -0.5 to 1.7. Anything below 0.0 generates a negative of the image with varying contrast. 1.0 outputs the original image. 0.0 - 1.0 lowers the contrast of the image. 1.0 - 1.7 increases the contrast of the image. This effect is caused by interpolating (or extrapolating) the source image with a totally grey image.
+            </summary>
+            <param name="Contrast">The factor to contrast by</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluCrop(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            iluCrop "crops" the current image to new dimensions. The new image appears the same as the original, but portions of the image are clipped-off, depending on the values of the parameters of these functions. If XOff + Width, YOff + Height or ZOff + Depth is larger than the current image's dimensions, ILU_ILLEGAL_OPERATION is set. If ZOff is minus or equal to one the crop will be done only on 2 dimensions
+            </summary>
+            <param name="XOff">Number of pixels to skip in the x direction.</param>
+            <param name="YOff">Number of pixels to skip in the y direction.</param>
+            <param name="ZOff">Number of pixels to skip in the z direction.</param>
+            <param name="Width">Number of pixels to preserve in the x direction.</param>
+            <param name="Height">Number of pixels to preserve in the y direction.</param>
+            <param name="Depth">Number of pixels to preserve in the z direction.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluDeleteImage(System.Int32)">
+            <summary>
+            iluDeleteImage is a convenience function to delete a single image instead of calling ilDeleteImages
+            </summary>
+            <param name="Id">The image name to delete</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEdgeDetectE">
+            <summary>
+            iluEdgeDetectP detects the edges in the current image by combining two convolution filters. The filters used are Prewitt filters.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEdgeDetectP">
+            <summary>
+            iluEdgeDetectP detects the edges in the current image by combining two convolution filters. The filters used are Prewitt filters.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEdgeDetectS">
+            <summary>
+            iluEdgeDetectS detects the edges in the current image by combining two convolution filters. The filters used are Sobel filters.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEmboss">
+            <summary>
+            iluEmboss embosses an image, causing it to have a "relief" feel to it using a convolution filter:
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEnlargeCanvas(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            iluEnlargeCanvas enlarges the canvas of the current image, clearing the background to the colour specified in ilClearColour. To control the placement of the image, use iluImageParameter
+            </summary>
+            <param name="Width">New image width - must be larger than the current image's width.</param>
+            <param name="Height">New image height - must be larger than the current image's width.</param>
+            <param name="Depth">New image depth - must be larger than the current image's width.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEnlargeImage(System.Single,System.Single,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="XDim"></param>
+            <param name="YDim"></param>
+            <param name="ZDim"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluEqualize">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluErrorString(System.Int32)">
+            <summary>
+            iluErrorString returns a human-readable string of the error in Error. This can be useful for displaying the human-readable error in your program to let the user know wtf just happened.
+            </summary>
+            <param name="Error">Enum that describes the string to be retrieved.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluConvolution(System.Int32[],System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="matrix"></param>
+            <param name="scale"></param>
+            <param name="bias"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluFlipImage">
+            <summary>
+            iluFlipImage inverts an image over the x axis. The image will be upside-down after calling this function. If this function is called twice in succession, the image is restored to its original state. A version of this function in OpenIL is used throughout internally when loading images to correct images that would otherwise be upside-down. Using ilOriginFunc will essentially tell the library which way is up.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGammaCorrect(System.Single)">
+            <summary>
+            reater than 1.0, the image is brightened. It uses interpolation so it's slower then iluGammaCorrectScale
+            </summary>
+            <param name="Gamma">Gamma correction.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGenImage">
+            <summary>
+            iluGenImage is a convenience function to delete a single image instead of calling ilGenImages
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGetImageInfo(Tao.DevIl.ILinfo@)">
+            <summary>
+            The iluGetImageInfo function retrieves information about the current image in an ILinfo struct. This is useful when you are repeatedly calling ilGetInteger and is more efficient in this case.
+            </summary>
+            <param name="Info">ILinfo struct to receive the image information.</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGetInteger(System.Int32)">
+            <summary>
+            The iluGetInteger function returns the value of a selected mode
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGetIntegerv(System.Int32,System.Int32@)">
+            <summary>
+            The iluGetIntegerv function returns the mode value in the Param parameter.
+            </summary>
+            <param name="Mode">The mode value to be returned.</param>
+            <param name="Param">When used, the value is stored here instead of returned..</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluGetString(System.Int32)">
+            <summary>
+            iluGetString returns a constant human-readable string describing the current OpenILU implementation.
+            </summary>
+            <param name="StringName">Enum that describes the string to be retrieved.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluImageParameter(System.Int32,System.Int32)">
+            <summary>
+            iluImageParameter modifies the behaviour of some ilu functions. Right now, it controls the behaviour of iluEnlargeCanvas and iluScale. For ILU_FILTER, values for Param other than ILU_NEAREST, ILU_LINEAR and ILU_BILINEAR are higher-quality scaling filters and take longer to perform.
+            </summary>
+            <param name="PName">Parameter name</param>
+            <param name="Param">Behaviour to use</param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluInit">
+            <summary>
+            iluInit starts ILU and must be called prior to using ILU
+            </summary>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluInvertAlpha">
+            <summary>
+            iluInvertAlpha inverts the alpha of the currently bound image.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluLoadImage(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="FileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluMirror">
+            <summary>
+            iluMirror mirrors an image across its y axis, making it appear backwards.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluNegative">
+            <summary>
+            iluNegative creates a negative version of an image, like it was viewed as a picture negative instead of the actual picture. The effect is caused by inverting the image's colours, such as a green pixel would become purple (red-blue).
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluNoisify(System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="Tolerance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluPixelize(System.Int32)">
+            <summary>
+            iluPixelize performs the effect that can be seen on television, where people want their identity to remain anonymous, so the editors cover the person's face with a very blocky pixelized version. PixSize specifies how blocky the image should be, with 1 being the lowest blockiness (doesn't change the image).
+            </summary>
+            <param name="PixSize">New pixel size</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluRegionfv(Tao.DevIl.ILpointf[],System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Points"></param>
+            <param name="n"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluRegioniv(Tao.DevIl.ILpointi[],System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="Points"></param>
+            <param name="n"></param>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluReplaceColour(System.Byte,System.Byte,System.Byte,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="Red"></param>
+            <param name="Green"></param>
+            <param name="Blue"></param>
+            <param name="Tolerance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluRotate(System.Single)">
+            <summary>
+            iluRotate simply rotates an image about the center by Angle degrees. The background where there is space left by the rotation will be set to the clear colour.
+            </summary>
+            <param name="Angle">Angle in degrees to rotate the image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluRotate3D(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="Angle"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluSaturate1f(System.Single)">
+            <summary>
+            iluSaturate1f applies a saturation consistent with the IL_LUMINANCE conversion values to red, green and blue.
+            </summary>
+            <param name="Saturation">Amount of saturation to apply to the current bound image. the value must go from -1.0 to 1.0</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluSaturate4f(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            iluScaleColours scales the individual colour components of the current bound image. Using 1.0f as any of the parameters yields that colour component's original plane in the new image.
+            </summary>
+            <param name="r">Amount of red to use from the original image</param>
+            <param name="g">Amount of green to use from the original image</param>
+            <param name="b">Amount of blue to use from the original image</param>
+            <param name="Saturation"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluScale(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            The iluScale function scales the image to the new dimensions specified, shrinking or enlarging the image, depending on the image's original dimensions. There are different filters that can be used to scale an image, and which filter to use can be specified via iluImageParameter.
+            </summary>
+            <param name="Width">New width of the image.</param>
+            <param name="Height">New height of the image.</param>
+            <param name="Depth">New depth of the image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluScaleColours(System.Single,System.Single,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="r"></param>
+            <param name="g"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluSharpen(System.Single,System.Int32)">
+            <summary>
+            iluSharpen can actually either sharpen or blur an image, depending on the value of Factor. iluBlurAvg and iluBlurGaussian are much faster for blurring, though. When Factor is 1.0, the image goes unchanged. When Factor is in the range 0.0 - 1.0, the current image is blurred. When Factor is in the range 1.0 - 2.5, the current image is sharpened. To achieve a more pronounced sharpening/blurring effect, simply increase the number of iterations by increasing the value passed in Iter.
+            </summary>
+            <param name="Factor">Factor to sharpen by.</param>
+            <param name="Iter">Number of iterations to perform on the image.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluSwapColours">
+            <summary>
+            iluSwapColours "swaps" the colour order of the current image. If the current image is in bgr(a) format, iluSwapColours will change the image to use rgb(a) format, or vice-versa. This can be helpful when you want to manipulate the image data yourself but only want to use a certain colour order. To determine the current colour order, call ilGetInteger with the IL_IMAGE_FORMAT parameter.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tao.DevIl.Ilu.iluWave(System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="Angle"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Tao.DevIl.ILinfo">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Id">
+            <summary>
+            /\
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Data">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Width">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Height">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Depth">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Bpp">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.SizeOfData">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Format">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Type">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Origin">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.Palette">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.PalType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.PalSize">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.CubeFlags">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.NumNext">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.NumMips">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILinfo.NumLayers">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Tao.DevIl.ILpointf">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILpointf.x">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILpointf.y">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Tao.DevIl.ILpointi">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILpointi.x">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Tao.DevIl.ILpointi.y">
+            <summary>
+            
+            </summary>
+        </member>
+    </members>
+</doc>

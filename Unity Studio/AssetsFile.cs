@@ -11,6 +11,7 @@ namespace Unity_Studio
     {
         public EndianStream a_Stream;
         public string filePath;
+        public string fileName;
         public int fileGen;
         public string m_Version = "2.5.0f5";
         public int[] version = new int[4] { 0, 0, 0, 0 };
@@ -24,7 +25,7 @@ namespace Unity_Studio
         public Dictionary<long, Transform> TransformList = new Dictionary<long, Transform>();
 
         public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
-        public List<UnityShared> sharedAssetsList = new List<UnityShared>() {new UnityShared()};
+        public List<UnityShared> sharedAssetsList = new List<UnityShared>() { new UnityShared() };
         private ClassIDReference UnityClassID = new ClassIDReference();
 
         public SortedDictionary<int, ClassStrStruct> ClassStructures = new SortedDictionary<int, ClassStrStruct>();
@@ -38,18 +39,19 @@ namespace Unity_Studio
             public string fileName = "";
         }
 
-        public AssetsFile(string fileName, EndianStream fileStream)
+        public AssetsFile(string fullName, EndianStream fileStream)
         {
             //if (memFile != null) { Stream = new EndianStream(memFile, endianType); }
             //else { Stream = new EndianStream(File.OpenRead(fileName), endianType); }
             a_Stream = fileStream;
 
-            filePath = fileName;
+            filePath = fullName;
+            fileName = Path.GetFileName(fullName);
             int tableSize = a_Stream.ReadInt32();
             int dataEnd = a_Stream.ReadInt32();
             fileGen = a_Stream.ReadInt32();
             int dataOffset = a_Stream.ReadInt32();
-            sharedAssetsList[0].fileName = Path.GetFileName(fileName); //reference itself because sharedFileIDs start from 1
+            sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
 
             switch (fileGen)
             {
@@ -121,7 +123,7 @@ namespace Unity_Studio
                 case 21: platformStr = "WP8"; break;
                 case 25: platformStr = "Linux"; break;
             }
-            
+
             int baseCount = a_Stream.ReadInt32();
             for (int i = 0; i < baseCount; i++)
             {
@@ -143,7 +145,7 @@ namespace Unity_Studio
                 else { readBase5(); }
             }
 
-            if (fileGen >= 7 && fileGen < 14) {a_Stream.Position += 4;}//azero
+            if (fileGen >= 7 && fileGen < 14) { a_Stream.Position += 4; }//azero
 
             int assetCount = a_Stream.ReadInt32();
 
@@ -172,7 +174,7 @@ namespace Unity_Studio
                     //but not the last!
                     if (unknownByte != 0)
                     {
-                        bool investigate = true;
+                        //bool investigate = true;
                     }
                 }
 
@@ -182,10 +184,10 @@ namespace Unity_Studio
                 }
 
                 asset.uniqueID = i.ToString(assetIDfmt);
-                
+
                 asset.exportSize = asset.Size;
                 asset.sourceFile = this;
-                
+
                 preloadTable.Add(asset.m_PathID, asset);
 
                 #region read BuildSettings to get version for unity 2.x files

@@ -10,9 +10,9 @@ namespace Unity_Studio
 {
     public class BundleFile
     {
-        public int ver1;
-        public string ver2;
-        public string ver3;
+        public int format;
+        public string versionPlayer;
+        public string versionEngine;
         public List<MemoryAssetsFile> MemoryAssetsFileList = new List<MemoryAssetsFile>();
 
         public class MemoryAssetsFile
@@ -40,17 +40,11 @@ namespace Unity_Studio
                     using (var inputStream = new MemoryStream(lz4buffer))
                     {
                         var decoder = new Lz4DecoderStream(inputStream);
-
-                        filebuffer = new byte[uncompressedSize]; //is this ok?
-                        for (;;)
-                        {
-                            int nRead = decoder.Read(filebuffer, 0, uncompressedSize);
-                            if (nRead == 0)
-                                break;
-                        }
+                        filebuffer = new byte[uncompressedSize];
+                        decoder.Read(filebuffer, 0, uncompressedSize);
+                        decoder.Dispose();
                     }
                 }
-
                 using (var b_Stream = new EndianStream(new MemoryStream(filebuffer), EndianType.BigEndian))
                 {
                     readBundle(b_Stream);
@@ -67,14 +61,17 @@ namespace Unity_Studio
 
         private void readBundle(EndianStream b_Stream)
         {
-            var header = b_Stream.ReadStringToNull();
+            var signature = b_Stream.ReadStringToNull();
 
-            if (header == "UnityWeb" || header == "UnityRaw" || header == "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA")
+            if (signature == "UnityWeb" || signature == "UnityRaw" || signature == "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA")
             {
-                ver1 = b_Stream.ReadInt32();
-                ver2 = b_Stream.ReadStringToNull();
-                ver3 = b_Stream.ReadStringToNull();
-                if (ver1 < 6) { int bundleSize = b_Stream.ReadInt32(); }
+                format = b_Stream.ReadInt32();
+                versionPlayer = b_Stream.ReadStringToNull();
+                versionEngine = b_Stream.ReadStringToNull();
+                if (format < 6)
+                {
+                    int bundleSize = b_Stream.ReadInt32();
+                }
                 else
                 {
                     long bundleSize = b_Stream.ReadInt64();
@@ -95,7 +92,7 @@ namespace Unity_Studio
                 }
 
                 b_Stream.Position = offset;
-                switch (header)
+                switch (signature)
                 {
                     case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA": //.bytes
                     case "UnityWeb":
@@ -115,15 +112,84 @@ namespace Unity_Studio
                             break;
                         }
                 }
-
-
             }
-            else if (header == "UnityFS")
+            else if (signature == "UnityFS")
             {
-                ver1 = b_Stream.ReadInt32();
-                ver2 = b_Stream.ReadStringToNull();
-                ver3 = b_Stream.ReadStringToNull();
-                long bundleSize = b_Stream.ReadInt64();
+                format = b_Stream.ReadInt32();
+                versionPlayer = b_Stream.ReadStringToNull();
+                versionEngine = b_Stream.ReadStringToNull();
+                if (format == 6)
+                {
+                    var bundleSize = b_Stream.ReadInt64();
+                    int compressedSize = b_Stream.ReadInt32();
+                    int uncompressedSize = b_Stream.ReadInt32();
+                    int unknown = b_Stream.ReadInt32();//Hmm...
+                    var entryinfoBytes = b_Stream.ReadBytes(compressedSize);
+                    EndianStream entryinfo;
+                    if (uncompressedSize > compressedSize)
+                    {
+                        byte[] uncompressedBytes = new byte[uncompressedSize];
+                        using (var mstream = new MemoryStream(entryinfoBytes))
+                        {
+                            var decoder = new Lz4DecoderStream(mstream);
+                            decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                            decoder.Dispose();
+                        }
+                        entryinfo = new EndianStream(new MemoryStream(uncompressedBytes), EndianType.BigEndian);
+                    }
+                    else
+                    {
+                        entryinfo = new EndianStream(new MemoryStream(entryinfoBytes), EndianType.BigEndian);
+                    }
+                    using (entryinfo)
+                    {
+                        entryinfo.Position = 0x10;
+                        int blockcount = entryinfo.ReadInt32();
+                        EndianStream assetsData;
+                        var assetsDatam = new MemoryStream();
+                        for (int i = 0; i < blockcount; i++)
+                        {
+                            uncompressedSize = entryinfo.ReadInt32();
+                            compressedSize = entryinfo.ReadInt32();
+                            var compressedBytes = b_Stream.ReadBytes(compressedSize);
+                            if (uncompressedSize > compressedSize)
+                            {
+                                var uncompressedBytes = new byte[uncompressedSize];
+                                using (var mstream = new MemoryStream(compressedBytes))
+                                {
+                                    var decoder = new Lz4DecoderStream(mstream);
+                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                                    decoder.Dispose();
+                                }
+                                assetsDatam.Write(uncompressedBytes, 0, uncompressedSize);
+                            }
+                            else
+                            {
+                                assetsDatam.Write(compressedBytes, 0, compressedSize);
+                            }
+                            unknown = entryinfo.ReadInt16();
+                        }
+                        //assetsDatam.Capacity = (int)assetsDatam.Length;
+                        assetsData = new EndianStream(assetsDatam, EndianType.BigEndian);
+                        using (assetsData)
+                        {
+                            var entryinfo_count = entryinfo.ReadInt32();
+                            for (int i = 0; i < entryinfo_count; i++)
+                            {
+                                MemoryAssetsFile memFile = new MemoryAssetsFile();
+                                var entryinfo_offset = entryinfo.ReadInt64();
+                                var entryinfo_size = entryinfo.ReadInt64();
+                                unknown = entryinfo.ReadInt32();
+                                memFile.fileName = entryinfo.ReadStringToNull();
+                                assetsData.Position = entryinfo_offset;
+                                byte[] buffer = new byte[entryinfo_size];
+                                assetsData.Read(buffer, 0, (int)entryinfo_size);
+                                memFile.memStream = new MemoryStream(buffer);
+                                MemoryAssetsFileList.Add(memFile);
+                            }
+                        }
+                    }
+                }
             }
         }
 

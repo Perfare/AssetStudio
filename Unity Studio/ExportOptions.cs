@@ -27,6 +27,17 @@ namespace Unity_Studio
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             upAxis.SelectedIndex = (int)Properties.Settings.Default["upAxis"];
             showExpOpt.Checked = (bool)Properties.Settings.Default["showExpOpt"];
+            converttexture.Checked = (bool)Properties.Settings.Default["convertTexture"];
+            convertfsb.Checked = (bool)Properties.Settings.Default["convertfsb"];
+            string str = Properties.Settings.Default["convertType"] as string;
+            foreach (Control c in panel1.Controls)
+            {
+                if (c.Text == str)
+                {
+                    (c as RadioButton).Checked = true;
+                    break;
+                }
+            }
         }
 
         private void exportOpnions_CheckedChanged(object sender, EventArgs e)
@@ -44,6 +55,17 @@ namespace Unity_Studio
             Properties.Settings.Default["exportDeformers"] = exportDeformers.Checked;
             Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
             Properties.Settings.Default["upAxis"] = upAxis.SelectedIndex;
+            Properties.Settings.Default["convertTexture"] = converttexture.Checked;
+            Properties.Settings.Default["convertfsb"] = convertfsb.Checked;
+            foreach (Control c in panel1.Controls)
+            {
+                if ((c as RadioButton).Checked)
+                {
+                    Properties.Settings.Default["convertType"] = c.Text;
+                    break;
+                }
+            }
+            Properties.Settings.Default.Save();
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
