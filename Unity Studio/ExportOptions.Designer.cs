@@ -368,9 +368,9 @@
             this.converttexture.CheckState = System.Windows.Forms.CheckState.Checked;
             this.converttexture.Location = new System.Drawing.Point(8, 20);
             this.converttexture.Name = "converttexture";
-            this.converttexture.Size = new System.Drawing.Size(198, 16);
+            this.converttexture.Size = new System.Drawing.Size(192, 16);
             this.converttexture.TabIndex = 1;
-            this.converttexture.Text = "Convert Texture (If possible)";
+            this.converttexture.Text = "Convert Texture (If support)";
             this.converttexture.UseVisualStyleBackColor = true;
             // 
             // ExportOptions
