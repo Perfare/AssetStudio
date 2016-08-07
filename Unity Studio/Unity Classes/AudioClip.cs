@@ -86,14 +86,7 @@ namespace Unity_Studio
                 m_3D = m_Legacy3D;
 
                 m_Source = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                if (m_Source.Contains("archive:/"))//resS文件在bundle里
-                {
-                    m_Source = m_Source.Replace("archive:/", "").Replace(preloadData.sourceFile.fileName + "/", "");
-                }
-                else
-                {
-                    m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
-                }
+                m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
                 m_Offset = a_Stream.ReadInt64();
                 m_Size = a_Stream.ReadInt64();
                 m_CompressionFormat = a_Stream.ReadInt32();
@@ -107,7 +100,8 @@ namespace Unity_Studio
                 {
                     a_Stream.Read(m_AudioData, 0, (int)m_Size);
                 }
-                else if (File.Exists(m_Source))
+                else if (File.Exists(m_Source) ||
+                    File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
                 {
                     BinaryReader reader = new BinaryReader(File.OpenRead(m_Source));
                     reader.BaseStream.Position = m_Offset;
@@ -117,7 +111,7 @@ namespace Unity_Studio
                 else
                 {
                     EndianStream estream = null;
-                    if (UnityStudioForm.assetsfileandstream.TryGetValue(m_Source, out estream))
+                    if (UnityStudioForm.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
                         m_AudioData = estream.ReadBytes((int)m_Size);
