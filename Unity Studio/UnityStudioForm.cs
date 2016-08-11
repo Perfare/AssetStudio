@@ -2968,13 +2968,23 @@ namespace Unity_Studio
             if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
             {
                 timer.Stop();
-                int[] SelectedIndices = new int[assetListView.SelectedIndices.Count];
-                assetListView.SelectedIndices.CopyTo(SelectedIndices, 0);
-
-                bool exportAll = ((ToolStripItem)sender).Name == "exportAllAssetsMenuItem";
-                bool exportFiltered = ((ToolStripItem)sender).Name == "exportFilteredAssetsMenuItem";
-                bool exportSelected = ((ToolStripItem)sender).Name == "exportSelectedAssetsMenuItem";
-
+                List<AssetPreloadData> toExportAssets = null;
+                if (((ToolStripItem)sender).Name == "exportAllAssetsMenuItem")
+                {
+                    toExportAssets = exportableAssets;
+                }
+                else if (((ToolStripItem)sender).Name == "exportFilteredAssetsMenuItem")
+                {
+                    toExportAssets = visibleAssets;
+                }
+                else if (((ToolStripItem)sender).Name == "exportSelectedAssetsMenuItem")
+                {
+                    toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
+                    foreach (var i in assetListView.SelectedIndices.OfType<int>())
+                    {
+                        toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
+                    }
+                }
                 int assetGroupSelectedIndex = assetGroupOptions.SelectedIndex;
 
                 ThreadPool.QueueUserWorkItem(delegate
@@ -2983,81 +2993,67 @@ namespace Unity_Studio
                     if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
                     { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
 
-                    int toExport = 0;
+                    int toExport = toExportAssets.Count;
                     int exportedCount = 0;
 
                     SetProgressBarValue(0);
-                    SetProgressBarMaximum(assetsfileList.Count);
+                    SetProgressBarMaximum(toExport);
                     //looping assetsFiles will optimize HDD access
                     //but will also have a small performance impact when exporting only a couple of selected assets
-                    foreach (var assetsFile in assetsfileList)
+                    foreach (var asset in toExportAssets)
                     {
                         string exportpath = savePath + "\\";
-                        if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(assetsFile.filePath) + "_export\\"; }
+                        if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
+                        else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
 
-                        foreach (var asset in assetsFile.exportableAssets)
+                        //AudioClip and Texture2D extensions are set when the list is built
+                        //so their overwrite tests can be done without loading them again
+                        switch (asset.Type2)
                         {
-                            if (exportAll ||
-                                visibleAssets.Exists(x => x.uniqueID == asset.uniqueID) &&
-                                (exportFiltered || exportSelected && asset.Index >= 0 && SelectedIndices.Contains(asset.Index)))
-                            {
-                                toExport++;
-                                if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
-
-                                //AudioClip and Texture2D extensions are set when the list is built
-                                //so their overwrite tests can be done without loading them again
-                                switch (asset.Type2)
+                            case 28:
+                                if (ExportTexture(asset, exportpath + asset.Text, asset.extension))
                                 {
-                                    case 28:
-                                        if (ExportTexture(asset, exportpath + asset.Text, asset.extension))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case 83:
-                                        if (ExportAudioClip(asset, exportpath + asset.Text, asset.extension))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case 48:
-                                        if (!ExportFileExists(exportpath + asset.Text + ".txt", asset.TypeString))
-                                        {
-                                            ExportText(new TextAsset(asset, true), exportpath + asset.Text + ".txt");
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case 49:
-                                        TextAsset m_TextAsset = new TextAsset(asset, true);
-                                        if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
-                                        {
-                                            ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case 128:
-                                        unityFont m_Font = new unityFont(asset, true);
-                                        if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
-                                        {
-                                            ExportFont(m_Font, exportpath + asset.Text + asset.extension);
-                                            exportedCount++;
-                                        }
-                                        break;
+                                    exportedCount++;
                                 }
-                            }
+                                break;
+                            case 83:
+                                if (ExportAudioClip(asset, exportpath + asset.Text, asset.extension))
+                                {
+                                    exportedCount++;
+                                }
+                                break;
+                            case 48:
+                                if (!ExportFileExists(exportpath + asset.Text + ".txt", asset.TypeString))
+                                {
+                                    ExportText(new TextAsset(asset, true), exportpath + asset.Text + ".txt");
+                                    exportedCount++;
+                                }
+                                break;
+                            case 49:
+                                TextAsset m_TextAsset = new TextAsset(asset, true);
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                {
+                                    ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
+                                    exportedCount++;
+                                }
+                                break;
+                            case 128:
+                                unityFont m_Font = new unityFont(asset, true);
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                {
+                                    ExportFont(m_Font, exportpath + asset.Text + asset.extension);
+                                    exportedCount++;
+                                }
+                                break;
                         }
                         ProgressBarPerformStep();
                     }
-
                     string statusText = "";
                     switch (exportedCount)
                     {
                         case 0:
                             statusText = "Nothing exported.";
                             break;
-                        /*case 1:
-                            statusText = toolStripStatusLabel1.Text + " finished.";
-                            break;*/
                         default:
                             statusText = "Finished exporting " + exportedCount.ToString() + " assets.";
                             break;
