@@ -69,6 +69,7 @@ namespace Unity_Studio
                 m_IsActive = a_Stream.ReadBoolean();
                 
                 base.Text = m_Name;
+                preloadData.Text = m_Name;
                 //name should be unique
                 base.Name = uniqueID;
             }

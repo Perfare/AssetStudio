@@ -123,7 +123,15 @@ namespace Unity_Studio
                     var bundleSize = b_Stream.ReadInt64();
                     int compressedSize = b_Stream.ReadInt32();
                     int uncompressedSize = b_Stream.ReadInt32();
-                    int unknown = b_Stream.ReadInt32();//Hmm...
+                    // (UnityFS) flags
+                    //  0x100 = <unknown>
+                    //  0x80 = data header at end of file
+                    //  0x40 = entry info present
+                    //  0x3f = low six bits are data header compression method
+                    //         0 = none
+                    //         1 = LZMA
+                    //         3 = LZ4
+                    int unknown = b_Stream.ReadInt32();
                     var entryinfoBytes = b_Stream.ReadBytes(compressedSize);
                     EndianStream entryinfo;
                     if (uncompressedSize > compressedSize)
@@ -151,6 +159,11 @@ namespace Unity_Studio
                         {
                             uncompressedSize = entryinfo.ReadInt32();
                             compressedSize = entryinfo.ReadInt32();
+                            //0 = none
+                            //1 = LZMA
+                            //3 = LZ4
+                            //0x40 = 0?
+                            unknown = entryinfo.ReadInt16();
                             var compressedBytes = b_Stream.ReadBytes(compressedSize);
                             if (uncompressedSize > compressedSize)
                             {
@@ -167,7 +180,6 @@ namespace Unity_Studio
                             {
                                 assetsDatam.Write(compressedBytes, 0, compressedSize);
                             }
-                            unknown = entryinfo.ReadInt16();
                         }
                         //assetsDatam.Capacity = (int)assetsDatam.Length;
                         assetsData = new EndianStream(assetsDatam, EndianType.BigEndian);

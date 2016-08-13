@@ -360,7 +360,7 @@ namespace Unity_Studio
                 {
                     b_assetsfileList.Add(assetsFile);
                 }
-                assetsfileandstream.Add(assetsFile.fileName, assetsFile.a_Stream);
+                assetsfileandstream[assetsFile.fileName] = assetsFile.a_Stream;
             }
             if (b_assetsfileList.Count > 0)
             {
@@ -668,7 +668,7 @@ namespace Unity_Studio
                     foreach (var asset in assetsFile.preloadTable.Values)
                     {
                         asset.uniqueID = fileID + asset.uniqueID;
-
+                        var exportable = false;
                         switch (asset.Type2)
                         {
                             case 1: //GameObject
@@ -694,43 +694,27 @@ namespace Unity_Studio
                             case 28: //Texture2D
                                 {
                                     Texture2D m_Texture2D = new Texture2D(asset, false);
-                                    if (!exportableAssetsHash.Add("Texture2D" + asset.Text))
-                                    {
-                                        asset.Text += " #" + asset.uniqueID;
-                                    }
-                                    assetsFile.exportableAssets.Add(asset);
+                                    exportable = true;
                                     break;
                                 }
                             case 48: //Shader
                             case 49: //TextAsset
                                 {
                                     TextAsset m_TextAsset = new TextAsset(asset, false);
-                                    if (!exportableAssetsHash.Add("TextAsset" + asset.Text))
-                                    {
-                                        asset.Text += " #" + asset.uniqueID;
-                                    }
-                                    assetsFile.exportableAssets.Add(asset);
+                                    exportable = true;
                                     break;
                                 }
                             case 83: //AudioClip
                                 {
                                     AudioClip m_AudioClip = new AudioClip(asset, false);
-                                    if (!exportableAssetsHash.Add("AudioClip" + asset.Text))
-                                    {
-                                        asset.Text += " #" + asset.uniqueID;
-                                    }
-                                    assetsFile.exportableAssets.Add(asset);
+                                    exportable = true;
                                     break;
                                 }
                             //case 89: //CubeMap
                             case 128: //Font
                                 {
                                     unityFont m_Font = new unityFont(asset, false);
-                                    if (!exportableAssetsHash.Add("unityFont" + asset.Text))
-                                    {
-                                        asset.Text += " #" + asset.uniqueID;
-                                    }
-                                    assetsFile.exportableAssets.Add(asset);
+                                    exportable = true;
                                     break;
                                 }
                             case 129: //PlayerSettings
@@ -739,9 +723,52 @@ namespace Unity_Studio
                                     productName = plSet.productName;
                                     break;
                                 }
-                            case 0:
-                                break;
-
+                            case 114: //MonoBehaviour
+                                {
+                                    asset.sourceFile.a_Stream.Position = asset.Offset + 0x1c;
+                                    var len = asset.sourceFile.a_Stream.ReadInt32();
+                                    if (len > 0 && len < asset.Size)
+                                    {
+                                        var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
+                                        asset.Text = Encoding.UTF8.GetString(bytes);
+                                    }
+                                    break;
+                                }
+                            case 21: //Material
+                            case 43: //Mesh
+                            case 74: //AnimationClip
+                            case 90: //Avatar
+                            case 91: //AnimatorController
+                            case 115: //MonoScript
+                            case 213: //Sprite
+                                {
+                                    asset.sourceFile.a_Stream.Position = asset.Offset;
+                                    var len = asset.sourceFile.a_Stream.ReadInt32();
+                                    if (len > 0 && len < asset.Size)
+                                    {
+                                        var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
+                                        asset.Text = Encoding.UTF8.GetString(bytes);
+                                    }
+                                    break;
+                                }
+                        }
+                        if (!exportable && displayAll.Checked)
+                        {
+                            if(asset.Text == "")
+                            {
+                                asset.Text = asset.TypeString + " #" + asset.uniqueID;
+                            }
+                            asset.extension = ".dat";
+                            asset.SubItems.AddRange(new string[] { asset.TypeString, asset.Size.ToString() });
+                            exportable = true;
+                        }
+                        if (exportable)
+                        {
+                            if (!exportableAssetsHash.Add(asset.TypeString + asset.Text))
+                            {
+                                asset.Text += " #" + asset.uniqueID;
+                            }
+                            assetsFile.exportableAssets.Add(asset);
                         }
                     }
 
@@ -1315,7 +1342,12 @@ namespace Unity_Studio
 
                         break;
                     }
-                    #endregion
+                #endregion
+                default:
+                    {
+                        StatusStripUpdate("Only supported export the raw file.");
+                        break;
+                    }
             }
         }
 
@@ -3045,6 +3077,14 @@ namespace Unity_Studio
                                     exportedCount++;
                                 }
                                 break;
+                            default:
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                {
+                                    ExportRawFile(asset, exportpath + asset.Text + asset.extension);
+                                    exportedCount++;
+                                }
+                                break;
+
                         }
                         ProgressBarPerformStep();
                     }
@@ -3070,6 +3110,13 @@ namespace Unity_Studio
             {
                 StatusStripUpdate("No exportable assets loaded");
             }
+        }
+
+        private void ExportRawFile(AssetPreloadData asset, string exportFilepath)
+        {
+            asset.sourceFile.a_Stream.Position = asset.Offset;
+            var bytes = asset.sourceFile.a_Stream.ReadBytes(asset.Size);
+            File.WriteAllBytes(exportFilepath, bytes);
         }
 
         private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension)
@@ -3160,9 +3207,7 @@ namespace Unity_Studio
             }
             else
             {
-                BinaryWriter writer = new BinaryWriter(File.Open(exportFullname, FileMode.Create));
-                writer.Write(m_Texture2D.image_data);
-                writer.Close();
+                File.WriteAllBytes(exportFullname, m_Texture2D.image_data);
             }
             return true;
         }
@@ -3234,27 +3279,21 @@ namespace Unity_Studio
             }
             else
             {
-                BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create));
-                writer.Write(m_AudioClip.m_AudioData);
-                writer.Close();
+                File.WriteAllBytes(exportFilename, m_AudioClip.m_AudioData);
             }
             return true;
         }
 
         private void ExportText(TextAsset m_TextAsset, string exportFilename)
         {
-            BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create));
-            writer.Write(m_TextAsset.m_Script);
-            writer.Close();
+            File.WriteAllBytes(exportFilename, m_TextAsset.m_Script);
         }
 
         private void ExportFont(unityFont m_Font, string exportFilename)
         {
             if (m_Font.m_FontData != null)
             {
-                BinaryWriter writer = new BinaryWriter(File.Open(exportFilename, FileMode.Create));
-                writer.Write(m_Font.m_FontData);
-                writer.Close();
+                File.WriteAllBytes(exportFilename, m_Font.m_FontData);
             }
         }
 
@@ -3326,7 +3365,7 @@ namespace Unity_Studio
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
-            uniqueNames.Checked = (bool)Properties.Settings.Default["uniqueNames"];
+            displayAll.Checked = (bool)Properties.Settings.Default["displayAll"];
             displayInfo.Checked = (bool)Properties.Settings.Default["displayInfo"];
             enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
             openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];

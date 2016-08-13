@@ -25,13 +25,13 @@ namespace Unity_Studio.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool uniqueNames {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool displayAll {
             get {
-                return ((bool)(this["uniqueNames"]));
+                return ((bool)(this["displayAll"]));
             }
             set {
-                this["uniqueNames"] = value;
+                this["displayAll"] = value;
             }
         }
         

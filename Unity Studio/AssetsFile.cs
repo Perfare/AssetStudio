@@ -182,6 +182,10 @@ namespace Unity_Studio
                 {
                     asset.TypeString = UnityClassID.Names[asset.Type2];
                 }
+                else
+                {
+                    asset.TypeString = "unknown";
+                }
 
                 asset.uniqueID = i.ToString(assetIDfmt);
 

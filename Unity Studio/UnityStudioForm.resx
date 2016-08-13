@@ -120,10 +120,6 @@
   <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>325, 17</value>
   </metadata>
-  <data name="uniqueNames.ToolTipText" xml:space="preserve">
-    <value>Two or more assets may have the same name, and Unity Studio will never overwrite an existing file.
-Check this option to add a unique numeric identifier at the end of each filename, and ensure that all assets are extracted.</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="previewPanel.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -172,7 +168,7 @@ Check this option to add a unique numeric identifier at the end of each filename
         XTesb3QPLh88M+QwdP6m681Lt7xuXbu94vbgcOjwnZHokdE77DtTd1PuvriXeW/h/sYH6AdFD6UeVjxS
         fNTws+7PbaOWo6fHXMf6Hwc/vj/OGn/2S8Yv7ycKnpCfVEyqTDZPmU2dmnafvvF05dOJZ+nPFmYKf5X+
         tfa5zvMffnP8rX82YnbiBf/Fp99LXsq/PPRq2aueuYC5R69TXy/MF72Rf3P4LeNt37vwd5MLWe+x7ys/
-        6H7o/ujz8cGn1E+f/gUDmPP8usTo0wAAAAlwSFlzAAALDwAACw8BkvkDpQAAHOJJREFUeF7t3Q2V5TYS
+        6H7o/ujz8cGn1E+f/gUDmPP8usTo0wAAAAlwSFlzAAALDAAACwwBP0AiyAAAHOJJREFUeF7t3Q2V5TYS
         huGFEAiBsBACIRACIRACIRACIRACYSEEwjLI+pvTmtWoX0lVtuy+Pfp8znN2R23plmVV+ef2ZP71zz//
         mNmmsNHM9oCNZrYHbDSzPWCjme0BG81sD9hoZnvARjPbAzaa2R6w0cz2gI1mtgdsNLM9YKOZ7QEbzWwP
         2Ghme8BGM9sDNprZHrDRzPaAjWa2B2w0sz1go5ntARvNbA/YaGZ7wEYz2wM2mtkesNHM9oCNZrYHbDSz

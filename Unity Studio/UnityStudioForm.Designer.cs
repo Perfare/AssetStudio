@@ -44,7 +44,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.uniqueNames = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayAll = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePreview = new System.Windows.Forms.ToolStripMenuItem();
             this.displayInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.openAfterExport = new System.Windows.Forms.ToolStripMenuItem();
@@ -228,7 +228,7 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.uniqueNames,
+            this.displayAll,
             this.enablePreview,
             this.displayInfo,
             this.openAfterExport,
@@ -238,16 +238,15 @@
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(66, 21);
             this.optionsToolStripMenuItem.Text = "Options";
             // 
-            // uniqueNames
+            // displayAll
             // 
-            this.uniqueNames.Checked = true;
-            this.uniqueNames.CheckOnClick = true;
-            this.uniqueNames.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.uniqueNames.Name = "uniqueNames";
-            this.uniqueNames.Size = new System.Drawing.Size(252, 22);
-            this.uniqueNames.Text = "Unique exported filenames";
-            this.uniqueNames.ToolTipText = resources.GetString("uniqueNames.ToolTipText");
-            this.uniqueNames.CheckedChanged += new System.EventHandler(this.MenuItem_CheckedChanged);
+            this.displayAll.CheckOnClick = true;
+            this.displayAll.Name = "displayAll";
+            this.displayAll.Size = new System.Drawing.Size(252, 22);
+            this.displayAll.Text = "Display all assets";
+            this.displayAll.ToolTipText = "Check this option will display all types assets. Not extractable assets can expor" +
+    "t the RAW file.";
+            this.displayAll.CheckedChanged += new System.EventHandler(this.MenuItem_CheckedChanged);
             // 
             // enablePreview
             // 
@@ -899,7 +898,7 @@
         private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem uniqueNames;
+        private System.Windows.Forms.ToolStripMenuItem displayAll;
         private System.Windows.Forms.ToolStripMenuItem enablePreview;
         private System.Windows.Forms.ToolStripMenuItem displayInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
