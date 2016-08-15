@@ -1,6 +1,6 @@
 /*$ preserve start $*/
 /* ========================================================================================== */
-/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2015.  */
+/* FMOD Studio - DSP header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2016.  */
 /*                                                                                            */
 /* Use this header if you are interested in delving deeper into the FMOD software mixing /    */
 /* DSP engine.  In this header you can find parameter structures for FMOD system registered   */
@@ -23,8 +23,8 @@ namespace FMOD
         Structure for FMOD_DSP_PROCESS_CALLBACK input and output buffers.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         FMOD_DSP_DESCRIPTION
@@ -150,7 +150,7 @@ namespace FMOD
         System::createDSPByType
     ]
     */
-    public enum DSP_TYPE :int
+    public enum DSP_TYPE : int
     {
         UNKNOWN,            /* This unit was created via a non FMOD plugin so has an unknown purpose. */
         MIXER,              /* This unit does nothing but take inputs and mix them together then feed the result to the soundcard unit. */
@@ -163,7 +163,7 @@ namespace FMOD
         FLANGE,             /* This unit produces a flange effect on the sound. */
         DISTORTION,         /* This unit distorts the sound. */
         NORMALIZE,          /* This unit normalizes or amplifies the sound to a certain level. */
-        LIMITER,            /* This unit limits the sound to a certain level.*/
+        LIMITER,            /* This unit limits the sound to a certain level. */
         PARAMEQ,            /* This unit attenuates or amplifies a selected frequency range. */
         PITCHSHIFT,         /* This unit bends the pitch of a sound without changing the speed of playback. */
         CHORUS,             /* This unit produces a chorus effect on the sound. */
@@ -186,6 +186,7 @@ namespace FMOD
         ENVELOPEFOLLOWER,   /* This unit tracks the envelope of the input/sidechain signal */
         CONVOLUTIONREVERB,  /* This unit implements convolution reverb. */
         CHANNELMIX,         /* This unit provides per signal channel gain, and output channel mapping to allow 1 multichannel signal made up of many groups of signals to map to a single output signal. */
+        TRANSCEIVER,        /* This unit 'sends' and 'receives' from a selection of up to 32 different slots.  It is like a send/return but it uses global slots rather than returns as the destination.  It also has other features.  Multiple transceivers can receive from a single channel, or multiple transceivers can send to a single channel, or a combination of both. */
     }
 
 
@@ -237,8 +238,8 @@ namespace FMOD
         Structure to define a piecewise linear mapping.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE
@@ -260,8 +261,8 @@ namespace FMOD
         Structure to define a mapping for a DSP unit's float parameter.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         FMOD_DSP_PARAMETER_FLOAT_MAPPING_TYPE
@@ -283,8 +284,8 @@ namespace FMOD
         Structure to define a float parameter for a DSP unit.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         System::createDSP
@@ -311,8 +312,8 @@ namespace FMOD
         Structure to define a int parameter for a DSP unit.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         System::createDSP
@@ -339,8 +340,8 @@ namespace FMOD
         Structure to define a boolean parameter for a DSP unit.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         System::createDSP
@@ -364,8 +365,8 @@ namespace FMOD
         Structure to define a data parameter for a DSP unit.  Use 0 or above for custom types.  This parameter will be treated specially by the system if set to one of the FMOD_DSP_PARAMETER_DATA_TYPE values.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         System::createDSP
@@ -388,15 +389,15 @@ namespace FMOD
         [DESCRIPTION]
 
         [REMARKS]
-        Members marked with [w] mean the user sets the value before passing it to the function.<br>
-        Members marked with [r] mean FMOD sets the value to be used after the function exits.<br>
-        <br>
-        The step parameter tells the gui or application that the parameter has a certain granularity.<br>
-        For example in the example of cutoff frequency with a range from 100.0 to 22050.0 you might only want the selection to be in 10hz increments.  For this you would simply use 10.0 as the step value.<br>
-        For a boolean, you can use min = 0.0, max = 1.0, step = 1.0.  This way the only possible values are 0.0 and 1.0.<br>
-        Some applications may detect min = 0.0, max = 1.0, step = 1.0 and replace a graphical slider bar with a checkbox instead.<br>
-        A step value of 1.0 would simulate integer values only.<br>
-        A step value of 0.0 would mean the full floating point range is accessable.<br>
+        Members marked with [w] mean the user sets the value before passing it to the function.
+        Members marked with [r] mean FMOD sets the value to be used after the function exits.
+        
+        The step parameter tells the gui or application that the parameter has a certain granularity.
+        For example in the example of cutoff frequency with a range from 100.0 to 22050.0 you might only want the selection to be in 10hz increments.  For this you would simply use 10.0 as the step value.
+        For a boolean, you can use min = 0.0, max = 1.0, step = 1.0.  This way the only possible values are 0.0 and 1.0.
+        Some applications may detect min = 0.0, max = 1.0, step = 1.0 and replace a graphical slider bar with a checkbox instead.
+        A step value of 1.0 would simulate integer values only.
+        A step value of 0.0 would mean the full floating point range is accessable.
 
         [SEE_ALSO]
         System::createDSP
@@ -465,8 +466,8 @@ namespace FMOD
         This parameter is read by the system to determine the effect's gain for voice virtualization.
     
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
     
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_DATA_TYPE
@@ -490,8 +491,8 @@ namespace FMOD
         The system will set this parameter automatically if a sound's position changes.
     
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
     
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_DATA_TYPE
@@ -514,8 +515,8 @@ namespace FMOD
         The system will set this parameter automatically if a sound's position changes.
     
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
     
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_DATA_TYPE
@@ -539,8 +540,8 @@ namespace FMOD
         A parameter of this type is declared for effects which support sidechaining.
     
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
     
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_DATA_TYPE
@@ -562,13 +563,13 @@ namespace FMOD
         A parameter of this type is declared for the FMOD_DSP_TYPE_FFT effect.
     
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
-        <br>
-        Notes on the spectrum data member.  Values inside the float buffer are typically between 0 and 1.0.<br>
-        Each top level array represents one PCM channel of data.<br>
-        Address data as spectrum[channel][bin].  A bin is 1 fft window entry.<br>
-        Only read/display half of the buffer typically for analysis as the 2nd half is usually the same data reversed due to the nature of the way FFT works.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
+        
+        Notes on the spectrum data member.  Values inside the float buffer are typically between 0 and 1.0.
+        Each top level array represents one PCM channel of data.
+        Address data as spectrum[channel][bin].  A bin is 1 fft window entry.
+        Only read/display half of the buffer typically for analysis as the 2nd half is usually the same data reversed due to the nature of the way FFT works.
     
         [SEE_ALSO]    
         FMOD_DSP_PARAMETER_DATA_TYPE
@@ -611,12 +612,12 @@ namespace FMOD
         When creating a DSP unit, declare one of these and provide the relevant callbacks and name for FMOD to use when it creates and uses a DSP unit of this type.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
-        <br>
-        There are 2 different ways to change a parameter in this architecture.<br>
-        One is to use DSP::setParameterFloat / DSP::setParameterInt / DSP::setParameterBool / DSP::setParameterData.  This is platform independant and is dynamic, so new unknown plugins can have their parameters enumerated and used.<br>
-        The other is to use DSP::showConfigDialog.  This is platform specific and requires a GUI, and will display a dialog box to configure the plugin.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
+        
+        There are 2 different ways to change a parameter in this architecture.
+        One is to use DSP::setParameterFloat / DSP::setParameterInt / DSP::setParameterBool / DSP::setParameterData.  This is platform independant and is dynamic, so new unknown plugins can have their parameters enumerated and used.
+        The other is to use DSP::showConfigDialog.  This is platform specific and requires a GUI, and will display a dialog box to configure the plugin.
 
         [SEE_ALSO]    
         System::createDSP
@@ -687,8 +688,8 @@ namespace FMOD
         Struct containing DFT callbacks for plugins, to enable a plugin to perform optimized time-frequency domain conversion.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         FMOD_DSP_STATE_SYSTEMCALLBACKS
@@ -733,8 +734,8 @@ namespace FMOD
         Struct containing System level callbacks for plugins, to enable a plugin to query information about the system or allocate memory using FMOD's (and therefore possibly the game's) allocators.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         FMOD_DSP_STATE
@@ -762,9 +763,9 @@ namespace FMOD
         DSP plugin structure that is passed into each callback.
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
-        <br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
+        
         'systemobject' is an integer that relates to the System object that created the DSP or registered the DSP plugin.  If only 1 System object is created then it should be 0.  A second object would be 1 and so on.
         FMOD_DSP_STATE_SYSTEMCALLBACKS::getsamplerate and FMOD_DSP_STATE_SYSTEMCALLBACKS::getblocksize could return different results so it could be relevant to plugin developers to monitor which object is being used.
 
@@ -793,8 +794,8 @@ namespace FMOD
         DSP metering info used for retrieving metering info
 
         [REMARKS]
-        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.<br>
-        Members marked with [w] mean the variable can be written to.  The user can set the value.<br>
+        Members marked with [r] mean the variable is modified by FMOD and is for reading purposes only.  Do not change this value.
+        Members marked with [w] mean the variable can be written to.  The user can set the value.
 
         [SEE_ALSO]
         FMOD_SPEAKER
@@ -870,13 +871,13 @@ namespace FMOD
         [DESCRIPTION]
         Parameter types for the FMOD_DSP_TYPE_ITLOWPASS filter.
         This is different to the default FMOD_DSP_TYPE_ITLOWPASS filter in that it uses a different quality algorithm and is
-        the filter used to produce the correct sounding playback in .IT files.<br>
-        FMOD Ex's .IT playback uses this filter.<br>
+        the filter used to produce the correct sounding playback in .IT files.
+        FMOD Ex's .IT playback uses this filter.
 
         [REMARKS]
         Note! This filter actually has a limited cutoff frequency below the specified maximum, due to its limited design,
         so for a more  open range filter use FMOD_DSP_LOWPASS or if you don't mind not having resonance,
-        FMOD_DSP_LOWPASS_SIMPLE.<br>
+        FMOD_DSP_LOWPASS_SIMPLE.
         The effective maximum cutoff is about 8060hz.
 
         [SEE_ALSO]
@@ -920,8 +921,8 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_ECHO filter.
 
         [REMARKS]
-        Note.  Every time the delay is changed, the plugin re-allocates the echo buffer.  This means the echo will dissapear at that time while it refills its new buffer.<br>
-        Larger echo delays result in larger amounts of memory allocated.<br>
+        Note.  Every time the delay is changed, the plugin re-allocates the echo buffer.  This means the echo will dissapear at that time while it refills its new buffer.
+        Larger echo delays result in larger amounts of memory allocated.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -945,10 +946,9 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_DELAY filter.
 
         [REMARKS]
-        Note.  Every time MaxDelay is changed, the plugin re-allocates the delay buffer.  This means the delay will dissapear at that time while it refills its new buffer.<br>
-        A larger MaxDelay results in larger amounts of memory allocated.<br>
-        Channel delays above MaxDelay will be clipped to MaxDelay and the delay buffer will not be resized.<br>
-        <br>
+        Note.  Every time MaxDelay is changed, the plugin re-allocates the delay buffer.  This means the delay will dissapear at that time while it refills its new buffer.
+        A larger MaxDelay results in larger amounts of memory allocated.
+        Channel delays above MaxDelay will be clipped to MaxDelay and the delay buffer will not be resized.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -985,10 +985,10 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_FLANGE filter.
 
         [REMARKS]
-        Flange is an effect where the signal is played twice at the same time, and one copy slides back and forth creating a whooshing or flanging effect.<br>
-        As there are 2 copies of the same signal, by default each signal is given 50% mix, so that the total is not louder than the original unaffected signal.<br>
-        <br>
-        Flange depth is a percentage of a 10ms shift from the original signal.  Anything above 10ms is not considered flange because to the ear it begins to 'echo' so 10ms is the highest value possible.<br>
+        Flange is an effect where the signal is played twice at the same time, and one copy slides back and forth creating a whooshing or flanging effect.
+        As there are 2 copies of the same signal, by default each signal is given 50% mix, so that the total is not louder than the original unaffected signal.
+        
+        Flange depth is a percentage of a 10ms shift from the original signal.  Anything above 10ms is not considered flange because to the ear it begins to 'echo' so 10ms is the highest value possible.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1011,12 +1011,12 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_TREMOLO filter.
 
         [REMARKS]
-        The tremolo effect varies the amplitude of a sound. Depending on the settings, this unit can produce a tremolo, chopper or auto-pan effect.<br>
-        <br>
-        The shape of the LFO (low freq. oscillator) can morphed between sine, triangle and sawtooth waves using the FMOD_DSP_TREMOLO_SHAPE and FMOD_DSP_TREMOLO_SKEW parameters.<br>
-        FMOD_DSP_TREMOLO_DUTY and FMOD_DSP_TREMOLO_SQUARE are useful for a chopper-type effect where the first controls the on-time duration and second controls the flatness of the envelope.<br>
-        FMOD_DSP_TREMOLO_SPREAD varies the LFO phase between channels to get an auto-pan effect. This works best with a sine shape LFO.<br>
-        The LFO can be synchronized using the FMOD_DSP_TREMOLO_PHASE parameter which sets its instantaneous phase.<br>
+        The tremolo effect varies the amplitude of a sound. Depending on the settings, this unit can produce a tremolo, chopper or auto-pan effect.
+        
+        The shape of the LFO (low freq. oscillator) can morphed between sine, triangle and sawtooth waves using the FMOD_DSP_TREMOLO_SHAPE and FMOD_DSP_TREMOLO_SKEW parameters.
+        FMOD_DSP_TREMOLO_DUTY and FMOD_DSP_TREMOLO_SQUARE are useful for a chopper-type effect where the first controls the on-time duration and second controls the flatness of the envelope.
+        FMOD_DSP_TREMOLO_SPREAD varies the LFO phase between channels to get an auto-pan effect. This works best with a sine shape LFO.
+        The LFO can be synchronized using the FMOD_DSP_TREMOLO_PHASE parameter which sets its instantaneous phase.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1064,12 +1064,12 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_NORMALIZE filter.
 
         [REMARKS]
-        Normalize amplifies the sound based on the maximum peaks within the signal.<br>
-        For example if the maximum peaks in the signal were 50% of the bandwidth, it would scale the whole sound by 2.<br>
-        The lower threshold value makes the normalizer ignores peaks below a certain point, to avoid over-amplification if a loud signal suddenly came in, and also to avoid amplifying to maximum things like background hiss.<br>
-        <br>
-        Because FMOD is a realtime audio processor, it doesn't have the luxury of knowing the peak for the whole sound (ie it can't see into the future), so it has to process data as it comes in.<br>
-        To avoid very sudden changes in volume level based on small samples of new data, fmod fades towards the desired amplification which makes for smooth gain control.  The fadetime parameter can control this.<br>
+        Normalize amplifies the sound based on the maximum peaks within the signal.
+        For example if the maximum peaks in the signal were 50% of the bandwidth, it would scale the whole sound by 2.
+        The lower threshold value makes the normalizer ignores peaks below a certain point, to avoid over-amplification if a loud signal suddenly came in, and also to avoid amplifying to maximum things like background hiss.
+        
+        Because FMOD is a realtime audio processor, it doesn't have the luxury of knowing the peak for the whole sound (ie it can't see into the future), so it has to process data as it comes in.
+        To avoid very sudden changes in volume level based on small samples of new data, fmod fades towards the desired amplification which makes for smooth gain control.  The fadetime parameter can control this.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1104,7 +1104,7 @@ namespace FMOD
         RELEASETIME,   /* (Type:float) - Time to ramp the silence to full in ms.  1.0 to 1000.0. Default = 10.0. */
         CEILING,       /* (Type:float) - Maximum level of the output signal in dB.  -12.0 to 0.0.  Default = 0.0. */
         MAXIMIZERGAIN, /* (Type:float) - Maximum amplification allowed in dB.  0.0 to 12.0.  Default = 0.0. 0.0 = no amplifaction, higher values allow more boost. */
-        MODE,          /* (Type:float) - Channel processing mode. 0 or 1. Default = 0. 0 = Independent (limiter per channel), 1 = Linked*/
+        MODE,          /* (Type:float) - Channel processing mode. 0 or 1. Default = 0. 0 = Independent (limiter per channel), 1 = Linked. */
     }
     
     /*
@@ -1114,11 +1114,11 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_PARAMEQ filter.
 
         [REMARKS]
-        Parametric EQ is a bandpass filter that attenuates or amplifies a selected frequency and its neighbouring frequencies.<br>
-        <br>
-        To create a multi-band EQ create multiple FMOD_DSP_TYPE_PARAMEQ units and set each unit to different frequencies, for example 1000hz, 2000hz, 4000hz, 8000hz, 16000hz with a range of 1 octave each.<br>
-        <br>
-        When a frequency has its gain set to 1.0, the sound will be unaffected and represents the original signal exactly.<br>
+        Parametric EQ is a bandpass filter that attenuates or amplifies a selected frequency and its neighbouring frequencies.
+        
+        To create a multi-band EQ create multiple FMOD_DSP_TYPE_PARAMEQ units and set each unit to different frequencies, for example 1000hz, 2000hz, 4000hz, 8000hz, 16000hz with a range of 1 octave each.
+        
+        When a frequency has its gain set to 1.0, the sound will be unaffected and represents the original signal exactly.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1142,20 +1142,20 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_PITCHSHIFT filter.
 
         [REMARKS]
-        This pitch shifting unit can be used to change the pitch of a sound without speeding it up or slowing it down.<br>
-        It can also be used for time stretching or scaling, for example if the pitch was doubled, and the frequency of the sound was halved, the pitch of the sound would sound correct but it would be twice as slow.<br>
-        <br>
-        <b>Warning!</b> This filter is very computationally expensive!  Similar to a vocoder, it requires several overlapping FFT and IFFT's to produce smooth output, and can require around 440mhz for 1 stereo 48khz signal using the default settings.<br>
-        Reducing the signal to mono will half the cpu usage, as will the overlap count.<br>
-        Reducing this will lower audio quality, but what settings to use are largely dependant on the sound being played.  A noisy polyphonic signal will need higher overlap and fft size compared to a speaking voice for example.<br>
-        <br>
-        This pitch shifter is based on the pitch shifter code at http://www.dspdimension.com, written by Stephan M. Bernsee.<br>
-        The original code is COPYRIGHT 1999-2003 Stephan M. Bernsee <smb@dspdimension.com>.<br>
-        <br>
-        '<i>maxchannels</i>' dictates the amount of memory allocated.  By default, the maxchannels value is 0.  If FMOD is set to stereo, the pitch shift unit will allocate enough memory for 2 channels.  If it is 5.1, it will allocate enough memory for a 6 channel pitch shift, etc.<br>
-        If the pitch shift effect is only ever applied to the global mix (ie it was added with System::addDSP), then 0 is the value to set as it will be enough to handle all speaker modes.<br>
-        When the pitch shift is added to a channel (ie Channel::addDSP) then the channel count that comes in could be anything from 1 to 8 possibly.  It is only in this case where you might want to increase the channel count above the output's channel count.<br>
-        If a channel pitch shift is set to a lower number than the sound's channel count that is coming in, it will not pitch shift the sound.<br>
+        This pitch shifting unit can be used to change the pitch of a sound without speeding it up or slowing it down.
+        It can also be used for time stretching or scaling, for example if the pitch was doubled, and the frequency of the sound was halved, the pitch of the sound would sound correct but it would be twice as slow.
+        
+        Warning! This filter is very computationally expensive!  Similar to a vocoder, it requires several overlapping FFT and IFFT's to produce smooth output, and can require around 440mhz for 1 stereo 48khz signal using the default settings.
+        Reducing the signal to mono will half the cpu usage, as will the overlap count.
+        Reducing this will lower audio quality, but what settings to use are largely dependant on the sound being played.  A noisy polyphonic signal will need higher overlap and fft size compared to a speaking voice for example.
+        
+        This pitch shifter is based on the pitch shifter code at http://www.dspdimension.com, written by Stephan M. Bernsee.
+        The original code is COPYRIGHT 1999-2003 Stephan M. Bernsee <smb@dspdimension.com>.
+        
+        'maxchannels' dictates the amount of memory allocated.  By default, the maxchannels value is 0.  If FMOD is set to stereo, the pitch shift unit will allocate enough memory for 2 channels.  If it is 5.1, it will allocate enough memory for a 6 channel pitch shift, etc.
+        If the pitch shift effect is only ever applied to the global mix (ie it was added with System::addDSP), then 0 is the value to set as it will be enough to handle all speaker modes.
+        When the pitch shift is added to a channel (ie Channel::addDSP) then the channel count that comes in could be anything from 1 to 8 possibly.  It is only in this case where you might want to increase the channel count above the output's channel count.
+        If a channel pitch shift is set to a lower number than the sound's channel count that is coming in, it will not pitch shift the sound.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1180,8 +1180,8 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_CHORUS filter.
 
         [REMARKS]
-        Chorous is an effect where the sound is more 'spacious' due to 1 to 3 versions of the sound being played along side the original signal but with the pitch of each copy modulating on a sine wave.<br>
-        This is a highly configurable chorus unit.  It supports 3 taps, small and large delay times and also feedback.<br>
+        Chorous is an effect where the sound is more 'spacious' due to 1 to 3 versions of the sound being played along side the original signal but with the pitch of each copy modulating on a sine wave.
+        This is a highly configurable chorus unit.  It supports 3 taps, small and large delay times and also feedback.
         This unit also could be used to do a simple echo, or a flange effect.
 
         [SEE_ALSO]
@@ -1202,14 +1202,16 @@ namespace FMOD
     [ENUM]
     [
         [DESCRIPTION]
-        Parameter types for the FMOD_DSP_TYPE_ITECHO filter.<br>
-        This is effectively a software based echo filter that emulates the DirectX DMO echo effect.  Impulse tracker files can support this, and FMOD will produce the effect on ANY platform, not just those that support DirectX effects!<br>
+        Parameter types for the FMOD_DSP_TYPE_ITECHO filter.
+        This is effectively a software based echo filter that emulates the DirectX DMO echo effect.  Impulse tracker files can support this, and FMOD will produce the effect on ANY platform, not just those that support DirectX effects!
 
         [REMARKS]
-        Note.  Every time the delay is changed, the plugin re-allocates the echo buffer.  This means the echo will dissapear at that time while it refills its new buffer.<br>
-        Larger echo delays result in larger amounts of memory allocated.<br>
-        <br>
-        For stereo signals only!  This will not work on mono or multichannel signals.  This is fine for .IT format purposes, and also if you use System::addDSP with a standard stereo output.<br>
+        Note.  Every time the delay is changed, the plugin re-allocates the echo buffer.  This means the echo will dissapear at that time while it refills its new buffer.
+        Larger echo delays result in larger amounts of memory allocated.
+        
+        As this is a stereo filter made mainly for IT playback, it is targeted for stereo signals.
+        With mono signals only the FMOD_DSP_ITECHO_LEFTDELAY is used.
+        For multichannel signals (>2) there will be no echo on those channels.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1220,11 +1222,11 @@ namespace FMOD
     */
     public enum DSP_ITECHO
     {
-        WETDRYMIX,      /* Ratio of wet (processed) signal to dry (unprocessed) signal. Must be in the range from 0.0 through 100.0 (all wet). The default value is 50. */
-        FEEDBACK,       /* Percentage of output fed back into input, in the range from 0.0 through 100.0. The default value is 50. */
-        LEFTDELAY,      /* Delay for left channel, in milliseconds, in the range from 1.0 through 2000.0. The default value is 500 ms. */
-        RIGHTDELAY,     /* Delay for right channel, in milliseconds, in the range from 1.0 through 2000.0. The default value is 500 ms. */
-        PANDELAY        /* Value that specifies whether to swap left and right delays with each successive echo. The default value is zero, meaning no swap. Possible values are defined as 0.0 (equivalent to FALSE) and 1.0 (equivalent to TRUE). */
+        WETDRYMIX,      /* (Type:float) - Ratio of wet (processed) signal to dry (unprocessed) signal. Must be in the range from 0.0 through 100.0 (all wet).  Default = 50. */
+        FEEDBACK,       /* (Type:float) - Percentage of output fed back into input, in the range from 0.0 through 100.0.  Default = 50. */
+        LEFTDELAY,      /* (Type:float) - Delay for left channel, in milliseconds, in the range from 1.0 through 2000.0.  Default = 500 ms. */
+        RIGHTDELAY,     /* (Type:float) - Delay for right channel, in milliseconds, in the range from 1.0 through 2000.0.  Default = 500 ms. */
+        PANDELAY        /* (Type:float) - Value that specifies whether to swap left and right delays with each successive echo.  Ranges from 0.0 (equivalent to FALSE) to 1.0 (equivalent to TRUE), meaning no swap.  Default = 0.  CURRENTLY NOT SUPPORTED. */
     }
 
 
@@ -1242,8 +1244,7 @@ namespace FMOD
         distort the sound, so it is a compromise. High level peaks can be avoided by
         using a short attack time - but not too short, and setting the threshold a few
         decibels below the critical level.
-        <br>
-
+        
         [SEE_ALSO]
         DSP::setParameterFloat
         DSP::getParameterFloat
@@ -1268,12 +1269,12 @@ namespace FMOD
     [ENUM]
     [
         [DESCRIPTION]
-        Parameter types for the FMOD_DSP_TYPE_SFXREVERB unit.<br>
+        Parameter types for the FMOD_DSP_TYPE_SFXREVERB unit.
 
         [REMARKS]
-        This is a high quality I3DL2 based reverb.<br>
-        On top of the I3DL2 property set, "Dry Level" is also included to allow the dry mix to be changed.<br>
-        <br>
+        This is a high quality I3DL2 based reverb.
+        On top of the I3DL2 property set, "Dry Level" is also included to allow the dry mix to be changed.
+        
         These properties can be set with presets in FMOD_REVERB_PRESETS.
 
         [SEE_ALSO]
@@ -1304,9 +1305,9 @@ namespace FMOD
     [ENUM]
     [
         [DESCRIPTION]
-        Parameter types for the FMOD_DSP_TYPE_LOWPASS_SIMPLE filter.<br>
+        Parameter types for the FMOD_DSP_TYPE_LOWPASS_SIMPLE filter.
         This is a very simple low pass filter, based on two single-pole RC time-constant modules.
-        The emphasis is on speed rather than accuracy, so this should not be used for task requiring critical filtering.<br>
+        The emphasis is on speed rather than accuracy, so this should not be used for task requiring critical filtering.
 
         [REMARKS]
 
@@ -1361,8 +1362,8 @@ namespace FMOD
     */
     public enum DSP_RETURN
     {
-        ID,                 /* (Type:int) - ID of this Return DSP. Read-only.  Default = -1*/
-        INPUT_SPEAKER_MODE  /* (Type:int) - Input speaker mode of this return.  Default = FMOD_SPEAKERMODE_DEFAULT.*/
+        ID,                 /* (Type:int) - ID of this Return DSP. Read-only.  Default = -1. */
+        INPUT_SPEAKER_MODE  /* (Type:int) - Input speaker mode of this return.  Default = FMOD_SPEAKERMODE_DEFAULT. */
     }
 
 
@@ -1370,9 +1371,9 @@ namespace FMOD
     [ENUM]
     [
         [DESCRIPTION]
-        Parameter types for the FMOD_DSP_TYPE_HIGHPASS_SIMPLE filter.<br>
+        Parameter types for the FMOD_DSP_TYPE_HIGHPASS_SIMPLE filter.
         This is a very simple single-order high pass filter.
-        The emphasis is on speed rather than accuracy, so this should not be used for task requiring critical filtering.<br> 
+        The emphasis is on speed rather than accuracy, so this should not be used for task requiring critical filtering. 
 
         [REMARKS]
 
@@ -1509,7 +1510,7 @@ namespace FMOD
         _3D_PAN_BLEND,                  /* (Type:float) - 3D Pan Blend              PAN_BLEND_MIN to PAN_BLEND_MAX.  Default = 0.0. */
         LFE_UPMIX_ENABLED,              /* (Type:int)   - LFE Upmix Enabled         0 to 1.  Default = 0. */
         OVERALL_GAIN,                   /* (Type:data)  - Overall Gain              data of type FMOD_DSP_PARAMETER_DATA_TYPE_OVERALLGAIN */
-        SURROUND_SPEAKER_MODE           /* (Type:int)   - Surround speaker mode.    Target speaker mode for surround panning. */
+        SURROUND_SPEAKER_MODE           /* (Type:int)   - Surround speaker mode.    Target speaker mode for surround panning.  Default = FMOD_SPEAKERMODE_DEFAULT. */
     }
 
 
@@ -1565,35 +1566,33 @@ namespace FMOD
     [ENUM]
     [
         [DESCRIPTION]
-        List of windowing methods for the FMOD_DSP_TYPE_FFT unit.  Used in spectrum analysis to reduce leakage / transient signals intefering with the analysis.<br>
-        This is a problem with analysis of continuous signals that only have a small portion of the signal sample (the fft window size).<br>
+        List of windowing methods for the FMOD_DSP_TYPE_FFT unit.  Used in spectrum analysis to reduce leakage / transient signals intefering with the analysis.
+        This is a problem with analysis of continuous signals that only have a small portion of the signal sample (the fft window size).
         Windowing the signal with a curve or triangle tapers the sides of the fft window to help alleviate this problem.
 
         [REMARKS]
-        Cyclic signals such as a sine wave that repeat their cycle in a multiple of the window size do not need windowing.<br>
-        I.e. If the sine wave repeats every 1024, 512, 256 etc samples and the FMOD fft window is 1024, then the signal would not need windowing.<br>
-        Not windowing is the same as FMOD_DSP_FFT_WINDOW_RECT, which is the default.<br>
-        If the cycle of the signal (ie the sine wave) is not a multiple of the window size, it will cause frequency abnormalities, so a different windowing method is needed.<br>
-        <exclude>
-        <br>
-        FMOD_DSP_FFT_WINDOW_RECT.<br>
-        <img src="..\static\overview\rectangle.gif"></img><br>
-        <br>
-        FMOD_DSP_FFT_WINDOW_TRIANGLE.<br>
-        <img src="..\static\overview\triangle.gif"></img><br>
-        <br>
-        FMOD_DSP_FFT_WINDOW_HAMMING.<br>
-        <img src="..\static\overview\hamming.gif"></img><br>
-        <br>
-        FMOD_DSP_FFT_WINDOW_HANNING.<br>
-        <img src="..\static\overview\hanning.gif"></img><br>
-        <br>
-        FMOD_DSP_FFT_WINDOW_BLACKMAN.<br>
-        <img src="..\static\overview\blackman.gif"></img><br>
-        <br>
-        FMOD_DSP_FFT_WINDOW_BLACKMANHARRIS.<br>
+        Cyclic signals such as a sine wave that repeat their cycle in a multiple of the window size do not need windowing.
+        I.e. If the sine wave repeats every 1024, 512, 256 etc samples and the FMOD fft window is 1024, then the signal would not need windowing.
+        Not windowing is the same as FMOD_DSP_FFT_WINDOW_RECT, which is the default.
+        If the cycle of the signal (ie the sine wave) is not a multiple of the window size, it will cause frequency abnormalities, so a different windowing method is needed.
+        
+        FMOD_DSP_FFT_WINDOW_RECT.
+        <img src="..\static\overview\rectangle.gif"></img>
+        
+        FMOD_DSP_FFT_WINDOW_TRIANGLE.
+        <img src="..\static\overview\triangle.gif"></img>
+        
+        FMOD_DSP_FFT_WINDOW_HAMMING.
+        <img src="..\static\overview\hamming.gif"></img>
+        
+        FMOD_DSP_FFT_WINDOW_HANNING.
+        <img src="..\static\overview\hanning.gif"></img>
+        
+        FMOD_DSP_FFT_WINDOW_BLACKMAN.
+        <img src="..\static\overview\blackman.gif"></img>
+        
+        FMOD_DSP_FFT_WINDOW_BLACKMANHARRIS.
         <img src="..\static\overview\blackmanharris.gif"></img>
-        </exclude>
     
         [SEE_ALSO]
         FMOD_DSP_FFT
@@ -1645,12 +1644,11 @@ namespace FMOD
     [
         [DESCRIPTION]
         Parameter types for the FMOD_DSP_TYPE_ENVELOPEFOLLOWER unit.
-        This is a simple envelope follower for tracking the signal level.<br>
+        This is a simple envelope follower for tracking the signal level.
 
         [REMARKS]
         This unit does not affect the incoming signal
-        <br>
-
+        
         [SEE_ALSO]
         DSP::setParameterFloat
         DSP::getParameterFloat
@@ -1667,6 +1665,7 @@ namespace FMOD
         USESIDECHAIN /* (Type:bool)  - Whether to analyse the sidechain signal instead of the input signal. The default value is false */
     }
 
+
     /*
     [ENUM]
     [
@@ -1674,7 +1673,7 @@ namespace FMOD
         Parameter types for the FMOD_DSP_TYPE_CHORUS filter.
 
         [REMARKS]
-        Convolution Reverb reverb IR.<br>
+        Convolution Reverb reverb IR.
 
         [SEE_ALSO]
         DSP::setParameterFloat
@@ -1691,11 +1690,12 @@ namespace FMOD
         DRY       /* (Type:float) - [r/w] Original sound volume in dB.  -80.0 to 10.0.  Default = 0. */
     }
 
+
     /*
     [ENUM]
     [
         [DESCRIPTION]
-        Parameter types for the FMOD_DSP_TYPE_CHANNELGAIN parameter for FMOD_DSP_TYPE_CHANNELMIX effect.
+        Parameter types for the FMOD_DSP_CHANNELMIX_OUTPUTGROUPING parameter for FMOD_DSP_TYPE_CHANNELMIX effect.
 
         [REMARKS]
 
@@ -1716,6 +1716,7 @@ namespace FMOD
         ALLLFE        /*  Output channel count = 6.  Mapping: Repeating pattern of LFE in a 5.1 output signal.  */
     }
 
+
     /*
     [ENUM]
     [
@@ -1726,12 +1727,12 @@ namespace FMOD
         For FMOD_DSP_CHANNELMIX_OUTPUTGROUPING, this value will set the output speaker format for the DSP, and also map the incoming channels to the 
         outgoing channels in a round-robin fashion.  Use this for example play a 32 channel input signal as if it were a repeating group of output signals.
         Ie.
-        FMOD_DSP_CHANNELGAIN_OUTPUT_ALLMONO    = all incoming channels are mixed to a mono output.
-        FMOD_DSP_CHANNELGAIN_OUTPUT_ALLSTEREO  = all incoming channels are mixed to a stereo output, ie even incoming channels 0,2,4,6,etc are mixed to left, and odd incoming channels 1,3,5,7,etc are mixed to right.
-        FMOD_DSP_CHANNELGAIN_OUTPUT_ALL5POINT1 = all incoming channels are mixed to a 5.1 output.  If there are less than 6 coming in, it will just fill the first n channels in the 6 output channels.   
+        FMOD_DSP_CHANNELMIX_OUTPUT_ALLMONO    = all incoming channels are mixed to a mono output.
+        FMOD_DSP_CHANNELMIX_OUTPUT_ALLSTEREO  = all incoming channels are mixed to a stereo output, ie even incoming channels 0,2,4,6,etc are mixed to left, and odd incoming channels 1,3,5,7,etc are mixed to right.
+        FMOD_DSP_CHANNELMIX_OUTPUT_ALL5POINT1 = all incoming channels are mixed to a 5.1 output.  If there are less than 6 coming in, it will just fill the first n channels in the 6 output channels.   
                                                  If there are more, then it will repeat the input pattern to the output like it did with the stereo case, ie 12 incoming channels are mapped as 0-5 mixed to the 
                                                  5.1 output and 6 to 11 mapped to the 5.1 output.
-        FMOD_DSP_CHANNELGAIN_OUTPUT_ALLLFE     = all incoming channels are mixed to a 5.1 output but via the LFE channel only.
+        FMOD_DSP_CHANNELMIX_OUTPUT_ALLLFE     = all incoming channels are mixed to a 5.1 output but via the LFE channel only.
 
 
         [SEE_ALSO]
@@ -1744,7 +1745,7 @@ namespace FMOD
     */
     public enum DSP_CHANNELMIX
     {
-        OUTPUTGROUPING,     /* (Type:int)   - Refer to FMOD_DSP_CHANNELMIX_OUTPUT enumeration.  Default = FMOD_DSP_CHANNELGAIN_OUTPUT_DEFAULT.  See remarks. */
+        OUTPUTGROUPING,     /* (Type:int)   - Refer to FMOD_DSP_CHANNELMIX_OUTPUT enumeration.  Default = FMOD_DSP_CHANNELMIX_OUTPUT_DEFAULT.  See remarks. */
         GAIN_CH0,           /* (Type:float) - Channel  #0 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH1,           /* (Type:float) - Channel  #1 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH2,           /* (Type:float) - Channel  #2 gain in dB.  -80.0 to 10.0.  Default = 0. */
@@ -1777,6 +1778,76 @@ namespace FMOD
         GAIN_CH29,          /* (Type:float) - Channel #29 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH30,          /* (Type:float) - Channel #30 gain in dB.  -80.0 to 10.0.  Default = 0. */
         GAIN_CH31           /* (Type:float) - Channel #31 gain in dB.  -80.0 to 10.0.  Default = 0. */
+    }
+
+
+    /*
+    [ENUM]
+    [
+        [DESCRIPTION]
+        Parameter types for the FMOD_DSP_TRANSCEIVER_SPEAKERMODE parameter for FMOD_DSP_TYPE_TRANSCEIVER effect.
+
+        [REMARKS]
+        The speaker mode of a transceiver buffer (of which there are up to 32 of) is determined automatically depending on the signal flowing through the transceiver effect, or it can be forced.
+        Use a smaller fixed speaker mode buffer to save memory.
+
+        Only relevant for transmitter dsps, as they control the format of the transceiver channel's buffer.
+
+        If multiple transceivers transmit to a single buffer in different speaker modes, it will allocate memory for each speaker mode.   This uses more memory than a single speaker mode.
+        If there are multiple receivers reading from a channel with multiple speaker modes, it will read them all and mix them together.
+
+        If the system's speaker mode is stereo or mono, it will not create a 3rd buffer, it will just use the mono/stereo speaker mode buffer.
+
+        [SEE_ALSO]
+        DSP::setParameterInt
+        DSP::getParameterInt
+        FMOD_DSP_TYPE
+    ]
+    */
+    public enum DSP_TRANSCEIVER_SPEAKERMODE
+    {
+        AUTO = -1,     /* A transmitter will use whatever signal channel count coming in to the transmitter, to determine which speaker mode is allocated for the transceiver channel. */
+        MONO = 0,      /* A transmitter will always downmix to a mono channel buffer. */
+        STEREO,        /* A transmitter will always upmix or downmix to a stereo channel buffer. */
+        SURROUND,      /* A transmitter will always upmix or downmix to a surround channel buffer.   Surround is the speaker mode of the system above stereo, so could be quad/surround/5.1/7.1. */
+    }
+
+
+    /*
+    [ENUM]
+    [
+        [DESCRIPTION]
+        Parameter types for the FMOD_DSP_TYPE_TRANSCEIVER filter.
+
+        [REMARKS]
+        The transceiver only transmits and receives to a global array of 32 channels.   The transceiver can be set to receiver mode (like a return) and can receive the signal at a variable gain (FMOD_DSP_TRANSCEIVER_GAIN).
+        The transceiver can also be set to transmit to a chnnel (like a send) and can transmit the signal with a variable gain (FMOD_DSP_TRANSCEIVER_GAIN).
+    
+        The FMOD_DSP_TRANSCEIVER_TRANSMITSPEAKERMODE is only applicable to the transmission format, not the receive format.   This means this parameter is ignored in 'receive mode'.  This allows receivers to receive at
+        the speaker mode of the user's choice.   Receiving from a mono channel, is cheaper than receiving from a surround channel for example.
+        The 3 speaker modes FMOD_DSP_TRANSCEIVER_SPEAKERMODE_MONO, FMOD_DSP_TRANSCEIVER_SPEAKERMODE_STEREO, FMOD_DSP_TRANSCEIVER_SPEAKERMODE_SURROUND are stored as seperate buffers in memory for a tranmitter channel.
+        To save memory, use 1 common speaker mode for a transmitter.
+
+        The transceiver is double buffered to avoid desyncing of transmitters and receivers.   This means there will be a 1 block delay on a receiver, compared to the data sent from a transmitter.
+
+        Multiple transmitters sending to the same channel will be mixed together.
+
+        [SEE_ALSO]
+        DSP::setParameterFloat
+        DSP::getParameterFloat
+        DSP::setParameterInt
+        DSP::getParameterInt
+        DSP::setParameterBool
+        DSP::getParameterBool
+        FMOD_DSP_TYPE
+    ]
+    */
+    public enum DSP_TRANSCEIVER
+    {
+        TRANSMIT,            /* (Type:bool)  - [r/w] - FALSE = Transceiver is a 'receiver' (like a return) and accepts data from a channel.  TRUE = Transceiver is a 'transmitter' (like a send).  Default = FALSE. */
+        GAIN,                /* (Type:float) - [r/w] - Gain to receive or transmit at in dB.  -80.0 to 10.0.  Default = 0. */
+        CHANNEL,             /* (Type:int)   - [r/w] - Integer to select current global slot, shared by all Transceivers, that can be transmitted to or received from.  0 to 31.  Default = 0.*/
+        TRANSMITSPEAKERMODE  /* (Type:int)   - [r/w] - Speaker mode (transmitter mode only).  Specifies either 0 (Auto) Default = 0.*/
     }
 
 

@@ -754,7 +754,7 @@ namespace Unity_Studio
                         }
                         if (!exportable && displayAll.Checked)
                         {
-                            if(asset.Text == "")
+                            if (asset.Text == "")
                             {
                                 asset.Text = asset.TypeString + " #" + asset.uniqueID;
                             }
@@ -1253,14 +1253,15 @@ namespace Unity_Studio
                         result = system.createSound(m_AudioClip.m_AudioData, (FMOD.MODE.OPENMEMORY | loopMode), ref exinfo, out sound);
                         if (ERRCHECK(result)) { break; }
 
-                        result = sound.getSubSound(0, out sound);
-                        if (ERRCHECK(result)) { break; }
+                        FMOD.Sound subsound;
+                        result = sound.getSubSound(0, out subsound);
+                        if (result == FMOD.RESULT.OK)
+                        {
+                            sound = subsound;
+                        }
 
                         result = sound.getLength(out FMODlenms, FMOD.TIMEUNIT.MS);
-                        if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
-                        {
-                            if (ERRCHECK(result)) { break; }
-                        }
+                        if (ERRCHECK(result)) { break; }
 
                         result = system.playSound(sound, null, true, out channel);
                         if (ERRCHECK(result)) { break; }

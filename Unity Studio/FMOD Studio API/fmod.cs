@@ -1,6 +1,6 @@
 /* ========================================================================================== */
 /*                                                                                            */
-/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2015.      */
+/* FMOD Studio - C# Wrapper . Copyright (c), Firelight Technologies Pty, Ltd. 2004-2016.      */
 /*                                                                                            */
 /* ========================================================================================== */
 
@@ -16,7 +16,7 @@ namespace FMOD
     */
     public class VERSION
     {
-        public const int    number = 0x00010702;
+        public const int    number = 0x00010716;
 #if WIN64
         public const string dll    = "fmod64";
 #else
@@ -3393,9 +3393,15 @@ namespace FMOD
         }
 
         // Nested channel groups.
-        public RESULT addGroup               (ChannelGroup group)
+        public RESULT addGroup               (ChannelGroup group, bool propagatedspclock, out DSPConnection connection)
         {
-            return FMOD_ChannelGroup_AddGroup(getRaw(), group.getRaw());
+			connection = null;
+			
+			IntPtr connectionRaw;
+            RESULT result = FMOD_ChannelGroup_AddGroup(getRaw(), group.getRaw(), propagatedspclock, out connectionRaw);
+			connection = new DSPConnection(connectionRaw);
+			
+			return result;
         }
         public RESULT getNumGroups           (out int numgroups)
         {
@@ -3453,7 +3459,7 @@ namespace FMOD
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD_ChannelGroup_Release          (IntPtr channelgroup);
         [DllImport(VERSION.dll)]
-        private static extern RESULT FMOD_ChannelGroup_AddGroup         (IntPtr channelgroup, IntPtr group);
+        private static extern RESULT FMOD_ChannelGroup_AddGroup         (IntPtr channelgroup, IntPtr group, bool propagatedspclock, out IntPtr connection);
         [DllImport(VERSION.dll)]
         private static extern RESULT FMOD_ChannelGroup_GetNumGroups     (IntPtr channelgroup, out int numgroups);
         [DllImport(VERSION.dll)]
