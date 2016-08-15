@@ -123,18 +123,10 @@ namespace Unity_Studio
                     var bundleSize = b_Stream.ReadInt64();
                     int compressedSize = b_Stream.ReadInt32();
                     int uncompressedSize = b_Stream.ReadInt32();
-                    // (UnityFS) flags
-                    //  0x100 = <unknown>
-                    //  0x80 = data header at end of file
-                    //  0x40 = entry info present
-                    //  0x3f = low six bits are data header compression method
-                    //         0 = none
-                    //         1 = LZMA
-                    //         3 = LZ4
-                    int unknown = b_Stream.ReadInt32();
+                    int flag = b_Stream.ReadInt32() & 0x3F;
                     var entryinfoBytes = b_Stream.ReadBytes(compressedSize);
                     EndianStream entryinfo;
-                    if (uncompressedSize > compressedSize)
+                    if (flag == 3)//LZ4
                     {
                         byte[] uncompressedBytes = new byte[uncompressedSize];
                         using (var mstream = new MemoryStream(entryinfoBytes))
@@ -144,6 +136,10 @@ namespace Unity_Studio
                             decoder.Dispose();
                         }
                         entryinfo = new EndianStream(new MemoryStream(uncompressedBytes), EndianType.BigEndian);
+                    }
+                    else if(flag == 1)//LZMA
+                    {
+                        entryinfo = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(entryinfoBytes)), EndianType.BigEndian);
                     }
                     else
                     {
@@ -159,13 +155,9 @@ namespace Unity_Studio
                         {
                             uncompressedSize = entryinfo.ReadInt32();
                             compressedSize = entryinfo.ReadInt32();
-                            //0 = none
-                            //1 = LZMA
-                            //3 = LZ4
-                            //0x40 = 0?
-                            unknown = entryinfo.ReadInt16();
+                            flag = entryinfo.ReadInt16() & 0x3F;
                             var compressedBytes = b_Stream.ReadBytes(compressedSize);
-                            if (uncompressedSize > compressedSize)
+                            if (flag == 3)//LZ4
                             {
                                 var uncompressedBytes = new byte[uncompressedSize];
                                 using (var mstream = new MemoryStream(compressedBytes))
@@ -176,12 +168,22 @@ namespace Unity_Studio
                                 }
                                 assetsDatam.Write(uncompressedBytes, 0, uncompressedSize);
                             }
+                            else if(flag == 1)//LZMA
+                            {
+                                var uncompressedBytes = new byte[uncompressedSize];
+                                using (var mstream = new MemoryStream(compressedBytes))
+                                {
+                                    var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream);
+                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                                    decoder.Dispose();
+                                }
+                                assetsDatam.Write(uncompressedBytes, 0, uncompressedSize);
+                            }
                             else
                             {
                                 assetsDatam.Write(compressedBytes, 0, compressedSize);
                             }
                         }
-                        //assetsDatam.Capacity = (int)assetsDatam.Length;
                         assetsData = new EndianStream(assetsDatam, EndianType.BigEndian);
                         using (assetsData)
                         {
@@ -191,7 +193,7 @@ namespace Unity_Studio
                                 MemoryAssetsFile memFile = new MemoryAssetsFile();
                                 var entryinfo_offset = entryinfo.ReadInt64();
                                 var entryinfo_size = entryinfo.ReadInt64();
-                                unknown = entryinfo.ReadInt32();
+                                var unknown = entryinfo.ReadInt32();
                                 memFile.fileName = entryinfo.ReadStringToNull();
                                 assetsData.Position = entryinfo_offset;
                                 byte[] buffer = new byte[entryinfo_size];
