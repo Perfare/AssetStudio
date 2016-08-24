@@ -725,9 +725,11 @@ namespace Unity_Studio
                                 }
                             case 114: //MonoBehaviour
                                 {
+                                    if (asset.Offset + 0x1c + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
+                                        break;
                                     asset.sourceFile.a_Stream.Position = asset.Offset + 0x1c;
                                     var len = asset.sourceFile.a_Stream.ReadInt32();
-                                    if (len > 0 && len < asset.Size)
+                                    if (len > 0 && len < asset.Size - 4 - 0x1c)
                                     {
                                         var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
                                         asset.Text = Encoding.UTF8.GetString(bytes);
@@ -742,9 +744,11 @@ namespace Unity_Studio
                             case 115: //MonoScript
                             case 213: //Sprite
                                 {
+                                    if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
+                                        break;
                                     asset.sourceFile.a_Stream.Position = asset.Offset;
                                     var len = asset.sourceFile.a_Stream.ReadInt32();
-                                    if (len > 0 && len < asset.Size)
+                                    if (len > 0 && len < asset.Size - 4)
                                     {
                                         var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
                                         asset.Text = Encoding.UTF8.GetString(bytes);
