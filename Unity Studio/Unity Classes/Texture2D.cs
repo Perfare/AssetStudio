@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -24,6 +25,10 @@ namespace Unity_Studio
         public int m_WrapMode;
         public int m_LightmapFormat;
         public int m_ColorSpace;
+        //m_StreamData
+        public uint offset;
+        public uint size;
+        public string path;
         public byte[] image_data;
 
         //DDS Start
@@ -139,10 +144,43 @@ namespace Unity_Studio
                 dwCaps += 0x400008;
             }
 
+            if((sourceFile.version[0] == 5  && sourceFile.version[1] >= 3) || sourceFile.version[0] > 5)//5.3.0 and up
+            {
+                offset = a_Stream.ReadUInt32();
+                size = a_Stream.ReadUInt32();
+                path = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            }
+
             if (readSwitch)
             {
-                image_data = new byte[image_data_size];
-                a_Stream.Read(image_data, 0, image_data_size);
+                if (!string.IsNullOrEmpty(path))
+                {
+                    image_data_size = (int)size;
+                    path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), path.Replace("archive:/", ""));
+                    if (File.Exists(path) ||
+                    File.Exists(path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(path))))
+                    {
+                        image_data = new byte[image_data_size];
+                        BinaryReader reader = new BinaryReader(File.OpenRead(path));
+                        reader.BaseStream.Position = offset;
+                        reader.Read(image_data, 0, image_data_size);
+                        reader.Close();
+                    }
+                    else
+                    {
+                        EndianStream estream = null;
+                        if (UnityStudioForm.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
+                        {
+                            estream.Position = offset;
+                            image_data = estream.ReadBytes(image_data_size);
+                        }
+                    }
+                }
+                else
+                {
+                    image_data = new byte[image_data_size];
+                    a_Stream.Read(image_data, 0, image_data_size);
+                }
 
                 switch ((TextureFormat)m_TextureFormat)
                 {
