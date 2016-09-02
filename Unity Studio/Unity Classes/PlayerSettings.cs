@@ -33,7 +33,7 @@ namespace Unity_Studio
                 if (sourceFile.version[0] == 5 && (sourceFile.version[1] > 2 || (sourceFile.version[1] == 2 && sourceFile.version[2] >= 1)))
                 { bool useOnDemandResources = a_Stream.ReadBoolean(); a_Stream.AlignStream(4); }
 
-                if (sourceFile.version[0] == 5 && sourceFile.version[1] < 3)
+                if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 3))
                 { int targetResolution = a_Stream.ReadInt32(); }
 
                 if (sourceFile.version[0] == 3 && sourceFile.version[1] <= 1) { bool OverrideIPodMusic = a_Stream.ReadBoolean(); a_Stream.AlignStream(4); }

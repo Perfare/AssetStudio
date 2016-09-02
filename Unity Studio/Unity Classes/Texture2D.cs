@@ -144,10 +144,11 @@ namespace Unity_Studio
                 dwCaps += 0x400008;
             }
 
-            if((sourceFile.version[0] == 5  && sourceFile.version[1] >= 3) || sourceFile.version[0] > 5)//5.3.0 and up
+            if (image_data_size == 0 && ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) || sourceFile.version[0] > 5))//5.3.0 and up
             {
                 offset = a_Stream.ReadUInt32();
                 size = a_Stream.ReadUInt32();
+                image_data_size = (int)size;
                 path = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
             }
 
@@ -155,7 +156,6 @@ namespace Unity_Studio
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    image_data_size = (int)size;
                     path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), path.Replace("archive:/", ""));
                     if (File.Exists(path) ||
                     File.Exists(path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(path))))
