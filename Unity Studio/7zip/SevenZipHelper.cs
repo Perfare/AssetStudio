@@ -122,5 +122,23 @@ namespace SevenZip.Compression.LZMA
             return newOutStream;
         }
 
+        public static MemoryStream StreamDecompress(MemoryStream newInStream, long outSize)
+        {
+            SevenZip.Compression.LZMA.Decoder decoder = new SevenZip.Compression.LZMA.Decoder();
+
+            newInStream.Seek(0, 0);
+            MemoryStream newOutStream = new MemoryStream();
+
+            byte[] properties2 = new byte[5];
+            if (newInStream.Read(properties2, 0, 5) != 5)
+                throw (new Exception("input .lzma is too short"));
+            decoder.SetDecoderProperties(properties2);
+
+            long compressedSize = newInStream.Length - newInStream.Position;
+            decoder.Code(newInStream, newOutStream, compressedSize, outSize, null);
+
+            newOutStream.Position = 0;
+            return newOutStream;
+        }
     }
 }

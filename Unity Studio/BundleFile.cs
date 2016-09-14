@@ -173,7 +173,7 @@ namespace Unity_Studio
                                 var uncompressedBytes = new byte[uncompressedSize];
                                 using (var mstream = new MemoryStream(compressedBytes))
                                 {
-                                    var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream);
+                                    var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
                                     decoder.Read(uncompressedBytes, 0, uncompressedSize);
                                     decoder.Dispose();
                                 }
