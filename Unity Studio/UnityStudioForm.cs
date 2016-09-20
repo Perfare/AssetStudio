@@ -2528,8 +2528,8 @@ namespace Unity_Studio
                     //TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
                     string texFilename = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\" + TexturePD.Text;
                     StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(texFilename));
-                    ExportTexture(TexturePD, texFilename, TexturePD.extension);
-
+                    ExportTexture(TexturePD, texFilename, TexturePD.extension, false);
+                    texFilename += ".png";//必须是png文件
                     ob.AppendFormat("\n\tTexture: 7{0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"TextureVideoClip\"");
                     ob.Append("\n\t\tVersion: 202");
@@ -3048,7 +3048,7 @@ namespace Unity_Studio
                         switch (asset.Type2)
                         {
                             case 28:
-                                if (ExportTexture(asset, exportpath + asset.Text, asset.extension))
+                                if (ExportTexture(asset, exportpath + asset.Text, asset.extension, true))
                                 {
                                     exportedCount++;
                                 }
@@ -3124,7 +3124,7 @@ namespace Unity_Studio
             File.WriteAllBytes(exportFilepath, bytes);
         }
 
-        private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension)
+        private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension, bool flip)
         {
             ImageFormat format = null;
             var oldextension = exportFileextension;
@@ -3154,7 +3154,8 @@ namespace Unity_Studio
                 if ((bool)Properties.Settings.Default["convertTexture"])
                 {
                     var bitmap = DDSToBMP(imageBuffer);
-                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    if (flip)
+                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     bitmap.Save(exportFullname, format);
                 }
                 else
@@ -3173,7 +3174,8 @@ namespace Unity_Studio
                     int len = Math.Abs(bmd.Stride) * bmd.Height;
                     DecompressPVR(pvrdata, bmd.Scan0, len);
                     bitmap.UnlockBits(bmd);
-                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    if (flip)
+                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     bitmap.Save(exportFullname, format);
                 }
                 else
@@ -3196,7 +3198,8 @@ namespace Unity_Studio
                         File.Delete(tempastcfilepath);
                         File.Delete(temptgafilepath);
                         var bitmap = TGAToBMP(tempddsfile);
-                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                        if (flip)
+                            bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
                         bitmap.Save(exportFullname, format);
                     }
                 }
