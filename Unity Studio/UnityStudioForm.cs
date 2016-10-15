@@ -3244,15 +3244,10 @@ namespace Unity_Studio
                 result = FMOD.Factory.System_Create(out system);
                 if (ERRCHECK(result)) { return false; }
 
-                result = system.setOutput(FMOD.OUTPUTTYPE.WAVWRITER_NRT);
+                result = system.setOutput(FMOD.OUTPUTTYPE.NOSOUND_NRT);
                 if (ERRCHECK(result)) { return false; }
 
-                //var pObject = Marshal.StringToHGlobalUni(exportFilename.Replace("fsb", "wav")); not work
-                var bytes = Encoding.UTF8.GetBytes(exportFullname);
-                GCHandle hObject = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                var pObject = hObject.AddrOfPinnedObject();
-                result = system.init(1, FMOD.INITFLAGS.NORMAL, pObject);
-                hObject.Free();
+                result = system.init(1, FMOD.INITFLAGS.NORMAL, (IntPtr)null);
                 if (ERRCHECK(result)) { return false; }
 
                 exinfo.cbsize = Marshal.SizeOf(exinfo);
@@ -3270,15 +3265,34 @@ namespace Unity_Studio
                 result = sound.setLoopCount(-1);
                 if (ERRCHECK(result)) { return false; }
 
-                result = system.playSound(sound, null, false, out channel);
+                uint length;
+                result = sound.getLength(out length, FMOD.TIMEUNIT.PCMBYTES);
                 if (ERRCHECK(result)) { return false; }
 
-                bool playing = false;
-                do
-                {
-                    system.update();
-                    result = channel.isPlaying(out playing);
-                } while (playing);
+                IntPtr ptr1, ptr2;
+                uint len1, len2;
+                result = sound.@lock(0, length, out ptr1, out ptr2, out len1, out len2);
+                if (ERRCHECK(result)) { return false; }
+
+                byte[] buffer = new byte[len1 + 44];
+                //添加wav头
+                Encoding.UTF8.GetBytes("RIFF").CopyTo(buffer, 0);
+                BitConverter.GetBytes(len1 + 36).CopyTo(buffer, 4);
+                Encoding.UTF8.GetBytes("WAVEfmt ").CopyTo(buffer, 8);
+                BitConverter.GetBytes(16).CopyTo(buffer, 16);
+                BitConverter.GetBytes((short)1).CopyTo(buffer, 20);
+                BitConverter.GetBytes((short)m_AudioClip.m_Channels).CopyTo(buffer, 22);
+                BitConverter.GetBytes(m_AudioClip.m_Frequency).CopyTo(buffer, 24);
+                BitConverter.GetBytes(m_AudioClip.m_Frequency * m_AudioClip.m_Channels * m_AudioClip.m_BitsPerSample / 8).CopyTo(buffer, 28);
+                BitConverter.GetBytes((short)(m_AudioClip.m_Channels * m_AudioClip.m_BitsPerSample / 8)).CopyTo(buffer, 32);
+                BitConverter.GetBytes((short)m_AudioClip.m_BitsPerSample).CopyTo(buffer, 34);
+                Encoding.UTF8.GetBytes("data").CopyTo(buffer, 36);
+                BitConverter.GetBytes(len1).CopyTo(buffer, 40);
+                Marshal.Copy(ptr1, buffer, 44, (int)len1);
+                File.WriteAllBytes(exportFullname, buffer);
+
+                result = sound.unlock(ptr1, ptr2, len1, len2);
+                if (ERRCHECK(result)) { return false; }
 
                 sound.release();
                 system.release();
