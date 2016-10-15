@@ -127,9 +127,10 @@ namespace Unity_Studio
                     byte[] blocksInfoBytes;
                     if ((flag & 0x80) != 0)//at end of file
                     {
+                        var position = b_Stream.Position;
                         b_Stream.Position = b_Stream.BaseStream.Length - compressedSize;
                         blocksInfoBytes = b_Stream.ReadBytes(compressedSize);
-                        b_Stream.Position = 0x2E;
+                        b_Stream.Position = position;
                     }
                     else
                     {
