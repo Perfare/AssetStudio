@@ -243,7 +243,7 @@ namespace Unity_Studio
             {
                 //open file here and pass the stream to facilitate loading memory files
                 //also by keeping the stream as a property of AssetsFile, it can be used later on to read assets
-                AssetsFile assetsFile = new AssetsFile(fileName, new EndianStream(File.OpenRead(fileName), EndianType.BigEndian));
+                AssetsFile assetsFile = new AssetsFile(fileName, new EndianStream(File.OpenRead(fileName), EndianType.BigEndian), fileName);
                 //if (Path.GetFileName(fileName) == "mainData") { mainDataFile = assetsFile; }
 
                 //totalAssetCount += assetsFile.preloadTable.Count;
@@ -262,7 +262,7 @@ namespace Unity_Studio
                     }
                     else if (File.Exists(Path.GetDirectoryName(fileName) + "\\mainData"))
                     {
-                        mainDataFile = new AssetsFile(Path.GetDirectoryName(fileName) + "\\mainData", new EndianStream(File.OpenRead(Path.GetDirectoryName(fileName) + "\\mainData"), EndianType.BigEndian));
+                        mainDataFile = new AssetsFile(Path.GetDirectoryName(fileName) + "\\mainData", new EndianStream(File.OpenRead(Path.GetDirectoryName(fileName) + "\\mainData"), EndianType.BigEndian), Path.GetDirectoryName(fileName) + "\\mainData");
 
                         assetsFile.m_Version = mainDataFile.m_Version;
                         assetsFile.version = mainDataFile.version;
@@ -348,7 +348,7 @@ namespace Unity_Studio
                 //create dummy path to be used for asset extraction
                 memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
 
-                AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
+                AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian), bundleFileName);
                 if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
                 {
                     //make use of the bundle file version
@@ -803,7 +803,7 @@ namespace Unity_Studio
                 {
                     StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
-                    fileNode.Text = Path.GetFileName(assetsFile.filePath);
+                    fileNode.Text = Path.GetFileName(assetsFile.filePath) +string.Format(" ({0})",assetsFile.oldFileName);
                     fileNode.m_Name = "RootNode";
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)
@@ -3042,6 +3042,8 @@ namespace Unity_Studio
                         string exportpath = savePath + "\\";
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
+                        else if (assetGroupSelectedIndex == 3) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.oldFileName) + "\\"; }
+                    
 
                         //AudioClip and Texture2D extensions are set when the list is built
                         //so their overwrite tests can be done without loading them again

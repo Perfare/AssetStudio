@@ -287,7 +287,8 @@
             this.assetGroupOptions.Items.AddRange(new object[] {
             "Group exported assets by type",
             "Group exported assets by source file",
-            "Do not group exported assets"});
+            "Do not group exported assets",
+            "Group exported assets by filename"});
             this.assetGroupOptions.Name = "assetGroupOptions";
             this.assetGroupOptions.Size = new System.Drawing.Size(192, 25);
             this.assetGroupOptions.SelectedIndexChanged += new System.EventHandler(this.assetGroupOptions_SelectedIndexChanged);
