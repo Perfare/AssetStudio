@@ -803,7 +803,7 @@ namespace Unity_Studio
                 {
                     StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
-                    fileNode.Text = Path.GetFileName(assetsFile.filePath) +string.Format(" ({0})",assetsFile.oldFileName);
+                    fileNode.Text = Path.GetFileName(assetsFile.filePath) + string.Format(" [{0}]", assetsFile.oldFileName);
                     fileNode.m_Name = "RootNode";
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)
@@ -3043,7 +3043,7 @@ namespace Unity_Studio
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
                         else if (assetGroupSelectedIndex == 3) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.oldFileName) + "\\"; }
-                    
+
 
                         //AudioClip and Texture2D extensions are set when the list is built
                         //so their overwrite tests can be done without loading them again
@@ -3488,6 +3488,44 @@ namespace Unity_Studio
                 }
             }
             return output;
+        }
+
+        private void sceneTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] filepaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string fileTypes = ".*\\.(unity3d|assetbundle|unity3d\\.lz4|bundle|bytes)";
+
+            resetForm();
+            mainPath = Path.GetDirectoryName(filepaths[0]);
+            foreach (var filepath in filepaths)
+            {
+                string filename = Path.GetFileName(filepath);
+                if (Regex.IsMatch(filename, fileTypes))
+                {
+                    unityFiles.Add(filepath);
+                    unityFilesHash.Add(filename);
+                }
+            }
+            unityFiles = unityFiles.Distinct().ToList();
+            Task task = new Task(() =>
+            {
+                for (int f = 0; f < unityFiles.Count; f++)
+                {
+                    var fileName = unityFiles[f];
+                    LoadBundleFile(fileName);
+                    ProgressBarPerformStep();
+                }
+            });
+            task.ContinueWith(task2 => { BuildAssetStrucutres(); });
+            task.ContinueWith(task2 => { unityFilesHash.Clear(); assetsfileListHash.Clear(); });
+            task.Start();
+        }
+
+        private void sceneTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Link;
+            else e.Effect = DragDropEffects.None;
         }
     }
 }

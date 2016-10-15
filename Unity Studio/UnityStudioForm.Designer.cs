@@ -419,6 +419,7 @@
             // 
             // sceneTreeView
             // 
+            this.sceneTreeView.AllowDrop = true;
             this.sceneTreeView.CheckBoxes = true;
             this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.sceneTreeView.HideSelection = false;
@@ -427,6 +428,8 @@
             this.sceneTreeView.Size = new System.Drawing.Size(410, 536);
             this.sceneTreeView.TabIndex = 1;
             this.sceneTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.sceneTreeView_AfterCheck);
+            this.sceneTreeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.sceneTreeView_DragEnter);
+            this.sceneTreeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.sceneTreeView_DragDrop);
             // 
             // treeSearch
             // 
