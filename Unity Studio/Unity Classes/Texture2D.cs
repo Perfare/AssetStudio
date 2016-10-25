@@ -191,7 +191,7 @@ namespace Unity_Studio
                             dwRBitMask = 0x0;
                             dwGBitMask = 0x0;
                             dwBBitMask = 0x0;
-                            dwABitMask = 0x0; *///透明通道丢失?
+                            dwABitMask = 0xFF; *///透明通道丢失?
                             //转ARGB32
                             var bytes = Enumerable.Repeat<byte>(0xFF, image_data_size * 4).ToArray();
                             for (int i = 0; i < image_data_size; i++)
@@ -281,7 +281,7 @@ namespace Unity_Studio
                         }
                     case TextureFormat.R16:
                         break;
-                    case TextureFormat.DXT1: //DXT1
+                    case TextureFormat.DXT1: //test pass
                         {
                             if (sourceFile.platform == 11) //X360 only, PS3 not
                             {
@@ -303,7 +303,7 @@ namespace Unity_Studio
                             dwABitMask = 0x0;
                             break;
                         }
-                    case TextureFormat.DXT5: //DXT5
+                    case TextureFormat.DXT5: //test pass
                         {
                             if (sourceFile.platform == 11) //X360, PS3 not
                             {
@@ -687,14 +687,4 @@ public class KTXHeader
     public static int GL_RGB = 0x1907;
     public static int GL_RGBA = 0x1908;
     public static int GL_RG = 0x8227;
-
-    public static int getMipMapCount(int width, int height)
-    {
-        int mipMapCount = 1;
-        for (int dim = Math.Max(width, height); dim > 1; dim /= 2)
-        {
-            mipMapCount++;
-        }
-        return mipMapCount;
-    }
 }

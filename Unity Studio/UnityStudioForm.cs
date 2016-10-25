@@ -768,7 +768,7 @@ namespace Unity_Studio
                         }
                         if (exportable)
                         {
-                            if (!exportableAssetsHash.Add(asset.TypeString + asset.Text))
+                            if (!exportableAssetsHash.Add((asset.TypeString + asset.Text).ToUpper()))
                             {
                                 asset.Text += " #" + asset.uniqueID;
                             }
@@ -3127,8 +3127,9 @@ namespace Unity_Studio
         private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension, bool flip)
         {
             ImageFormat format = null;
+            var convert = (bool)Properties.Settings.Default["convertTexture"];
             var oldextension = exportFileextension;
-            if ((bool)Properties.Settings.Default["convertTexture"])
+            if (convert && (exportFileextension == ".dds" || exportFileextension == ".pvr" || exportFileextension == ".astc"))
             {
                 string str = Properties.Settings.Default["convertType"] as string;
                 exportFileextension = "." + str.ToLower();
@@ -3140,18 +3141,13 @@ namespace Unity_Studio
                     format = ImageFormat.Jpeg;
             }
             var exportFullname = exportFilename + exportFileextension;
-            if (File.Exists(exportFullname))
-            {
-                StatusStripUpdate("Texture2D file " + Path.GetFileName(exportFullname) + " already exists");
+            if (ExportFileExists(exportFullname, "Texture2D"))
                 return false;
-            }
-            Directory.CreateDirectory(Path.GetDirectoryName(exportFullname));
-            StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(exportFullname));
             var m_Texture2D = new Texture2D(asset, true);
             if (oldextension == ".dds")
             {
                 byte[] imageBuffer = Texture2DToDDS(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     var bitmap = DDSToBMP(imageBuffer);
                     if (flip)
@@ -3166,7 +3162,7 @@ namespace Unity_Studio
             else if (oldextension == ".pvr")
             {
                 var pvrdata = Texture2DToPVR(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
                     Rectangle rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
@@ -3186,7 +3182,7 @@ namespace Unity_Studio
             else if (oldextension == ".astc")
             {
                 var astcdata = Texture2DToASTC(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     string tempastcfilepath = Path.GetTempFileName();
                     string temptgafilepath = tempastcfilepath.Replace(".tmp", ".tga");
@@ -3228,13 +3224,8 @@ namespace Unity_Studio
                 exportFileextension = ".wav";
             }
             var exportFullname = exportFilename + exportFileextension;
-            if (File.Exists(exportFullname))
-            {
-                StatusStripUpdate("AudioClip file " + Path.GetFileName(exportFullname) + " already exists");
+            if (ExportFileExists(exportFullname, "AudioClip"))
                 return false;
-            }
-            Directory.CreateDirectory(Path.GetDirectoryName(exportFullname));
-            StatusStripUpdate("Exporting AudioClip: " + Path.GetFileName(exportFullname));
             var m_AudioClip = new AudioClip(asset, true);
             if ((bool)Properties.Settings.Default["convertfsb"] && oldextension == ".fsb")
             {
@@ -3301,7 +3292,7 @@ namespace Unity_Studio
             }
             else
             {
-                File.WriteAllBytes(exportFilename, m_AudioClip.m_AudioData);
+                File.WriteAllBytes(exportFullname, m_AudioClip.m_AudioData);
             }
             return true;
         }
@@ -3329,7 +3320,6 @@ namespace Unity_Studio
             else
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
-
                 StatusStripUpdate("Exporting " + assetType + ": " + Path.GetFileName(filename));
                 return false;
             }
