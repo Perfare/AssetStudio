@@ -77,6 +77,9 @@ namespace Unity_Studio
         [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void DecompressPVR(byte[] buffer, IntPtr bmp, int len);
 
+        [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type);
+
 
         private void loadFile_Click(object sender, System.EventArgs e)
         {
@@ -1222,8 +1225,12 @@ namespace Unity_Studio
                         }
                         else if (asset.extension == ".ktx")
                         {
-                            StatusStripUpdate("Unsupported image for preview. Can export the ktx file.");
-                            imageTexture = null;
+                            imageTexture = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
+                            var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
+                            BitmapData bmd = imageTexture.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                            Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
+                            imageTexture.UnlockBits(bmd);
+                            imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
                         }
                         else
                         {
@@ -3129,7 +3136,7 @@ namespace Unity_Studio
             ImageFormat format = null;
             var convert = (bool)Properties.Settings.Default["convertTexture"];
             var oldextension = exportFileextension;
-            if (convert && (exportFileextension == ".dds" || exportFileextension == ".pvr" || exportFileextension == ".astc"))
+            if (convert && exportFileextension != ".tex")
             {
                 string str = Properties.Settings.Default["convertType"] as string;
                 exportFileextension = "." + str.ToLower();
@@ -3206,8 +3213,22 @@ namespace Unity_Studio
             }
             else if (oldextension == ".ktx")
             {
-                var ktxdata = Texture2DToKTX(m_Texture2D);
-                File.WriteAllBytes(exportFullname, ktxdata);
+                if (convert)
+                {
+                    var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
+                    var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
+                    var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                    Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
+                    bitmap.UnlockBits(bmd);
+                    if (flip)
+                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    bitmap.Save(exportFullname, format);
+                }
+                else
+                {
+                    var ktxdata = Texture2DToKTX(m_Texture2D);
+                    File.WriteAllBytes(exportFullname, ktxdata);
+                }
             }
             else
             {
