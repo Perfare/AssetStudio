@@ -1830,6 +1830,70 @@ namespace Unity_Studio
             else { return false; }
         }
 
+        private void all3DObjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    var savePath = saveFolderDialog1.FileName;
+                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
+                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+                    savePath = savePath + "\\";
+                    switch ((bool)Properties.Settings.Default["showExpOpt"])
+                    {
+                        case true:
+                            ExportOptions exportOpt = new ExportOptions();
+                            if (exportOpt.ShowDialog() == DialogResult.OK) { goto case false; }
+                            break;
+                        case false:
+                            {
+                                progressBar1.Value = 0;
+                                progressBar1.Maximum = sceneTreeView.Nodes.Count;
+                                //防止主界面假死
+                                ThreadPool.QueueUserWorkItem(delegate
+                                {
+                                    sceneTreeView.Invoke(new Action(() =>
+                                    {
+                                        //挂起控件防止更新
+                                        sceneTreeView.BeginUpdate();
+                                        //先取消所有Node的选中
+                                        foreach (TreeNode i in sceneTreeView.Nodes)
+                                        {
+                                            i.Checked = false;
+                                        }
+                                    }));
+                                    //遍历根节点
+                                    foreach (TreeNode i in sceneTreeView.Nodes)
+                                    {
+                                        if (i.Nodes.Count > 0)
+                                        {
+                                            //遍历一级子节点
+                                            foreach (TreeNode j in i.Nodes)
+                                            {
+                                                var filename = j.Text;
+                                                //选中它和它的子节点
+                                                sceneTreeView.Invoke(new Action(() => j.Checked = true));
+                                                //导出FBX
+                                                WriteFBX(savePath + filename + ".fbx", false);
+                                                //取消选中
+                                                sceneTreeView.Invoke(new Action(() => j.Checked = false));
+                                            }
+                                        }
+                                        ProgressBarPerformStep();
+                                    }
+                                    //取消挂起
+                                    sceneTreeView.Invoke(new Action(() => sceneTreeView.EndUpdate()));
+                                    if (openAfterExport.Checked) { Process.Start(savePath); }
+                                });
+                                break;
+                            }
+                    }
+                }
+
+            }
+            else { StatusStripUpdate("No Objects available for export"); }
+        }
 
         private void Export3DObjects_Click(object sender, EventArgs e)
         {
