@@ -77,6 +77,9 @@ namespace Unity_Studio
         [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void DecompressPVR(byte[] buffer, IntPtr bmp, int len);
 
+        [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type);
+
 
         private void loadFile_Click(object sender, System.EventArgs e)
         {
@@ -768,7 +771,7 @@ namespace Unity_Studio
                         }
                         if (exportable)
                         {
-                            if (!exportableAssetsHash.Add(asset.TypeString + asset.Text))
+                            if (!exportableAssetsHash.Add((asset.TypeString + asset.Text).ToUpper()))
                             {
                                 asset.Text += " #" + asset.uniqueID;
                             }
@@ -1222,8 +1225,12 @@ namespace Unity_Studio
                         }
                         else if (asset.extension == ".ktx")
                         {
-                            StatusStripUpdate("Unsupported image for preview. Can export the ktx file.");
-                            imageTexture = null;
+                            imageTexture = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
+                            var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
+                            BitmapData bmd = imageTexture.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                            Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
+                            imageTexture.UnlockBits(bmd);
+                            imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
                         }
                         else
                         {
@@ -1823,6 +1830,70 @@ namespace Unity_Studio
             else { return false; }
         }
 
+        private void all3DObjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    var savePath = saveFolderDialog1.FileName;
+                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
+                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+                    savePath = savePath + "\\";
+                    switch ((bool)Properties.Settings.Default["showExpOpt"])
+                    {
+                        case true:
+                            ExportOptions exportOpt = new ExportOptions();
+                            if (exportOpt.ShowDialog() == DialogResult.OK) { goto case false; }
+                            break;
+                        case false:
+                            {
+                                progressBar1.Value = 0;
+                                progressBar1.Maximum = sceneTreeView.Nodes.Count;
+                                //防止主界面假死
+                                ThreadPool.QueueUserWorkItem(delegate
+                                {
+                                    sceneTreeView.Invoke(new Action(() =>
+                                    {
+                                        //挂起控件防止更新
+                                        sceneTreeView.BeginUpdate();
+                                        //先取消所有Node的选中
+                                        foreach (TreeNode i in sceneTreeView.Nodes)
+                                        {
+                                            i.Checked = false;
+                                        }
+                                    }));
+                                    //遍历根节点
+                                    foreach (TreeNode i in sceneTreeView.Nodes)
+                                    {
+                                        if (i.Nodes.Count > 0)
+                                        {
+                                            //遍历一级子节点
+                                            foreach (TreeNode j in i.Nodes)
+                                            {
+                                                var filename = j.Text;
+                                                //选中它和它的子节点
+                                                sceneTreeView.Invoke(new Action(() => j.Checked = true));
+                                                //导出FBX
+                                                WriteFBX(savePath + filename + ".fbx", false);
+                                                //取消选中
+                                                sceneTreeView.Invoke(new Action(() => j.Checked = false));
+                                            }
+                                        }
+                                        ProgressBarPerformStep();
+                                    }
+                                    //取消挂起
+                                    sceneTreeView.Invoke(new Action(() => sceneTreeView.EndUpdate()));
+                                    if (openAfterExport.Checked) { Process.Start(savePath); }
+                                });
+                                break;
+                            }
+                    }
+                }
+
+            }
+            else { StatusStripUpdate("No Objects available for export"); }
+        }
 
         private void Export3DObjects_Click(object sender, EventArgs e)
         {
@@ -3129,8 +3200,9 @@ namespace Unity_Studio
         private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension, bool flip)
         {
             ImageFormat format = null;
+            var convert = (bool)Properties.Settings.Default["convertTexture"];
             var oldextension = exportFileextension;
-            if ((bool)Properties.Settings.Default["convertTexture"])
+            if (convert && exportFileextension != ".tex")
             {
                 string str = Properties.Settings.Default["convertType"] as string;
                 exportFileextension = "." + str.ToLower();
@@ -3142,18 +3214,13 @@ namespace Unity_Studio
                     format = ImageFormat.Jpeg;
             }
             var exportFullname = exportFilename + exportFileextension;
-            if (File.Exists(exportFullname))
-            {
-                StatusStripUpdate("Texture2D file " + Path.GetFileName(exportFullname) + " already exists");
+            if (ExportFileExists(exportFullname, "Texture2D"))
                 return false;
-            }
-            Directory.CreateDirectory(Path.GetDirectoryName(exportFullname));
-            StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(exportFullname));
             var m_Texture2D = new Texture2D(asset, true);
             if (oldextension == ".dds")
             {
                 byte[] imageBuffer = Texture2DToDDS(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     var bitmap = DDSToBMP(imageBuffer);
                     if (flip)
@@ -3168,7 +3235,7 @@ namespace Unity_Studio
             else if (oldextension == ".pvr")
             {
                 var pvrdata = Texture2DToPVR(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
                     Rectangle rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
@@ -3188,7 +3255,7 @@ namespace Unity_Studio
             else if (oldextension == ".astc")
             {
                 var astcdata = Texture2DToASTC(m_Texture2D);
-                if ((bool)Properties.Settings.Default["convertTexture"])
+                if (convert)
                 {
                     string tempastcfilepath = Path.GetTempFileName();
                     string temptgafilepath = tempastcfilepath.Replace(".tmp", ".tga");
@@ -3212,8 +3279,22 @@ namespace Unity_Studio
             }
             else if (oldextension == ".ktx")
             {
-                var ktxdata = Texture2DToKTX(m_Texture2D);
-                File.WriteAllBytes(exportFullname, ktxdata);
+                if (convert)
+                {
+                    var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
+                    var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
+                    var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                    Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
+                    bitmap.UnlockBits(bmd);
+                    if (flip)
+                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    bitmap.Save(exportFullname, format);
+                }
+                else
+                {
+                    var ktxdata = Texture2DToKTX(m_Texture2D);
+                    File.WriteAllBytes(exportFullname, ktxdata);
+                }
             }
             else
             {
@@ -3230,13 +3311,8 @@ namespace Unity_Studio
                 exportFileextension = ".wav";
             }
             var exportFullname = exportFilename + exportFileextension;
-            if (File.Exists(exportFullname))
-            {
-                StatusStripUpdate("AudioClip file " + Path.GetFileName(exportFullname) + " already exists");
+            if (ExportFileExists(exportFullname, "AudioClip"))
                 return false;
-            }
-            Directory.CreateDirectory(Path.GetDirectoryName(exportFullname));
-            StatusStripUpdate("Exporting AudioClip: " + Path.GetFileName(exportFullname));
             var m_AudioClip = new AudioClip(asset, true);
             if ((bool)Properties.Settings.Default["convertfsb"] && oldextension == ".fsb")
             {
@@ -3303,7 +3379,7 @@ namespace Unity_Studio
             }
             else
             {
-                File.WriteAllBytes(exportFilename, m_AudioClip.m_AudioData);
+                File.WriteAllBytes(exportFullname, m_AudioClip.m_AudioData);
             }
             return true;
         }
@@ -3331,7 +3407,6 @@ namespace Unity_Studio
             else
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
-
                 StatusStripUpdate("Exporting " + assetType + ": " + Path.GetFileName(filename));
                 return false;
             }

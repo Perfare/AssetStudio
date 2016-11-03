@@ -101,6 +101,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.saveFolderDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
+            this.all3DObjectssplitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -304,6 +305,7 @@
             // 
             this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportAll3DMenuItem,
+            this.all3DObjectssplitToolStripMenuItem,
             this.exportSelected3DMenuItem,
             this.toolStripSeparator1,
             this.exportAllAssetsMenuItem,
@@ -316,40 +318,40 @@
             // exportAll3DMenuItem
             // 
             this.exportAll3DMenuItem.Name = "exportAll3DMenuItem";
-            this.exportAll3DMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.exportAll3DMenuItem.Size = new System.Drawing.Size(192, 22);
             this.exportAll3DMenuItem.Text = "All 3D objects";
             this.exportAll3DMenuItem.Click += new System.EventHandler(this.Export3DObjects_Click);
             // 
             // exportSelected3DMenuItem
             // 
             this.exportSelected3DMenuItem.Name = "exportSelected3DMenuItem";
-            this.exportSelected3DMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.exportSelected3DMenuItem.Size = new System.Drawing.Size(192, 22);
             this.exportSelected3DMenuItem.Text = "Selected 3D objects";
             this.exportSelected3DMenuItem.Click += new System.EventHandler(this.Export3DObjects_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(188, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(189, 6);
             // 
             // exportAllAssetsMenuItem
             // 
             this.exportAllAssetsMenuItem.Name = "exportAllAssetsMenuItem";
-            this.exportAllAssetsMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.exportAllAssetsMenuItem.Size = new System.Drawing.Size(192, 22);
             this.exportAllAssetsMenuItem.Text = "All assets";
             this.exportAllAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
             // 
             // exportSelectedAssetsMenuItem
             // 
             this.exportSelectedAssetsMenuItem.Name = "exportSelectedAssetsMenuItem";
-            this.exportSelectedAssetsMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.exportSelectedAssetsMenuItem.Size = new System.Drawing.Size(192, 22);
             this.exportSelectedAssetsMenuItem.Text = "Selected assets";
             this.exportSelectedAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
             // 
             // exportFilteredAssetsMenuItem
             // 
             this.exportFilteredAssetsMenuItem.Name = "exportFilteredAssetsMenuItem";
-            this.exportFilteredAssetsMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.exportFilteredAssetsMenuItem.Size = new System.Drawing.Size(192, 22);
             this.exportFilteredAssetsMenuItem.Text = "Filtered assets";
             this.exportFilteredAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
             // 
@@ -815,6 +817,13 @@
             this.saveFolderDialog1.RestoreDirectory = true;
             this.saveFolderDialog1.Title = "Browse for folder";
             // 
+            // all3DObjectssplitToolStripMenuItem
+            // 
+            this.all3DObjectssplitToolStripMenuItem.Name = "all3DObjectssplitToolStripMenuItem";
+            this.all3DObjectssplitToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.all3DObjectssplitToolStripMenuItem.Text = "All 3D objects (split)";
+            this.all3DObjectssplitToolStripMenuItem.Click += new System.EventHandler(this.all3DObjectssplitToolStripMenuItem_Click);
+            // 
             // UnityStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -933,6 +942,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
         private System.Windows.Forms.Label FMODcopyright;
+        private System.Windows.Forms.ToolStripMenuItem all3DObjectssplitToolStripMenuItem;
     }
 }
 
