@@ -559,7 +559,6 @@ namespace Unity_Studio
                             if (enablePreview.Checked && imageTexture != null)
                             {
                                 previewPanel.BackgroundImage = imageTexture;
-                                previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
                             }
                             else
                             {
@@ -1145,7 +1144,7 @@ namespace Unity_Studio
 
         private void selectAsset(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            previewPanel.BackgroundImage = global::Unity_Studio.Properties.Resources.preview;
+            previewPanel.BackgroundImage = Properties.Resources.preview;
             previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
@@ -1190,6 +1189,8 @@ namespace Unity_Studio
                 #region Texture2D
                 case 28: //Texture2D
                     {
+                        if (imageTexture != null)
+                            imageTexture.Dispose();
                         Texture2D m_Texture2D = new Texture2D(asset, true);
                         if (asset.extension == ".dds")
                         {
@@ -1214,10 +1215,10 @@ namespace Unity_Studio
                             string temptgafilepath = tempastcfilepath.Replace(".tmp", ".tga");
                             File.WriteAllBytes(tempastcfilepath, Texture2DToASTC(m_Texture2D));
                             Execute("astcenc.exe -d " + tempastcfilepath + " " + temptgafilepath);
+                            File.Delete(tempastcfilepath);
                             if (File.Exists(temptgafilepath))
                             {
                                 var tempddsfile = File.ReadAllBytes(temptgafilepath);
-                                File.Delete(tempastcfilepath);
                                 File.Delete(temptgafilepath);
                                 imageTexture = TGAToBMP(tempddsfile);
                                 imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -1239,13 +1240,11 @@ namespace Unity_Studio
                         }
                         if (imageTexture != null)
                         {
-                            var oldimage = previewPanel.BackgroundImage;
                             previewPanel.BackgroundImage = imageTexture;
                             if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
                                 previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
                             else
                                 previewPanel.BackgroundImageLayout = ImageLayout.Center;
-                            oldimage.Dispose();
                         }
                         break;
                     }
@@ -1871,7 +1870,8 @@ namespace Unity_Studio
                                             //遍历一级子节点
                                             foreach (TreeNode j in i.Nodes)
                                             {
-                                                var filename = j.Text;
+                                                //加上时间，因为可能有重名的object
+                                                var filename = j.Text + DateTime.Now.ToString("_mm_ss_ffff");
                                                 //选中它和它的子节点
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = true));
                                                 //导出FBX
@@ -2592,8 +2592,6 @@ namespace Unity_Studio
                 cb.Append(cb2); cb2.Clear();
 
                 #region write & extract Textures
-                Directory.CreateDirectory(Path.GetDirectoryName(FBXfile) + "\\Texture2D");
-
                 foreach (var TexturePD in Textures)
                 {
                     //TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
@@ -3314,6 +3312,8 @@ namespace Unity_Studio
             var m_AudioClip = new AudioClip(asset, true);
             if ((bool)Properties.Settings.Default["convertfsb"] && oldextension == ".fsb")
             {
+                FMOD.System system;
+                FMOD.Sound sound;
                 FMOD.RESULT result;
                 FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
 
@@ -3372,8 +3372,6 @@ namespace Unity_Studio
 
                 sound.release();
                 system.release();
-                system = null;
-                sound = null;
             }
             else
             {
@@ -3494,7 +3492,7 @@ namespace Unity_Studio
             classesListView.Items.Clear();
             classesListView.Groups.Clear();
 
-            previewPanel.BackgroundImage = global::Unity_Studio.Properties.Resources.preview;
+            previewPanel.BackgroundImage = Properties.Resources.preview;
             previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
