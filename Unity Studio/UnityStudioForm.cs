@@ -3470,6 +3470,74 @@ namespace Unity_Studio
             FMODinit();
         }
 
+        public UnityStudioForm(string[] filepath)
+        {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            InitializeComponent();
+            displayAll.Checked = (bool)Properties.Settings.Default["displayAll"];
+            displayInfo.Checked = (bool)Properties.Settings.Default["displayInfo"];
+            enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
+            openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
+            assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
+            FMODinit();
+
+            ProgramLoad(filepath);
+        }
+
+        public void ProgramLoad(string[] fileList)
+        {
+            resetForm();
+            mainPath = Path.GetDirectoryName(fileList[0]);
+            Task task = null;
+
+            string[] type = { "level", "globalgamemanagers", "mainData", "CustomAssetBundle-", "CAB-", "BuildPlayer-", ".assets", ".sharedAssets" };
+
+
+            if (type.Contains(mainPath))
+            {
+                MergeSplitAssets(mainPath);
+
+                //unityFiles.AddRange(openFileDialog1.FileNames);
+                foreach (var i in fileList)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i));
+                }
+                progressBar1.Value = 0;
+                progressBar1.Maximum = unityFiles.Count;
+                task = new Task(() =>
+                {
+                    //use a for loop because list size can change
+                    for (int f = 0; f < unityFiles.Count; f++)
+                    {
+                        StatusStripUpdate("Loading " + Path.GetFileName(unityFiles[f]));
+                        LoadAssetsFile(unityFiles[f]);
+                        ProgressBarPerformStep();
+                    }
+                });
+            }
+            else
+            {
+                progressBar1.Value = 0;
+                progressBar1.Maximum = fileList.Length;
+                task = new Task(() =>
+                {
+                    foreach (var filename in fileList)
+                    {
+                        LoadBundleFile(filename);
+                        ProgressBarPerformStep();
+                    }
+                });
+            }
+            task.ContinueWith(task2 => { BuildAssetStrucutres(); });
+            task.ContinueWith(task2 => { unityFilesHash.Clear(); assetsfileListHash.Clear(); });
+            task.Start();
+
+
+
+
+        }
+
         private void resetForm()
         {
             /*Properties.Settings.Default["uniqueNames"] = uniqueNamesMenuItem.Checked;
