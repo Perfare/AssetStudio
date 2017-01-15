@@ -809,6 +809,8 @@ namespace Unity_Studio
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                     {
+                        assetsfileList.ParseGameObject(m_GameObject);
+
                         var parentNode = fileNode;
 
                         Transform m_Transform;
@@ -2017,9 +2019,9 @@ namespace Unity_Studio
 
                             #region get Renderer
                             AssetPreloadData RendererPD;
-                            if (assetsfileList.TryGetPD(m_GameObject.m_Renderer, out RendererPD))
+                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out RendererPD))
                             {
-                                Renderer m_Renderer = new Renderer(RendererPD);
+                                MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
 
                                 foreach (var MaterialPPtr in m_Renderer.m_Materials)
                                 {

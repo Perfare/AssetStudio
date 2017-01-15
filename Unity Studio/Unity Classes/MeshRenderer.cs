@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Unity_Studio
 {
-    class Renderer
+    class MeshRenderer
     {
         public PPtr m_GameObject;
         public bool m_Enabled;
@@ -15,7 +15,7 @@ namespace Unity_Studio
         public ushort m_LightmapIndexDynamic;
         public PPtr[] m_Materials;
 
-        public Renderer(AssetPreloadData preloadData)
+        public MeshRenderer(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
             var a_Stream = preloadData.sourceFile.a_Stream;
