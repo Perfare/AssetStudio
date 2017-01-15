@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-//using System.Diagnostics; //remove this later
+using System.Text;
 
 namespace Unity_Studio
 {
@@ -31,6 +29,7 @@ namespace Unity_Studio
         public SortedDictionary<int, ClassStrStruct> ClassStructures = new SortedDictionary<int, ClassStrStruct>();
 
         private bool baseDefinitions = false;
+        private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
         public class UnityShared
         {
@@ -84,7 +83,9 @@ namespace Unity_Studio
                         break;
                     }
                 case 14://5.0.0 beta and final
-                case 15://5.0.1 and up
+                case 15://5.0.1 - 5.4
+                case 16://??.. no sure
+                case 17://5.5.0 and up
                     {
                         a_Stream.Position += 4;//azero
                         m_Version = a_Stream.ReadStringToNull();
@@ -94,7 +95,7 @@ namespace Unity_Studio
                     }
                 default:
                     {
-                        //MessageBox.Show("Unsupported Unity version!", "Unity Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        //MessageBox.Show("Unsupported Unity version!" + fileGen, "Unity Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
             }
@@ -163,10 +164,19 @@ namespace Unity_Studio
                 asset.Offset = a_Stream.ReadInt32();
                 asset.Offset += dataOffset;
                 asset.Size = a_Stream.ReadInt32();
-                asset.Type1 = a_Stream.ReadInt32();
-                asset.Type2 = a_Stream.ReadUInt16();
-                a_Stream.Position += 2;
-                if (fileGen >= 15)
+                if (fileGen > 15)
+                {
+                    int index = a_Stream.ReadInt32();
+                    asset.Type1 = classIDs[index][0];
+                    asset.Type2 = (ushort)classIDs[index][1];
+                }
+                else
+                {
+                    asset.Type1 = a_Stream.ReadInt32();
+                    asset.Type2 = a_Stream.ReadUInt16();
+                    a_Stream.Position += 2;
+                }
+                if (fileGen == 15)
                 {
                     byte unknownByte = a_Stream.ReadByte();
                     //this is a single byte, not an int32
@@ -184,7 +194,7 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    asset.TypeString = "unknown";
+                    asset.TypeString = "Unknown Type " + asset.Type2;
                 }
 
                 asset.uniqueID = i.ToString(assetIDfmt);
@@ -258,6 +268,21 @@ namespace Unity_Studio
         {
             int classID = a_Stream.ReadInt32();
             if (classID < 0) { a_Stream.Position += 16; }
+            if (fileGen > 15)
+            {
+                a_Stream.ReadByte();
+                int type1;
+                if ((type1 = a_Stream.ReadInt16()) >= 0)
+                {
+                    type1 = -1 - type1;
+                    a_Stream.Position += 16;
+                }
+                else
+                {
+                    type1 = classID;
+                }
+                classIDs.Add(new int[] { type1, classID });
+            }
             a_Stream.Position += 16;
 
             if (baseDefinitions)
@@ -357,7 +382,7 @@ namespace Unity_Studio
                     int num1 = a_Stream.ReadInt32();
 
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
-                    else { classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, size); }
+                    else { classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level - 1)), varTypeStr, varNameStr, size); }
 
                     //for (int t = 0; t < level; t++) { Debug.Write("\t"); }
                     //Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
@@ -368,7 +393,6 @@ namespace Unity_Studio
                 aClass.SubItems.Add(classID.ToString());
                 ClassStructures.Add(classID, aClass);
             }
-
         }
 
     }

@@ -54,7 +54,7 @@ namespace Unity_Studio
         {
             return base.ReadChar();
         }
- 
+
         public override Int16 ReadInt16()
         {
             if (endian == EndianType.BigEndian)
@@ -65,7 +65,7 @@ namespace Unity_Studio
             }
             else return base.ReadInt16();
         }
- 
+
         public override int ReadInt32()
         {
             if (endian == EndianType.BigEndian)
@@ -76,7 +76,7 @@ namespace Unity_Studio
             }
             else return base.ReadInt32();
         }
- 
+
         public override Int64 ReadInt64()
         {
             if (endian == EndianType.BigEndian)
@@ -87,7 +87,7 @@ namespace Unity_Studio
             }
             else return base.ReadInt64();
         }
- 
+
         public override UInt16 ReadUInt16()
         {
             if (endian == EndianType.BigEndian)
@@ -98,7 +98,7 @@ namespace Unity_Studio
             }
             else return base.ReadUInt16();
         }
- 
+
         public override UInt32 ReadUInt32()
         {
             if (endian == EndianType.BigEndian)
@@ -120,7 +120,7 @@ namespace Unity_Studio
             }
             else return base.ReadUInt64();
         }
- 
+
         public override Single ReadSingle()
         {
             if (endian == EndianType.BigEndian)
@@ -131,7 +131,7 @@ namespace Unity_Studio
             }
             else return base.ReadSingle();
         }
- 
+
         public override Double ReadDouble()
         {
             if (endian == EndianType.BigEndian)
@@ -182,20 +182,14 @@ namespace Unity_Studio
             }
             else { return ""; }
         }
- 
+
         public string ReadStringToNull()
         {
-            string result = "";
-            char c;
-            for (int i = 0; i < base.BaseStream.Length; i++)
-            {
-                if ((c = (char)base.ReadByte()) == 0)
-                {
-                    break;
-                }
-                result += c.ToString();
-            }
-            return result;
+            var bytes = new List<byte>();
+            byte b;
+            while ((b = ReadByte()) != 0)
+                bytes.Add(b);
+            return Encoding.UTF8.GetString(bytes.ToArray());
         }
     }
 }

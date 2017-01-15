@@ -442,8 +442,8 @@ namespace Unity_Studio
                         }
                     case TextureFormat.ATC_RGBA8: //透明通道很奇怪？
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA;
-                            glInternalFormat = KTXHeader.GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+                            q_format = (int)QFORMAT.Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
+                            glInternalFormat = KTXHeader.GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }

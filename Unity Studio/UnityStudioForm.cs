@@ -700,6 +700,11 @@ namespace Unity_Studio
                                     break;
                                 }
                             case 48: //Shader
+                                {
+                                    Shader m_TextAsset = new Shader(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
                             case 49: //TextAsset
                                 {
                                     TextAsset m_TextAsset = new TextAsset(asset, false);
@@ -1286,13 +1291,23 @@ namespace Unity_Studio
                         break;
                     }
                 #endregion
-                #region Shader & TextAsset
+                #region Shader
                 case 48:
+                    {
+                        Shader m_TextAsset = new Shader(asset, true);
+                        string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
+                        m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
+                        textPreviewBox.Text = m_Script_Text;
+                        textPreviewBox.Visible = true;
+                        break;
+                    }
+                #endregion
+                #region TextAsset
                 case 49:
                     {
                         TextAsset m_TextAsset = new TextAsset(asset, true);
 
-                        string m_Script_Text = UnicodeEncoding.UTF8.GetString(m_TextAsset.m_Script);
+                        string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
                         textPreviewBox.Text = m_Script_Text;
                         textPreviewBox.Visible = true;
@@ -1924,7 +1939,7 @@ namespace Unity_Studio
                                     break;
                             }
 
-                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName)) { System.Diagnostics.Process.Start(saveFileDialog1.FileName); }
+                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName)) { try { Process.Start(saveFileDialog1.FileName); } catch { } }
                             break;
                     }
                 }
@@ -3131,7 +3146,7 @@ namespace Unity_Studio
                             case 48:
                                 if (!ExportFileExists(exportpath + asset.Text + ".txt", asset.TypeString))
                                 {
-                                    ExportText(new TextAsset(asset, true), exportpath + asset.Text + ".txt");
+                                    ExportShader(new Shader(asset, true), exportpath + asset.Text + ".txt");
                                     exportedCount++;
                                 }
                                 break;
@@ -3378,6 +3393,11 @@ namespace Unity_Studio
                 File.WriteAllBytes(exportFullname, m_AudioClip.m_AudioData);
             }
             return true;
+        }
+
+        private void ExportShader(Shader m_Shader, string exportFilename)
+        {
+            File.WriteAllBytes(exportFilename, m_Shader.m_Script);
         }
 
         private void ExportText(TextAsset m_TextAsset, string exportFilename)

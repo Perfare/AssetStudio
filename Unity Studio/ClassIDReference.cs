@@ -208,6 +208,9 @@ namespace Unity_Studio
             Names[272] = "AudioMixerSnapshot";
             Names[273] = "AudioMixerGroup";
             Names[290] = "AssetBundleManifest";
+            Names[300] = "RuntimeInitializeOnLoadManager";
+            Names[301] = "CloudWebServicesManager";
+            Names[310] = "UnityConnectSettings";
             Names[1001] = "Prefab";
             Names[1002] = "EditorExtensionImpl";
             Names[1003] = "AssetImporter";
