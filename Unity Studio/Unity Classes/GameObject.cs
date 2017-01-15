@@ -16,7 +16,7 @@ namespace Unity_Studio
         public string m_Name;
         public ushort m_Tag;
         public bool m_IsActive;
-        
+
         public string uniqueID = "0";//this way file and folder TreeNodes will be treated as FBX scene
 
         public GameObject(AssetPreloadData preloadData)
@@ -56,6 +56,7 @@ namespace Unity_Studio
                             m_SkinnedMeshRenderer = sourceFile.ReadPPtr();
                             break;
                         default:
+                            a_Stream.Position -= 4;
                             PPtr m_Component = sourceFile.ReadPPtr();
                             break;
                     }
@@ -67,7 +68,7 @@ namespace Unity_Studio
                 if (m_Name == "") { m_Name = "GameObject #" + uniqueID; }
                 m_Tag = a_Stream.ReadUInt16();
                 m_IsActive = a_Stream.ReadBoolean();
-                
+
                 base.Text = m_Name;
                 preloadData.Text = m_Name;
                 //name should be unique

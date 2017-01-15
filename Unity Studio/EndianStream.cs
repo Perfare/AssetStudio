@@ -167,7 +167,7 @@ namespace Unity_Studio
             {
                 byte[] stringData = new byte[length];
                 base.Read(stringData, 0, length);
-                var result = System.Text.Encoding.UTF8.GetString(stringData); //must verify strange characters in PS3
+                var result = Encoding.UTF8.GetString(stringData); //must verify strange characters in PS3
 
                 /*string result = "";
                 char c;

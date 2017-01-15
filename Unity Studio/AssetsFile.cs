@@ -340,7 +340,7 @@ namespace Unity_Studio
                 baseStrings[894] = "TypelessData";
                 baseStrings[907] = "UInt16";
                 baseStrings[928] = "UInt8";
-                baseStrings[934] = "unsigned int";
+                baseStrings[934] = "UInt";
                 baseStrings[981] = "vector";
                 baseStrings[988] = "Vector2f";
                 baseStrings[997] = "Vector3f";
