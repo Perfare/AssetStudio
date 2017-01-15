@@ -282,6 +282,7 @@ namespace Unity_Studio
                     type1 = classID;
                 }
                 classIDs.Add(new int[] { type1, classID });
+                classID = type1;
             }
             a_Stream.Position += 16;
 
