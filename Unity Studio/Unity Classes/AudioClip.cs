@@ -164,9 +164,13 @@ namespace Unity_Studio
                         preloadData.extension = ".fsb";
                         preloadData.InfoText += "MP3";//not sure
                         break;
+                    case 7:
+                        preloadData.extension = ".m4a";
+                        preloadData.InfoText += "M4a";
+                        break;
                 }
 
-                if (preloadData.extension == "")
+                if (preloadData.extension == null)
                 {
                     preloadData.extension = ".AudioClip";
                     preloadData.InfoText += "Unknown";

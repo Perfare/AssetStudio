@@ -56,7 +56,6 @@ namespace Unity_Studio
                             m_SkinnedMeshRenderer = sourceFile.ReadPPtr();
                             break;
                         default:
-                            a_Stream.Position -= 4;
                             PPtr m_Component = sourceFile.ReadPPtr();
                             break;
                     }

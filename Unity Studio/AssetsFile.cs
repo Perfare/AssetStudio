@@ -335,10 +335,12 @@ namespace Unity_Studio
                 baseStrings[800] = "SInt16";
                 baseStrings[814] = "int64";
                 baseStrings[840] = "string";
+                baseStrings[847] = "TextAsset";
                 baseStrings[874] = "Texture2D";
                 baseStrings[884] = "Transform";
                 baseStrings[894] = "TypelessData";
                 baseStrings[907] = "UInt16";
+                baseStrings[921] = "UInt64";
                 baseStrings[928] = "UInt8";
                 baseStrings[934] = "UInt";
                 baseStrings[981] = "vector";

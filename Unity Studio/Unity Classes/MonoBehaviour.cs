@@ -87,6 +87,12 @@ namespace Unity_Studio
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     a_Stream.AlignStream(4);
                 }
+                else if (varTypeStr == "UInt64")
+                {
+                    var value = a_Stream.ReadUInt64();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
                 else if (varTypeStr == "UInt16")
                 {
                     var value = a_Stream.ReadUInt16();
