@@ -1232,6 +1232,8 @@ namespace Unity_Studio
                             BitmapData bmd = imageTexture.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
                             Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
                             imageTexture.UnlockBits(bmd);
+                            if (m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RED || m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RG)
+                                FixAlpha(imageTexture);
                             imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
                         }
                         else
@@ -1380,6 +1382,19 @@ namespace Unity_Studio
                         StatusStripUpdate("Only supported export the raw file.");
                         break;
                     }
+            }
+        }
+
+        private void FixAlpha(Bitmap imageTexture)
+        {
+            for (int y = 0; y < imageTexture.Height; y++)
+            {
+                for (int x = 0; x < imageTexture.Width; x++)
+                {
+                    var color = imageTexture.GetPixel(x, y);
+                    color = Color.FromArgb(255, color.R, color.G, color.B);
+                    imageTexture.SetPixel(x, y, color);
+                }
             }
         }
 
@@ -3311,6 +3326,8 @@ namespace Unity_Studio
                     var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
                     Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
                     bitmap.UnlockBits(bmd);
+                    if (m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RED || m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RG)
+                        FixAlpha(bitmap);
                     if (flip)
                         bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     bitmap.Save(exportFullname, format);

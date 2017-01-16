@@ -12,7 +12,7 @@ namespace Unity_Studio
         public int m_Width;
         public int m_Height;
         public int m_CompleteImageSize;
-        public int m_TextureFormat;
+        public TextureFormat m_TextureFormat;
         public bool m_MipMap = false;
         public bool m_IsReadable;
         public bool m_ReadAllowed;
@@ -108,7 +108,7 @@ namespace Unity_Studio
             m_Width = a_Stream.ReadInt32();
             m_Height = a_Stream.ReadInt32();
             m_CompleteImageSize = a_Stream.ReadInt32();
-            m_TextureFormat = a_Stream.ReadInt32();
+            m_TextureFormat = (TextureFormat)a_Stream.ReadInt32();
 
             if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 2))
             { m_MipMap = a_Stream.ReadBoolean(); }
@@ -184,7 +184,7 @@ namespace Unity_Studio
                     a_Stream.Read(image_data, 0, image_data_size);
                 }
 
-                switch ((TextureFormat)m_TextureFormat)
+                switch (m_TextureFormat)
                 {
                     case TextureFormat.Alpha8: //test pass
                         {
@@ -391,8 +391,32 @@ namespace Unity_Studio
                         }
                     case TextureFormat.YUY2://Not sure
                         {
-                            pvrPixelFormat = 0x11;
+                            pvrPixelFormat = 17;
                             q_format = (int)QFORMAT.Q_FORMAT_YUYV_16;
+                            break;
+                        }
+                    case TextureFormat.BC4:
+                        {
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RED_RGTC1;
+                            glBaseInternalFormat = KTXHeader.GL_RED;
+                            break;
+                        }
+                    case TextureFormat.BC5:
+                        {
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RG_RGTC2;
+                            glBaseInternalFormat = KTXHeader.GL_RG;
+                            break;
+                        }
+                    case TextureFormat.BC6H:
+                        {
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
+                            glBaseInternalFormat = KTXHeader.GL_RGB;
+                            break;
+                        }
+                    case TextureFormat.BC7:
+                        {
+                            glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_BPTC_UNORM;
+                            glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
                     case TextureFormat.DXT1Crunched: //DXT1 Crunched
@@ -400,35 +424,35 @@ namespace Unity_Studio
                         break;
                     case TextureFormat.PVRTC_RGB2: //test pass
                         {
-                            pvrPixelFormat = 0x0;
+                            pvrPixelFormat = 0;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
                     case TextureFormat.PVRTC_RGBA2: //test pass
                         {
-                            pvrPixelFormat = 0x1;
+                            pvrPixelFormat = 1;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
                     case TextureFormat.PVRTC_RGB4: //test pass
                         {
-                            pvrPixelFormat = 0x2;
+                            pvrPixelFormat = 2;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
                     case TextureFormat.PVRTC_RGBA4: //test pass
                         {
-                            pvrPixelFormat = 0x3;
+                            pvrPixelFormat = 3;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
                     case TextureFormat.ETC_RGB4: //test pass
                         {
-                            pvrPixelFormat = 0x16;
+                            pvrPixelFormat = 6;
                             glInternalFormat = KTXHeader.GL_ETC1_RGB8_OES;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
@@ -440,7 +464,7 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
-                    case TextureFormat.ATC_RGBA8: //透明通道很奇怪？
+                    case TextureFormat.ATC_RGBA8: //test pass
                         {
                             q_format = (int)QFORMAT.Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
                             glInternalFormat = KTXHeader.GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
@@ -449,28 +473,28 @@ namespace Unity_Studio
                         }
                     case TextureFormat.EAC_R:
                         {
-                            pvrPixelFormat = 25;
+                            q_format = (int)QFORMAT.Q_FORMAT_EAC_R_UNSIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_R11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
                     case TextureFormat.EAC_R_SIGNED:
                         {
-                            pvrPixelFormat = 25;
+                            q_format = (int)QFORMAT.Q_FORMAT_EAC_R_SIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_R11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
                     case TextureFormat.EAC_RG:
                         {
-                            pvrPixelFormat = 26;
+                            q_format = (int)QFORMAT.Q_FORMAT_EAC_RG_UNSIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RG11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
                     case TextureFormat.EAC_RG_SIGNED:
                         {
-                            pvrPixelFormat = 26;
+                            q_format = (int)QFORMAT.Q_FORMAT_EAC_RG_SIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_RG11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
@@ -548,10 +572,10 @@ namespace Unity_Studio
                 preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
                 preloadData.exportSize = image_data_size;
 
-                string type = ((TextureFormat)m_TextureFormat).ToString();
+                string type = m_TextureFormat.ToString();
                 preloadData.InfoText += type;
 
-                switch ((TextureFormat)m_TextureFormat)
+                switch (m_TextureFormat)
                 {
                     case TextureFormat.Alpha8:
                     case TextureFormat.ARGB4444:
@@ -576,10 +600,6 @@ namespace Unity_Studio
                     case TextureFormat.ETC2_RGB:
                     case TextureFormat.ETC2_RGBA1:
                     case TextureFormat.ETC2_RGBA8:
-                    case TextureFormat.EAC_R:
-                    case TextureFormat.EAC_R_SIGNED:
-                    case TextureFormat.EAC_RG:
-                    case TextureFormat.EAC_RG_SIGNED:
                         preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
                     case TextureFormat.RHalf:
                     case TextureFormat.RGHalf:
@@ -587,8 +607,16 @@ namespace Unity_Studio
                     case TextureFormat.RFloat:
                     case TextureFormat.RGFloat:
                     case TextureFormat.RGBAFloat:
+                    case TextureFormat.BC4:
+                    case TextureFormat.BC5:
+                    case TextureFormat.BC6H:
+                    case TextureFormat.BC7:
                     case TextureFormat.ATC_RGB4:
                     case TextureFormat.ATC_RGBA8:
+                    case TextureFormat.EAC_R:
+                    case TextureFormat.EAC_R_SIGNED:
+                    case TextureFormat.EAC_RG:
+                    case TextureFormat.EAC_RG_SIGNED:
                         preloadData.extension = ".ktx"; preloadData.exportSize += 68; break;
                     case TextureFormat.ASTC_RGB_4x4:
                     case TextureFormat.ASTC_RGB_5x5:
@@ -651,6 +679,10 @@ namespace Unity_Studio
         RGFloat,
         RGBAFloat,
         YUY2,
+        BC4 = 26,
+        BC5,
+        BC6H = 24,
+        BC7,
         DXT1Crunched = 28,
         DXT5Crunched,
         PVRTC_RGB2,
@@ -712,6 +744,11 @@ public class KTXHeader
     public static int GL_COMPRESSED_SIGNED_R11_EAC = 0x9271;
     public static int GL_COMPRESSED_RG11_EAC = 0x9272;
     public static int GL_COMPRESSED_SIGNED_RG11_EAC = 0x9273;
+
+    public static int GL_COMPRESSED_RED_RGTC1 = 0x8DBB;
+    public static int GL_COMPRESSED_RG_RGTC2 = 0x8DBD;
+    public static int GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 0x8E8F;
+    public static int GL_COMPRESSED_RGBA_BPTC_UNORM = 0x8E8C;
 
     public static int GL_R16F = 0x822D;
     public static int GL_RG16F = 0x822F;
