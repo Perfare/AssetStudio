@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 
@@ -21,41 +20,9 @@ namespace Unity_Studio
 
         public EndianStream(Stream stream, EndianType endian) : base(stream) { }
 
-        ~EndianStream()
-        {
-            Dispose();
-        }
-
         public long Position { get { return base.BaseStream.Position; } set { base.BaseStream.Position = value; } }
 
-        public new void Dispose()
-        {
-            base.Dispose();
-        }
-
-        public override bool ReadBoolean()
-        {
-            return base.ReadBoolean();
-        }
-
-        public override byte ReadByte()
-        {
-            try
-            {
-                return base.ReadByte();
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
-        public override char ReadChar()
-        {
-            return base.ReadChar();
-        }
-
-        public override Int16 ReadInt16()
+        public override short ReadInt16()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -77,7 +44,7 @@ namespace Unity_Studio
             else return base.ReadInt32();
         }
 
-        public override Int64 ReadInt64()
+        public override long ReadInt64()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -88,7 +55,7 @@ namespace Unity_Studio
             else return base.ReadInt64();
         }
 
-        public override UInt16 ReadUInt16()
+        public override ushort ReadUInt16()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -99,7 +66,7 @@ namespace Unity_Studio
             else return base.ReadUInt16();
         }
 
-        public override UInt32 ReadUInt32()
+        public override uint ReadUInt32()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -110,7 +77,7 @@ namespace Unity_Studio
             else return base.ReadUInt32();
         }
 
-        public override UInt64 ReadUInt64()
+        public override ulong ReadUInt64()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -121,7 +88,7 @@ namespace Unity_Studio
             else return base.ReadUInt64();
         }
 
-        public override Single ReadSingle()
+        public override float ReadSingle()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -132,7 +99,7 @@ namespace Unity_Studio
             else return base.ReadSingle();
         }
 
-        public override Double ReadDouble()
+        public override double ReadDouble()
         {
             if (endian == EndianType.BigEndian)
             {
@@ -143,14 +110,9 @@ namespace Unity_Studio
             else return base.ReadDouble();
         }
 
-        public override string ReadString()
-        {
-            return base.ReadString();
-        }
-
         public string ReadASCII(int length)
         {
-            return ASCIIEncoding.ASCII.GetString(base.ReadBytes(length));
+            return Encoding.ASCII.GetString(base.ReadBytes(length));
         }
 
         public void AlignStream(int alignment)

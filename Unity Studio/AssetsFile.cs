@@ -289,65 +289,106 @@ namespace Unity_Studio
             if (baseDefinitions)
             {
                 #region cmmon string array
-                string[] baseStrings = new string[1007];
+                string[] baseStrings = new string[1016];
                 baseStrings[0] = "AABB";
                 baseStrings[5] = "AnimationClip";
                 baseStrings[19] = "AnimationCurve";
+                baseStrings[34] = "AnimationState";
                 baseStrings[49] = "Array";
                 baseStrings[55] = "Base";
                 baseStrings[60] = "BitField";
+                baseStrings[69] = "bitset";
                 baseStrings[76] = "bool";
                 baseStrings[81] = "char";
                 baseStrings[86] = "ColorRGBA";
+                baseStrings[96] = "Component";
                 baseStrings[106] = "data";
+                baseStrings[111] = "deque";
+                baseStrings[117] = "double";
+                baseStrings[124] = "dynamic_array";
                 baseStrings[138] = "FastPropertyName";
                 baseStrings[155] = "first";
                 baseStrings[161] = "float";
                 baseStrings[167] = "Font";
                 baseStrings[172] = "GameObject";
                 baseStrings[183] = "Generic Mono";
+                baseStrings[196] = "GradientNEW";
                 baseStrings[208] = "GUID";
+                baseStrings[213] = "GUIStyle";
                 baseStrings[222] = "int";
+                baseStrings[226] = "list";
+                baseStrings[231] = "long long";
                 baseStrings[241] = "map";
                 baseStrings[245] = "Matrix4x4f";
-                baseStrings[262] = "NavMeshSettings";
+                baseStrings[256] = "MdFour";
                 baseStrings[263] = "MonoBehaviour";
                 baseStrings[277] = "MonoScript";
+                baseStrings[288] = "m_ByteSize";
                 baseStrings[299] = "m_Curve";
+                baseStrings[307] = "m_EditorClassIdentifier";
+                baseStrings[331] = "m_EditorHideFlags";
                 baseStrings[349] = "m_Enabled";
+                baseStrings[359] = "m_ExtensionPtr";
                 baseStrings[374] = "m_GameObject";
+                baseStrings[387] = "m_Index";
+                baseStrings[395] = "m_IsArray";
+                baseStrings[405] = "m_IsStatic";
+                baseStrings[416] = "m_MetaFlag";
                 baseStrings[427] = "m_Name";
+                baseStrings[434] = "m_ObjectHideFlags";
+                baseStrings[452] = "m_PrefabInternal";
+                baseStrings[469] = "m_PrefabParentObject";
                 baseStrings[490] = "m_Script";
+                baseStrings[499] = "m_StaticEditorFlags";
                 baseStrings[519] = "m_Type";
                 baseStrings[526] = "m_Version";
+                baseStrings[536] = "Object";
                 baseStrings[543] = "pair";
                 baseStrings[548] = "PPtr<Component>";
                 baseStrings[564] = "PPtr<GameObject>";
                 baseStrings[581] = "PPtr<Material>";
+                baseStrings[596] = "PPtr<MonoBehaviour>";
                 baseStrings[616] = "PPtr<MonoScript>";
                 baseStrings[633] = "PPtr<Object>";
+                baseStrings[646] = "PPtr<Prefab>";
+                baseStrings[659] = "PPtr<Sprite>";
+                baseStrings[672] = "PPtr<TextAsset>";
                 baseStrings[688] = "PPtr<Texture>";
                 baseStrings[702] = "PPtr<Texture2D>";
                 baseStrings[718] = "PPtr<Transform>";
+                baseStrings[734] = "Prefab";
                 baseStrings[741] = "Quaternionf";
                 baseStrings[753] = "Rectf";
+                baseStrings[759] = "RectInt";
+                baseStrings[767] = "RectOffset";
                 baseStrings[778] = "second";
+                baseStrings[785] = "set";
+                baseStrings[789] = "short";
                 baseStrings[795] = "size";
                 baseStrings[800] = "SInt16";
-                baseStrings[814] = "int64";
+                baseStrings[807] = "SInt32";
+                baseStrings[814] = "SInt64";
+                baseStrings[821] = "SInt8";
+                baseStrings[827] = "staticvector";
                 baseStrings[840] = "string";
                 baseStrings[847] = "TextAsset";
+                baseStrings[857] = "TextMesh";
+                baseStrings[866] = "Texture";
                 baseStrings[874] = "Texture2D";
                 baseStrings[884] = "Transform";
                 baseStrings[894] = "TypelessData";
                 baseStrings[907] = "UInt16";
+                baseStrings[914] = "UInt32";
                 baseStrings[921] = "UInt64";
                 baseStrings[928] = "UInt8";
-                baseStrings[934] = "UInt";
+                baseStrings[934] = "unsigned int";
+                baseStrings[947] = "unsigned long long";
+                baseStrings[966] = "unsigned short";
                 baseStrings[981] = "vector";
                 baseStrings[988] = "Vector2f";
                 baseStrings[997] = "Vector3f";
                 baseStrings[1006] = "Vector4f";
+                baseStrings[1015] = "m_ScriptingClassIdentifier";
                 #endregion
 
                 int varCount = a_Stream.ReadInt32();
@@ -356,8 +397,8 @@ namespace Unity_Studio
                 a_Stream.Position += varCount * 24;
                 string varStrings = Encoding.UTF8.GetString(a_Stream.ReadBytes(stringSize));
                 string className = "";
-                StringBuilder classVarStr = new StringBuilder();
-
+                var classVarStr = new StringBuilder();
+                var classVarStr2 = new StringBuilder();//用来export
                 //build Class Structures
                 a_Stream.Position -= varCount * 24 + stringSize;
                 for (int i = 0; i < varCount; i++)
@@ -385,14 +426,18 @@ namespace Unity_Studio
                     int num1 = a_Stream.ReadInt32();
 
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
-                    else { classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level - 1)), varTypeStr, varNameStr, size); }
+                    else
+                    {
+                        classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level - 1)), varTypeStr, varNameStr, size);
+                        classVarStr2.AppendFormat("{0}\t{1}\t{2}\r\n", level - 1, varTypeStr, varNameStr);
+                    }
 
                     //for (int t = 0; t < level; t++) { Debug.Write("\t"); }
                     //Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
                 }
                 a_Stream.Position += stringSize;
 
-                var aClass = new ClassStrStruct() { ID = classID, Text = className, members = classVarStr.ToString() };
+                var aClass = new ClassStrStruct() { ID = classID, Text = className, members = classVarStr.ToString(), members2 = classVarStr2.ToString() };
                 aClass.SubItems.Add(classID.ToString());
                 ClassStructures.Add(classID, aClass);
             }
