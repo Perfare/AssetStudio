@@ -24,13 +24,13 @@ namespace Unity_Studio
             int FileID = a_Stream.ReadInt32();
             if (FileID >= 0 && FileID < sourceFile.sharedAssetsList.Count)
             { result.m_FileID = sourceFile.sharedAssetsList[FileID].Index; }
-            
+
             if (sourceFile.fileGen < 14) { result.m_PathID = a_Stream.ReadInt32(); }
             else { result.m_PathID = a_Stream.ReadInt64(); }
 
             return result;
         }
-           
+
         public static bool TryGetPD(this List<AssetsFile> assetsfileList, PPtr m_elm, out AssetPreloadData result)
         {
             result = null;
@@ -72,6 +72,44 @@ namespace Unity_Studio
             }
 
             return false;
+        }
+
+        public static void ParseGameObject(this List<AssetsFile> assetsfileList, GameObject m_GameObject)
+        {
+            foreach (var m_Component in m_GameObject.m_Components)
+            {
+                if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
+                {
+                    AssetsFile sourceFile = assetsfileList[m_Component.m_FileID];
+                    AssetPreloadData asset;
+                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out asset))
+                    {
+                        switch (asset.Type2)
+                        {
+                            case 4: //Transform
+                                {
+                                    m_GameObject.m_Transform = m_Component;
+                                    break;
+                                }
+                            case 23: //MeshRenderer
+                                {
+                                    m_GameObject.m_MeshRenderer = m_Component;
+                                    break;
+                                }
+                            case 33: //MeshFilter
+                                {
+                                    m_GameObject.m_MeshFilter = m_Component;
+                                    break;
+                                }
+                            case 137: //SkinnedMeshRenderer
+                                {
+                                    m_GameObject.m_SkinnedMeshRenderer = m_Component;
+                                    break;
+                                }
+                        }
+                    }
+                }
+            }
         }
     }
 

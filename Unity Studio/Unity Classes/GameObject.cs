@@ -8,15 +8,16 @@ namespace Unity_Studio
 {
     public class GameObject : TreeNode
     {
+        public List<PPtr> m_Components = new List<PPtr>();
         public PPtr m_Transform;
-        public PPtr m_Renderer;
+        public PPtr m_MeshRenderer;
         public PPtr m_MeshFilter;
         public PPtr m_SkinnedMeshRenderer;
         public int m_Layer;
         public string m_Name;
         public ushort m_Tag;
         public bool m_IsActive;
-        
+
         public string uniqueID = "0";//this way file and folder TreeNodes will be treated as FBX scene
 
         public GameObject(AssetPreloadData preloadData)
@@ -39,25 +40,14 @@ namespace Unity_Studio
                 int m_Component_size = a_Stream.ReadInt32();
                 for (int j = 0; j < m_Component_size; j++)
                 {
-                    int m_Component_type = a_Stream.ReadInt32();
-
-                    switch (m_Component_type)
+                    if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
                     {
-                        case 4:
-                            m_Transform = sourceFile.ReadPPtr();
-                            break;
-                        case 23:
-                            m_Renderer = sourceFile.ReadPPtr();
-                            break;
-                        case 33:
-                            m_MeshFilter = sourceFile.ReadPPtr();
-                            break;
-                        case 137:
-                            m_SkinnedMeshRenderer = sourceFile.ReadPPtr();
-                            break;
-                        default:
-                            PPtr m_Component = sourceFile.ReadPPtr();
-                            break;
+                        m_Components.Add(sourceFile.ReadPPtr());
+                    }
+                    else
+                    {
+                        int first = a_Stream.ReadInt32();
+                        m_Components.Add(sourceFile.ReadPPtr());
                     }
                 }
 
@@ -67,7 +57,7 @@ namespace Unity_Studio
                 if (m_Name == "") { m_Name = "GameObject #" + uniqueID; }
                 m_Tag = a_Stream.ReadUInt16();
                 m_IsActive = a_Stream.ReadBoolean();
-                
+
                 base.Text = m_Name;
                 preloadData.Text = m_Name;
                 //name should be unique

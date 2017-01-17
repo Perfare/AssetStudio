@@ -16,6 +16,15 @@ namespace Unity_Studio
             var a_Stream = preloadData.sourceFile.a_Stream;
             a_Stream.Position = preloadData.Offset;
 
+
+            if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 nad up
+            {
+                //productGUID
+                a_Stream.ReadInt32();
+                a_Stream.ReadInt32();
+                a_Stream.ReadInt32();
+                a_Stream.ReadInt32();
+            }
             if (sourceFile.version[0] >= 3)
             {
                 if (sourceFile.version[0] == 3 && sourceFile.version[1] < 2) { string AndroidLicensePublicKey = a_Stream.ReadAlignedString(a_Stream.ReadInt32()); }

@@ -60,14 +60,29 @@ namespace Unity_Studio
                 m_Materials[m] = sourceFile.ReadPPtr();
             }
 
-            if (version[0] < 3) { a_Stream.Position += 16; } //m_LightmapTilingOffset vector4d
+            if (version[0] < 3)
+            {
+                a_Stream.Position += 16;//m_LightmapTilingOffset vector4d
+            }
             else
             {
-                int m_SubsetIndices_size = a_Stream.ReadInt32();
-                a_Stream.Position += m_SubsetIndices_size * 4;
+                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
+                {
+                    a_Stream.Position += 4;//m_StaticBatchInfo
+                }
+                else
+                {
+                    int m_SubsetIndices_size = a_Stream.ReadInt32();
+                    a_Stream.Position += m_SubsetIndices_size * 4;
+                }
                 PPtr m_StaticBatchRoot = sourceFile.ReadPPtr();
 
-                if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))
+                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 4) || sourceFile.version[0] > 5)//5.4.0 and up
+                {
+                    PPtr m_ProbeAnchor = sourceFile.ReadPPtr();
+                    PPtr m_LightProbeVolumeOverride = sourceFile.ReadPPtr();
+                }
+                else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))
                 {
                     bool m_UseLightProbes = a_Stream.ReadBoolean();
                     a_Stream.Position += 3; //alignment
@@ -80,7 +95,7 @@ namespace Unity_Studio
                 {
                     if (version[0] == 4 && version[1] <= 3) { int m_SortingLayer = a_Stream.ReadInt16(); }
                     else { int m_SortingLayer = a_Stream.ReadInt32(); }
-                    
+
                     int m_SortingOrder = a_Stream.ReadInt16();
                     a_Stream.AlignStream(4);
                 }

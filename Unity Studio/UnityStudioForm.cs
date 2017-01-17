@@ -569,6 +569,7 @@ namespace Unity_Studio
                         break;
                     case 48:
                     case 49:
+                    case 114:
                         textPreviewBox.Visible = !textPreviewBox.Visible;
                         break;
                     case 128:
@@ -700,6 +701,11 @@ namespace Unity_Studio
                                     break;
                                 }
                             case 48: //Shader
+                                {
+                                    Shader m_Shader = new Shader(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
                             case 49: //TextAsset
                                 {
                                     TextAsset m_TextAsset = new TextAsset(asset, false);
@@ -712,7 +718,13 @@ namespace Unity_Studio
                                     exportable = true;
                                     break;
                                 }
-                            //case 89: //CubeMap
+                            case 114: //MonoBehaviour
+                                {
+                                    var m_MonoBehaviour = new MonoBehaviour(asset, false);
+                                    if (asset.Type1 != asset.Type2 && assetsFile.ClassStructures.ContainsKey(asset.Type1))
+                                        exportable = true;
+                                    break;
+                                }
                             case 128: //Font
                                 {
                                     unityFont m_Font = new unityFont(asset, false);
@@ -723,19 +735,6 @@ namespace Unity_Studio
                                 {
                                     var plSet = new PlayerSettings(asset);
                                     productName = plSet.productName;
-                                    break;
-                                }
-                            case 114: //MonoBehaviour
-                                {
-                                    if (asset.Offset + 0x1c + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
-                                        break;
-                                    asset.sourceFile.a_Stream.Position = asset.Offset + 0x1c;
-                                    var len = asset.sourceFile.a_Stream.ReadInt32();
-                                    if (len > 0 && len < asset.Size - 4 - 0x1c)
-                                    {
-                                        var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
-                                        asset.Text = Encoding.UTF8.GetString(bytes);
-                                    }
                                     break;
                                 }
                             case 21: //Material
@@ -810,6 +809,8 @@ namespace Unity_Studio
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                     {
+                        assetsfileList.ParseGameObject(m_GameObject);
+
                         var parentNode = fileNode;
 
                         Transform m_Transform;
@@ -1286,15 +1287,35 @@ namespace Unity_Studio
                         break;
                     }
                 #endregion
-                #region Shader & TextAsset
+                #region Shader
                 case 48:
+                    {
+                        Shader m_TextAsset = new Shader(asset, true);
+                        string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
+                        m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
+                        textPreviewBox.Text = m_Script_Text;
+                        textPreviewBox.Visible = true;
+                        break;
+                    }
+                #endregion
+                #region TextAsset
                 case 49:
                     {
                         TextAsset m_TextAsset = new TextAsset(asset, true);
 
-                        string m_Script_Text = UnicodeEncoding.UTF8.GetString(m_TextAsset.m_Script);
+                        string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
                         textPreviewBox.Text = m_Script_Text;
+                        textPreviewBox.Visible = true;
+
+                        break;
+                    }
+                #endregion
+                #region MonoBehaviour
+                case 114:
+                    {
+                        MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
+                        textPreviewBox.Text = m_MonoBehaviour.serializedText;
                         textPreviewBox.Visible = true;
 
                         break;
@@ -1924,7 +1945,7 @@ namespace Unity_Studio
                                     break;
                             }
 
-                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName)) { System.Diagnostics.Process.Start(saveFileDialog1.FileName); }
+                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName)) { try { Process.Start(saveFileDialog1.FileName); } catch { } }
                             break;
                     }
                 }
@@ -1998,9 +2019,9 @@ namespace Unity_Studio
 
                             #region get Renderer
                             AssetPreloadData RendererPD;
-                            if (assetsfileList.TryGetPD(m_GameObject.m_Renderer, out RendererPD))
+                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out RendererPD))
                             {
-                                Renderer m_Renderer = new Renderer(RendererPD);
+                                MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
 
                                 foreach (var MaterialPPtr in m_Renderer.m_Materials)
                                 {
@@ -3131,9 +3152,9 @@ namespace Unity_Studio
                                 }
                                 break;
                             case 48:
-                                if (!ExportFileExists(exportpath + asset.Text + ".txt", asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ExportText(new TextAsset(asset, true), exportpath + asset.Text + ".txt");
+                                    ExportShader(new Shader(asset, true), exportpath + asset.Text + ".txt");
                                     exportedCount++;
                                 }
                                 break;
@@ -3142,6 +3163,14 @@ namespace Unity_Studio
                                 if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
                                     ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
+                                    exportedCount++;
+                                }
+                                break;
+                            case 114:
+                                MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                {
+                                    ExportMonoBehaviour(m_MonoBehaviour, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
@@ -3380,6 +3409,16 @@ namespace Unity_Studio
                 File.WriteAllBytes(exportFullname, m_AudioClip.m_AudioData);
             }
             return true;
+        }
+
+        private void ExportMonoBehaviour(MonoBehaviour m_MonoBehaviour, string exportFilename)
+        {
+            File.WriteAllText(exportFilename, m_MonoBehaviour.serializedText);
+        }
+
+        private void ExportShader(Shader m_Shader, string exportFilename)
+        {
+            File.WriteAllBytes(exportFilename, m_Shader.m_Script);
         }
 
         private void ExportText(TextAsset m_TextAsset, string exportFilename)
