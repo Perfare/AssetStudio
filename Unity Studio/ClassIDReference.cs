@@ -10,6 +10,7 @@ namespace Unity_Studio
     {
         public int ID;
         public string members;
+        public string members2;
     }
 
     public class ClassIDReference

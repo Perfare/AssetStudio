@@ -27,7 +27,7 @@ namespace Unity_Studio
                 ClassStrStruct classStructure;
                 if (sourceFile.ClassStructures.TryGetValue(preloadData.Type1, out classStructure))
                 {
-                    var member = classStructure.members;
+                    var member = classStructure.members2;
                     var strs = member.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     var sb = new StringBuilder();
                     Read(sb, strs, a_Stream);
@@ -64,72 +64,83 @@ namespace Unity_Studio
         {
             for (int i = 0; i < strs.Length; i++)
             {
-                var strs2 = strs[i].Split(' ');
-                var str = strs2[0].Split('\t');
-                var level = str.Length - 1;
-                var varTypeStr = str.Last();
-                var varNameStr = strs2[1];
-                if (varTypeStr == "int")
+                var strs2 = strs[i].Split('\t');
+                var level = int.Parse(strs2[0]);
+                var varTypeStr = strs2[1];
+                var varNameStr = strs2[2];
+                if (varTypeStr == "SInt8")//sbyte
                 {
-                    var value = a_Stream.ReadInt32();
+                    var value = a_Stream.ReadSByte();
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     a_Stream.AlignStream(4);
                 }
-                else if (varTypeStr == "UInt")
-                {
-                    var value = a_Stream.ReadUInt32();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
-                    a_Stream.AlignStream(4);
-                }
-                else if (varTypeStr == "int64")
-                {
-                    var value = a_Stream.ReadInt64();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
-                    a_Stream.AlignStream(4);
-                }
-                else if (varTypeStr == "UInt64")
-                {
-                    var value = a_Stream.ReadUInt64();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
-                    a_Stream.AlignStream(4);
-                }
-                else if (varTypeStr == "UInt16")
-                {
-                    var value = a_Stream.ReadUInt16();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
-                    a_Stream.AlignStream(4);
-                }
-                else if (varTypeStr == "SInt16")
-                {
-                    var value = a_Stream.ReadInt16();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
-                    a_Stream.AlignStream(4);
-                }
-                else if (varTypeStr == "UInt8")
+                else if (varTypeStr == "UInt8")//byte
                 {
                     var value = a_Stream.ReadByte();
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     a_Stream.AlignStream(4);
                 }
-                else if (varTypeStr == "float")
+                else if (varTypeStr == "short" || varTypeStr == "SInt16")//Int16
+                {
+                    var value = a_Stream.ReadInt16();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "UInt16" || varTypeStr == "unsigned short")//UInt16
+                {
+                    var value = a_Stream.ReadUInt16();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "int" || varTypeStr == "SInt32")//Int32
+                {
+                    var value = a_Stream.ReadInt32();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "UInt32" || varTypeStr == "unsigned int")//UInt32
+                {
+                    var value = a_Stream.ReadUInt32();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "long long" || varTypeStr == "SInt64")//Int64
+                {
+                    var value = a_Stream.ReadInt64();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "UInt64" || varTypeStr == "unsigned long long")//UInt64
+                {
+                    var value = a_Stream.ReadUInt64();
+                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "float")//float
                 {
                     var value = a_Stream.ReadSingle();
                     sb.AppendFormat("{0}{1} {2} = {3:f}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     a_Stream.AlignStream(4);
                 }
-                else if (varTypeStr == "bool")
+                else if (varTypeStr == "double")//double
+                {
+                    var value = a_Stream.ReadDouble();
+                    sb.AppendFormat("{0}{1} {2} = {3:f4}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
+                    a_Stream.AlignStream(4);
+                }
+                else if (varTypeStr == "bool")//bool
                 {
                     var value = a_Stream.ReadBoolean();
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     a_Stream.AlignStream(4);
                 }
-                else if (varTypeStr == "string")
+                else if (varTypeStr == "string")//string
                 {
                     var value = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
                     sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                     i += 3;//skip
                 }
-                else if (varTypeStr == "Array")
+                else if (varTypeStr == "Array")//Array
                 {
                     sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
                     var size = a_Stream.ReadInt32();
@@ -154,9 +165,8 @@ namespace Unity_Studio
             List<string> strs3 = new List<string>();
             for (int i = index + 2; i < strs.Length; i++)//skip int size
             {
-                var strs2 = strs[i].Split(' ');
-                var str = strs2[0].Split('\t');
-                var level2 = str.Length - 1;
+                var strs2 = strs[i].Split('\t');
+                var level2 = int.Parse(strs2[0]);
                 if (level2 <= level)
                 {
                     return strs3.ToArray();
