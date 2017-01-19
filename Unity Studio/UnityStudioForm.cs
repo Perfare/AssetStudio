@@ -1447,15 +1447,15 @@ namespace Unity_Studio
         {
             var mstream = new MemoryStream();
             var writer = new BinaryWriter(mstream);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Width), 0, m_Texture2D.astc_width, 0, 3);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Height), 0, m_Texture2D.astc_height, 0, 3);
-            writer.Write(m_Texture2D.astc_magicnum);
-            writer.Write(m_Texture2D.astc_x);
-            writer.Write(m_Texture2D.astc_y);
-            writer.Write(m_Texture2D.astc_z);
-            writer.Write(m_Texture2D.astc_width);
-            writer.Write(m_Texture2D.astc_height);
-            writer.Write(m_Texture2D.astc_length);
+            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Width), 0, m_Texture2D.xsize, 0, 3);
+            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Height), 0, m_Texture2D.ysize, 0, 3);
+            writer.Write(m_Texture2D.astc_magic);
+            writer.Write(m_Texture2D.blockdim_x);
+            writer.Write(m_Texture2D.blockdim_y);
+            writer.Write(m_Texture2D.blockdim_z);
+            writer.Write(m_Texture2D.xsize);
+            writer.Write(m_Texture2D.ysize);
+            writer.Write(m_Texture2D.zsize);
             writer.Write(m_Texture2D.image_data);
             var astcdata = mstream.ToArray();
             writer.Close();

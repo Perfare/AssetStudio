@@ -78,13 +78,13 @@ namespace Unity_Studio
         public int bytesOfKeyValueData = 0;
         //KTX End
         //ASTC Start
-        public byte[] astc_magicnum = { 0x13, 0xab, 0xa1, 0x5c };
-        public byte astc_x;
-        public byte astc_y;
-        public byte astc_z = 1;
-        public byte[] astc_width = new byte[3];
-        public byte[] astc_height = new byte[3];
-        public byte[] astc_length = new byte[3] { 1, 0, 0 };//I don't know what this is.
+        public byte[] astc_magic = { 0x13, 0xab, 0xa1, 0x5c };
+        public byte blockdim_x;
+        public byte blockdim_y;
+        public byte blockdim_z = 1;
+        public byte[] xsize = new byte[3];
+        public byte[] ysize = new byte[3];
+        public byte[] zsize = new byte[3] { 1, 0, 0 };
         //ASTC END
         //TextureConverter
         public int q_format;
@@ -523,43 +523,43 @@ namespace Unity_Studio
                     case TextureFormat.ASTC_RGB_4x4: //test pass
                     case TextureFormat.ASTC_RGBA_4x4: //test pass
                         {
-                            astc_x = 4;
-                            astc_y = 4;
+                            blockdim_x = 4;
+                            blockdim_y = 4;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_5x5: //test pass
                     case TextureFormat.ASTC_RGBA_5x5: //test pass
                         {
-                            astc_x = 5;
-                            astc_y = 5;
+                            blockdim_x = 5;
+                            blockdim_y = 5;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_6x6: //test pass
                     case TextureFormat.ASTC_RGBA_6x6: //test pass
                         {
-                            astc_x = 6;
-                            astc_y = 6;
+                            blockdim_x = 6;
+                            blockdim_y = 6;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_8x8: //test pass
                     case TextureFormat.ASTC_RGBA_8x8: //test pass
                         {
-                            astc_x = 8;
-                            astc_y = 8;
+                            blockdim_x = 8;
+                            blockdim_y = 8;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_10x10: //test pass
                     case TextureFormat.ASTC_RGBA_10x10: //test pass
                         {
-                            astc_x = 10;
-                            astc_y = 10;
+                            blockdim_x = 10;
+                            blockdim_y = 10;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_12x12: //test pass
                     case TextureFormat.ASTC_RGBA_12x12: //test pass
                         {
-                            astc_x = 12;
-                            astc_y = 12;
+                            blockdim_x = 12;
+                            blockdim_y = 12;
                             break;
                         }
                     case TextureFormat.ETC_RGB4_3DS:
