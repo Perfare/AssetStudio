@@ -422,7 +422,7 @@ namespace Unity_Studio
                 a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
 
                 int shapes_size = a_Stream.ReadInt32();
-                a_Stream.Position += shapes_size * 10; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
+                a_Stream.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
 
                 int channels_size = a_Stream.ReadInt32();
                 for (int c = 0; c < channels_size; c++)

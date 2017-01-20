@@ -15,7 +15,7 @@ It is the continuation of my Unity Importer script for 3ds Max, and comprises al
   * **TextAsset**
   * **Shader**
   * **MonoBehaviour**
-* Support convert almost all textures to bmp png or jpeg
+* Support convert almost all textures to bmp, png or jpeg
 * Support convert FSB file to wav
 * Export to FBX, with complete hierarchy, transformations, materials and textures. Geometry is exported with normals, tangents, UV coordinates, vertex colors and deformers. Skeleton nodes can be exported either as bones or dummy deformers..
 * Real-time preview window for the above-mentioned assets
@@ -36,7 +36,7 @@ Requirements:
 | Item                          | Action
 | :---------------------------- | :----------------------------
 | File -> Load file/folder      | Open Assetfiles and load their assets. Load file can also decompress and load bundle files straight into memory
-| File -> Extract bundle/folder | Extract Assetfiles from bundle files compressed with lzma or l4z
+| File -> Extract bundle/folder | Extract Assetfiles from bundle files compressed with lzma or lz4
 | Scene Hierarchy search box    | Search nodes using * and ? wildcards. Press Enter to loop through results or Ctrl+Enter to select all matching nodes
 | Asset List filter box         | Enter a keyword to filter the list of available assets; wildcards are added automatically
 | Diagnostics                   | press Ctrl+Alt+D to bring up a hidden menu and a new list
