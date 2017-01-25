@@ -6,17 +6,37 @@ using System.Windows.Forms;
 
 namespace Unity_Studio
 {
-    public class ClassStrStruct : ListViewItem
+    public class ClassStruct : ListViewItem
     {
         public int ID;
-        public string members;
-        public string members2;
+        public List<ClassMember> members;
+
+        public string membersstr
+        {
+            get
+            {
+                var sb = new StringBuilder();
+                foreach (var i in members)
+                {
+                    sb.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', i.Level)), i.Type, i.Name, i.Size);
+                }
+                return sb.ToString();
+            }
+        }
+    }
+
+    public class ClassMember
+    {
+        public int Level;
+        public string Type;
+        public string Name;
+        public int Size;
     }
 
     public class ClassIDReference
     {
         public string[] Names = new string[1121];
-        
+
         public ClassIDReference()
         {
             Names[1] = "GameObject";

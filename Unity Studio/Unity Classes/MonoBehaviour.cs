@@ -24,13 +24,12 @@ namespace Unity_Studio
             {
                 preloadData.extension = ".txt";
                 a_Stream.Position = preloadData.Offset;
-                ClassStrStruct classStructure;
+                ClassStruct classStructure;
                 if (sourceFile.ClassStructures.TryGetValue(preloadData.Type1, out classStructure))
                 {
-                    var member = classStructure.members2;
-                    var strs = member.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    var member = classStructure.members;
                     var sb = new StringBuilder();
-                    Read(sb, strs, a_Stream);
+                    Read(sb, member, a_Stream);
                     serializedText = sb.ToString();
                 }
                 else
@@ -60,14 +59,14 @@ namespace Unity_Studio
             }
         }
 
-        private void Read(StringBuilder sb, string[] strs, EndianStream a_Stream)
+        private void Read(StringBuilder sb, List<ClassMember> members, EndianStream a_Stream)
         {
-            for (int i = 0; i < strs.Length; i++)
+            for (int i = 0; i < members.Count; i++)
             {
-                var strs2 = strs[i].Split('\t');
-                var level = int.Parse(strs2[0]);
-                var varTypeStr = strs2[1];
-                var varNameStr = strs2[2];
+                var member = members[i];
+                var level = member.Level;
+                var varTypeStr = member.Type;
+                var varNameStr = member.Name;
                 if (varTypeStr == "SInt8")//sbyte
                 {
                     var value = a_Stream.ReadSByte();
@@ -145,13 +144,13 @@ namespace Unity_Studio
                     sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
                     var size = a_Stream.ReadInt32();
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), "int", "size", size);
-                    var array = ReadArray(strs, level, i);
+                    var array = ReadArray(members, level, i);
                     for (int j = 0; j < size; j++)
                     {
                         sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 1)), j);
                         Read(sb, array, a_Stream);
                     }
-                    i += array.Length + 1;//skip
+                    i += array.Count + 1;//skip
                 }
                 else
                 {
@@ -160,23 +159,23 @@ namespace Unity_Studio
             }
         }
 
-        private string[] ReadArray(string[] strs, int level, int index)
+        private List<ClassMember> ReadArray(List<ClassMember> members, int level, int index)
         {
-            List<string> strs3 = new List<string>();
-            for (int i = index + 2; i < strs.Length; i++)//skip int size
+            var member2 = new List<ClassMember>();
+            for (int i = index + 2; i < members.Count; i++)//skip int size
             {
-                var strs2 = strs[i].Split('\t');
-                var level2 = int.Parse(strs2[0]);
+                var member = members[i];
+                var level2 = member.Level;
                 if (level2 <= level)
                 {
-                    return strs3.ToArray();
+                    return member2;
                 }
                 else
                 {
-                    strs3.Add(strs[i]);
+                    member2.Add(member);
                 }
             }
-            return strs3.ToArray();
+            return member2;
         }
     }
 }

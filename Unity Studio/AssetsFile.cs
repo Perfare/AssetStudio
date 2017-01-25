@@ -26,7 +26,7 @@ namespace Unity_Studio
         public List<UnityShared> sharedAssetsList = new List<UnityShared>() { new UnityShared() };
         private ClassIDReference UnityClassID = new ClassIDReference();
 
-        public SortedDictionary<int, ClassStrStruct> ClassStructures = new SortedDictionary<int, ClassStrStruct>();
+        public SortedDictionary<int, ClassStruct> ClassStructures = new SortedDictionary<int, ClassStruct>();
 
         private bool baseDefinitions = false;
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
@@ -136,10 +136,10 @@ namespace Unity_Studio
                     a_Stream.Position += 20;
                     int memberCount = a_Stream.ReadInt32();
 
-                    StringBuilder cb = new StringBuilder();
+                    var cb = new List<ClassMember>();
                     for (int m = 0; m < memberCount; m++) { readBase(cb, 1); }
 
-                    var aClass = new ClassStrStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb.ToString() };
+                    var aClass = new ClassStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb };
                     aClass.SubItems.Add(classID.ToString());
                     ClassStructures.Add(classID, aClass);
                 }
@@ -246,7 +246,7 @@ namespace Unity_Studio
             }
         }
 
-        private void readBase(StringBuilder cb, int level)
+        private void readBase(List<ClassMember> cb, int level)
         {
             string varType = a_Stream.ReadStringToNull();
             string varName = a_Stream.ReadStringToNull();
@@ -260,7 +260,13 @@ namespace Unity_Studio
             int childrenCount = a_Stream.ReadInt32();
 
             //Debug.WriteLine(baseFormat + " " + baseName + " " + childrenCount);
-            cb.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level)), varType, varName, size);
+            cb.Add(new ClassMember()
+            {
+                Level = level - 1,
+                Type = varType,
+                Name = varName,
+                Size = size
+            });
             for (int i = 0; i < childrenCount; i++) { readBase(cb, level + 1); }
         }
 
@@ -397,8 +403,7 @@ namespace Unity_Studio
                 a_Stream.Position += varCount * 24;
                 string varStrings = Encoding.UTF8.GetString(a_Stream.ReadBytes(stringSize));
                 string className = "";
-                var classVarStr = new StringBuilder();
-                var classVarStr2 = new StringBuilder();//用来export
+                var classVar = new List<ClassMember>();
                 //build Class Structures
                 a_Stream.Position -= varCount * 24 + stringSize;
                 for (int i = 0; i < varCount; i++)
@@ -428,8 +433,13 @@ namespace Unity_Studio
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
                     else
                     {
-                        classVarStr.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', level - 1)), varTypeStr, varNameStr, size);
-                        classVarStr2.AppendFormat("{0}\t{1}\t{2}\r\n", level - 1, varTypeStr, varNameStr);
+                        classVar.Add(new ClassMember()
+                        {
+                            Level = level - 1,
+                            Type = varTypeStr,
+                            Name = varNameStr,
+                            Size = size
+                        });
                     }
 
                     //for (int t = 0; t < level; t++) { Debug.Write("\t"); }
@@ -437,7 +447,7 @@ namespace Unity_Studio
                 }
                 a_Stream.Position += stringSize;
 
-                var aClass = new ClassStrStruct() { ID = classID, Text = className, members = classVarStr.ToString(), members2 = classVarStr2.ToString() };
+                var aClass = new ClassStruct() { ID = classID, Text = className, members = classVar };
                 aClass.SubItems.Add(classID.ToString());
                 ClassStructures.Add(classID, aClass);
             }
