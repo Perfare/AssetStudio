@@ -41,7 +41,7 @@ namespace Unity_Studio
         private string[] fileTypes = new string[] { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
 
         Dictionary<string, Dictionary<string, string>> jsonMats;
-        Dictionary<string, SortedDictionary<int, ClassStrStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStrStruct>>();
+        Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
 
         private FMOD.System system = null;
         private FMOD.Sound sound = null;
@@ -533,7 +533,7 @@ namespace Unity_Studio
                                 string saveFile = versionPath + "\\" + uclass.Key + " " + uclass.Value.Text + ".txt";
                                 using (StreamWriter TXTwriter = new StreamWriter(saveFile))
                                 {
-                                    TXTwriter.Write(uclass.Value.members);
+                                    TXTwriter.Write(uclass.Value.membersstr);
                                 }
                             }
                         }
@@ -858,7 +858,7 @@ namespace Unity_Studio
                 //group class structures by versionv
                 foreach (var assetsFile in assetsfileList)
                 {
-                    SortedDictionary<int, ClassStrStruct> curVer;
+                    SortedDictionary<int, ClassStruct> curVer;
                     if (AllClassStructures.TryGetValue(assetsFile.m_Version, out curVer))
                     {
                         foreach (var uClass in assetsFile.ClassStructures)
@@ -1178,7 +1178,7 @@ namespace Unity_Studio
         {
             if (e.IsSelected)
             {
-                classTextBox.Text = ((ClassStrStruct)classesListView.SelectedItems[0]).members;
+                classTextBox.Text = ((ClassStruct)classesListView.SelectedItems[0]).membersstr;
             }
         }
 
@@ -1447,15 +1447,15 @@ namespace Unity_Studio
         {
             var mstream = new MemoryStream();
             var writer = new BinaryWriter(mstream);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Width), 0, m_Texture2D.astc_width, 0, 3);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Height), 0, m_Texture2D.astc_height, 0, 3);
-            writer.Write(m_Texture2D.astc_magicnum);
-            writer.Write(m_Texture2D.astc_x);
-            writer.Write(m_Texture2D.astc_y);
-            writer.Write(m_Texture2D.astc_z);
-            writer.Write(m_Texture2D.astc_width);
-            writer.Write(m_Texture2D.astc_height);
-            writer.Write(m_Texture2D.astc_length);
+            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Width), 0, m_Texture2D.xsize, 0, 3);
+            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Height), 0, m_Texture2D.ysize, 0, 3);
+            writer.Write(m_Texture2D.astc_magic);
+            writer.Write(m_Texture2D.blockdim_x);
+            writer.Write(m_Texture2D.blockdim_y);
+            writer.Write(m_Texture2D.blockdim_z);
+            writer.Write(m_Texture2D.xsize);
+            writer.Write(m_Texture2D.ysize);
+            writer.Write(m_Texture2D.zsize);
             writer.Write(m_Texture2D.image_data);
             var astcdata = mstream.ToArray();
             writer.Close();
