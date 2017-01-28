@@ -51,7 +51,7 @@ namespace Unity_Studio
             int tableSize = a_Stream.ReadInt32();
             int dataEnd = a_Stream.ReadInt32();
             fileGen = a_Stream.ReadInt32();
-            int dataOffset = a_Stream.ReadInt32();
+            uint dataOffset = a_Stream.ReadUInt32();
             sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
 
             switch (fileGen)
@@ -125,6 +125,7 @@ namespace Unity_Studio
                 case 16: platformStr = "Google NaCl"; break;
                 case 21: platformStr = "WP8"; break;
                 case 25: platformStr = "Linux"; break;
+                default: platformStr = "Unknown Platform"; break;
             }
 
             int baseCount = a_Stream.ReadInt32();
@@ -163,7 +164,7 @@ namespace Unity_Studio
                 AssetPreloadData asset = new AssetPreloadData();
                 if (fileGen < 14) { asset.m_PathID = a_Stream.ReadInt32(); }
                 else { asset.m_PathID = a_Stream.ReadInt64(); }
-                asset.Offset = a_Stream.ReadInt32();
+                asset.Offset = a_Stream.ReadUInt32();
                 asset.Offset += dataOffset;
                 asset.Size = a_Stream.ReadInt32();
                 if (fileGen > 15)
@@ -297,7 +298,7 @@ namespace Unity_Studio
             if (baseDefinitions)
             {
                 #region cmmon string array
-                string[] baseStrings = new string[1016];
+                string[] baseStrings = new string[1043];
                 baseStrings[0] = "AABB";
                 baseStrings[5] = "AnimationClip";
                 baseStrings[19] = "AnimationCurve";
@@ -397,6 +398,7 @@ namespace Unity_Studio
                 baseStrings[997] = "Vector3f";
                 baseStrings[1006] = "Vector4f";
                 baseStrings[1015] = "m_ScriptingClassIdentifier";
+                baseStrings[1042] = "Gradient";
                 #endregion
 
                 int varCount = a_Stream.ReadInt32();
@@ -420,7 +422,7 @@ namespace Unity_Studio
                     if (test == 0) //varType is an offset in the string block
                     { varTypeStr = varStrings.Substring(varTypeIndex, varStrings.IndexOf('\0', varTypeIndex) - varTypeIndex); }//substringToNull
                     else //varType is an index in an internal strig array
-                    { varTypeStr = baseStrings[varTypeIndex] != null ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
+                    { varTypeStr = ((varTypeIndex < baseStrings.Length) && (baseStrings[varTypeIndex] != null)) ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
 
                     ushort varNameIndex = a_Stream.ReadUInt16();
                     test = a_Stream.ReadUInt16();
