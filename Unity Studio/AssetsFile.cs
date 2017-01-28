@@ -49,7 +49,7 @@ namespace Unity_Studio
             int tableSize = a_Stream.ReadInt32();
             int dataEnd = a_Stream.ReadInt32();
             fileGen = a_Stream.ReadInt32();
-            int dataOffset = a_Stream.ReadInt32();
+            uint dataOffset = a_Stream.ReadUInt32();
             sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
 
             switch (fileGen)
@@ -123,6 +123,7 @@ namespace Unity_Studio
                 case 16: platformStr = "Google NaCl"; break;
                 case 21: platformStr = "WP8"; break;
                 case 25: platformStr = "Linux"; break;
+                default: platformStr = "Unknown Platform"; break;
             }
 
             int baseCount = a_Stream.ReadInt32();
@@ -161,7 +162,7 @@ namespace Unity_Studio
                 AssetPreloadData asset = new AssetPreloadData();
                 if (fileGen < 14) { asset.m_PathID = a_Stream.ReadInt32(); }
                 else { asset.m_PathID = a_Stream.ReadInt64(); }
-                asset.Offset = a_Stream.ReadInt32();
+                asset.Offset = a_Stream.ReadUInt32();
                 asset.Offset += dataOffset;
                 asset.Size = a_Stream.ReadInt32();
                 if (fileGen > 15)

@@ -655,7 +655,7 @@ namespace Unity_Studio
                 //progressBar1.Value = 0;
                 //progressBar1.Maximum = totalAssetCount;
                 SetProgressBarValue(0);
-                SetProgressBarMaximum(assetsfileList.Count);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.preloadTable.Values.Count));
 
                 string fileIDfmt = "D" + assetsfileList.Count.ToString().Length.ToString();
 
@@ -775,11 +775,10 @@ namespace Unity_Studio
                             }
                             assetsFile.exportableAssets.Add(asset);
                         }
+                        ProgressBarPerformStep();
                     }
-
                     exportableAssets.AddRange(assetsFile.exportableAssets);
                     //if (assetGroup.Items.Count > 0) { listView1.Groups.Add(assetGroup); }
-                    ProgressBarPerformStep();
                 }
 
                 visibleAssets = exportableAssets;
@@ -799,7 +798,7 @@ namespace Unity_Studio
                 //progressBar1.Value = 0;
                 //progressBar1.Maximum = totalTreeNodes;
                 SetProgressBarValue(0);
-                SetProgressBarMaximum(assetsfileList.Count);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count));
                 foreach (var assetsFile in assetsfileList)
                 {
                     StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
@@ -828,6 +827,7 @@ namespace Unity_Studio
                         }
 
                         parentNode.Nodes.Add(m_GameObject);
+                        ProgressBarPerformStep();
                     }
 
 
@@ -836,7 +836,6 @@ namespace Unity_Studio
                         fileNode.Text += " (no children)";
                     }
                     fileNodes.Add(fileNode);
-                    ProgressBarPerformStep();
                 }
                 //sceneTreeView.EndUpdate();
 
@@ -914,9 +913,8 @@ namespace Unity_Studio
                 }
                 StatusStripUpdate("Finished loading " + assetsfileList.Count.ToString() + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count).ToString() + " exportable assets.");
                 treeSearch.Select();
+                saveFolderDialog1.InitialDirectory = mainPath;
             }));
-
-            saveFolderDialog1.InitialDirectory = mainPath;
         }
 
         private void assetListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -1327,53 +1325,53 @@ namespace Unity_Studio
                 case 128: //Font
                     {
                         unityFont m_Font = new unityFont(asset, true);
-
-                        if (asset.extension != ".otf" && m_Font.m_FontData != null)
+                        if (m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
                             Marshal.Copy(m_Font.m_FontData, 0, data, m_Font.m_FontData.Length);
 
                             // We HAVE to do this to register the font to the system (Weird .NET bug !)
                             uint cFonts = 0;
-                            AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
-
-                            pfc = new System.Drawing.Text.PrivateFontCollection();
-                            pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
-                            Marshal.FreeCoTaskMem(data);
-
-                            if (pfc.Families.Length > 0)
+                            var re = AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
+                            if (re != IntPtr.Zero)
                             {
-                                //textPreviewBox.Font = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                                //textPreviewBox.Text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWYZ\r\n1234567890.:,;'\"(!?)+-*/=\r\nThe quick brown fox jumps over the lazy dog. 1234567890";
-                                fontPreviewBox.SelectionStart = 0;
-                                fontPreviewBox.SelectionLength = 80;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 81;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 138;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 195;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 252;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 309;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 366;
-                                fontPreviewBox.SelectionLength = 56;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
-                                fontPreviewBox.SelectionStart = 423;
-                                fontPreviewBox.SelectionLength = 55;
-                                fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
-                                fontPreviewBox.Visible = true;
+                                pfc = new PrivateFontCollection();
+                                pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
+                                Marshal.FreeCoTaskMem(data);
+                                if (pfc.Families.Length > 0)
+                                {
+                                    //textPreviewBox.Font = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                    //textPreviewBox.Text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWYZ\r\n1234567890.:,;'\"(!?)+-*/=\r\nThe quick brown fox jumps over the lazy dog. 1234567890";
+                                    fontPreviewBox.SelectionStart = 0;
+                                    fontPreviewBox.SelectionLength = 80;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 81;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 138;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 195;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 252;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 309;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 366;
+                                    fontPreviewBox.SelectionLength = 56;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
+                                    fontPreviewBox.SelectionStart = 423;
+                                    fontPreviewBox.SelectionLength = 55;
+                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
+                                    fontPreviewBox.Visible = true;
+                                }
+                                break;
                             }
                         }
-                        else { StatusStripUpdate("Unsupported font for preview. Try to export."); }
-
+                        StatusStripUpdate("Unsupported font for preview. Try to export.");
                         break;
                     }
                 #endregion

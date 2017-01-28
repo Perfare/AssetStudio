@@ -9,7 +9,7 @@ namespace Unity_Studio
     public class AssetPreloadData : ListViewItem
     {
         public long m_PathID;
-        public int Offset;
+        public uint Offset;
         public int Size;
         public int Type1;
         public ushort Type2;
