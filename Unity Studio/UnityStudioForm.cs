@@ -797,8 +797,8 @@ namespace Unity_Studio
 
                 //progressBar1.Value = 0;
                 //progressBar1.Maximum = totalTreeNodes;
-                SetProgressBarValue(0);
-                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count));
+                SetProgressBarValue(1);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count) + 1);
                 foreach (var assetsFile in assetsfileList)
                 {
                     StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
@@ -1115,7 +1115,7 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
-                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.exportSize.CompareTo(b.exportSize);
+                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Size.CompareTo(b.Size);
                     });
                     break;
                 case 1:
@@ -1123,13 +1123,13 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
-                        else return secondSortColumn == 2 ? a.exportSize.CompareTo(b.exportSize) : a.Text.CompareTo(b.Text);
+                        else return secondSortColumn == 2 ? a.Size.CompareTo(b.Size) : a.Text.CompareTo(b.Text);
                     });
                     break;
                 case 2:
                     visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        int xdiff = reverseSort ? b.exportSize.CompareTo(a.exportSize) : a.exportSize.CompareTo(b.exportSize);
+                        int xdiff = reverseSort ? b.Size.CompareTo(a.Size) : a.Size.CompareTo(b.Size);
                         if (xdiff != 0) return xdiff;
                         else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
                     });

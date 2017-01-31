@@ -570,7 +570,6 @@ namespace Unity_Studio
             else
             {
                 preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
-                preloadData.exportSize = image_data_size;
 
                 string type = m_TextureFormat.ToString();
                 preloadData.InfoText += type;
@@ -587,7 +586,7 @@ namespace Unity_Studio
                     case TextureFormat.DXT5:
                     case TextureFormat.RGBA4444:
                     case TextureFormat.BGRA32:
-                        preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                        preloadData.extension = ".dds"; break;
                     case TextureFormat.DXT1Crunched:
                     case TextureFormat.DXT5Crunched:
                         preloadData.extension = ".crn"; break;
@@ -600,7 +599,7 @@ namespace Unity_Studio
                     case TextureFormat.ETC2_RGB:
                     case TextureFormat.ETC2_RGBA1:
                     case TextureFormat.ETC2_RGBA8:
-                        preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                        preloadData.extension = ".pvr"; break;
                     case TextureFormat.RHalf:
                     case TextureFormat.RGHalf:
                     case TextureFormat.RGBAHalf:
@@ -617,7 +616,7 @@ namespace Unity_Studio
                     case TextureFormat.EAC_R_SIGNED:
                     case TextureFormat.EAC_RG:
                     case TextureFormat.EAC_RG_SIGNED:
-                        preloadData.extension = ".ktx"; preloadData.exportSize += 68; break;
+                        preloadData.extension = ".ktx"; break;
                     case TextureFormat.ASTC_RGB_4x4:
                     case TextureFormat.ASTC_RGB_5x5:
                     case TextureFormat.ASTC_RGB_6x6:
@@ -630,7 +629,7 @@ namespace Unity_Studio
                     case TextureFormat.ASTC_RGBA_8x8:
                     case TextureFormat.ASTC_RGBA_10x10:
                     case TextureFormat.ASTC_RGBA_12x12:
-                        preloadData.extension = ".astc"; preloadData.exportSize += 10; break;
+                        preloadData.extension = ".astc"; break;
                     default:
                         preloadData.extension = "_" + type + ".tex"; break;
                 }
@@ -653,7 +652,7 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
+                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
     }
