@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
+using Tao.DevIl;
 
 namespace Unity_Studio
 {
@@ -25,11 +27,13 @@ namespace Unity_Studio
         public int m_WrapMode;
         public int m_LightmapFormat;
         public int m_ColorSpace;
+        //image dataa
+        public int image_data_size;
+        public byte[] image_data;
         //m_StreamData
         public uint offset;
         public uint size;
         public string path;
-        public byte[] image_data;
 
         //DDS Start
         public byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
@@ -77,19 +81,14 @@ namespace Unity_Studio
         public int numberOfMipmapLevels = 1;
         public int bytesOfKeyValueData = 0;
         //KTX End
-        //ASTC Start
-        public byte[] astc_magic = { 0x13, 0xab, 0xa1, 0x5c };
-        public byte blockdim_x;
-        public byte blockdim_y;
-        public byte blockdim_z = 1;
-        public byte[] xsize = new byte[3];
-        public byte[] ysize = new byte[3];
-        public byte[] zsize = new byte[3] { 1, 0, 0 };
-        //ASTC END
         //TextureConverter
         public int q_format;
-        //Texture data
-        public int image_data_size;
+
+        [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void DecompressPVR(byte[] buffer, IntPtr bmp, int len);
+
+        [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type);
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -523,43 +522,37 @@ namespace Unity_Studio
                     case TextureFormat.ASTC_RGB_4x4: //test pass
                     case TextureFormat.ASTC_RGBA_4x4: //test pass
                         {
-                            blockdim_x = 4;
-                            blockdim_y = 4;
+                            pvrPixelFormat = 27;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_5x5: //test pass
                     case TextureFormat.ASTC_RGBA_5x5: //test pass
                         {
-                            blockdim_x = 5;
-                            blockdim_y = 5;
+                            pvrPixelFormat = 29;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_6x6: //test pass
                     case TextureFormat.ASTC_RGBA_6x6: //test pass
                         {
-                            blockdim_x = 6;
-                            blockdim_y = 6;
+                            pvrPixelFormat = 31;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_8x8: //test pass
                     case TextureFormat.ASTC_RGBA_8x8: //test pass
                         {
-                            blockdim_x = 8;
-                            blockdim_y = 8;
+                            pvrPixelFormat = 34;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_10x10: //test pass
                     case TextureFormat.ASTC_RGBA_10x10: //test pass
                         {
-                            blockdim_x = 10;
-                            blockdim_y = 10;
+                            pvrPixelFormat = 38;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_12x12: //test pass
                     case TextureFormat.ASTC_RGBA_12x12: //test pass
                         {
-                            blockdim_x = 12;
-                            blockdim_y = 12;
+                            pvrPixelFormat = 40;
                             break;
                         }
                     case TextureFormat.ETC_RGB4_3DS:
@@ -599,6 +592,18 @@ namespace Unity_Studio
                     case TextureFormat.ETC2_RGB:
                     case TextureFormat.ETC2_RGBA1:
                     case TextureFormat.ETC2_RGBA8:
+                    case TextureFormat.ASTC_RGB_4x4:
+                    case TextureFormat.ASTC_RGB_5x5:
+                    case TextureFormat.ASTC_RGB_6x6:
+                    case TextureFormat.ASTC_RGB_8x8:
+                    case TextureFormat.ASTC_RGB_10x10:
+                    case TextureFormat.ASTC_RGB_12x12:
+                    case TextureFormat.ASTC_RGBA_4x4:
+                    case TextureFormat.ASTC_RGBA_5x5:
+                    case TextureFormat.ASTC_RGBA_6x6:
+                    case TextureFormat.ASTC_RGBA_8x8:
+                    case TextureFormat.ASTC_RGBA_10x10:
+                    case TextureFormat.ASTC_RGBA_12x12:
                         preloadData.extension = ".pvr"; break;
                     case TextureFormat.RHalf:
                     case TextureFormat.RGHalf:
@@ -617,19 +622,6 @@ namespace Unity_Studio
                     case TextureFormat.EAC_RG:
                     case TextureFormat.EAC_RG_SIGNED:
                         preloadData.extension = ".ktx"; break;
-                    case TextureFormat.ASTC_RGB_4x4:
-                    case TextureFormat.ASTC_RGB_5x5:
-                    case TextureFormat.ASTC_RGB_6x6:
-                    case TextureFormat.ASTC_RGB_8x8:
-                    case TextureFormat.ASTC_RGB_10x10:
-                    case TextureFormat.ASTC_RGB_12x12:
-                    case TextureFormat.ASTC_RGBA_4x4:
-                    case TextureFormat.ASTC_RGBA_5x5:
-                    case TextureFormat.ASTC_RGBA_6x6:
-                    case TextureFormat.ASTC_RGBA_8x8:
-                    case TextureFormat.ASTC_RGBA_10x10:
-                    case TextureFormat.ASTC_RGBA_12x12:
-                        preloadData.extension = ".astc"; break;
                     default:
                         preloadData.extension = "_" + type + ".tex"; break;
                 }
@@ -654,6 +646,254 @@ namespace Unity_Studio
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
                 preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
+        }
+
+        public byte[] ConvertToContainer()
+        {
+            switch (m_TextureFormat)
+            {
+                case TextureFormat.Alpha8:
+                case TextureFormat.ARGB4444:
+                case TextureFormat.RGB24:
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.RGB565:
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT5:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.BGRA32:
+                    return ConvertToDDS();
+                case TextureFormat.YUY2:
+                case TextureFormat.PVRTC_RGB2:
+                case TextureFormat.PVRTC_RGBA2:
+                case TextureFormat.PVRTC_RGB4:
+                case TextureFormat.PVRTC_RGBA4:
+                case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC2_RGB:
+                case TextureFormat.ETC2_RGBA1:
+                case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.ASTC_RGB_4x4:
+                case TextureFormat.ASTC_RGB_5x5:
+                case TextureFormat.ASTC_RGB_6x6:
+                case TextureFormat.ASTC_RGB_8x8:
+                case TextureFormat.ASTC_RGB_10x10:
+                case TextureFormat.ASTC_RGB_12x12:
+                case TextureFormat.ASTC_RGBA_4x4:
+                case TextureFormat.ASTC_RGBA_5x5:
+                case TextureFormat.ASTC_RGBA_6x6:
+                case TextureFormat.ASTC_RGBA_8x8:
+                case TextureFormat.ASTC_RGBA_10x10:
+                case TextureFormat.ASTC_RGBA_12x12:
+                    return ConvertToPVR();
+                case TextureFormat.RHalf:
+                case TextureFormat.RGHalf:
+                case TextureFormat.RGBAHalf:
+                case TextureFormat.RFloat:
+                case TextureFormat.RGFloat:
+                case TextureFormat.RGBAFloat:
+                case TextureFormat.BC4:
+                case TextureFormat.BC5:
+                case TextureFormat.BC6H:
+                case TextureFormat.BC7:
+                case TextureFormat.ATC_RGB4:
+                case TextureFormat.ATC_RGBA8:
+                case TextureFormat.EAC_R:
+                case TextureFormat.EAC_R_SIGNED:
+                case TextureFormat.EAC_RG:
+                case TextureFormat.EAC_RG_SIGNED:
+                    return ConvertToKTX();
+                default:
+                    return image_data;
+            }
+        }
+
+        private byte[] ConvertToDDS()
+        {
+            var imageBuffer = new byte[128 + image_data_size];
+            dwMagic.CopyTo(imageBuffer, 0);
+            BitConverter.GetBytes(dwFlags).CopyTo(imageBuffer, 8);
+            BitConverter.GetBytes(m_Height).CopyTo(imageBuffer, 12);
+            BitConverter.GetBytes(m_Width).CopyTo(imageBuffer, 16);
+            BitConverter.GetBytes(dwPitchOrLinearSize).CopyTo(imageBuffer, 20);
+            BitConverter.GetBytes(dwMipMapCount).CopyTo(imageBuffer, 28);
+            BitConverter.GetBytes(dwSize).CopyTo(imageBuffer, 76);
+            BitConverter.GetBytes(dwFlags2).CopyTo(imageBuffer, 80);
+            BitConverter.GetBytes(dwFourCC).CopyTo(imageBuffer, 84);
+            BitConverter.GetBytes(dwRGBBitCount).CopyTo(imageBuffer, 88);
+            BitConverter.GetBytes(dwRBitMask).CopyTo(imageBuffer, 92);
+            BitConverter.GetBytes(dwGBitMask).CopyTo(imageBuffer, 96);
+            BitConverter.GetBytes(dwBBitMask).CopyTo(imageBuffer, 100);
+            BitConverter.GetBytes(dwABitMask).CopyTo(imageBuffer, 104);
+            BitConverter.GetBytes(dwCaps).CopyTo(imageBuffer, 108);
+            BitConverter.GetBytes(dwCaps2).CopyTo(imageBuffer, 112);
+            image_data.CopyTo(imageBuffer, 128);
+            return imageBuffer;
+        }
+
+        private byte[] ConvertToPVR()
+        {
+            var mstream = new MemoryStream();
+            using (var writer = new BinaryWriter(mstream))
+            {
+                writer.Write(pvrVersion);
+                writer.Write(pvrFlags);
+                writer.Write(pvrPixelFormat);
+                writer.Write(pvrColourSpace);
+                writer.Write(pvrChannelType);
+                writer.Write(m_Height);
+                writer.Write(m_Width);
+                writer.Write(pvrDepth);
+                writer.Write(pvrNumSurfaces);
+                writer.Write(pvrNumFaces);
+                writer.Write(dwMipMapCount);
+                writer.Write(pvrMetaDataSize);
+                writer.Write(image_data);
+                return mstream.ToArray();
+            }
+        }
+
+        private byte[] ConvertToKTX()
+        {
+            var mstream = new MemoryStream();
+            using (var writer = new BinaryWriter(mstream))
+            {
+                writer.Write(KTXHeader.IDENTIFIER);
+                writer.Write(KTXHeader.ENDIANESS_LE);
+                writer.Write(glType);
+                writer.Write(glTypeSize);
+                writer.Write(glFormat);
+                writer.Write(glInternalFormat);
+                writer.Write(glBaseInternalFormat);
+                writer.Write(m_Width);
+                writer.Write(m_Height);
+                writer.Write(pixelDepth);
+                writer.Write(numberOfArrayElements);
+                writer.Write(numberOfFaces);
+                writer.Write(numberOfMipmapLevels);
+                writer.Write(bytesOfKeyValueData);
+                writer.Write(image_data_size);
+                writer.Write(image_data);
+                return mstream.ToArray();
+            }
+        }
+
+        public Bitmap ConvertToBitmap(bool flip)
+        {
+            Bitmap bitmap = null;
+            switch (m_TextureFormat)
+            {
+                case TextureFormat.Alpha8:
+                case TextureFormat.ARGB4444:
+                case TextureFormat.RGB24:
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.RGB565:
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT5:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.BGRA32:
+                    bitmap = DDSToBitmap(ConvertToDDS());
+                    break;
+                case TextureFormat.YUY2:
+                case TextureFormat.PVRTC_RGB2:
+                case TextureFormat.PVRTC_RGBA2:
+                case TextureFormat.PVRTC_RGB4:
+                case TextureFormat.PVRTC_RGBA4:
+                case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC2_RGB:
+                case TextureFormat.ETC2_RGBA1:
+                case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.ASTC_RGB_4x4:
+                case TextureFormat.ASTC_RGB_5x5:
+                case TextureFormat.ASTC_RGB_6x6:
+                case TextureFormat.ASTC_RGB_8x8:
+                case TextureFormat.ASTC_RGB_10x10:
+                case TextureFormat.ASTC_RGB_12x12:
+                case TextureFormat.ASTC_RGBA_4x4:
+                case TextureFormat.ASTC_RGBA_5x5:
+                case TextureFormat.ASTC_RGBA_6x6:
+                case TextureFormat.ASTC_RGBA_8x8:
+                case TextureFormat.ASTC_RGBA_10x10:
+                case TextureFormat.ASTC_RGBA_12x12:
+                    bitmap = PVRToBitmap(ConvertToPVR());
+                    break;
+                case TextureFormat.RHalf:
+                case TextureFormat.RGHalf:
+                case TextureFormat.RGBAHalf:
+                case TextureFormat.RFloat:
+                case TextureFormat.RGFloat:
+                case TextureFormat.RGBAFloat:
+                case TextureFormat.ATC_RGB4:
+                case TextureFormat.ATC_RGBA8:
+                case TextureFormat.EAC_R:
+                case TextureFormat.EAC_R_SIGNED:
+                case TextureFormat.EAC_RG:
+                case TextureFormat.EAC_RG_SIGNED:
+                    bitmap = TextureConverter();
+                    break;
+            }
+            if (bitmap != null && flip)
+                bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            return bitmap;
+        }
+
+        private static Bitmap DDSToBitmap(byte[] DDSData)
+        {
+            // Create a DevIL image "name" (which is actually a number)
+            int img_name;
+            Il.ilGenImages(1, out img_name);
+            Il.ilBindImage(img_name);
+
+            // Load the DDS file into the bound DevIL image
+            Il.ilLoadL(Il.IL_DDS, DDSData, DDSData.Length);
+
+            // Set a few size variables that will simplify later code
+
+            var ImgWidth = Il.ilGetInteger(Il.IL_IMAGE_WIDTH);
+            var ImgHeight = Il.ilGetInteger(Il.IL_IMAGE_HEIGHT);
+            var rect = new Rectangle(0, 0, ImgWidth, ImgHeight);
+
+            // Convert the DevIL image to a pixel byte array to copy into Bitmap
+            Il.ilConvertImage(Il.IL_BGRA, Il.IL_UNSIGNED_BYTE);
+
+            // Create a Bitmap to copy the image into, and prepare it to get data
+            var bmp = new Bitmap(ImgWidth, ImgHeight);
+            var bmd = bmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+            // Copy the pixel byte array from the DevIL image to the Bitmap
+            Il.ilCopyPixels(0, 0, 0,
+              Il.ilGetInteger(Il.IL_IMAGE_WIDTH),
+              Il.ilGetInteger(Il.IL_IMAGE_HEIGHT),
+              1, Il.IL_BGRA, Il.IL_UNSIGNED_BYTE,
+              bmd.Scan0);
+
+            // Clean up and return Bitmap
+            Il.ilDeleteImages(1, ref img_name);
+            bmp.UnlockBits(bmd);
+            return bmp;
+        }
+
+        private Bitmap PVRToBitmap(byte[] pvrdata)
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            var len = Math.Abs(bmd.Stride) * bmd.Height;
+            DecompressPVR(pvrdata, bmd.Scan0, len);
+            bitmap.UnlockBits(bmd);
+            return bitmap;
+        }
+
+        private Bitmap TextureConverter()
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            Ponvert(image_data, bmd.Scan0, m_Width, m_Height, image_data_size, q_format);
+            bitmap.UnlockBits(bmd);
+            //if (glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG)
+            //    FixAlpha(bitmap);
+            return bitmap;
         }
     }
 

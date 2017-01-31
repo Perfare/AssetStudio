@@ -13,7 +13,6 @@ using System.Drawing.Imaging;
 using System.Web.Script.Serialization;
 using System.Diagnostics;
 using System.Drawing.Text;
-using Tao.DevIl;
 using System.Threading.Tasks;
 
 /*TODO
@@ -73,12 +72,6 @@ namespace Unity_Studio
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
-
-        [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void DecompressPVR(byte[] buffer, IntPtr bmp, int len);
-
-        [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type);
 
 
         private void loadFile_Click(object sender, System.EventArgs e)
@@ -1190,55 +1183,8 @@ namespace Unity_Studio
                     {
                         if (imageTexture != null)
                             imageTexture.Dispose();
-                        Texture2D m_Texture2D = new Texture2D(asset, true);
-                        if (asset.extension == ".dds")
-                        {
-                            byte[] imageBuffer = Texture2DToDDS(m_Texture2D);
-                            imageTexture = DDSToBMP(imageBuffer);
-                            imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                        }
-                        else if (asset.extension == ".pvr")
-                        {
-                            var pvrdata = Texture2DToPVR(m_Texture2D);
-                            imageTexture = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
-                            Rectangle rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
-                            BitmapData bmd = imageTexture.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                            int len = Math.Abs(bmd.Stride) * bmd.Height;
-                            DecompressPVR(pvrdata, bmd.Scan0, len);
-                            imageTexture.UnlockBits(bmd);
-                            imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                        }
-                        else if (asset.extension == ".astc")
-                        {
-                            string tempastcfilepath = Path.GetTempFileName();
-                            string temptgafilepath = tempastcfilepath.Replace(".tmp", ".tga");
-                            File.WriteAllBytes(tempastcfilepath, Texture2DToASTC(m_Texture2D));
-                            Execute("astcenc.exe -d " + tempastcfilepath + " " + temptgafilepath);
-                            File.Delete(tempastcfilepath);
-                            if (File.Exists(temptgafilepath))
-                            {
-                                var tempddsfile = File.ReadAllBytes(temptgafilepath);
-                                File.Delete(temptgafilepath);
-                                imageTexture = TGAToBMP(tempddsfile);
-                                imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                            }
-                        }
-                        else if (asset.extension == ".ktx")
-                        {
-                            imageTexture = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
-                            var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
-                            BitmapData bmd = imageTexture.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                            Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
-                            imageTexture.UnlockBits(bmd);
-                            if (m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RED || m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RG)
-                                FixAlpha(imageTexture);
-                            imageTexture.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Unsupported image for preview. Can only export the texture file.");
-                            imageTexture = null;
-                        }
+                        var m_Texture2D = new Texture2D(asset, true);
+                        imageTexture = m_Texture2D.ConvertToBitmap(true);
                         if (imageTexture != null)
                         {
                             previewPanel.BackgroundImage = imageTexture;
@@ -1246,6 +1192,10 @@ namespace Unity_Studio
                                 previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
                             else
                                 previewPanel.BackgroundImageLayout = ImageLayout.Center;
+                        }
+                        else
+                        {
+                            StatusStripUpdate("Unsupported image for preview. Can only export the texture file.");
                         }
                         break;
                     }
@@ -1381,182 +1331,6 @@ namespace Unity_Studio
                         break;
                     }
             }
-        }
-
-        private void FixAlpha(Bitmap imageTexture)
-        {
-            for (int y = 0; y < imageTexture.Height; y++)
-            {
-                for (int x = 0; x < imageTexture.Width; x++)
-                {
-                    var color = imageTexture.GetPixel(x, y);
-                    color = Color.FromArgb(255, color.R, color.G, color.B);
-                    imageTexture.SetPixel(x, y, color);
-                }
-            }
-        }
-
-        private byte[] Texture2DToDDS(Texture2D m_Texture2D)
-        {
-            byte[] imageBuffer = new byte[128 + m_Texture2D.image_data_size];
-            m_Texture2D.dwMagic.CopyTo(imageBuffer, 0);
-            BitConverter.GetBytes(m_Texture2D.dwFlags).CopyTo(imageBuffer, 8);
-            BitConverter.GetBytes(m_Texture2D.m_Height).CopyTo(imageBuffer, 12);
-            BitConverter.GetBytes(m_Texture2D.m_Width).CopyTo(imageBuffer, 16);
-            BitConverter.GetBytes(m_Texture2D.dwPitchOrLinearSize).CopyTo(imageBuffer, 20);
-            BitConverter.GetBytes(m_Texture2D.dwMipMapCount).CopyTo(imageBuffer, 28);
-            BitConverter.GetBytes(m_Texture2D.dwSize).CopyTo(imageBuffer, 76);
-            BitConverter.GetBytes(m_Texture2D.dwFlags2).CopyTo(imageBuffer, 80);
-            BitConverter.GetBytes(m_Texture2D.dwFourCC).CopyTo(imageBuffer, 84);
-            BitConverter.GetBytes(m_Texture2D.dwRGBBitCount).CopyTo(imageBuffer, 88);
-            BitConverter.GetBytes(m_Texture2D.dwRBitMask).CopyTo(imageBuffer, 92);
-            BitConverter.GetBytes(m_Texture2D.dwGBitMask).CopyTo(imageBuffer, 96);
-            BitConverter.GetBytes(m_Texture2D.dwBBitMask).CopyTo(imageBuffer, 100);
-            BitConverter.GetBytes(m_Texture2D.dwABitMask).CopyTo(imageBuffer, 104);
-            BitConverter.GetBytes(m_Texture2D.dwCaps).CopyTo(imageBuffer, 108);
-            BitConverter.GetBytes(m_Texture2D.dwCaps2).CopyTo(imageBuffer, 112);
-            m_Texture2D.image_data.CopyTo(imageBuffer, 128);
-            return imageBuffer;
-        }
-
-        private byte[] Texture2DToPVR(Texture2D m_Texture2D)
-        {
-            var mstream = new MemoryStream();
-            BinaryWriter writer = new BinaryWriter(mstream);
-            writer.Write(m_Texture2D.pvrVersion);
-            writer.Write(m_Texture2D.pvrFlags);
-            writer.Write(m_Texture2D.pvrPixelFormat);
-            writer.Write(m_Texture2D.pvrColourSpace);
-            writer.Write(m_Texture2D.pvrChannelType);
-            writer.Write(m_Texture2D.m_Height);
-            writer.Write(m_Texture2D.m_Width);
-            writer.Write(m_Texture2D.pvrDepth);
-            writer.Write(m_Texture2D.pvrNumSurfaces);
-            writer.Write(m_Texture2D.pvrNumFaces);
-            writer.Write(m_Texture2D.dwMipMapCount);
-            writer.Write(m_Texture2D.pvrMetaDataSize);
-            writer.Write(m_Texture2D.image_data);
-            var pvrdata = mstream.ToArray();
-            writer.Close();
-            return pvrdata;
-        }
-
-        private byte[] Texture2DToASTC(Texture2D m_Texture2D)
-        {
-            var mstream = new MemoryStream();
-            var writer = new BinaryWriter(mstream);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Width), 0, m_Texture2D.xsize, 0, 3);
-            Array.Copy(BitConverter.GetBytes(m_Texture2D.m_Height), 0, m_Texture2D.ysize, 0, 3);
-            writer.Write(m_Texture2D.astc_magic);
-            writer.Write(m_Texture2D.blockdim_x);
-            writer.Write(m_Texture2D.blockdim_y);
-            writer.Write(m_Texture2D.blockdim_z);
-            writer.Write(m_Texture2D.xsize);
-            writer.Write(m_Texture2D.ysize);
-            writer.Write(m_Texture2D.zsize);
-            writer.Write(m_Texture2D.image_data);
-            var astcdata = mstream.ToArray();
-            writer.Close();
-            return astcdata;
-        }
-
-        private byte[] Texture2DToKTX(Texture2D m_Texture2D)
-        {
-            var mstream = new MemoryStream();
-            var writer = new BinaryWriter(mstream);
-            writer.Write(KTXHeader.IDENTIFIER);
-            writer.Write(KTXHeader.ENDIANESS_LE);
-            writer.Write(m_Texture2D.glType);
-            writer.Write(m_Texture2D.glTypeSize);
-            writer.Write(m_Texture2D.glFormat);
-            writer.Write(m_Texture2D.glInternalFormat);
-            writer.Write(m_Texture2D.glBaseInternalFormat);
-            writer.Write(m_Texture2D.m_Width);
-            writer.Write(m_Texture2D.m_Height);
-            writer.Write(m_Texture2D.pixelDepth);
-            writer.Write(m_Texture2D.numberOfArrayElements);
-            writer.Write(m_Texture2D.numberOfFaces);
-            writer.Write(m_Texture2D.numberOfMipmapLevels);
-            writer.Write(m_Texture2D.bytesOfKeyValueData);
-            writer.Write(m_Texture2D.image_data_size);
-            writer.Write(m_Texture2D.image_data);
-            var ktxdata = mstream.ToArray();
-            writer.Close();
-            return ktxdata;
-        }
-
-        public static Bitmap DDSToBMP(byte[] DDSData)
-        {
-            // Create a DevIL image "name" (which is actually a number)
-            int img_name;
-            Il.ilGenImages(1, out img_name);
-            Il.ilBindImage(img_name);
-
-            // Load the DDS file into the bound DevIL image
-            Il.ilLoadL(Il.IL_DDS, DDSData, DDSData.Length);
-
-            // Set a few size variables that will simplify later code
-
-            int ImgWidth = Il.ilGetInteger(Il.IL_IMAGE_WIDTH);
-            int ImgHeight = Il.ilGetInteger(Il.IL_IMAGE_HEIGHT);
-            Rectangle rect = new Rectangle(0, 0, ImgWidth, ImgHeight);
-
-            // Convert the DevIL image to a pixel byte array to copy into Bitmap
-            Il.ilConvertImage(Il.IL_BGRA, Il.IL_UNSIGNED_BYTE);
-
-            // Create a Bitmap to copy the image into, and prepare it to get data
-            Bitmap bmp = new Bitmap(ImgWidth, ImgHeight);
-            BitmapData bmd =
-              bmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            // Copy the pixel byte array from the DevIL image to the Bitmap
-            Il.ilCopyPixels(0, 0, 0,
-              Il.ilGetInteger(Il.IL_IMAGE_WIDTH),
-              Il.ilGetInteger(Il.IL_IMAGE_HEIGHT),
-              1, Il.IL_BGRA, Il.IL_UNSIGNED_BYTE,
-              bmd.Scan0);
-
-            // Clean up and return Bitmap
-            Il.ilDeleteImages(1, ref img_name);
-            bmp.UnlockBits(bmd);
-            return bmp;
-        }
-
-        public static Bitmap TGAToBMP(byte[] TextureData)
-        {
-            // Create a DevIL image "name" (which is actually a number)
-            int img_name;
-            Il.ilGenImages(1, out img_name);
-            Il.ilBindImage(img_name);
-
-            // Load the TGA file into the bound DevIL image
-            Il.ilLoadL(Il.IL_TGA, TextureData, TextureData.Length);
-
-            // Set a few size variables that will simplify later code
-
-            int ImgWidth = Il.ilGetInteger(Il.IL_IMAGE_WIDTH);
-            int ImgHeight = Il.ilGetInteger(Il.IL_IMAGE_HEIGHT);
-            Rectangle rect = new Rectangle(0, 0, ImgWidth, ImgHeight);
-
-            // Convert the DevIL image to a pixel byte array to copy into Bitmap
-            Il.ilConvertImage(Il.IL_BGRA, Il.IL_UNSIGNED_BYTE);
-
-            // Create a Bitmap to copy the image into, and prepare it to get data
-            Bitmap bmp = new Bitmap(ImgWidth, ImgHeight);
-            BitmapData bmd =
-              bmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            // Copy the pixel byte array from the DevIL image to the Bitmap
-            Il.ilCopyPixels(0, 0, 0,
-              Il.ilGetInteger(Il.IL_IMAGE_WIDTH),
-              Il.ilGetInteger(Il.IL_IMAGE_HEIGHT),
-              1, Il.IL_BGRA, Il.IL_UNSIGNED_BYTE,
-              bmd.Scan0);
-
-            // Clean up and return Bitmap
-            Il.ilDeleteImages(1, ref img_name);
-            bmp.UnlockBits(bmd);
-            return bmp;
         }
 
         private void FMODinit()
@@ -2629,10 +2403,9 @@ namespace Unity_Studio
                 foreach (var TexturePD in Textures)
                 {
                     //TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
-                    string texFilename = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\" + TexturePD.Text;
-                    StatusStripUpdate("Exporting Texture2D: " + Path.GetFileName(texFilename));
-                    ExportTexture(TexturePD, texFilename, TexturePD.extension, false);
-                    texFilename += ".png";//必须是png文件
+                    string texPathName = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\";
+                    ExportTexture(TexturePD, texPathName, false);
+                    texPathName += TexturePD.Text + ".png";//必须是png文件
                     ob.AppendFormat("\n\tTexture: 7{0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"TextureVideoClip\"");
                     ob.Append("\n\t\tVersion: 202");
@@ -2642,17 +2415,17 @@ namespace Unity_Studio
                     ob.Append("\n\t\t\tP: \"UseMaterial\", \"bool\", \"\", \"\",1");
                     ob.Append("\n\t\t}");
                     ob.AppendFormat("\n\t\tMedia: \"Video::{0}\"", TexturePD.Text);
-                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texFilename);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texFilename));
+                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPathName);
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPathName));
                     ob.Append("\n\t}");
 
                     ob.AppendFormat("\n\tVideo: 8{0}, \"Video::{1}\", \"Clip\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"Clip\"");
                     ob.Append("\n\t\tProperties70:  {");
-                    ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texFilename);
+                    ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texPathName);
                     ob.Append("\n\t\t}");
-                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texFilename);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texFilename));
+                    ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPathName);
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPathName));
                     ob.Append("\n\t}");
 
                     //connect video to texture
@@ -3151,7 +2924,7 @@ namespace Unity_Studio
                         switch (asset.Type2)
                         {
                             case 28:
-                                if (ExportTexture(asset, exportpath + asset.Text, asset.extension, true))
+                                if (ExportTexture(asset, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
@@ -3235,111 +3008,35 @@ namespace Unity_Studio
             File.WriteAllBytes(exportFilepath, bytes);
         }
 
-        private bool ExportTexture(AssetPreloadData asset, string exportFilename, string exportFileextension, bool flip)
+        private bool ExportTexture(AssetPreloadData asset, string exportPathName, bool flip)
         {
-            ImageFormat format = null;
-            var convert = (bool)Properties.Settings.Default["convertTexture"];
-            var oldextension = exportFileextension;
-            if (convert && exportFileextension != ".tex")
-            {
-                string str = Properties.Settings.Default["convertType"] as string;
-                exportFileextension = "." + str.ToLower();
-                if (str == "BMP")
-                    format = ImageFormat.Bmp;
-                else if (str == "PNG")
-                    format = ImageFormat.Png;
-                else if (str == "JPEG")
-                    format = ImageFormat.Jpeg;
-            }
-            var exportFullname = exportFilename + exportFileextension;
-            if (ExportFileExists(exportFullname, "Texture2D"))
-                return false;
             var m_Texture2D = new Texture2D(asset, true);
-            if (oldextension == ".dds")
+            var convert = (bool)Properties.Settings.Default["convertTexture"];
+            if (convert)
             {
-                byte[] imageBuffer = Texture2DToDDS(m_Texture2D);
-                if (convert)
+                ImageFormat format = null;
+                var ext = (string)Properties.Settings.Default["convertType"];
+                if (ext == "BMP")
+                    format = ImageFormat.Bmp;
+                else if (ext == "PNG")
+                    format = ImageFormat.Png;
+                else if (ext == "JPEG")
+                    format = ImageFormat.Jpeg;
+                var exportFullName = exportPathName + asset.Text + "." + ext.ToLower();
+                if (ExportFileExists(exportFullName, asset.TypeString))
+                    return false;
+                var bitmap = m_Texture2D.ConvertToBitmap(flip);
+                if (bitmap != null)
                 {
-                    var bitmap = DDSToBMP(imageBuffer);
-                    if (flip)
-                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    bitmap.Save(exportFullname, format);
-                }
-                else
-                {
-                    File.WriteAllBytes(exportFullname, imageBuffer);
+                    bitmap.Save(exportFullName, format);
+                    bitmap.Dispose();
+                    return true;
                 }
             }
-            else if (oldextension == ".pvr")
-            {
-                var pvrdata = Texture2DToPVR(m_Texture2D);
-                if (convert)
-                {
-                    var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
-                    Rectangle rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
-                    BitmapData bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                    int len = Math.Abs(bmd.Stride) * bmd.Height;
-                    DecompressPVR(pvrdata, bmd.Scan0, len);
-                    bitmap.UnlockBits(bmd);
-                    if (flip)
-                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    bitmap.Save(exportFullname, format);
-                }
-                else
-                {
-                    File.WriteAllBytes(exportFullname, pvrdata);
-                }
-            }
-            else if (oldextension == ".astc")
-            {
-                var astcdata = Texture2DToASTC(m_Texture2D);
-                if (convert)
-                {
-                    string tempastcfilepath = Path.GetTempFileName();
-                    string temptgafilepath = tempastcfilepath.Replace(".tmp", ".tga");
-                    File.WriteAllBytes(tempastcfilepath, astcdata);
-                    Execute("astcenc.exe -d " + tempastcfilepath + " " + temptgafilepath);
-                    if (File.Exists(temptgafilepath))
-                    {
-                        var tempddsfile = File.ReadAllBytes(temptgafilepath);
-                        File.Delete(tempastcfilepath);
-                        File.Delete(temptgafilepath);
-                        var bitmap = TGAToBMP(tempddsfile);
-                        if (flip)
-                            bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                        bitmap.Save(exportFullname, format);
-                    }
-                }
-                else
-                {
-                    File.WriteAllBytes(exportFullname, astcdata);
-                }
-            }
-            else if (oldextension == ".ktx")
-            {
-                if (convert)
-                {
-                    var bitmap = new Bitmap(m_Texture2D.m_Width, m_Texture2D.m_Height);
-                    var rect = new Rectangle(0, 0, m_Texture2D.m_Width, m_Texture2D.m_Height);
-                    var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-                    Ponvert(m_Texture2D.image_data, bmd.Scan0, m_Texture2D.m_Width, m_Texture2D.m_Height, m_Texture2D.image_data_size, m_Texture2D.q_format);
-                    bitmap.UnlockBits(bmd);
-                    if (m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RED || m_Texture2D.glBaseInternalFormat == KTXHeader.GL_RG)
-                        FixAlpha(bitmap);
-                    if (flip)
-                        bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    bitmap.Save(exportFullname, format);
-                }
-                else
-                {
-                    var ktxdata = Texture2DToKTX(m_Texture2D);
-                    File.WriteAllBytes(exportFullname, ktxdata);
-                }
-            }
-            else
-            {
-                File.WriteAllBytes(exportFullname, m_Texture2D.image_data);
-            }
+            var exportFullName2 = exportPathName + asset.Text + asset.extension;
+            if (ExportFileExists(exportFullName2, asset.TypeString))
+                return false;
+            File.WriteAllBytes(exportFullName2, m_Texture2D.ConvertToContainer());
             return true;
         }
 
@@ -3572,47 +3269,6 @@ namespace Unity_Studio
             Properties.Settings.Default.Save();
 
             foreach (var assetsFile in assetsfileList) { assetsFile.a_Stream.Dispose(); } //is this needed?*/
-        }
-
-        private string Execute(string command, int seconds = 30000)
-        {
-            string output = ""; //输出字符串  
-            if (command != null && !command.Equals(""))
-            {
-                Process process = new Process();//创建进程对象  
-                ProcessStartInfo startInfo = new ProcessStartInfo();
-                startInfo.FileName = "cmd.exe";//设定需要执行的命令  
-                startInfo.Arguments = "/C " + command;//“/C”表示执行完命令后马上退出  
-                startInfo.UseShellExecute = false;//不使用系统外壳程序启动  
-                startInfo.RedirectStandardInput = false;//不重定向输入  
-                startInfo.RedirectStandardOutput = true; //重定向输出  
-                startInfo.CreateNoWindow = true;//不创建窗口  
-                process.StartInfo = startInfo;
-                try
-                {
-                    if (process.Start())//开始进程  
-                    {
-                        if (seconds == 0)
-                        {
-                            process.WaitForExit();//这里无限等待进程结束  
-                        }
-                        else
-                        {
-                            process.WaitForExit(seconds); //等待进程结束，等待时间为指定的毫秒  
-                        }
-                        //output = process.StandardOutput.ReadToEnd();//读取进程的输出  
-                    }
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    if (process != null)
-                        process.Close();
-                }
-            }
-            return output;
         }
     }
 }
