@@ -201,7 +201,6 @@ namespace Unity_Studio
                             }
                             image_data = bytes;
                             image_data_size = image_data_size * 4;
-                            bytes = null;
                             dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
                             dwRBitMask = 0xFF00;
@@ -281,7 +280,25 @@ namespace Unity_Studio
                             break;
                         }
                     case TextureFormat.R16:
-                        break;
+                        {
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data.Length * 2];
+                            for (var i = 0; i < image_data.Length; i += 2)
+                            {
+                                float f = Half.ToHalf(image_data, i);
+                                BGRA32[i * 2 + 2] = (byte)Math.Ceiling(f * 255);//R
+                                BGRA32[i * 2 + 3] = 255;//A
+                            }
+                            image_data = BGRA32;
+                            image_data_size *= 2;
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
+                            break;
+                        }
                     case TextureFormat.DXT1: //test pass
                         {
                             if (sourceFile.platform == 11) //X360 only, PS3 not
@@ -575,6 +592,7 @@ namespace Unity_Studio
                     case TextureFormat.RGBA32:
                     case TextureFormat.ARGB32:
                     case TextureFormat.RGB565:
+                    case TextureFormat.R16:
                     case TextureFormat.DXT1:
                     case TextureFormat.DXT5:
                     case TextureFormat.RGBA4444:
@@ -658,6 +676,7 @@ namespace Unity_Studio
                 case TextureFormat.RGBA32:
                 case TextureFormat.ARGB32:
                 case TextureFormat.RGB565:
+                case TextureFormat.R16:
                 case TextureFormat.DXT1:
                 case TextureFormat.DXT5:
                 case TextureFormat.RGBA4444:
@@ -788,6 +807,7 @@ namespace Unity_Studio
                 case TextureFormat.RGBA32:
                 case TextureFormat.ARGB32:
                 case TextureFormat.RGB565:
+                case TextureFormat.R16:
                 case TextureFormat.DXT1:
                 case TextureFormat.DXT5:
                 case TextureFormat.RGBA4444:
