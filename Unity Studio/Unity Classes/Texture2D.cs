@@ -35,59 +35,67 @@ namespace Unity_Studio
         public string path;
 
         //DDS Start
-        public byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
-        public int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
+        private byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
+        private int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
         //public int dwHeight; m_Height
         //public int dwWidth; m_Width
-        public int dwPitchOrLinearSize = 0x0;
-        public int dwMipMapCount = 0x1;
-        public int dwSize = 0x20;
-        public int dwFlags2;
-        public int dwFourCC = 0x0;
-        public int dwRGBBitCount;
-        public int dwRBitMask;
-        public int dwGBitMask;
-        public int dwBBitMask;
-        public int dwABitMask;
-        public int dwCaps = 0x1000;
-        public int dwCaps2 = 0x0;
+        private int dwPitchOrLinearSize = 0x0;
+        private int dwMipMapCount = 0x1;
+        private int dwSize = 0x20;
+        private int dwFlags2;
+        private int dwFourCC = 0x0;
+        private int dwRGBBitCount;
+        private int dwRBitMask;
+        private int dwGBitMask;
+        private int dwBBitMask;
+        private int dwABitMask;
+        private int dwCaps = 0x1000;
+        private int dwCaps2 = 0x0;
         //DDS End
         //PVR Start
-        public int pvrVersion = 0x03525650;
-        public int pvrFlags = 0x0;
-        public long pvrPixelFormat;
-        public int pvrColourSpace = 0x0;
-        public int pvrChannelType = 0x0;
+        private int pvrVersion = 0x03525650;
+        private int pvrFlags = 0x0;
+        private long pvrPixelFormat;
+        private int pvrColourSpace = 0x0;
+        private int pvrChannelType = 0x0;
         //public int pvrHeight; m_Height
         //public int pvrWidth; m_Width
-        public int pvrDepth = 0x1;
-        public int pvrNumSurfaces = 0x1; //For texture arrays
-        public int pvrNumFaces = 0x1; //For cube maps
+        private int pvrDepth = 0x1;
+        private int pvrNumSurfaces = 0x1; //For texture arrays
+        private int pvrNumFaces = 0x1; //For cube maps
         //public int pvrMIPMapCount; dwMipMapCount
-        public int pvrMetaDataSize = 0x0;
+        private int pvrMetaDataSize = 0x0;
         //PVR End
         //KTX Start
-        public int glType = 0;
-        public int glTypeSize = 1;
-        public int glFormat = 0;
-        public int glInternalFormat;
-        public int glBaseInternalFormat;
+        private int glType = 0;
+        private int glTypeSize = 1;
+        private int glFormat = 0;
+        private int glInternalFormat;
+        private int glBaseInternalFormat;
         //public int pixelWidth; m_Width
         //public int pixelHeight; m_Height
-        public int pixelDepth = 0;
-        public int numberOfArrayElements = 0;
-        public int numberOfFaces = 1;
-        public int numberOfMipmapLevels = 1;
-        public int bytesOfKeyValueData = 0;
+        private int pixelDepth = 0;
+        private int numberOfArrayElements = 0;
+        private int numberOfFaces = 1;
+        private int numberOfMipmapLevels = 1;
+        private int bytesOfKeyValueData = 0;
         //KTX End
         //TextureConverter
-        public QFORMAT q_format;
+        private QFORMAT q_format;
+        //texgenpack
+        private texgenpack_texturetype texturetype;
 
         [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool DecompressPVR(byte[] buffer, IntPtr bmp, int len);
 
         [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type, int bmpsize, bool fixAlpha);
+
+        [DllImport("crunch.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DecompressCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr dxtdata, out int dxtsize);
+
+        [DllImport("texgenpack.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -492,30 +500,37 @@ namespace Unity_Studio
                         }
                     case TextureFormat.BC4:
                         {
+                            texturetype = texgenpack_texturetype.RGTC1;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RED_RGTC1;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
                     case TextureFormat.BC5:
                         {
+                            texturetype = texgenpack_texturetype.RGTC2;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RG_RGTC2;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
                     case TextureFormat.BC6H:
                         {
+                            texturetype = texgenpack_texturetype.BPTC_FLOAT;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
                     case TextureFormat.BC7:
                         {
+                            texturetype = texgenpack_texturetype.BPTC;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_BPTC_UNORM;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
                     case TextureFormat.DXT1Crunched: //DXT1 Crunched
+                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT1_RGB;
+                        break;
                     case TextureFormat.DXT5Crunched: //DXT1 Crunched
+                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT5_RGBA;
                         break;
                     case TextureFormat.PVRTC_RGB2: //test pass
                         {
@@ -952,11 +967,11 @@ namespace Unity_Studio
                 case TextureFormat.BC5:
                 case TextureFormat.BC6H:
                 case TextureFormat.BC7:
-                    //texgenpack
+                    bitmap = Texgenpack();
                     break;
                 case TextureFormat.DXT1Crunched:
                 case TextureFormat.DXT5Crunched:
-                    //crunch
+                    bitmap = CRNToBitmap();
                     break;
             }
             if (bitmap != null && flip)
@@ -1011,6 +1026,33 @@ namespace Unity_Studio
                 bitmap.Dispose();
                 return null;
             }
+            bitmap.UnlockBits(bmd);
+            return bitmap;
+        }
+
+        private Bitmap CRNToBitmap()
+        {
+            IntPtr dxtdata;
+            int dxtsize;
+            if (DecompressCRN(image_data, image_data_size, out dxtdata, out dxtsize))
+            {
+                var dxtbytes = new byte[dxtsize];
+                Marshal.Copy(dxtdata, dxtbytes, 0, dxtsize);
+                Marshal.FreeHGlobal(dxtdata);
+                image_data = dxtbytes;
+                image_data_size = dxtsize;
+                return TextureConverter();
+            }
+            return null;
+        }
+
+        private Bitmap Texgenpack()
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
+            texgenpackdecode((int)texturetype, image_data, m_Width, m_Height, bmd.Scan0, fixAlpha);
             bitmap.UnlockBits(bmd);
             return bitmap;
         }
@@ -1247,3 +1289,11 @@ public enum QFORMAT
     Q_FORMAT_ASTC_8,
     Q_FORMAT_ASTC_16,
 };
+
+public enum texgenpack_texturetype
+{
+    RGTC1,
+    RGTC2,
+    BPTC_FLOAT,
+    BPTC
+}
