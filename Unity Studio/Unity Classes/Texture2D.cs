@@ -84,10 +84,10 @@ namespace Unity_Studio
         public QFORMAT q_format;
 
         [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void DecompressPVR(byte[] buffer, IntPtr bmp, int len);
+        private static extern bool DecompressPVR(byte[] buffer, IntPtr bmp, int len);
 
         [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type);
+        private static extern bool Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type, int bmpsize, bool fixAlpha);
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -988,7 +988,12 @@ namespace Unity_Studio
             var rect = new Rectangle(0, 0, m_Width, m_Height);
             var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             var len = Math.Abs(bmd.Stride) * bmd.Height;
-            DecompressPVR(pvrdata, bmd.Scan0, len);
+            if (!DecompressPVR(pvrdata, bmd.Scan0, len))
+            {
+                bitmap.UnlockBits(bmd);
+                bitmap.Dispose();
+                return null;
+            }
             bitmap.UnlockBits(bmd);
             return bitmap;
         }
@@ -998,86 +1003,77 @@ namespace Unity_Studio
             var bitmap = new Bitmap(m_Width, m_Height);
             var rect = new Rectangle(0, 0, m_Width, m_Height);
             var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            Ponvert(image_data, bmd.Scan0, m_Width, m_Height, image_data_size, (int)q_format);
+            var len = Math.Abs(bmd.Stride) * bmd.Height;
+            var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
+            if (!Ponvert(image_data, bmd.Scan0, m_Width, m_Height, image_data_size, (int)q_format, len, fixAlpha))
+            {
+                bitmap.UnlockBits(bmd);
+                bitmap.Dispose();
+                return null;
+            }
             bitmap.UnlockBits(bmd);
-            if (glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG)
-                FixAlpha(bitmap);
             return bitmap;
         }
-
-        private void FixAlpha(Bitmap imageTexture)
-        {
-            for (var y = 0; y < imageTexture.Height; y++)
-            {
-                for (var x = 0; x < imageTexture.Width; x++)
-                {
-                    var color = imageTexture.GetPixel(x, y);
-                    color = Color.FromArgb(255, color.R, color.G, color.B);
-                    imageTexture.SetPixel(x, y, color);
-                }
-            }
-        }
-    }
-
-
-    public enum TextureFormat
-    {
-        Alpha8 = 1,
-        ARGB4444,
-        RGB24,
-        RGBA32,
-        ARGB32,
-        RGB565 = 7,
-        R16 = 9,
-        DXT1,
-        DXT5 = 12,
-        RGBA4444,
-        BGRA32,
-        RHalf,
-        RGHalf,
-        RGBAHalf,
-        RFloat,
-        RGFloat,
-        RGBAFloat,
-        YUY2,
-        BC4 = 26,
-        BC5,
-        BC6H = 24,
-        BC7,
-        DXT1Crunched = 28,
-        DXT5Crunched,
-        PVRTC_RGB2,
-        PVRTC_RGBA2,
-        PVRTC_RGB4,
-        PVRTC_RGBA4,
-        ETC_RGB4,
-        ATC_RGB4,
-        ATC_RGBA8,
-        EAC_R = 41,
-        EAC_R_SIGNED,
-        EAC_RG,
-        EAC_RG_SIGNED,
-        ETC2_RGB,
-        ETC2_RGBA1,
-        ETC2_RGBA8,
-        ASTC_RGB_4x4,
-        ASTC_RGB_5x5,
-        ASTC_RGB_6x6,
-        ASTC_RGB_8x8,
-        ASTC_RGB_10x10,
-        ASTC_RGB_12x12,
-        ASTC_RGBA_4x4,
-        ASTC_RGBA_5x5,
-        ASTC_RGBA_6x6,
-        ASTC_RGBA_8x8,
-        ASTC_RGBA_10x10,
-        ASTC_RGBA_12x12,
-        ETC_RGB4_3DS,
-        ETC_RGBA8_3DS
     }
 }
 
-public class KTXHeader
+public enum TextureFormat
+{
+    Alpha8 = 1,
+    ARGB4444,
+    RGB24,
+    RGBA32,
+    ARGB32,
+    RGB565 = 7,
+    R16 = 9,
+    DXT1,
+    DXT5 = 12,
+    RGBA4444,
+    BGRA32,
+    RHalf,
+    RGHalf,
+    RGBAHalf,
+    RFloat,
+    RGFloat,
+    RGBAFloat,
+    YUY2,
+    BC4 = 26,
+    BC5,
+    BC6H = 24,
+    BC7,
+    DXT1Crunched = 28,
+    DXT5Crunched,
+    PVRTC_RGB2,
+    PVRTC_RGBA2,
+    PVRTC_RGB4,
+    PVRTC_RGBA4,
+    ETC_RGB4,
+    ATC_RGB4,
+    ATC_RGBA8,
+    EAC_R = 41,
+    EAC_R_SIGNED,
+    EAC_RG,
+    EAC_RG_SIGNED,
+    ETC2_RGB,
+    ETC2_RGBA1,
+    ETC2_RGBA8,
+    ASTC_RGB_4x4,
+    ASTC_RGB_5x5,
+    ASTC_RGB_6x6,
+    ASTC_RGB_8x8,
+    ASTC_RGB_10x10,
+    ASTC_RGB_12x12,
+    ASTC_RGBA_4x4,
+    ASTC_RGBA_5x5,
+    ASTC_RGBA_6x6,
+    ASTC_RGBA_8x8,
+    ASTC_RGBA_10x10,
+    ASTC_RGBA_12x12,
+    ETC_RGB4_3DS,
+    ETC_RGBA8_3DS
+}
+
+public static class KTXHeader
 {
     public static byte[] IDENTIFIER = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
     public static byte[] ENDIANESS_LE = new byte[] { 1, 2, 3, 4 };
