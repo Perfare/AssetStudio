@@ -177,7 +177,7 @@ namespace Unity_Studio
                     else
                     {
                         EndianStream estream = null;
-                        if (UnityStudioForm.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
+                        if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
                         {
                             estream.Position = offset;
                             image_data = estream.ReadBytes(image_data_size);
@@ -981,20 +981,28 @@ namespace Unity_Studio
 
         private Bitmap BGRA32ToBitmap()
         {
-            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
-            var pObject = hObject.AddrOfPinnedObject();
-            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, pObject);
-            hObject.Free();
-            return bitmap;
+            if (image_data.Length > 0)
+            {
+                var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+                var pObject = hObject.AddrOfPinnedObject();
+                var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, pObject);
+                hObject.Free();
+                return bitmap;
+            }
+            return null;
         }
 
         private Bitmap RGB565ToBitmap()
         {
-            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
-            var pObject = hObject.AddrOfPinnedObject();
-            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
-            hObject.Free();
-            return bitmap;
+            if (image_data.Length > 0)
+            {
+                var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+                var pObject = hObject.AddrOfPinnedObject();
+                var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
+                hObject.Free();
+                return bitmap;
+            }
+            return null;
         }
 
         private Bitmap PVRToBitmap(byte[] pvrdata)
