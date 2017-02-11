@@ -111,7 +111,7 @@ namespace Unity_Studio
                 else
                 {
                     EndianStream estream = null;
-                    if (UnityStudioForm.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
+                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
                         m_AudioData = estream.ReadBytes((int)m_Size);

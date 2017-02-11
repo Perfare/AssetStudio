@@ -144,12 +144,13 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="AssetPreloadData.cs" />
+    <Compile Include="Unity Studio Classes\AssetPreloadData.cs" />
     <Compile Include="Unity Classes\AudioClip.cs" />
     <Compile Include="Unity Classes\BuildSettings.cs" />
-    <Compile Include="BundleFile.cs" />
-    <Compile Include="ClassIDReference.cs" />
-    <Compile Include="EndianStream.cs" />
+    <Compile Include="Unity Studio Classes\BundleFile.cs" />
+    <Compile Include="Unity Studio Classes\UnityStudio.cs" />
+    <Compile Include="Unity Studio Classes\ClassIDReference.cs" />
+    <Compile Include="Unity Studio Classes\EndianStream.cs" />
     <Compile Include="ExportOptions.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -163,11 +164,11 @@
     <Compile Include="GOHierarchy.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Lz4DecoderStream.cs" />
+    <Compile Include="Unity Studio Classes\Lz4DecoderStream.cs" />
     <Compile Include="Unity Classes\Material.cs" />
     <Compile Include="Unity Classes\Mesh.cs" />
     <Compile Include="Unity Classes\GameObject.cs" />
-    <Compile Include="helpers.cs" />
+    <Compile Include="Unity Studio Classes\helpers.cs" />
     <Compile Include="Unity Classes\MonoBehaviour.cs" />
     <Compile Include="Unity Classes\PlayerSettings.cs" />
     <Compile Include="Unity Classes\RectTransform.cs" />
@@ -180,7 +181,7 @@
     <Compile Include="Unity Classes\Transform.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AssetsFile.cs" />
+    <Compile Include="Unity Studio Classes\AssetsFile.cs" />
     <Compile Include="UnityStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>

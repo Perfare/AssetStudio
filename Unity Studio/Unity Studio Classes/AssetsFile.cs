@@ -461,6 +461,5 @@ namespace Unity_Studio
                 ClassStructures.Add(classID, aClass);
             }
         }
-
     }
 }
