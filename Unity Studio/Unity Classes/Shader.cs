@@ -33,7 +33,7 @@ namespace Unity_Studio
                 {
                     if (m_Name != "") { preloadData.Text = m_Name; }
                     else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                    preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
+                    preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
                 }
             }
             else
@@ -51,19 +51,12 @@ namespace Unity_Studio
                 else
                 {
                     byte lzmaTest = a_Stream.ReadByte();
-                    if (lzmaTest == 93)
-                    {
-                        a_Stream.Position += 4;
-                        preloadData.exportSize = a_Stream.ReadInt32(); //actualy int64
-                        a_Stream.Position -= 8;
-                    }
-                    else { preloadData.exportSize = m_Script_size; }
 
                     a_Stream.Position += m_Script_size - 1;
 
                     if (m_Name != "") { preloadData.Text = m_Name; }
                     else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                    preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
+                    preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
                 }
                 a_Stream.AlignStream(4);
                 m_PathName = a_Stream.ReadAlignedString(a_Stream.ReadInt32());

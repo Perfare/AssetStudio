@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Unity_Studio
 {
@@ -25,71 +26,76 @@ namespace Unity_Studio
         public int m_WrapMode;
         public int m_LightmapFormat;
         public int m_ColorSpace;
+        //image dataa
+        public int image_data_size;
+        public byte[] image_data;
         //m_StreamData
         public uint offset;
         public uint size;
         public string path;
-        public byte[] image_data;
 
         //DDS Start
-        public byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
-        public int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
+        private byte[] dwMagic = { 0x44, 0x44, 0x53, 0x20, 0x7c };
+        private int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
         //public int dwHeight; m_Height
         //public int dwWidth; m_Width
-        public int dwPitchOrLinearSize = 0x0;
-        public int dwMipMapCount = 0x1;
-        public int dwSize = 0x20;
-        public int dwFlags2;
-        public int dwFourCC = 0x0;
-        public int dwRGBBitCount;
-        public int dwRBitMask;
-        public int dwGBitMask;
-        public int dwBBitMask;
-        public int dwABitMask;
-        public int dwCaps = 0x1000;
-        public int dwCaps2 = 0x0;
+        private int dwPitchOrLinearSize = 0x0;
+        private int dwMipMapCount = 0x1;
+        private int dwSize = 0x20;
+        private int dwFlags2;
+        private int dwFourCC = 0x0;
+        private int dwRGBBitCount;
+        private int dwRBitMask;
+        private int dwGBitMask;
+        private int dwBBitMask;
+        private int dwABitMask;
+        private int dwCaps = 0x1000;
+        private int dwCaps2 = 0x0;
         //DDS End
         //PVR Start
-        public int pvrVersion = 0x03525650;
-        public int pvrFlags = 0x0;
-        public long pvrPixelFormat;
-        public int pvrColourSpace = 0x0;
-        public int pvrChannelType = 0x0;
+        private int pvrVersion = 0x03525650;
+        private int pvrFlags = 0x0;
+        private long pvrPixelFormat;
+        private int pvrColourSpace = 0x0;
+        private int pvrChannelType = 0x0;
         //public int pvrHeight; m_Height
         //public int pvrWidth; m_Width
-        public int pvrDepth = 0x1;
-        public int pvrNumSurfaces = 0x1; //For texture arrays
-        public int pvrNumFaces = 0x1; //For cube maps
+        private int pvrDepth = 0x1;
+        private int pvrNumSurfaces = 0x1; //For texture arrays
+        private int pvrNumFaces = 0x1; //For cube maps
         //public int pvrMIPMapCount; dwMipMapCount
-        public int pvrMetaDataSize = 0x0;
+        private int pvrMetaDataSize = 0x0;
         //PVR End
         //KTX Start
-        public int glType = 0;
-        public int glTypeSize = 1;
-        public int glFormat = 0;
-        public int glInternalFormat;
-        public int glBaseInternalFormat;
+        private int glType = 0;
+        private int glTypeSize = 1;
+        private int glFormat = 0;
+        private int glInternalFormat;
+        private int glBaseInternalFormat;
         //public int pixelWidth; m_Width
         //public int pixelHeight; m_Height
-        public int pixelDepth = 0;
-        public int numberOfArrayElements = 0;
-        public int numberOfFaces = 1;
-        public int numberOfMipmapLevels = 1;
-        public int bytesOfKeyValueData = 0;
+        private int pixelDepth = 0;
+        private int numberOfArrayElements = 0;
+        private int numberOfFaces = 1;
+        private int numberOfMipmapLevels = 1;
+        private int bytesOfKeyValueData = 0;
         //KTX End
-        //ASTC Start
-        public byte[] astc_magic = { 0x13, 0xab, 0xa1, 0x5c };
-        public byte blockdim_x;
-        public byte blockdim_y;
-        public byte blockdim_z = 1;
-        public byte[] xsize = new byte[3];
-        public byte[] ysize = new byte[3];
-        public byte[] zsize = new byte[3] { 1, 0, 0 };
-        //ASTC END
         //TextureConverter
-        public int q_format;
-        //Texture data
-        public int image_data_size;
+        private QFORMAT q_format;
+        //texgenpack
+        private texgenpack_texturetype texturetype;
+
+        [DllImport("PVRTexLibWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DecompressPVR(byte[] buffer, IntPtr bmp, int len);
+
+        [DllImport("TextureConverterWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type, int bmpsize, bool fixAlpha);
+
+        [DllImport("crunch.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DecompressCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr dxtdata, out int dxtsize);
+
+        [DllImport("texgenpack.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -186,6 +192,7 @@ namespace Unity_Studio
 
                 switch (m_TextureFormat)
                 {
+                    //TODO 导出到DDS容器时应该用原像素还是转换以后的像素？
                     case TextureFormat.Alpha8: //test pass
                         {
                             /*dwFlags2 = 0x2;
@@ -193,85 +200,150 @@ namespace Unity_Studio
                             dwRBitMask = 0x0;
                             dwGBitMask = 0x0;
                             dwBBitMask = 0x0;
-                            dwABitMask = 0xFF; *///透明通道丢失?
-                            //转ARGB32
-                            var bytes = Enumerable.Repeat<byte>(0xFF, image_data_size * 4).ToArray();
-                            for (int i = 0; i < image_data_size; i++)
+                            dwABitMask = 0xFF; */
+
+                            //转BGRA32
+                            var BGRA32 = Enumerable.Repeat<byte>(0xFF, image_data_size * 4).ToArray();
+                            for (var i = 0; i < image_data_size; i++)
                             {
-                                bytes[i * 4] = image_data[i];
+                                BGRA32[i * 4 + 3] = image_data[i];
                             }
-                            image_data = bytes;
-                            image_data_size = image_data_size * 4;
-                            bytes = null;
+                            image_data = BGRA32;
+                            image_data_size = BGRA32.Length;
+
                             dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF00;
-                            dwGBitMask = 0xFF0000;
-                            dwBBitMask = -16777216;
-                            dwABitMask = 0xFF;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.ARGB4444: //test pass
                         {
-                            if (sourceFile.platform == 11) //swap bytes for Xbox confirmed, PS3 not encountered
-                            {
-                                for (int i = 0; i < (image_data_size / 2); i++)
-                                {
-                                    byte b0 = image_data[i * 2];
-                                    image_data[i * 2] = image_data[i * 2 + 1];
-                                    image_data[i * 2 + 1] = b0;
-                                }
-                            }
+                            SwapBytesForXbox(sourceFile.platform);
 
-                            dwFlags2 = 0x41;
+                            /*dwFlags2 = 0x41;
                             dwRGBBitCount = 0x10;
                             dwRBitMask = 0xF00;
                             dwGBitMask = 0xF0;
                             dwBBitMask = 0xF;
-                            dwABitMask = 0xF000;
+                            dwABitMask = 0xF000;*/
+
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size * 2];
+                            for (var i = 0; i < image_data_size / 2; i++)
+                            {
+                                var pixelNew = new byte[4];
+                                var pixelOldShort = BitConverter.ToUInt16(image_data, i * 2);
+                                pixelNew[0] = (byte)(pixelOldShort & 0x000f);
+                                pixelNew[1] = (byte)((pixelOldShort & 0x00f0) >> 4);
+                                pixelNew[2] = (byte)((pixelOldShort & 0x0f00) >> 8);
+                                pixelNew[3] = (byte)((pixelOldShort & 0xf000) >> 12);
+                                // convert range
+                                for (var j = 0; j < 4; j++)
+                                    pixelNew[j] = (byte)((pixelNew[j] << 4) | pixelNew[j]);
+                                pixelNew.CopyTo(BGRA32, i * 4);
+                            }
+                            image_data = BGRA32;
+                            image_data_size = BGRA32.Length;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.RGB24: //test pass
                         {
-                            dwFlags2 = 0x40;
+                            /*dwFlags2 = 0x40;
                             dwRGBBitCount = 0x18;
                             dwRBitMask = 0xFF;
                             dwGBitMask = 0xFF00;
                             dwBBitMask = 0xFF0000;
-                            dwABitMask = 0x0;
+                            dwABitMask = 0x0;*/
+
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size / 3 * 4];
+                            for (var i = 0; i < image_data_size / 3; i++)
+                            {
+                                BGRA32[i * 4] = image_data[i * 3 + 2];
+                                BGRA32[i * 4 + 1] = image_data[i * 3 + 1];
+                                BGRA32[i * 4 + 2] = image_data[i * 3 + 0];
+                                BGRA32[i * 4 + 3] = 255;
+                            }
+                            image_data = BGRA32;
+                            image_data_size = BGRA32.Length;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.RGBA32: //test pass
                         {
-                            dwFlags2 = 0x41;
+                            /*dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
                             dwRBitMask = 0xFF;
                             dwGBitMask = 0xFF00;
                             dwBBitMask = 0xFF0000;
+                            dwABitMask = -16777216;*/
+
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size];
+                            for (var i = 0; i < image_data_size; i += 4)
+                            {
+                                BGRA32[i] = image_data[i + 2];
+                                BGRA32[i + 1] = image_data[i + 1];
+                                BGRA32[i + 2] = image_data[i + 0];
+                                BGRA32[i + 3] = image_data[i + 3];
+                            }
+                            image_data = BGRA32;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
                             dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.ARGB32://test pass
                         {
-                            dwFlags2 = 0x41;
+                            /*dwFlags2 = 0x41;
                             dwRGBBitCount = 0x20;
                             dwRBitMask = 0xFF00;
                             dwGBitMask = 0xFF0000;
                             dwBBitMask = -16777216;
-                            dwABitMask = 0xFF;
+                            dwABitMask = 0xFF;*/
+
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size];
+                            for (var i = 0; i < image_data_size; i += 4)
+                            {
+                                BGRA32[i] = image_data[i + 3];
+                                BGRA32[i + 1] = image_data[i + 2];
+                                BGRA32[i + 2] = image_data[i + 1];
+                                BGRA32[i + 3] = image_data[i + 0];
+                            }
+                            image_data = BGRA32;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.RGB565: //test pass
                         {
-                            if (sourceFile.platform == 11)
-                            {
-                                for (int i = 0; i < (image_data_size / 2); i++)
-                                {
-                                    byte b0 = image_data[i * 2];
-                                    image_data[i * 2] = image_data[i * 2 + 1];
-                                    image_data[i * 2 + 1] = b0;
-                                }
-                            }
+                            SwapBytesForXbox(sourceFile.platform);
 
                             dwFlags2 = 0x40;
                             dwRGBBitCount = 0x10;
@@ -281,19 +353,30 @@ namespace Unity_Studio
                             dwABitMask = 0x0;
                             break;
                         }
-                    case TextureFormat.R16:
-                        break;
+                    case TextureFormat.R16: //test pass
+                        {
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size * 2];
+                            for (var i = 0; i < image_data_size; i += 2)
+                            {
+                                float f = Half.ToHalf(image_data, i);
+                                BGRA32[i * 2 + 2] = (byte)Math.Ceiling(f * 255);//R
+                                BGRA32[i * 2 + 3] = 255;//A
+                            }
+                            image_data = BGRA32;
+                            image_data_size *= 2;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
+                            break;
+                        }
                     case TextureFormat.DXT1: //test pass
                         {
-                            if (sourceFile.platform == 11) //X360 only, PS3 not
-                            {
-                                for (int i = 0; i < (image_data_size / 2); i++)
-                                {
-                                    byte b0 = image_data[i * 2];
-                                    image_data[i * 2] = image_data[i * 2 + 1];
-                                    image_data[i * 2 + 1] = b0;
-                                }
-                            }
+                            SwapBytesForXbox(sourceFile.platform);
 
                             if (m_MipMap) { dwPitchOrLinearSize = m_Height * m_Width / 2; }
                             dwFlags2 = 0x4;
@@ -303,19 +386,13 @@ namespace Unity_Studio
                             dwGBitMask = 0x0;
                             dwBBitMask = 0x0;
                             dwABitMask = 0x0;
+
+                            q_format = QFORMAT.Q_FORMAT_S3TC_DXT1_RGB;
                             break;
                         }
                     case TextureFormat.DXT5: //test pass
                         {
-                            if (sourceFile.platform == 11) //X360, PS3 not
-                            {
-                                for (int i = 0; i < (image_data_size / 2); i++)
-                                {
-                                    byte b0 = image_data[i * 2];
-                                    image_data[i * 2] = image_data[i * 2 + 1];
-                                    image_data[i * 2 + 1] = b0;
-                                }
-                            }
+                            SwapBytesForXbox(sourceFile.platform);
 
                             if (m_MipMap) { dwPitchOrLinearSize = m_Height * m_Width / 2; }
                             dwFlags2 = 0x4;
@@ -325,16 +402,43 @@ namespace Unity_Studio
                             dwGBitMask = 0x0;
                             dwBBitMask = 0x0;
                             dwABitMask = 0x0;
+
+                            q_format = QFORMAT.Q_FORMAT_S3TC_DXT5_RGBA;
                             break;
                         }
                     case TextureFormat.RGBA4444: //test pass
                         {
-                            dwFlags2 = 0x41;
+                            /*dwFlags2 = 0x41;
                             dwRGBBitCount = 0x10;
                             dwRBitMask = 0xF000;
                             dwGBitMask = 0xF00;
                             dwBBitMask = 0xF0;
-                            dwABitMask = 0xF;
+                            dwABitMask = 0xF;*/
+
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size * 2];
+                            for (var i = 0; i < image_data_size / 2; i++)
+                            {
+                                var pixelNew = new byte[4];
+                                var pixelOldShort = BitConverter.ToUInt16(image_data, i * 2);
+                                pixelNew[0] = (byte)((pixelOldShort & 0x00f0) >> 4);
+                                pixelNew[1] = (byte)((pixelOldShort & 0x0f00) >> 8);
+                                pixelNew[2] = (byte)((pixelOldShort & 0xf000) >> 12);
+                                pixelNew[3] = (byte)(pixelOldShort & 0x000f);
+                                // convert range
+                                for (var j = 0; j < 4; j++)
+                                    pixelNew[j] = (byte)((pixelNew[j] << 4) | pixelNew[j]);
+                                pixelNew.CopyTo(BGRA32, i * 4);
+                            }
+                            image_data = BGRA32;
+                            image_data_size = BGRA32.Length;
+
+                            dwFlags2 = 0x41;
+                            dwRGBBitCount = 0x20;
+                            dwRBitMask = 0xFF0000;
+                            dwGBitMask = 0xFF00;
+                            dwBBitMask = 0xFF;
+                            dwABitMask = -16777216;
                             break;
                         }
                     case TextureFormat.BGRA32: //test pass
@@ -347,80 +451,86 @@ namespace Unity_Studio
                             dwABitMask = -16777216;
                             break;
                         }
-                    case TextureFormat.RHalf://Not sure
+                    case TextureFormat.RHalf: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_R_16F;
+                            q_format = QFORMAT.Q_FORMAT_R_16F;
                             glInternalFormat = KTXHeader.GL_R16F;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
-                    case TextureFormat.RGHalf://Not sure
+                    case TextureFormat.RGHalf: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_RG_HF;
+                            q_format = QFORMAT.Q_FORMAT_RG_HF;
                             glInternalFormat = KTXHeader.GL_RG16F;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
-                    case TextureFormat.RGBAHalf://Not sure
+                    case TextureFormat.RGBAHalf: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_RGBA_HF;
+                            q_format = QFORMAT.Q_FORMAT_RGBA_HF;
                             glInternalFormat = KTXHeader.GL_RGBA16F;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case TextureFormat.RFloat://Not sure
+                    case TextureFormat.RFloat: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_R_F;
+                            q_format = QFORMAT.Q_FORMAT_R_F;
                             glInternalFormat = KTXHeader.GL_R32F;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
-                    case TextureFormat.RGFloat://Not sure
+                    case TextureFormat.RGFloat: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_RG_F;
+                            q_format = QFORMAT.Q_FORMAT_RG_F;
                             glInternalFormat = KTXHeader.GL_RG32F;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
-                    case TextureFormat.RGBAFloat://Not sure
+                    case TextureFormat.RGBAFloat: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_RGBA_F;
+                            q_format = QFORMAT.Q_FORMAT_RGBA_F;
                             glInternalFormat = KTXHeader.GL_RGBA32F;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case TextureFormat.YUY2://Not sure
+                    case TextureFormat.YUY2: //test pass
                         {
                             pvrPixelFormat = 17;
-                            q_format = (int)QFORMAT.Q_FORMAT_YUYV_16;
                             break;
                         }
                     case TextureFormat.BC4:
                         {
+                            texturetype = texgenpack_texturetype.RGTC1;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RED_RGTC1;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
                     case TextureFormat.BC5:
                         {
+                            texturetype = texgenpack_texturetype.RGTC2;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RG_RGTC2;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
                     case TextureFormat.BC6H:
                         {
+                            texturetype = texgenpack_texturetype.BPTC_FLOAT;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
                     case TextureFormat.BC7:
                         {
+                            texturetype = texgenpack_texturetype.BPTC;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_BPTC_UNORM;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
                     case TextureFormat.DXT1Crunched: //DXT1 Crunched
+                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT1_RGB;
+                        break;
                     case TextureFormat.DXT5Crunched: //DXT1 Crunched
+                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT5_RGBA;
                         break;
                     case TextureFormat.PVRTC_RGB2: //test pass
                         {
@@ -450,6 +560,7 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
+                    case TextureFormat.ETC_RGB4_3DS: //test pass
                     case TextureFormat.ETC_RGB4: //test pass
                         {
                             pvrPixelFormat = 6;
@@ -459,42 +570,42 @@ namespace Unity_Studio
                         }
                     case TextureFormat.ATC_RGB4: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_ATITC_RGB;
+                            q_format = QFORMAT.Q_FORMAT_ATITC_RGB;
                             glInternalFormat = KTXHeader.GL_ATC_RGB_AMD;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
                     case TextureFormat.ATC_RGBA8: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
+                            q_format = QFORMAT.Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA;
                             glInternalFormat = KTXHeader.GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case TextureFormat.EAC_R:
+                    case TextureFormat.EAC_R: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_EAC_R_UNSIGNED;
+                            q_format = QFORMAT.Q_FORMAT_EAC_R_UNSIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_R11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
-                    case TextureFormat.EAC_R_SIGNED:
+                    case TextureFormat.EAC_R_SIGNED: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_EAC_R_SIGNED;
+                            q_format = QFORMAT.Q_FORMAT_EAC_R_SIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_R11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
-                    case TextureFormat.EAC_RG:
+                    case TextureFormat.EAC_RG: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_EAC_RG_UNSIGNED;
+                            q_format = QFORMAT.Q_FORMAT_EAC_RG_UNSIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RG11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
-                    case TextureFormat.EAC_RG_SIGNED:
+                    case TextureFormat.EAC_RG_SIGNED: //test pass
                         {
-                            q_format = (int)QFORMAT.Q_FORMAT_EAC_RG_SIGNED;
+                            q_format = QFORMAT.Q_FORMAT_EAC_RG_SIGNED;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_SIGNED_RG11_EAC;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
@@ -513,6 +624,7 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
+                    case TextureFormat.ETC_RGBA8_3DS: //test pass
                     case TextureFormat.ETC2_RGBA8:  //test pass
                         {
                             pvrPixelFormat = 23;
@@ -523,54 +635,44 @@ namespace Unity_Studio
                     case TextureFormat.ASTC_RGB_4x4: //test pass
                     case TextureFormat.ASTC_RGBA_4x4: //test pass
                         {
-                            blockdim_x = 4;
-                            blockdim_y = 4;
+                            pvrPixelFormat = 27;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_5x5: //test pass
                     case TextureFormat.ASTC_RGBA_5x5: //test pass
                         {
-                            blockdim_x = 5;
-                            blockdim_y = 5;
+                            pvrPixelFormat = 29;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_6x6: //test pass
                     case TextureFormat.ASTC_RGBA_6x6: //test pass
                         {
-                            blockdim_x = 6;
-                            blockdim_y = 6;
+                            pvrPixelFormat = 31;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_8x8: //test pass
                     case TextureFormat.ASTC_RGBA_8x8: //test pass
                         {
-                            blockdim_x = 8;
-                            blockdim_y = 8;
+                            pvrPixelFormat = 34;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_10x10: //test pass
                     case TextureFormat.ASTC_RGBA_10x10: //test pass
                         {
-                            blockdim_x = 10;
-                            blockdim_y = 10;
+                            pvrPixelFormat = 38;
                             break;
                         }
                     case TextureFormat.ASTC_RGB_12x12: //test pass
                     case TextureFormat.ASTC_RGBA_12x12: //test pass
                         {
-                            blockdim_x = 12;
-                            blockdim_y = 12;
+                            pvrPixelFormat = 40;
                             break;
                         }
-                    case TextureFormat.ETC_RGB4_3DS:
-                    case TextureFormat.ETC_RGBA8_3DS:
-                        break;
                 }
             }
             else
             {
                 preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
-                preloadData.exportSize = image_data_size;
 
                 string type = m_TextureFormat.ToString();
                 preloadData.InfoText += type;
@@ -583,11 +685,12 @@ namespace Unity_Studio
                     case TextureFormat.RGBA32:
                     case TextureFormat.ARGB32:
                     case TextureFormat.RGB565:
+                    case TextureFormat.R16:
                     case TextureFormat.DXT1:
                     case TextureFormat.DXT5:
                     case TextureFormat.RGBA4444:
                     case TextureFormat.BGRA32:
-                        preloadData.extension = ".dds"; preloadData.exportSize += 128; break;
+                        preloadData.extension = ".dds"; break;
                     case TextureFormat.DXT1Crunched:
                     case TextureFormat.DXT5Crunched:
                         preloadData.extension = ".crn"; break;
@@ -600,7 +703,21 @@ namespace Unity_Studio
                     case TextureFormat.ETC2_RGB:
                     case TextureFormat.ETC2_RGBA1:
                     case TextureFormat.ETC2_RGBA8:
-                        preloadData.extension = ".pvr"; preloadData.exportSize += 52; break;
+                    case TextureFormat.ASTC_RGB_4x4:
+                    case TextureFormat.ASTC_RGB_5x5:
+                    case TextureFormat.ASTC_RGB_6x6:
+                    case TextureFormat.ASTC_RGB_8x8:
+                    case TextureFormat.ASTC_RGB_10x10:
+                    case TextureFormat.ASTC_RGB_12x12:
+                    case TextureFormat.ASTC_RGBA_4x4:
+                    case TextureFormat.ASTC_RGBA_5x5:
+                    case TextureFormat.ASTC_RGBA_6x6:
+                    case TextureFormat.ASTC_RGBA_8x8:
+                    case TextureFormat.ASTC_RGBA_10x10:
+                    case TextureFormat.ASTC_RGBA_12x12:
+                    case TextureFormat.ETC_RGB4_3DS:
+                    case TextureFormat.ETC_RGBA8_3DS:
+                        preloadData.extension = ".pvr"; break;
                     case TextureFormat.RHalf:
                     case TextureFormat.RGHalf:
                     case TextureFormat.RGBAHalf:
@@ -617,22 +734,7 @@ namespace Unity_Studio
                     case TextureFormat.EAC_R_SIGNED:
                     case TextureFormat.EAC_RG:
                     case TextureFormat.EAC_RG_SIGNED:
-                        preloadData.extension = ".ktx"; preloadData.exportSize += 68; break;
-                    case TextureFormat.ASTC_RGB_4x4:
-                    case TextureFormat.ASTC_RGB_5x5:
-                    case TextureFormat.ASTC_RGB_6x6:
-                    case TextureFormat.ASTC_RGB_8x8:
-                    case TextureFormat.ASTC_RGB_10x10:
-                    case TextureFormat.ASTC_RGB_12x12:
-                    case TextureFormat.ASTC_RGBA_4x4:
-                    case TextureFormat.ASTC_RGBA_5x5:
-                    case TextureFormat.ASTC_RGBA_6x6:
-                    case TextureFormat.ASTC_RGBA_8x8:
-                    case TextureFormat.ASTC_RGBA_10x10:
-                    case TextureFormat.ASTC_RGBA_12x12:
-                        preloadData.extension = ".astc"; preloadData.exportSize += 10; break;
-                    default:
-                        preloadData.extension = "_" + type + ".tex"; break;
+                        preloadData.extension = ".ktx"; break;
                 }
 
                 switch (m_FilterMode)
@@ -653,70 +755,371 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.exportSize.ToString() });
+                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
-    }
 
+        private void SwapBytesForXbox(int platform)
+        {
+            if (platform == 11) //swap bytes for Xbox confirmed, PS3 not encountered
+            {
+                for (var i = 0; i < (image_data_size / 2); i++)
+                {
+                    var b0 = image_data[i * 2];
+                    image_data[i * 2] = image_data[i * 2 + 1];
+                    image_data[i * 2 + 1] = b0;
+                }
+            }
+        }
 
-    public enum TextureFormat
-    {
-        Alpha8 = 1,
-        ARGB4444,
-        RGB24,
-        RGBA32,
-        ARGB32,
-        RGB565 = 7,
-        R16 = 9,
-        DXT1,
-        DXT5 = 12,
-        RGBA4444,
-        BGRA32,
-        RHalf,
-        RGHalf,
-        RGBAHalf,
-        RFloat,
-        RGFloat,
-        RGBAFloat,
-        YUY2,
-        BC4 = 26,
-        BC5,
-        BC6H = 24,
-        BC7,
-        DXT1Crunched = 28,
-        DXT5Crunched,
-        PVRTC_RGB2,
-        PVRTC_RGBA2,
-        PVRTC_RGB4,
-        PVRTC_RGBA4,
-        ETC_RGB4,
-        ATC_RGB4,
-        ATC_RGBA8,
-        EAC_R = 41,
-        EAC_R_SIGNED,
-        EAC_RG,
-        EAC_RG_SIGNED,
-        ETC2_RGB,
-        ETC2_RGBA1,
-        ETC2_RGBA8,
-        ASTC_RGB_4x4,
-        ASTC_RGB_5x5,
-        ASTC_RGB_6x6,
-        ASTC_RGB_8x8,
-        ASTC_RGB_10x10,
-        ASTC_RGB_12x12,
-        ASTC_RGBA_4x4,
-        ASTC_RGBA_5x5,
-        ASTC_RGBA_6x6,
-        ASTC_RGBA_8x8,
-        ASTC_RGBA_10x10,
-        ASTC_RGBA_12x12,
-        ETC_RGB4_3DS,
-        ETC_RGBA8_3DS
+        public byte[] ConvertToContainer()
+        {
+            switch (m_TextureFormat)
+            {
+                case TextureFormat.Alpha8:
+                case TextureFormat.ARGB4444:
+                case TextureFormat.RGB24:
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.RGB565:
+                case TextureFormat.R16:
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT5:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.BGRA32:
+                    return ConvertToDDS();
+                case TextureFormat.YUY2:
+                case TextureFormat.PVRTC_RGB2:
+                case TextureFormat.PVRTC_RGBA2:
+                case TextureFormat.PVRTC_RGB4:
+                case TextureFormat.PVRTC_RGBA4:
+                case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC2_RGB:
+                case TextureFormat.ETC2_RGBA1:
+                case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.ASTC_RGB_4x4:
+                case TextureFormat.ASTC_RGB_5x5:
+                case TextureFormat.ASTC_RGB_6x6:
+                case TextureFormat.ASTC_RGB_8x8:
+                case TextureFormat.ASTC_RGB_10x10:
+                case TextureFormat.ASTC_RGB_12x12:
+                case TextureFormat.ASTC_RGBA_4x4:
+                case TextureFormat.ASTC_RGBA_5x5:
+                case TextureFormat.ASTC_RGBA_6x6:
+                case TextureFormat.ASTC_RGBA_8x8:
+                case TextureFormat.ASTC_RGBA_10x10:
+                case TextureFormat.ASTC_RGBA_12x12:
+                case TextureFormat.ETC_RGB4_3DS:
+                case TextureFormat.ETC_RGBA8_3DS:
+                    return ConvertToPVR();
+                case TextureFormat.RHalf:
+                case TextureFormat.RGHalf:
+                case TextureFormat.RGBAHalf:
+                case TextureFormat.RFloat:
+                case TextureFormat.RGFloat:
+                case TextureFormat.RGBAFloat:
+                case TextureFormat.BC4:
+                case TextureFormat.BC5:
+                case TextureFormat.BC6H:
+                case TextureFormat.BC7:
+                case TextureFormat.ATC_RGB4:
+                case TextureFormat.ATC_RGBA8:
+                case TextureFormat.EAC_R:
+                case TextureFormat.EAC_R_SIGNED:
+                case TextureFormat.EAC_RG:
+                case TextureFormat.EAC_RG_SIGNED:
+                    return ConvertToKTX();
+                default:
+                    return image_data;
+            }
+        }
+
+        private byte[] ConvertToDDS()
+        {
+            var imageBuffer = new byte[128 + image_data_size];
+            dwMagic.CopyTo(imageBuffer, 0);
+            BitConverter.GetBytes(dwFlags).CopyTo(imageBuffer, 8);
+            BitConverter.GetBytes(m_Height).CopyTo(imageBuffer, 12);
+            BitConverter.GetBytes(m_Width).CopyTo(imageBuffer, 16);
+            BitConverter.GetBytes(dwPitchOrLinearSize).CopyTo(imageBuffer, 20);
+            BitConverter.GetBytes(dwMipMapCount).CopyTo(imageBuffer, 28);
+            BitConverter.GetBytes(dwSize).CopyTo(imageBuffer, 76);
+            BitConverter.GetBytes(dwFlags2).CopyTo(imageBuffer, 80);
+            BitConverter.GetBytes(dwFourCC).CopyTo(imageBuffer, 84);
+            BitConverter.GetBytes(dwRGBBitCount).CopyTo(imageBuffer, 88);
+            BitConverter.GetBytes(dwRBitMask).CopyTo(imageBuffer, 92);
+            BitConverter.GetBytes(dwGBitMask).CopyTo(imageBuffer, 96);
+            BitConverter.GetBytes(dwBBitMask).CopyTo(imageBuffer, 100);
+            BitConverter.GetBytes(dwABitMask).CopyTo(imageBuffer, 104);
+            BitConverter.GetBytes(dwCaps).CopyTo(imageBuffer, 108);
+            BitConverter.GetBytes(dwCaps2).CopyTo(imageBuffer, 112);
+            image_data.CopyTo(imageBuffer, 128);
+            return imageBuffer;
+        }
+
+        private byte[] ConvertToPVR()
+        {
+            var mstream = new MemoryStream();
+            using (var writer = new BinaryWriter(mstream))
+            {
+                writer.Write(pvrVersion);
+                writer.Write(pvrFlags);
+                writer.Write(pvrPixelFormat);
+                writer.Write(pvrColourSpace);
+                writer.Write(pvrChannelType);
+                writer.Write(m_Height);
+                writer.Write(m_Width);
+                writer.Write(pvrDepth);
+                writer.Write(pvrNumSurfaces);
+                writer.Write(pvrNumFaces);
+                writer.Write(dwMipMapCount);
+                writer.Write(pvrMetaDataSize);
+                writer.Write(image_data);
+                return mstream.ToArray();
+            }
+        }
+
+        private byte[] ConvertToKTX()
+        {
+            var mstream = new MemoryStream();
+            using (var writer = new BinaryWriter(mstream))
+            {
+                writer.Write(KTXHeader.IDENTIFIER);
+                writer.Write(KTXHeader.ENDIANESS_LE);
+                writer.Write(glType);
+                writer.Write(glTypeSize);
+                writer.Write(glFormat);
+                writer.Write(glInternalFormat);
+                writer.Write(glBaseInternalFormat);
+                writer.Write(m_Width);
+                writer.Write(m_Height);
+                writer.Write(pixelDepth);
+                writer.Write(numberOfArrayElements);
+                writer.Write(numberOfFaces);
+                writer.Write(numberOfMipmapLevels);
+                writer.Write(bytesOfKeyValueData);
+                writer.Write(image_data_size);
+                writer.Write(image_data);
+                return mstream.ToArray();
+            }
+        }
+
+        public Bitmap ConvertToBitmap(bool flip)
+        {
+            Bitmap bitmap = null;
+            switch (m_TextureFormat)
+            {
+                case TextureFormat.Alpha8:
+                case TextureFormat.ARGB4444:
+                case TextureFormat.RGB24:
+                case TextureFormat.RGBA32:
+                case TextureFormat.ARGB32:
+                case TextureFormat.R16:
+                case TextureFormat.RGBA4444:
+                case TextureFormat.BGRA32:
+                    bitmap = BGRA32ToBitmap();
+                    break;
+                case TextureFormat.RGB565:
+                    bitmap = RGB565ToBitmap();
+                    break;
+                case TextureFormat.YUY2:
+                case TextureFormat.PVRTC_RGB2:
+                case TextureFormat.PVRTC_RGBA2:
+                case TextureFormat.PVRTC_RGB4:
+                case TextureFormat.PVRTC_RGBA4:
+                case TextureFormat.ETC_RGB4:
+                case TextureFormat.ETC2_RGB:
+                case TextureFormat.ETC2_RGBA1:
+                case TextureFormat.ETC2_RGBA8:
+                case TextureFormat.ASTC_RGB_4x4:
+                case TextureFormat.ASTC_RGB_5x5:
+                case TextureFormat.ASTC_RGB_6x6:
+                case TextureFormat.ASTC_RGB_8x8:
+                case TextureFormat.ASTC_RGB_10x10:
+                case TextureFormat.ASTC_RGB_12x12:
+                case TextureFormat.ASTC_RGBA_4x4:
+                case TextureFormat.ASTC_RGBA_5x5:
+                case TextureFormat.ASTC_RGBA_6x6:
+                case TextureFormat.ASTC_RGBA_8x8:
+                case TextureFormat.ASTC_RGBA_10x10:
+                case TextureFormat.ASTC_RGBA_12x12:
+                case TextureFormat.ETC_RGB4_3DS:
+                case TextureFormat.ETC_RGBA8_3DS:
+                    bitmap = PVRToBitmap(ConvertToPVR());
+                    break;
+                case TextureFormat.DXT1:
+                case TextureFormat.DXT5:
+                case TextureFormat.RHalf:
+                case TextureFormat.RGHalf:
+                case TextureFormat.RGBAHalf:
+                case TextureFormat.RFloat:
+                case TextureFormat.RGFloat:
+                case TextureFormat.RGBAFloat:
+                case TextureFormat.ATC_RGB4:
+                case TextureFormat.ATC_RGBA8:
+                case TextureFormat.EAC_R:
+                case TextureFormat.EAC_R_SIGNED:
+                case TextureFormat.EAC_RG:
+                case TextureFormat.EAC_RG_SIGNED:
+                    bitmap = TextureConverter();
+                    break;
+                case TextureFormat.BC4:
+                case TextureFormat.BC5:
+                case TextureFormat.BC6H:
+                case TextureFormat.BC7:
+                    bitmap = Texgenpack();
+                    break;
+                case TextureFormat.DXT1Crunched:
+                case TextureFormat.DXT5Crunched:
+                    bitmap = CRNToBitmap();
+                    break;
+            }
+            if (bitmap != null && flip)
+                bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            return bitmap;
+        }
+
+        private Bitmap BGRA32ToBitmap()
+        {
+            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+            var pObject = hObject.AddrOfPinnedObject();
+            if (m_Width == 0 && m_Height == 0)
+                return null;
+            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, pObject);
+            hObject.Free();
+            return bitmap;
+        }
+
+        private Bitmap RGB565ToBitmap()
+        {
+            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+            var pObject = hObject.AddrOfPinnedObject();
+            if (m_Width == 0 && m_Height == 0)
+                return null;
+            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
+            hObject.Free();
+            return bitmap;
+        }
+
+        private Bitmap PVRToBitmap(byte[] pvrdata)
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            var len = Math.Abs(bmd.Stride) * bmd.Height;
+            if (!DecompressPVR(pvrdata, bmd.Scan0, len))
+            {
+                bitmap.UnlockBits(bmd);
+                bitmap.Dispose();
+                return null;
+            }
+            bitmap.UnlockBits(bmd);
+            return bitmap;
+        }
+
+        private Bitmap TextureConverter()
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            var len = Math.Abs(bmd.Stride) * bmd.Height;
+            var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
+            if (!Ponvert(image_data, bmd.Scan0, m_Width, m_Height, image_data_size, (int)q_format, len, fixAlpha))
+            {
+                bitmap.UnlockBits(bmd);
+                bitmap.Dispose();
+                return null;
+            }
+            bitmap.UnlockBits(bmd);
+            return bitmap;
+        }
+
+        private Bitmap CRNToBitmap()
+        {
+            IntPtr dxtdata;
+            int dxtsize;
+            if (DecompressCRN(image_data, image_data_size, out dxtdata, out dxtsize))
+            {
+                var dxtbytes = new byte[dxtsize];
+                Marshal.Copy(dxtdata, dxtbytes, 0, dxtsize);
+                Marshal.FreeHGlobal(dxtdata);
+                image_data = dxtbytes;
+                image_data_size = dxtsize;
+                return TextureConverter();
+            }
+            return null;
+        }
+
+        private Bitmap Texgenpack()
+        {
+            var bitmap = new Bitmap(m_Width, m_Height);
+            var rect = new Rectangle(0, 0, m_Width, m_Height);
+            var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
+            texgenpackdecode((int)texturetype, image_data, m_Width, m_Height, bmd.Scan0, fixAlpha);
+            bitmap.UnlockBits(bmd);
+            return bitmap;
+        }
     }
 }
 
-public class KTXHeader
+public enum TextureFormat
+{
+    Alpha8 = 1,
+    ARGB4444,
+    RGB24,
+    RGBA32,
+    ARGB32,
+    RGB565 = 7,
+    R16 = 9,
+    DXT1,
+    DXT5 = 12,
+    RGBA4444,
+    BGRA32,
+    RHalf,
+    RGHalf,
+    RGBAHalf,
+    RFloat,
+    RGFloat,
+    RGBAFloat,
+    YUY2,
+    BC4 = 26,
+    BC5,
+    BC6H = 24,
+    BC7,
+    DXT1Crunched = 28,
+    DXT5Crunched,
+    PVRTC_RGB2,
+    PVRTC_RGBA2,
+    PVRTC_RGB4,
+    PVRTC_RGBA4,
+    ETC_RGB4,
+    ATC_RGB4,
+    ATC_RGBA8,
+    EAC_R = 41,
+    EAC_R_SIGNED,
+    EAC_RG,
+    EAC_RG_SIGNED,
+    ETC2_RGB,
+    ETC2_RGBA1,
+    ETC2_RGBA8,
+    ASTC_RGB_4x4,
+    ASTC_RGB_5x5,
+    ASTC_RGB_6x6,
+    ASTC_RGB_8x8,
+    ASTC_RGB_10x10,
+    ASTC_RGB_12x12,
+    ASTC_RGBA_4x4,
+    ASTC_RGBA_5x5,
+    ASTC_RGBA_6x6,
+    ASTC_RGBA_8x8,
+    ASTC_RGBA_10x10,
+    ASTC_RGBA_12x12,
+    ETC_RGB4_3DS,
+    ETC_RGBA8_3DS
+}
+
+public static class KTXHeader
 {
     public static byte[] IDENTIFIER = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
     public static byte[] ENDIANESS_LE = new byte[] { 1, 2, 3, 4 };
@@ -890,3 +1293,11 @@ public enum QFORMAT
     Q_FORMAT_ASTC_8,
     Q_FORMAT_ASTC_16,
 };
+
+public enum texgenpack_texturetype
+{
+    RGTC1,
+    RGTC2,
+    BPTC_FLOAT,
+    BPTC
+}

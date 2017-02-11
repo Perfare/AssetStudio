@@ -88,9 +88,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Tao.DevIl">
-      <HintPath>library\Tao.DevIl.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="7zip\Common\CommandLineParser.cs">

@@ -15,7 +15,6 @@ namespace Unity_Studio
         public ushort Type2;
 
         public string TypeString;
-        public int exportSize;
         public string InfoText;
         public string extension;
 
