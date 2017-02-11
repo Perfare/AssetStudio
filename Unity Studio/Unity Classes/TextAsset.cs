@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Unity_Studio
@@ -34,7 +35,14 @@ namespace Unity_Studio
                 m_Script = new byte[m_Script_size];
                 a_Stream.Read(m_Script, 0, m_Script_size);
 
-                if (m_Script[0] == 93) { m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script); }
+                if (m_Script[0] == 93)
+                {
+                    try
+                    {
+                        m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script);
+                    }
+                    catch { }
+                }
                 if (m_Script[0] == 60 || (m_Script[0] == 239 && m_Script[1] == 187 && m_Script[2] == 191 && m_Script[3] == 60)) { preloadData.extension = ".xml"; }
             }
             else

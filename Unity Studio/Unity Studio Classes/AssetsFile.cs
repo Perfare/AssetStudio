@@ -275,11 +275,6 @@ namespace Unity_Studio
             int classID = a_Stream.ReadInt32();
             if (fileGen > 15)
             {
-                if (classID == 0)//TODO 暂时用这种方法解决
-                {
-                    a_Stream.Position += 12;
-                    classID = a_Stream.ReadInt32();
-                }
                 a_Stream.ReadByte();
                 int type1;
                 if ((type1 = a_Stream.ReadInt16()) >= 0)
@@ -293,6 +288,13 @@ namespace Unity_Studio
                 }
                 classIDs.Add(new int[] { type1, classID });
                 classID = type1;
+                //TODO 某些文件出现type1=-1时还需要跳过16字节的情况
+                var temp = a_Stream.ReadInt32();
+                if (temp == 0)
+                {
+                    a_Stream.Position += 16;
+                }
+                a_Stream.Position -= 4;
             }
             else if (classID < 0)
             {
