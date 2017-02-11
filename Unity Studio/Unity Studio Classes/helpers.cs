@@ -11,7 +11,7 @@ namespace Unity_Studio
         //m_FileID 0 means current file
         public int m_FileID = -1;
         //m_PathID acts more like a hash in some games
-        public long m_PathID = 0;
+        public long m_PathID;
     }
 
     public static class PPtrHelpers

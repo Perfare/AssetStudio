@@ -28,9 +28,9 @@ namespace Unity_Studio
             }
 
             m_GameObject = sourceFile.ReadPPtr();
-            m_LocalRotation = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-            m_LocalPosition = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-            m_LocalScale = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+            m_LocalRotation = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+            m_LocalPosition = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+            m_LocalScale = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
             int m_ChildrenCount = a_Stream.ReadInt32();
             for (int j = 0; j < m_ChildrenCount; j++)
             {

@@ -11,52 +11,40 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
-using System.Threading.Tasks;
+using static Unity_Studio.UnityStudio;
 
-/*TODO
-For extracting bundles, first check if file exists then decompress
-Font index error in Dreamfall Chapters
-*/
 
 namespace Unity_Studio
 {
     partial class UnityStudioForm : Form
     {
-        private UnityStudio ustudio = new UnityStudio();
+        private AssetPreloadData lastSelectedItem;
+        private AssetPreloadData lastLoadedAsset;
 
-        private AssetPreloadData lastSelectedItem = null;
-        private AssetPreloadData lastLoadedAsset = null;
-        //private AssetsFile mainDataFile = null;
-              
-        private string[] fileTypes = new string[] { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
- 
-        private FMOD.System system = null;
-        private FMOD.Sound sound = null;
-        private FMOD.Channel channel = null;
-        private FMOD.SoundGroup masterSoundGroup = null;
-        //private FMOD.ChannelGroup channelGroup = null;
+        private string[] fileTypes = { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
+
+        private FMOD.System system;
+        private FMOD.Sound sound;
+        private FMOD.Channel channel;
+        private FMOD.SoundGroup masterSoundGroup;
         private FMOD.MODE loopMode = FMOD.MODE.LOOP_OFF;
-        private uint FMODlenms = 0;
+        private uint FMODlenms;
         private float FMODVolume = 0.8f;
         private float FMODfrequency;
 
-        private Bitmap imageTexture = null;
+        private Bitmap imageTexture;
 
         //asset list sorting helpers
         private int firstSortColumn = -1;
-        private int secondSortColumn = 0;
-        private bool reverseSort = false;
-        private bool enableFiltering = false;
+        private int secondSortColumn;
+        private bool reverseSort;
+        private bool enableFiltering;
 
         //tree search
-        private int nextGObject = 0;
-        List<GameObject> treeSrcResults = new List<GameObject>();
+        private int nextGObject;
+        private List<GameObject> treeSrcResults = new List<GameObject>();
 
-        //counters for progress bar
-        //private int totalAssetCount = 0;
-        //private int totalTreeNodes = 0;
-
-        PrivateFontCollection pfc = new PrivateFontCollection();
+        private PrivateFontCollection pfc = new PrivateFontCollection();
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -67,47 +55,43 @@ namespace Unity_Studio
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 resetForm();
-                ustudio.mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
-                Task task = null;
-                if (openFileDialog1.FilterIndex == 1)
+                mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    ustudio.MergeSplitAssets(ustudio.mainPath);
+                    if (openFileDialog1.FilterIndex == 1)
+                    {
+                        MergeSplitAssets(mainPath);
 
-                    //unityFiles.AddRange(openFileDialog1.FileNames);
-                    foreach (var i in openFileDialog1.FileNames)
-                    {
-                        ustudio.unityFiles.Add(i);
-                        ustudio.unityFilesHash.Add(Path.GetFileName(i));
-                    }
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = ustudio.unityFiles.Count;
-                    task = new Task(() =>
-                    {
-                        //use a for loop because list size can change
-                        for (int f = 0; f < ustudio.unityFiles.Count; f++)
+                        //unityFiles.AddRange(openFileDialog1.FileNames);
+                        foreach (var i in openFileDialog1.FileNames)
                         {
-                            StatusStripUpdate("Loading " + Path.GetFileName(ustudio.unityFiles[f]));
-                            ustudio.LoadAssetsFile(ustudio.unityFiles[f]);
+                            unityFiles.Add(i);
+                            unityFilesHash.Add(Path.GetFileName(i));
+                        }
+                        SetProgressBarValue(0);
+                        SetProgressBarMaximum(unityFiles.Count);
+                        //use a for loop because list size can change
+                        for (int f = 0; f < unityFiles.Count; f++)
+                        {
+                            StatusStripUpdate("Loading " + Path.GetFileName(unityFiles[f]));
+                            LoadAssetsFile(unityFiles[f]);
                             ProgressBarPerformStep();
                         }
-                    });
-                }
-                else
-                {
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = openFileDialog1.FileNames.Length;
-                    task = new Task(() =>
+                    }
+                    else
                     {
+                        SetProgressBarValue(0);
+                        SetProgressBarMaximum(unityFiles.Count);
                         foreach (var filename in openFileDialog1.FileNames)
                         {
-                            ustudio.LoadBundleFile(filename);
+                            LoadBundleFile(filename);
                             ProgressBarPerformStep();
                         }
-                    });
-                }
-                task.ContinueWith(task2 => { BuildAssetStrucutres(); });
-                task.ContinueWith(task2 => { ustudio.unityFilesHash.Clear(); ustudio.assetsfileListHash.Clear(); });
-                task.Start();
+                    }
+                    BuildAssetStrucutres();
+                    unityFilesHash.Clear();
+                    assetsfileListHash.Clear();
+                });
             }
         }
 
@@ -123,20 +107,20 @@ namespace Unity_Studio
             if (openFolderDialog1.ShowDialog() == DialogResult.OK)
             {
                 //mainPath = folderBrowserDialog1.SelectedPath;
-                ustudio.mainPath = openFolderDialog1.FileName;
-                if (Path.GetFileName(ustudio.mainPath) == "Select folder")
-                { ustudio.mainPath = Path.GetDirectoryName(ustudio.mainPath); }
+                mainPath = openFolderDialog1.FileName;
+                if (Path.GetFileName(mainPath) == "Select folder")
+                { mainPath = Path.GetDirectoryName(mainPath); }
 
-                if (Directory.Exists(ustudio.mainPath))
+                if (Directory.Exists(mainPath))
                 {
                     resetForm();
 
                     //TODO find a way to read data directly instead of merging files
-                    ustudio.MergeSplitAssets(ustudio.mainPath);
+                    MergeSplitAssets(mainPath);
 
                     for (int t = 0; t < fileTypes.Length; t++)
                     {
-                        string[] fileNames = Directory.GetFiles(ustudio.mainPath, fileTypes[t], SearchOption.AllDirectories);
+                        string[] fileNames = Directory.GetFiles(mainPath, fileTypes[t], SearchOption.AllDirectories);
                         #region  sort specific types alphanumerically
                         if (fileNames.Length > 0 && (t == 1 || t == 2))
                         {
@@ -156,8 +140,8 @@ namespace Unity_Studio
                             });
                             foreach (var i in sortedList)
                             {
-                                ustudio.unityFiles.Add(i);
-                                ustudio.unityFilesHash.Add(Path.GetFileName(i));
+                                unityFiles.Add(i);
+                                unityFilesHash.Add(Path.GetFileName(i));
                             }
 
                         }
@@ -166,27 +150,27 @@ namespace Unity_Studio
                         {
                             foreach (var i in fileNames)
                             {
-                                ustudio.unityFiles.Add(i);
-                                ustudio.unityFilesHash.Add(Path.GetFileName(i));
+                                unityFiles.Add(i);
+                                unityFilesHash.Add(Path.GetFileName(i));
                             }
                         }
                     }
 
-                    ustudio.unityFiles = ustudio.unityFiles.Distinct().ToList();
+                    unityFiles = unityFiles.Distinct().ToList();
                     progressBar1.Value = 0;
-                    progressBar1.Maximum = ustudio.unityFiles.Count;
+                    progressBar1.Maximum = unityFiles.Count;
                     ThreadPool.QueueUserWorkItem(delegate
                     {
                         //use a for loop because list size can change
-                        for (int f = 0; f < ustudio.unityFiles.Count; f++)
+                        for (int f = 0; f < unityFiles.Count; f++)
                         {
-                            var fileName = ustudio.unityFiles[f];
+                            var fileName = unityFiles[f];
                             StatusStripUpdate("Loading " + Path.GetFileName(fileName));
-                            ustudio.LoadAssetsFile(fileName);
+                            LoadAssetsFile(fileName);
                             ProgressBarPerformStep();
                         }
-                        ustudio.unityFilesHash.Clear();
-                        ustudio.assetsfileListHash.Clear();
+                        unityFilesHash.Clear();
+                        assetsfileListHash.Clear();
                         BuildAssetStrucutres();
                     });
                 }
@@ -211,10 +195,10 @@ namespace Unity_Studio
                 {
                     foreach (var fileName in openBundleDialog.FileNames)
                     {
-                        extractedCount += ustudio.extractBundleFile(fileName);
+                        extractedCount += extractBundleFile(fileName);
                         ProgressBarPerformStep();
                     }
-                    StatusStripUpdate("Finished extracting " + extractedCount.ToString() + " files.");
+                    StatusStripUpdate("Finished extracting " + extractedCount + " files.");
                 });
             }
         }
@@ -246,10 +230,10 @@ namespace Unity_Studio
                 {
                     foreach (var fileName in bundleFiles)
                     {
-                        extractedCount += ustudio.extractBundleFile(fileName);
+                        extractedCount += extractBundleFile(fileName);
                         ProgressBarPerformStep();
                     }
-                    StatusStripUpdate("Finished extracting " + extractedCount.ToString() + " files.");
+                    StatusStripUpdate("Finished extracting " + extractedCount + " files.");
                 });
             }
         }
@@ -261,34 +245,34 @@ namespace Unity_Studio
             bool optionBuildHierarchyMenuItem = !dontBuildHierarchyMenuItem.Checked;
             bool optionBuildClassStructuresMenuItem = buildClassStructuresMenuItem.Checked;
 
-            ustudio.BuildAssetStructures(optionLoadAssetsMenuItem, optionDisplayAll, optionBuildHierarchyMenuItem, optionBuildClassStructuresMenuItem);
+            BuildAssetStructures(optionLoadAssetsMenuItem, optionDisplayAll, optionBuildHierarchyMenuItem, optionBuildClassStructuresMenuItem);
 
             BeginInvoke(new Action(() =>
             {
-                if (ustudio.productName != "")
+                if (productName != "")
                 {
-                    this.Text = "Unity Studio - " + ustudio.productName + " - " + ustudio.assetsfileList[0].m_Version + " - " + ustudio.assetsfileList[0].platformStr;
+                    this.Text = "Unity Studio - " + productName + " - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
                 }
-                else if (ustudio.assetsfileList.Count > 0)
+                else if (assetsfileList.Count > 0)
                 {
-                    this.Text = "Unity Studio - no productName - " + ustudio.assetsfileList[0].m_Version + " - " + ustudio.assetsfileList[0].platformStr;
+                    this.Text = "Unity Studio - no productName - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
                 }
                 if (!dontLoadAssetsMenuItem.Checked)
                 {
-                    assetListView.VirtualListSize = ustudio.visibleAssets.Count;
+                    assetListView.VirtualListSize = visibleAssets.Count;
                     resizeAssetListColumns();
                 }
                 if (!dontBuildHierarchyMenuItem.Checked)
                 {
                     sceneTreeView.BeginUpdate();
-                    sceneTreeView.Nodes.AddRange(ustudio.fileNodes.ToArray());
-                    ustudio.fileNodes.Clear();
+                    sceneTreeView.Nodes.AddRange(fileNodes.ToArray());
+                    fileNodes.Clear();
                     sceneTreeView.EndUpdate();
                 }
                 if (buildClassStructuresMenuItem.Checked)
                 {
                     classesListView.BeginUpdate();
-                    foreach (var version in ustudio.AllClassStructures)
+                    foreach (var version in AllClassStructures)
                     {
                         ListViewGroup versionGroup = new ListViewGroup(version.Key);
                         classesListView.Groups.Add(versionGroup);
@@ -301,9 +285,9 @@ namespace Unity_Studio
                     }
                     classesListView.EndUpdate();
                 }
-                StatusStripUpdate("Finished loading " + ustudio.assetsfileList.Count.ToString() + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count).ToString() + " exportable assets.");
+                StatusStripUpdate("Finished loading " + assetsfileList.Count + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count) + " exportable assets.");
                 treeSearch.Select();
-                saveFolderDialog1.InitialDirectory = ustudio.mainPath;
+                saveFolderDialog1.InitialDirectory = mainPath;
             }));
         }
 
@@ -332,18 +316,18 @@ namespace Unity_Studio
 
         private void exportClassStructuresMenuItem_Click(object sender, EventArgs e)
         {
-            if (ustudio.AllClassStructures.Count > 0)
+            if (AllClassStructures.Count > 0)
             {
                 if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
                 {
                     progressBar1.Value = 0;
-                    progressBar1.Maximum = ustudio.AllClassStructures.Count;
+                    progressBar1.Maximum = AllClassStructures.Count;
 
                     var savePath = saveFolderDialog1.FileName;
                     if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
                     { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
 
-                    foreach (var version in ustudio.AllClassStructures)
+                    foreach (var version in AllClassStructures)
                     {
                         if (version.Value.Count > 0)
                         {
@@ -468,7 +452,7 @@ namespace Unity_Studio
 
         private void assetListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
-            e.Item = ustudio.visibleAssets[e.ItemIndex];
+            e.Item = visibleAssets[e.ItemIndex];
         }
 
         private void tabPageSelected(object sender, TabControlEventArgs e)
@@ -537,7 +521,7 @@ namespace Unity_Studio
             {
                 if (treeSrcResults.Count == 0)
                 {
-                    foreach (var aFile in ustudio.assetsfileList)
+                    foreach (var aFile in assetsfileList)
                     {
                         foreach (var GObject in aFile.GameObjectList.Values)
                         {
@@ -583,7 +567,7 @@ namespace Unity_Studio
             assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
 
             var vscrollwidth = SystemInformation.VerticalScrollBarWidth;
-            var hasvscroll = ((float)ustudio.visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
+            var hasvscroll = (visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
             columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
         }
 
@@ -635,8 +619,8 @@ namespace Unity_Studio
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
                 //visibleListAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(ListSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
-                ustudio.visibleAssets = ustudio.exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) >= 0);
-                assetListView.VirtualListSize = ustudio.visibleAssets.Count;
+                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) >= 0);
+                assetListView.VirtualListSize = visibleAssets.Count;
                 assetListView.EndUpdate();
             }
         }
@@ -657,7 +641,7 @@ namespace Unity_Studio
             switch (e.Column)
             {
                 case 0:
-                    ustudio.visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
@@ -665,7 +649,7 @@ namespace Unity_Studio
                     });
                     break;
                 case 1:
-                    ustudio.visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
@@ -673,7 +657,7 @@ namespace Unity_Studio
                     });
                     break;
                 case 2:
-                    ustudio.visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
                         int xdiff = reverseSort ? b.Size.CompareTo(a.Size) : a.Size.CompareTo(b.Size);
                         if (xdiff != 0) return xdiff;
@@ -726,7 +710,7 @@ namespace Unity_Studio
         }
 
         private void PreviewAsset(AssetPreloadData asset)
-        { 
+        {
             switch (asset.Type2)
             {
                 #region Texture2D
@@ -783,7 +767,7 @@ namespace Unity_Studio
                         result = channel.getFrequency(out FMODfrequency);
                         if (ERRCHECK(result)) { break; }
 
-                        FMODinfoLabel.Text = FMODfrequency.ToString() + " Hz";
+                        FMODinfoLabel.Text = FMODfrequency + " Hz";
                         FMODtimerLabel.Text = "0:0.0 / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
                         break;
                     }
@@ -1234,7 +1218,7 @@ namespace Unity_Studio
                                                 //选中它和它的子节点
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = true));
                                                 //导出FBX
-                                                ustudio.WriteFBX(savePath + filename + ".fbx", false);
+                                                WriteFBX(savePath + filename + ".fbx", false);
                                                 //取消选中
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = false));
                                             }
@@ -1262,7 +1246,7 @@ namespace Unity_Studio
 
 
                 var timestamp = DateTime.Now;
-                saveFileDialog1.FileName = ustudio.productName + timestamp.ToString("_yy_MM_dd__HH_mm_ss");
+                saveFileDialog1.FileName = productName + timestamp.ToString("_yy_MM_dd__HH_mm_ss");
                 //extension will be added by the file save dialog
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -1277,7 +1261,7 @@ namespace Unity_Studio
                             switch (saveFileDialog1.FilterIndex)
                             {
                                 case 1:
-                                    ustudio.WriteFBX(saveFileDialog1.FileName, exportSwitch);
+                                    WriteFBX(saveFileDialog1.FileName, exportSwitch);
                                     break;
                                 case 2:
                                     break;
@@ -1294,17 +1278,17 @@ namespace Unity_Studio
 
         private void ExportAssets_Click(object sender, EventArgs e)
         {
-            if (ustudio.exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
+            if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
             {
                 timer.Stop();
                 List<AssetPreloadData> toExportAssets = null;
                 if (((ToolStripItem)sender).Name == "exportAllAssetsMenuItem")
                 {
-                    toExportAssets = ustudio.exportableAssets;
+                    toExportAssets = exportableAssets;
                 }
                 else if (((ToolStripItem)sender).Name == "exportFilteredAssetsMenuItem")
                 {
-                    toExportAssets = ustudio.visibleAssets;
+                    toExportAssets = visibleAssets;
                 }
                 else if (((ToolStripItem)sender).Name == "exportSelectedAssetsMenuItem")
                 {
@@ -1334,58 +1318,58 @@ namespace Unity_Studio
                         string exportpath = savePath + "\\";
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
-
+                        StatusStripUpdate("Exporting " + asset.TypeString + ": " + asset.Text);
                         //AudioClip and Texture2D extensions are set when the list is built
                         //so their overwrite tests can be done without loading them again
                         switch (asset.Type2)
                         {
                             case 28:
-                                if (ustudio.ExportTexture(asset, exportpath, true))
+                                if (ExportTexture(asset, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case 83:
-                                if (ustudio.ExportAudioClip(asset, exportpath + asset.Text, asset.extension))
+                                if (ExportAudioClip(asset, exportpath + asset.Text, asset.extension))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case 48:
-                                if (!ustudio.ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ustudio.ExportShader(new Shader(asset, true), exportpath + asset.Text + ".txt");
+                                    ExportShader(new Shader(asset, true), exportpath + asset.Text + ".txt");
                                     exportedCount++;
                                 }
                                 break;
                             case 49:
                                 TextAsset m_TextAsset = new TextAsset(asset, true);
-                                if (!ustudio.ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ustudio.ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
+                                    ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             case 114:
                                 MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
-                                if (!ustudio.ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ustudio.ExportMonoBehaviour(m_MonoBehaviour, exportpath + asset.Text + asset.extension);
+                                    ExportMonoBehaviour(m_MonoBehaviour, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             case 128:
                                 unityFont m_Font = new unityFont(asset, true);
-                                if (!ustudio.ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ustudio.ExportFont(m_Font, exportpath + asset.Text + asset.extension);
+                                    ExportFont(m_Font, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             default:
-                                if (!ustudio.ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
                                 {
-                                    ustudio.ExportRawFile(asset, exportpath + asset.Text + asset.extension);
+                                    ExportRawFile(asset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
@@ -1400,11 +1384,11 @@ namespace Unity_Studio
                             statusText = "Nothing exported.";
                             break;
                         default:
-                            statusText = "Finished exporting " + exportedCount.ToString() + " assets.";
+                            statusText = "Finished exporting " + exportedCount + " assets.";
                             break;
                     }
 
-                    if (toExport > exportedCount) { statusText += " " + (toExport - exportedCount).ToString() + " assets skipped (not extractable or files already exist)"; }
+                    if (toExport > exportedCount) { statusText += " " + (toExport - exportedCount) + " assets skipped (not extractable or files already exist)"; }
 
                     StatusStripUpdate(statusText);
 
@@ -1465,6 +1449,18 @@ namespace Unity_Studio
             }
         }
 
+        private void ProgressBarMaximumAdd(int value)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { progressBar1.Maximum += value; }));
+            }
+            else
+            {
+                progressBar1.Maximum += value;
+            }
+        }
+
         public UnityStudioForm()
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
@@ -1475,6 +1471,12 @@ namespace Unity_Studio
             openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
             assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
             FMODinit();
+            //UI
+            UnityStudio.SetProgressBarValue = SetProgressBarValue;
+            UnityStudio.SetProgressBarMaximum = SetProgressBarMaximum;
+            UnityStudio.ProgressBarPerformStep = ProgressBarPerformStep;
+            UnityStudio.StatusStripUpdate = StatusStripUpdate;
+            UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
         }
 
         private void resetForm()
@@ -1486,10 +1488,10 @@ namespace Unity_Studio
 
             base.Text = "Unity Studio";
 
-            ustudio.unityFiles.Clear();
-            ustudio.assetsfileList.Clear();
-            ustudio.exportableAssets.Clear();
-            ustudio.visibleAssets.Clear();
+            unityFiles.Clear();
+            assetsfileList.Clear();
+            exportableAssets.Clear();
+            visibleAssets.Clear();
             UnityStudio.assetsfileandstream.Clear();
 
             sceneTreeView.Nodes.Clear();
@@ -1517,16 +1519,6 @@ namespace Unity_Studio
             //FMODinit();
             FMODreset();
 
-        }
-
-        private void UnityStudioForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            /*Properties.Settings.Default["uniqueNames"] = uniqueNamesMenuItem.Checked;
-            Properties.Settings.Default["enablePreview"] = enablePreviewMenuItem.Checked;
-            Properties.Settings.Default["displayInfo"] = displayAssetInfoMenuItem.Checked;
-            Properties.Settings.Default.Save();
-
-            foreach (var assetsFile in assetsfileList) { assetsFile.a_Stream.Dispose(); } //is this needed?*/
         }
     }
 }

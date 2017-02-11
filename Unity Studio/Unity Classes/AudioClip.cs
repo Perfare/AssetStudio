@@ -175,11 +175,11 @@ namespace Unity_Studio
                     preloadData.extension = ".AudioClip";
                     preloadData.InfoText += "Unknown";
                 }
-                preloadData.InfoText += "\n3D: " + m_3D.ToString();
+                preloadData.InfoText += "\n3D: " + m_3D;
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
     }

@@ -28,7 +28,7 @@ namespace Unity_Studio
 
         public SortedDictionary<int, ClassStruct> ClassStructures = new SortedDictionary<int, ClassStruct>();
 
-        private bool baseDefinitions = false;
+        private bool baseDefinitions;
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
         public class UnityShared
@@ -152,7 +152,7 @@ namespace Unity_Studio
             int assetCount = a_Stream.ReadInt32();
 
             #region asset preload table
-            string assetIDfmt = "D" + assetCount.ToString().Length.ToString(); //format for unique ID
+            string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
 
             for (int i = 0; i < assetCount; i++)
             {
@@ -218,8 +218,8 @@ namespace Unity_Studio
             }
             #endregion
 
-            buildType = m_Version.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] strver = (m_Version.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+            buildType = m_Version.Split(new[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] strver = (m_Version.Split(new[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
             version = Array.ConvertAll(strver, int.Parse);
 
             if (fileGen >= 14)
@@ -286,7 +286,7 @@ namespace Unity_Studio
                 {
                     type1 = classID;
                 }
-                classIDs.Add(new int[] { type1, classID });
+                classIDs.Add(new[] { type1, classID });
                 classID = type1;
                 //TODO 某些文件出现type1=-1时还需要跳过16字节的情况
                 var temp = a_Stream.ReadInt32();

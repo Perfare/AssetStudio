@@ -14,7 +14,7 @@ namespace Unity_Studio
         public int m_Height;
         public int m_CompleteImageSize;
         public TextureFormat m_TextureFormat;
-        public bool m_MipMap = false;
+        public bool m_MipMap;
         public bool m_IsReadable;
         public bool m_ReadAllowed;
         public int m_ImageCount;
@@ -39,11 +39,11 @@ namespace Unity_Studio
         private int dwFlags = 0x1 + 0x2 + 0x4 + 0x1000;
         //public int dwHeight; m_Height
         //public int dwWidth; m_Width
-        private int dwPitchOrLinearSize = 0x0;
+        private int dwPitchOrLinearSize;
         private int dwMipMapCount = 0x1;
         private int dwSize = 0x20;
         private int dwFlags2;
-        private int dwFourCC = 0x0;
+        private int dwFourCC;
         private int dwRGBBitCount;
         private int dwRBitMask;
         private int dwGBitMask;
@@ -672,7 +672,7 @@ namespace Unity_Studio
             }
             else
             {
-                preloadData.InfoText = "Width: " + m_Width.ToString() + "\nHeight: " + m_Height.ToString() + "\nFormat: ";
+                preloadData.InfoText = "Width: " + m_Width + "\nHeight: " + m_Height + "\nFormat: ";
 
                 string type = m_TextureFormat.ToString();
                 preloadData.InfoText += type;
@@ -745,7 +745,7 @@ namespace Unity_Studio
 
                 }
 
-                preloadData.InfoText += "\nAnisotropic level: " + m_Aniso.ToString() + "\nMip map bias: " + m_MipBias.ToString();
+                preloadData.InfoText += "\nAnisotropic level: " + m_Aniso + "\nMip map bias: " + m_MipBias;
 
                 switch (m_WrapMode)
                 {
@@ -755,7 +755,7 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
 
@@ -906,6 +906,8 @@ namespace Unity_Studio
 
         public Bitmap ConvertToBitmap(bool flip)
         {
+            if (image_data == null || image_data.Length == 0)
+                return null;
             Bitmap bitmap = null;
             switch (m_TextureFormat)
             {
@@ -981,28 +983,20 @@ namespace Unity_Studio
 
         private Bitmap BGRA32ToBitmap()
         {
-            if (image_data.Length > 0)
-            {
-                var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
-                var pObject = hObject.AddrOfPinnedObject();
-                var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, pObject);
-                hObject.Free();
-                return bitmap;
-            }
-            return null;
+            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+            var pObject = hObject.AddrOfPinnedObject();
+            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, pObject);
+            hObject.Free();
+            return bitmap;
         }
 
         private Bitmap RGB565ToBitmap()
         {
-            if (image_data.Length > 0)
-            {
-                var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
-                var pObject = hObject.AddrOfPinnedObject();
-                var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
-                hObject.Free();
-                return bitmap;
-            }
-            return null;
+            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+            var pObject = hObject.AddrOfPinnedObject();
+            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
+            hObject.Free();
+            return bitmap;
         }
 
         private Bitmap PVRToBitmap(byte[] pvrdata)
@@ -1126,8 +1120,8 @@ public enum TextureFormat
 public static class KTXHeader
 {
     public static byte[] IDENTIFIER = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
-    public static byte[] ENDIANESS_LE = new byte[] { 1, 2, 3, 4 };
-    public static byte[] ENDIANESS_BE = new byte[] { 4, 3, 2, 1 };
+    public static byte[] ENDIANESS_LE = { 1, 2, 3, 4 };
+    public static byte[] ENDIANESS_BE = { 4, 3, 2, 1 };
 
     // constants for glInternalFormat
     public static int GL_ETC1_RGB8_OES = 0x8D64;

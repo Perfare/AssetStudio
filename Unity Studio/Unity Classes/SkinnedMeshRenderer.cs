@@ -141,8 +141,8 @@ namespace Unity_Studio
                 if (version[0] >= 4 || (version[0] == 3 && version[1] >= 4))
                 {
                     //AABB
-                    float[] m_Center = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-                    float[] m_Extent = new float[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    float[] m_Center = { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                    float[] m_Extent = { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
                     bool m_DirtyAABB = a_Stream.ReadBoolean();
                 }
             }

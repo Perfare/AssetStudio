@@ -161,7 +161,7 @@ namespace Unity_Studio
         {
             public int m_NumItems;
             public float m_Range = 1.0f;
-            public float m_Start = 0.0f;
+            public float m_Start;
             public byte[] m_Data;
             public byte m_BitSize;
         }
@@ -174,7 +174,7 @@ namespace Unity_Studio
             switch (inputBytes.Length)
             {
                 case 1:
-                    result = (float)inputBytes[0] / 255.0f;
+                    result = inputBytes[0] / 255.0f;
                     break;
                 case 2:
                     result = Half.ToHalf(inputBytes, 0);
@@ -204,7 +204,7 @@ namespace Unity_Studio
             }
             int groupSize = pakData.m_BitSize; //bitSize * 8 values / 8 bits
             byte[] group = new byte[groupSize];
-            int groupCount = (int)(pakData.m_NumItems / 8);
+            int groupCount = pakData.m_NumItems / 8;
 
             for (int g = 0; g < groupCount; g++)
             {
@@ -229,7 +229,7 @@ namespace Unity_Studio
 
             //m_NumItems is not necessarily a multiple of 8, so there can be one extra group with fewer values
             int endBytes = pakData.m_Data.Length - groupCount * groupSize;
-            int endVal = (int)(pakData.m_NumItems - groupCount * 8);
+            int endVal = pakData.m_NumItems - groupCount * 8;
 
             if (endBytes > 0)
             {

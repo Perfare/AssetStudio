@@ -11,26 +11,32 @@ using System.Web.Script.Serialization;
 
 namespace Unity_Studio
 {
-    class UnityStudio
+    internal static class UnityStudio
     {
-        public List<string> unityFiles = new List<string>(); //files to load
-        public HashSet<string> unityFilesHash = new HashSet<string>(); //improve performance
-        public List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
-        public HashSet<string> assetsfileListHash = new HashSet<string>(); //improve performance
+        public static List<string> unityFiles = new List<string>(); //files to load
+        public static HashSet<string> unityFilesHash = new HashSet<string>(); //improve performance
+        public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
+        public static HashSet<string> assetsfileListHash = new HashSet<string>(); //improve performance
         public static Dictionary<string, EndianStream> assetsfileandstream = new Dictionary<string, EndianStream>(); //use for read res files
-        public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
-        public HashSet<string> exportableAssetsHash = new HashSet<string>(); //improve performance
-        public List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
+        public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
+        private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //improve performance
+        public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
 
-        public string productName = "";
-        public string mainPath = "";
-        public List<GameObject> fileNodes = new List<GameObject>();
+        public static string productName = "";
+        public static string mainPath = "";
+        public static List<GameObject> fileNodes = new List<GameObject>();
 
-        public Dictionary<string, Dictionary<string, string>> jsonMats;
-        public Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
+        private static Dictionary<string, Dictionary<string, string>> jsonMats;
+        public static Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
 
+        //UI
+        public static Action<int> SetProgressBarValue;
+        public static Action<int> SetProgressBarMaximum;
+        public static Action ProgressBarPerformStep;
+        public static Action<string> StatusStripUpdate;
+        public static Action<int> ProgressBarMaximumAdd;
 
-        public void LoadAssetsFile(string fileName)
+        public static void LoadAssetsFile(string fileName)
         {
             //var loadedAssetsFile = assetsfileList.Find(aFile => aFile.filePath == fileName);
             //if (loadedAssetsFile == null)
@@ -110,11 +116,14 @@ namespace Unity_Studio
                         sharedFile.Index = unityFiles.IndexOf(sharedFilePath);
                     }
                 }
+                if (value > 0)
+                    ProgressBarMaximumAdd(value);
             }
         }
 
-        public void LoadBundleFile(string bundleFileName)
+        public static void LoadBundleFile(string bundleFileName)
         {
+            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + "...");
             BundleFile b_File = new BundleFile(bundleFileName);
 
             List<AssetsFile> b_assetsfileList = new List<AssetsFile>();
@@ -136,7 +145,7 @@ namespace Unity_Studio
                                             Regex.IsMatch(memFile.fileName, "BuildPlayer-.*?"));
                         break;
                 }
-
+                StatusStripUpdate("Loading " + memFile.fileName);
                 //create dummy path to be used for asset extraction
                 memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
 
@@ -145,8 +154,8 @@ namespace Unity_Studio
                 {
                     //make use of the bundle file version
                     assetsFile.m_Version = b_File.versionEngine;
-                    assetsFile.version = Array.ConvertAll((b_File.versionEngine.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
-                    assetsFile.buildType = b_File.versionEngine.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
+                    assetsFile.version = Array.ConvertAll((b_File.versionEngine.Split(new[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
+                    assetsFile.buildType = b_File.versionEngine.Split(new[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
                 }
                 if (validAssetsFile)
                 {
@@ -172,7 +181,7 @@ namespace Unity_Studio
             }
         }
 
-        public void MergeSplitAssets(string dirPath)
+        public static void MergeSplitAssets(string dirPath)
         {
             string[] splitFiles = Directory.GetFiles(dirPath, "*.split0");
             foreach (var splitFile in splitFiles)
@@ -181,14 +190,12 @@ namespace Unity_Studio
                 string destPath = Path.GetDirectoryName(splitFile) + "\\";
                 if (!File.Exists(destPath + destFile))
                 {
-                    //StatusStripUpdate("Merging " + destFile + " split files...");
-
                     string[] splitParts = Directory.GetFiles(destPath, destFile + ".split*");
                     using (var destStream = File.Create(destPath + destFile))
                     {
                         for (int i = 0; i < splitParts.Length; i++)
                         {
-                            string splitPart = destPath + destFile + ".split" + i.ToString();
+                            string splitPart = destPath + destFile + ".split" + i;
                             using (var sourceStream = File.OpenRead(splitPart))
                                 sourceStream.CopyTo(destStream); // You can pass the buffer size as second argument.
                         }
@@ -197,11 +204,11 @@ namespace Unity_Studio
             }
         }
 
-        public int extractBundleFile(string bundleFileName)
+        public static int extractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
 
-            //StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ,,,");
+            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ,,,");
 
             string extractPath = bundleFileName + "_unpacked\\";
             Directory.CreateDirectory(extractPath);
@@ -216,13 +223,9 @@ namespace Unity_Studio
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
                 }
-                if (File.Exists(filePath))
+                if (!File.Exists(filePath))
                 {
-                    //StatusStripUpdate("File " + memFile.fileName + " already exists");
-                }
-                else
-                {
-                    //StatusStripUpdate("Extracting " + Path.GetFileName(memFile.fileName));
+                    StatusStripUpdate("Extracting " + Path.GetFileName(memFile.fileName));
                     extractedCount += 1;
 
                     using (FileStream file = new FileStream(filePath, FileMode.Create, System.IO.FileAccess.Write))
@@ -236,22 +239,21 @@ namespace Unity_Studio
             return extractedCount;
         }
 
-        public void BuildAssetStructures(bool loadAssetsMenuItem, bool displayAll, bool buildHierarchyMenuItem, bool buildClassStructuresMenuItem)
+        public static void BuildAssetStructures(bool loadAssetsMenuItem, bool displayAll, bool buildHierarchyMenuItem, bool buildClassStructuresMenuItem)
         {
             #region first loop - read asset data & create list
             if (loadAssetsMenuItem)
             {
-                //assetListView.BeginUpdate();
-                string fileIDfmt = "D" + assetsfileList.Count.ToString().Length.ToString();
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.preloadTable.Values.Count));
+                string fileIDfmt = "D" + assetsfileList.Count.ToString().Length;
 
-                foreach (var assetsFile in assetsfileList)
+                for (var i = 0; i < assetsfileList.Count; i++)
                 {
-                    //StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
+                    var assetsFile = assetsfileList[i];
+                    StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
 
-                    string fileID = assetsfileList.IndexOf(assetsFile).ToString(fileIDfmt);
-
-                    //ListViewGroup assetGroup = new ListViewGroup(Path.GetFileName(assetsFile.filePath));
-
+                    string fileID = i.ToString(fileIDfmt);
 
                     foreach (var asset in assetsFile.preloadTable.Values)
                     {
@@ -260,68 +262,68 @@ namespace Unity_Studio
                         switch (asset.Type2)
                         {
                             case 1: //GameObject
-                                {
-                                    GameObject m_GameObject = new GameObject(asset);
-                                    assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
-                                    //totalTreeNodes++;
-                                    break;
-                                }
+                            {
+                                GameObject m_GameObject = new GameObject(asset);
+                                assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
+                                //totalTreeNodes++;
+                                break;
+                            }
                             case 4: //Transform
-                                {
-                                    Transform m_Transform = new Transform(asset);
-                                    assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
-                                    break;
-                                }
+                            {
+                                Transform m_Transform = new Transform(asset);
+                                assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
+                                break;
+                            }
                             case 224: //RectTransform
-                                {
-                                    RectTransform m_Rect = new RectTransform(asset);
-                                    assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
-                                    break;
-                                }
+                            {
+                                RectTransform m_Rect = new RectTransform(asset);
+                                assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
+                                break;
+                            }
                             //case 21: //Material
                             case 28: //Texture2D
-                                {
-                                    Texture2D m_Texture2D = new Texture2D(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
+                            {
+                                Texture2D m_Texture2D = new Texture2D(asset, false);
+                                exportable = true;
+                                break;
+                            }
                             case 48: //Shader
-                                {
-                                    Shader m_Shader = new Shader(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
+                            {
+                                Shader m_Shader = new Shader(asset, false);
+                                exportable = true;
+                                break;
+                            }
                             case 49: //TextAsset
-                                {
-                                    TextAsset m_TextAsset = new TextAsset(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
+                            {
+                                TextAsset m_TextAsset = new TextAsset(asset, false);
+                                exportable = true;
+                                break;
+                            }
                             case 83: //AudioClip
-                                {
-                                    AudioClip m_AudioClip = new AudioClip(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
+                            {
+                                AudioClip m_AudioClip = new AudioClip(asset, false);
+                                exportable = true;
+                                break;
+                            }
                             case 114: //MonoBehaviour
-                                {
-                                    var m_MonoBehaviour = new MonoBehaviour(asset, false);
-                                    if (asset.Type1 != asset.Type2 && assetsFile.ClassStructures.ContainsKey(asset.Type1))
-                                        exportable = true;
-                                    break;
-                                }
-                            case 128: //Font
-                                {
-                                    unityFont m_Font = new unityFont(asset, false);
+                            {
+                                var m_MonoBehaviour = new MonoBehaviour(asset, false);
+                                if (asset.Type1 != asset.Type2 && assetsFile.ClassStructures.ContainsKey(asset.Type1))
                                     exportable = true;
-                                    break;
-                                }
+                                break;
+                            }
+                            case 128: //Font
+                            {
+                                unityFont m_Font = new unityFont(asset, false);
+                                exportable = true;
+                                break;
+                            }
                             case 129: //PlayerSettings
-                                {
-                                    var plSet = new PlayerSettings(asset);
-                                    productName = plSet.productName;
-                                    break;
-                                }
+                            {
+                                var plSet = new PlayerSettings(asset);
+                                productName = plSet.productName;
+                                break;
+                            }
                             case 21: //Material
                             case 43: //Mesh
                             case 74: //AnimationClip
@@ -329,18 +331,18 @@ namespace Unity_Studio
                             case 91: //AnimatorController
                             case 115: //MonoScript
                             case 213: //Sprite
-                                {
-                                    if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
-                                        break;
-                                    asset.sourceFile.a_Stream.Position = asset.Offset;
-                                    var len = asset.sourceFile.a_Stream.ReadInt32();
-                                    if (len > 0 && len < asset.Size - 4)
-                                    {
-                                        var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
-                                        asset.Text = Encoding.UTF8.GetString(bytes);
-                                    }
+                            {
+                                if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
                                     break;
+                                asset.sourceFile.a_Stream.Position = asset.Offset;
+                                var len = asset.sourceFile.a_Stream.ReadInt32();
+                                if (len > 0 && len < asset.Size - 4)
+                                {
+                                    var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
+                                    asset.Text = Encoding.UTF8.GetString(bytes);
                                 }
+                                break;
+                            }
                         }
                         if (!exportable && displayAll)
                         {
@@ -349,7 +351,7 @@ namespace Unity_Studio
                                 asset.Text = asset.TypeString + " #" + asset.uniqueID;
                             }
                             asset.extension = ".dat";
-                            asset.SubItems.AddRange(new string[] { asset.TypeString, asset.Size.ToString() });
+                            asset.SubItems.AddRange(new[] {asset.TypeString, asset.Size.ToString()});
                             exportable = true;
                         }
                         if (exportable)
@@ -360,6 +362,7 @@ namespace Unity_Studio
                             }
                             assetsFile.exportableAssets.Add(asset);
                         }
+                        ProgressBarPerformStep();
                     }
                     exportableAssets.AddRange(assetsFile.exportableAssets);
                     //if (assetGroup.Items.Count > 0) { listView1.Groups.Add(assetGroup); }
@@ -377,11 +380,11 @@ namespace Unity_Studio
             fileNodes = new List<GameObject>();
             if (buildHierarchyMenuItem)
             {
-                //sceneTreeView.BeginUpdate();
-
+                SetProgressBarValue(1);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count) + 1);
                 foreach (var assetsFile in assetsfileList)
                 {
-                    //StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
+                    StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
                     fileNode.Text = Path.GetFileName(assetsFile.filePath);
                     fileNode.m_Name = "RootNode";
@@ -407,6 +410,7 @@ namespace Unity_Studio
                         }
 
                         parentNode.Nodes.Add(m_GameObject);
+                        ProgressBarPerformStep();
                     }
 
 
@@ -416,7 +420,6 @@ namespace Unity_Studio
                     }
                     fileNodes.Add(fileNode);
                 }
-                //sceneTreeView.EndUpdate();
 
                 if (File.Exists(mainPath + "\\materials.json"))
                 {
@@ -451,11 +454,9 @@ namespace Unity_Studio
                 }
             }
             #endregion
-
-            
         }
 
-        public void WriteFBX(string FBXfile, bool allNodes)
+        public static void WriteFBX(string FBXfile, bool allNodes)
         {
             var timestamp = DateTime.Now;
 
@@ -884,7 +885,7 @@ namespace Unity_Studio
                     Transform m_Transform;
                     if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out m_Transform))
                     {
-                        float[] m_EulerRotation = QuatToEuler(new float[] { m_Transform.m_LocalRotation[0], -m_Transform.m_LocalRotation[1], -m_Transform.m_LocalRotation[2], m_Transform.m_LocalRotation[3] });
+                        float[] m_EulerRotation = QuatToEuler(new[] { m_Transform.m_LocalRotation[0], -m_Transform.m_LocalRotation[1], -m_Transform.m_LocalRotation[2], m_Transform.m_LocalRotation[3] });
 
                         ob.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -m_Transform.m_LocalPosition[0], m_Transform.m_LocalPosition[1], m_Transform.m_LocalPosition[2]);
                         ob.AppendFormat("\n\t\t\tP: \"Lcl Rotation\", \"Lcl Rotation\", \"\", \"A\",{0},{1},{2}", m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2]);//handedness is switched in quat
@@ -1155,11 +1156,11 @@ namespace Unity_Studio
                 FBXwriter.Write(cb);
                 cb.Clear();
 
-                //StatusStripUpdate("Finished exporting " + Path.GetFileName(FBXfile));
+                StatusStripUpdate("Finished exporting " + Path.GetFileName(FBXfile));
             }
         }
 
-        public void MeshFBX(Mesh m_Mesh, string MeshID, StringBuilder ob)
+        private static void MeshFBX(Mesh m_Mesh, string MeshID, StringBuilder ob)
         {
             if (m_Mesh.m_VertexCount > 0)//general failsafe
             {
@@ -1534,7 +1535,7 @@ namespace Unity_Studio
             }
         }
 
-        public static float[] QuatToEuler(float[] q)
+        private static float[] QuatToEuler(float[] q)
         {
             double eax = 0;
             double eay = 0;
@@ -1576,7 +1577,7 @@ namespace Unity_Studio
             return new float[3] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
 
-        public static byte[] RandomColorGenerator(string name)
+        private static byte[] RandomColorGenerator(string name)
         {
             int nameHash = name.GetHashCode();
             Random r = new Random(nameHash);
@@ -1589,14 +1590,14 @@ namespace Unity_Studio
             return new byte[3] { red, green, blue };
         }
 
-        public void ExportRawFile(AssetPreloadData asset, string exportFilepath)
+        public static void ExportRawFile(AssetPreloadData asset, string exportFilepath)
         {
             asset.sourceFile.a_Stream.Position = asset.Offset;
             var bytes = asset.sourceFile.a_Stream.ReadBytes(asset.Size);
             File.WriteAllBytes(exportFilepath, bytes);
         }
 
-        public bool ExportTexture(AssetPreloadData asset, string exportPathName, bool flip)
+        public static bool ExportTexture(AssetPreloadData asset, string exportPathName, bool flip)
         {
             var m_Texture2D = new Texture2D(asset, true);
             var convert = (bool)Properties.Settings.Default["convertTexture"];
@@ -1628,7 +1629,7 @@ namespace Unity_Studio
             return true;
         }
 
-        public bool ExportAudioClip(AssetPreloadData asset, string exportFilename, string exportFileextension)
+        public static bool ExportAudioClip(AssetPreloadData asset, string exportFilename, string exportFileextension)
         {
             var oldextension = exportFileextension;
             if ((bool)Properties.Settings.Default["convertfsb"] && exportFileextension == ".fsb")
@@ -1709,22 +1710,22 @@ namespace Unity_Studio
             return true;
         }
 
-        public void ExportMonoBehaviour(MonoBehaviour m_MonoBehaviour, string exportFilename)
+        public static void ExportMonoBehaviour(MonoBehaviour m_MonoBehaviour, string exportFilename)
         {
             File.WriteAllText(exportFilename, m_MonoBehaviour.serializedText);
         }
 
-        public void ExportShader(Shader m_Shader, string exportFilename)
+        public static void ExportShader(Shader m_Shader, string exportFilename)
         {
             File.WriteAllBytes(exportFilename, m_Shader.m_Script);
         }
 
-        public void ExportText(TextAsset m_TextAsset, string exportFilename)
+        public static void ExportText(TextAsset m_TextAsset, string exportFilename)
         {
             File.WriteAllBytes(exportFilename, m_TextAsset.m_Script);
         }
 
-        public void ExportFont(unityFont m_Font, string exportFilename)
+        public static void ExportFont(unityFont m_Font, string exportFilename)
         {
             if (m_Font.m_FontData != null)
             {
@@ -1732,19 +1733,14 @@ namespace Unity_Studio
             }
         }
 
-        public bool ExportFileExists(string filename, string assetType)
+        public static bool ExportFileExists(string filename, string assetType)
         {
             if (File.Exists(filename))
             {
-                //StatusStripUpdate(assetType + " file " + Path.GetFileName(filename) + " already exists");
                 return true;
             }
-            else
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(filename));
-                //StatusStripUpdate("Exporting " + assetType + ": " + Path.GetFileName(filename));
-                return false;
-            }
+            Directory.CreateDirectory(Path.GetDirectoryName(filename));
+            return false;
         }
     }
 }
