@@ -275,7 +275,6 @@ namespace Unity_Studio
         private void readBase5()
         {
             int classID = a_Stream.ReadInt32();
-            if (classID < 0) { a_Stream.Position += 16; }
             if (fileGen > 15)
             {
                 a_Stream.ReadByte();
@@ -291,8 +290,19 @@ namespace Unity_Studio
                 }
                 classIDs.Add(new int[] { type1, classID });
                 classID = type1;
+                var temp = a_Stream.ReadInt32();
+                if (temp == 0)
+                {
+                    a_Stream.Position += 16;
+                }
+                a_Stream.Position -= 4;
             }
-            a_Stream.Position += 16;
+            else if (classID < 0)
+            {
+                a_Stream.Position += 16;
+            }
+
+                a_Stream.Position += 16;
 
             if (baseDefinitions)
             {

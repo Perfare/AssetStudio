@@ -7,8 +7,8 @@ namespace Unity_Studio
 {
     public class PlayerSettings
     {
-        public string companyName = "";
-        public string productName = "";
+        public string companyName;
+        public string productName;
 
         public PlayerSettings(AssetPreloadData preloadData)
         {
@@ -17,7 +17,7 @@ namespace Unity_Studio
             a_Stream.Position = preloadData.Offset;
 
 
-            if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 nad up
+            if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 4) || sourceFile.version[0] > 5)//5.4.0 nad up
             {
                 //productGUID
                 a_Stream.ReadInt32();
