@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using static Unity_Studio.UnityStudio;
 
 
@@ -681,6 +683,7 @@ namespace Unity_Studio
             fontPreviewBox.Visible = false;
             pfc.Dispose();
             FMODpanel.Visible = false;
+            glControl1.Visible = false;
             lastLoadedAsset = null;
             StatusStripUpdate("");
 
@@ -860,6 +863,15 @@ namespace Unity_Studio
                         break;
                     }
                 #endregion
+                #region Mesh
+                case 43: //Mesh
+                    {
+                        glControl1.Visible = true;
+                        StatusStripUpdate("Coming Soon!?!");
+                    }
+                    break;
+                #endregion
+
                 default:
                     {
                         StatusStripUpdate("Only supported export the raw file.");
@@ -1479,6 +1491,30 @@ namespace Unity_Studio
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            glControl1_Resize(this, EventArgs.Empty);
+            GL.ClearColor(Color.CadetBlue);
+        }
+
+        private void glControl1_Paint(object sender, PaintEventArgs e)
+        {
+            glControl1.MakeCurrent();
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            glControl1.SwapBuffers();
+        }
+
+        private void glControl1_Resize(object sender, EventArgs e)
+        {
+            if (glControl1.ClientSize.Height == 0)
+            {
+                glControl1.ClientSize = new System.Drawing.Size(glControl1.ClientSize.Width, 1);
+            }
+
+            GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
+        }
+
         private void resetForm()
         {
             /*Properties.Settings.Default["uniqueNames"] = uniqueNamesMenuItem.Checked;
@@ -1509,6 +1545,7 @@ namespace Unity_Studio
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
             fontPreviewBox.Visible = false;
+            glControl1.Visible = false;
             lastSelectedItem = null;
             lastLoadedAsset = null;
             firstSortColumn = -1;

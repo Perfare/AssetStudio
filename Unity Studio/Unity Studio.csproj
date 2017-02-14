@@ -73,6 +73,14 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.1.1.2349.61993\lib\NET40\OpenTK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.1.1.2349.61993\lib\NET40\OpenTK.GLControl.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Half, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -144,6 +152,9 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="GOHierarchy.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Unity Studio Classes\AssetPreloadData.cs" />
     <Compile Include="Unity Classes\AudioClip.cs" />
     <Compile Include="Unity Classes\BuildSettings.cs" />
@@ -161,9 +172,6 @@
     <Compile Include="FMOD Studio API\fmod_dsp.cs" />
     <Compile Include="FMOD Studio API\fmod_errors.cs" />
     <Compile Include="Unity Classes\Font.cs" />
-    <Compile Include="GOHierarchy.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Unity Studio Classes\Lz4DecoderStream.cs" />
     <Compile Include="Unity Classes\Material.cs" />
     <Compile Include="Unity Classes\Mesh.cs" />
@@ -210,6 +218,8 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
