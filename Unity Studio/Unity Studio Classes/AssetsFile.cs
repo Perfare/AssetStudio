@@ -273,14 +273,13 @@ namespace Unity_Studio
         private void readBase5()
         {
             int classID = a_Stream.ReadInt32();
-            if (fileGen > 15)
+            if (fileGen > 15)//5.5.0 and up
             {
                 a_Stream.ReadByte();
                 int type1;
                 if ((type1 = a_Stream.ReadInt16()) >= 0)
                 {
                     type1 = -1 - type1;
-                    a_Stream.Position += 16;
                 }
                 else
                 {
@@ -288,13 +287,21 @@ namespace Unity_Studio
                 }
                 classIDs.Add(new[] { type1, classID });
                 classID = type1;
-                //TODO 某些文件出现type1=-1时还需要跳过16字节的情况
+                /*TODO 替换？
+                if(classID == 114)
+                {
+                    a_Stream.Position += 16;
+                }*/
                 var temp = a_Stream.ReadInt32();
                 if (temp == 0)
                 {
                     a_Stream.Position += 16;
                 }
                 a_Stream.Position -= 4;
+                if (type1 < 0)
+                {
+                    a_Stream.Position += 16;
+                }
             }
             else if (classID < 0)
             {
