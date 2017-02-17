@@ -386,7 +386,7 @@ namespace Unity_Studio
                 {
                     StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
-                    fileNode.Text = Path.GetFileName(assetsFile.filePath);
+                    fileNode.Text =  string.Format("{0} [{1}]", Path.GetFileName(assetsFile.filePath), assetsFile.oldFileName);
                     fileNode.m_Name = "RootNode";
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)

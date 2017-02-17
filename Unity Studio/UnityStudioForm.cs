@@ -1576,18 +1576,18 @@ namespace Unity_Studio
 
         private void sceneTreeView_DragDrop(object sender, DragEventArgs e)
         {
-            string[] filepaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
             string fileTypes = ".*\\.(unity3d|assetbundle|unity3d\\.lz4|bundle|bytes)";
 
             resetForm();
-            mainPath = Path.GetDirectoryName(filepaths[0]);
-            foreach (var filepath in filepaths)
+            mainPath = Path.GetDirectoryName(filePaths[0]);
+            foreach (var filePath in filePaths)
             {
-                string filename = Path.GetFileName(filepath);
-                if (Regex.IsMatch(filename, fileTypes))
+                string fileName = Path.GetFileName(filePath);
+                if (Regex.IsMatch(fileName, fileTypes))
                 {
-                    unityFiles.Add(filepath);
-                    unityFilesHash.Add(filename);
+                    unityFiles.Add(filePath);
+                    unityFilesHash.Add(fileName);
                 }
             }
             unityFiles = unityFiles.Distinct().ToList();
