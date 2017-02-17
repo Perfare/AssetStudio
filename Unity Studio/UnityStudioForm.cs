@@ -1300,15 +1300,7 @@ namespace Unity_Studio
                     }
                 }
                 int assetGroupSelectedIndex = assetGroupOptions.SelectedIndex;
-                if (assetGroupSelectedIndex == 3)
-                {
-                    Regex nameRex = new Regex(@"\s#[0-9]{1,4}", RegexOptions.None);
-                    foreach (var asset in toExportAssets)
-                    {
-                        if (nameRex.Match(asset.Text).Length > 0)
-                            asset.Text = asset.Text.Replace(nameRex.Match(asset.Text).Value, "");
-                    }
-                }
+
 
 
 
