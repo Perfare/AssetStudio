@@ -38,11 +38,10 @@ namespace Unity_Studio
                 if (m_Script[0] == 93)
                 {
                     try
-                    { 
-                    m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script);
+                    {
+                        m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script);
                     }
                     catch { }
-
                 }
                 if (m_Script[0] == 60 || (m_Script[0] == 239 && m_Script[1] == 187 && m_Script[2] == 191 && m_Script[3] == 60)) { preloadData.extension = ".xml"; }
             }
@@ -54,7 +53,7 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
             a_Stream.AlignStream(4);
 

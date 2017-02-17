@@ -111,7 +111,7 @@ namespace Unity_Studio
                 else
                 {
                     EndianStream estream = null;
-                    if (UnityStudioForm.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
+                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
                         m_AudioData = estream.ReadBytes((int)m_Size);
@@ -164,10 +164,11 @@ namespace Unity_Studio
                         preloadData.extension = ".fsb";
                         preloadData.InfoText += "MP3";//not sure
                         break;
-           case 7:
+                    case 7:
                         preloadData.extension = ".m4a";
-                        preloadData.InfoText += "MP4";//not sure
-                        break;                }
+                        preloadData.InfoText += "M4a";
+                        break;
+                }
 
                 if (preloadData.extension == null)
                 {
@@ -178,7 +179,7 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new [] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
     }

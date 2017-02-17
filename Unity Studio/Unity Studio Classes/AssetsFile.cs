@@ -29,7 +29,7 @@ namespace Unity_Studio
 
         public SortedDictionary<int, ClassStruct> ClassStructures = new SortedDictionary<int, ClassStruct>();
 
-        private bool baseDefinitions = false;
+        private bool baseDefinitions;
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
         public class UnityShared
@@ -38,6 +38,8 @@ namespace Unity_Studio
             public string aName = "";
             public string fileName = "";
         }
+
+ 
 
         public AssetsFile(string fullName, EndianStream fileStream, string bundlePath)
         {
@@ -154,7 +156,7 @@ namespace Unity_Studio
             int assetCount = a_Stream.ReadInt32();
 
             #region asset preload table
-            string assetIDfmt = "D" + assetCount.ToString().Length.ToString(); //format for unique ID
+            string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
 
             for (int i = 0; i < assetCount; i++)
             {
@@ -220,8 +222,8 @@ namespace Unity_Studio
             }
             #endregion
 
-            buildType = m_Version.Split(new string[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] strver = (m_Version.Split(new string[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+            buildType = m_Version.Split(new[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] strver = (m_Version.Split(new[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
             version = Array.ConvertAll(strver, int.Parse);
 
             if (fileGen >= 14)
@@ -275,34 +277,41 @@ namespace Unity_Studio
         private void readBase5()
         {
             int classID = a_Stream.ReadInt32();
-            if (fileGen > 15)
+            if (fileGen > 15)//5.5.0 and up
             {
                 a_Stream.ReadByte();
                 int type1;
                 if ((type1 = a_Stream.ReadInt16()) >= 0)
                 {
                     type1 = -1 - type1;
-                    a_Stream.Position += 16;
                 }
                 else
                 {
                     type1 = classID;
                 }
-                classIDs.Add(new int[] { type1, classID });
+                classIDs.Add(new[] { type1, classID });
                 classID = type1;
+                /*TODO 替换？
+                if(classID == 114)
+                {
+                    a_Stream.Position += 16;
+                }*/
                 var temp = a_Stream.ReadInt32();
                 if (temp == 0)
                 {
                     a_Stream.Position += 16;
                 }
                 a_Stream.Position -= 4;
+                if (type1 < 0)
+                {
+                    a_Stream.Position += 16;
+                }
             }
             else if (classID < 0)
             {
                 a_Stream.Position += 16;
             }
-
-                a_Stream.Position += 16;
+            a_Stream.Position += 16;
 
             if (baseDefinitions)
             {
@@ -465,6 +474,5 @@ namespace Unity_Studio
                 ClassStructures.Add(classID, aClass);
             }
         }
-
     }
 }

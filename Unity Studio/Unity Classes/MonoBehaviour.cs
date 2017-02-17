@@ -55,7 +55,7 @@ namespace Unity_Studio
                 {
                     preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID;
                 }
-                preloadData.SubItems.AddRange(new string[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
         }
 

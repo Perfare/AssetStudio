@@ -15,16 +15,8 @@ namespace Unity_Studio
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if(args.Length == 0)
-            {
-                Application.Run(new UnityStudioForm());
-            }
-            else
-            {
-                Application.Run(new UnityStudioForm(args));
-            }
-          
-        }
+            Application.Run(new UnityStudioForm(args));
 
+        }
     }
 }

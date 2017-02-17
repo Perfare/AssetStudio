@@ -1,4 +1,7 @@
-﻿namespace Unity_Studio
+﻿using System;
+using System.Windows.Forms;
+
+namespace Unity_Studio
 {
     partial class UnityStudioForm
     {
@@ -291,7 +294,7 @@
             "Do not group exported assets",
             "Group exported assets by filename"});
             this.assetGroupOptions.Name = "assetGroupOptions";
-            this.assetGroupOptions.Size = new System.Drawing.Size(192, 25);
+            this.assetGroupOptions.Size = new System.Drawing.Size(222, 25);
             this.assetGroupOptions.SelectedIndexChanged += new System.EventHandler(this.assetGroupOptions_SelectedIndexChanged);
             // 
             // showExpOpt
@@ -838,7 +841,6 @@
             this.Name = "UnityStudioForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Unity Studio";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UnityStudioForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.UnityStudioForm_KeyDown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -868,6 +870,9 @@
             this.PerformLayout();
 
         }
+
+
+
 
         #endregion
 
