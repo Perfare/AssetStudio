@@ -95,7 +95,7 @@ namespace Unity_Studio
         private static extern bool DecompressCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr dxtdata, out int dxtsize);
 
         [DllImport("texgenpack.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
+        private static extern void texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
 
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {

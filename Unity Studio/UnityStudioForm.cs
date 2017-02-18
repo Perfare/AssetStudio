@@ -1331,7 +1331,7 @@ namespace Unity_Studio
                                 }
                                 break;
                             case 48:
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportShader(new Shader(asset, true), exportpath + asset.Text + ".txt");
                                     exportedCount++;
@@ -1339,7 +1339,7 @@ namespace Unity_Studio
                                 break;
                             case 49:
                                 TextAsset m_TextAsset = new TextAsset(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
@@ -1347,7 +1347,7 @@ namespace Unity_Studio
                                 break;
                             case 114:
                                 MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportMonoBehaviour(m_MonoBehaviour, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
@@ -1355,14 +1355,14 @@ namespace Unity_Studio
                                 break;
                             case 128:
                                 unityFont m_Font = new unityFont(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportFont(m_Font, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             default:
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension, asset.TypeString))
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportRawFile(asset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
