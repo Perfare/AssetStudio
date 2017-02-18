@@ -10,6 +10,7 @@ namespace Unity_Studio
         public EndianStream a_Stream;
         public string filePath;
         public string fileName;
+        public string oldFileName;
         public int fileGen;
         public string m_Version = "2.5.0f5";
         public int[] version = new int[4] { 0, 0, 0, 0 };
@@ -38,7 +39,9 @@ namespace Unity_Studio
             public string fileName = "";
         }
 
-        public AssetsFile(string fullName, EndianStream fileStream)
+ 
+
+        public AssetsFile(string fullName, EndianStream fileStream, string bundlePath)
         {
             //if (memFile != null) { Stream = new EndianStream(memFile, endianType); }
             //else { Stream = new EndianStream(File.OpenRead(fileName), endianType); }
@@ -46,6 +49,7 @@ namespace Unity_Studio
 
             filePath = fullName;
             fileName = Path.GetFileName(fullName);
+            oldFileName = Path.GetFileNameWithoutExtension(bundlePath);
             int tableSize = a_Stream.ReadInt32();
             int dataEnd = a_Stream.ReadInt32();
             fileGen = a_Stream.ReadInt32();

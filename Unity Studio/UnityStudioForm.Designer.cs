@@ -1,4 +1,7 @@
-﻿namespace Unity_Studio
+﻿using System;
+using System.Windows.Forms;
+
+namespace Unity_Studio
 {
     partial class UnityStudioForm
     {
@@ -288,9 +291,10 @@
             this.assetGroupOptions.Items.AddRange(new object[] {
             "Group exported assets by type",
             "Group exported assets by source file",
-            "Do not group exported assets"});
+            "Do not group exported assets",
+            "Group exported assets by filename"});
             this.assetGroupOptions.Name = "assetGroupOptions";
-            this.assetGroupOptions.Size = new System.Drawing.Size(192, 25);
+            this.assetGroupOptions.Size = new System.Drawing.Size(222, 25);
             this.assetGroupOptions.SelectedIndexChanged += new System.EventHandler(this.assetGroupOptions_SelectedIndexChanged);
             // 
             // showExpOpt
@@ -420,6 +424,7 @@
             // 
             // sceneTreeView
             // 
+            this.sceneTreeView.AllowDrop = true;
             this.sceneTreeView.CheckBoxes = true;
             this.sceneTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.sceneTreeView.HideSelection = false;
@@ -428,6 +433,8 @@
             this.sceneTreeView.Size = new System.Drawing.Size(410, 536);
             this.sceneTreeView.TabIndex = 1;
             this.sceneTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.sceneTreeView_AfterCheck);
+            this.sceneTreeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.sceneTreeView_DragEnter);
+            this.sceneTreeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.sceneTreeView_DragDrop);
             // 
             // treeSearch
             // 
@@ -863,6 +870,9 @@
             this.PerformLayout();
 
         }
+
+
+
 
         #endregion
 

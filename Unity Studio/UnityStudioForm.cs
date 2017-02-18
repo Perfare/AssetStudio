@@ -1278,6 +1278,7 @@ namespace Unity_Studio
 
         private void ExportAssets_Click(object sender, EventArgs e)
         {
+
             if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
             {
                 timer.Stop();
@@ -1300,6 +1301,9 @@ namespace Unity_Studio
                 }
                 int assetGroupSelectedIndex = assetGroupOptions.SelectedIndex;
 
+
+
+
                 ThreadPool.QueueUserWorkItem(delegate
                 {
                     var savePath = saveFolderDialog1.FileName;
@@ -1318,6 +1322,7 @@ namespace Unity_Studio
                         string exportpath = savePath + "\\";
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
+                        else if (assetGroupSelectedIndex == 3) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.oldFileName) + "\\"; }
                         StatusStripUpdate("Exporting " + asset.TypeString + ": " + asset.Text);
                         //AudioClip and Texture2D extensions are set when the list is built
                         //so their overwrite tests can be done without loading them again
@@ -1460,8 +1465,9 @@ namespace Unity_Studio
                 progressBar1.Maximum += value;
             }
         }
+        
 
-        public UnityStudioForm()
+        public UnityStudioForm(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
@@ -1477,6 +1483,53 @@ namespace Unity_Studio
             UnityStudio.ProgressBarPerformStep = ProgressBarPerformStep;
             UnityStudio.StatusStripUpdate = StatusStripUpdate;
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
+
+            if (args.Length > 0) { LoadFileInit(args); }
+
+        }
+
+        public void LoadFileInit(string[] args)
+        {
+            resetForm();
+            mainPath = Path.GetDirectoryName(args[0]);
+            string[] type = { "level", "globalgamemanagers", "mainData", "CustomAssetBundle-", "CAB-", "BuildPlayer-", ".assets", ".sharedAssets" };
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                if (type.Contains(mainPath))
+                {
+                    MergeSplitAssets(mainPath);
+
+                    //unityFiles.AddRange(openFileDialog1.FileNames);
+                    foreach (var i in openFileDialog1.FileNames)
+                    {
+                        unityFiles.Add(i);
+                        unityFilesHash.Add(Path.GetFileName(i));
+                    }
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(unityFiles.Count);
+                    //use a for loop because list size can change
+                    for (int f = 0; f < unityFiles.Count; f++)
+                    {
+                        StatusStripUpdate("Loading " + Path.GetFileName(unityFiles[f]));
+                        LoadAssetsFile(unityFiles[f]);
+                        ProgressBarPerformStep();
+                    }
+                }
+                else
+                {
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(unityFiles.Count);
+                    foreach (var filename in args)
+                    {
+                        LoadBundleFile(filename);
+                        ProgressBarPerformStep();
+                    }
+                }
+                BuildAssetStrucutres();
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+            });
         }
 
         private void resetForm()
@@ -1519,6 +1572,47 @@ namespace Unity_Studio
             //FMODinit();
             FMODreset();
 
+        }
+
+        private void sceneTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string fileTypes = ".*\\.(unity3d|assetbundle|unity3d\\.lz4|bundle|bytes)";
+
+            resetForm();
+            mainPath = Path.GetDirectoryName(filePaths[0]);
+            foreach (var filePath in filePaths)
+            {
+                string fileName = Path.GetFileName(filePath);
+                if (Regex.IsMatch(fileName, fileTypes))
+                {
+                    unityFiles.Add(filePath);
+                    unityFilesHash.Add(fileName);
+                }
+            }
+            unityFiles = unityFiles.Distinct().ToList();
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(unityFiles.Count);
+                for (int f = 0; f < unityFiles.Count; f++)
+                {
+                    var fileName = unityFiles[f];
+                    LoadBundleFile(fileName);
+                    ProgressBarPerformStep();
+                }
+                BuildAssetStrucutres();
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+            });
+
+        }
+
+        private void sceneTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Link;
+            else e.Effect = DragDropEffects.None;
         }
     }
 }
