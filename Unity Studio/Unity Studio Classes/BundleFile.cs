@@ -69,9 +69,9 @@ namespace Unity_Studio
                 {
                     int bundleSize = b_Stream.ReadInt32();
                 }
-                else
+                else if (format == 6)
                 {
-                    long bundleSize = b_Stream.ReadInt64();
+                    ReadFormat6(b_Stream, true);
                     return;
                 }
                 short dummy2 = b_Stream.ReadInt16();
@@ -117,118 +117,7 @@ namespace Unity_Studio
                 versionEngine = b_Stream.ReadStringToNull();
                 if (format == 6)
                 {
-                    var bundleSize = b_Stream.ReadInt64();
-                    int compressedSize = b_Stream.ReadInt32();
-                    int uncompressedSize = b_Stream.ReadInt32();
-                    int flag = b_Stream.ReadInt32();
-                    byte[] blocksInfoBytes;
-                    if ((flag & 0x80) != 0)//at end of file
-                    {
-                        var position = b_Stream.Position;
-                        b_Stream.Position = b_Stream.BaseStream.Length - compressedSize;
-                        blocksInfoBytes = b_Stream.ReadBytes(compressedSize);
-                        b_Stream.Position = position;
-                    }
-                    else
-                    {
-                        blocksInfoBytes = b_Stream.ReadBytes(compressedSize);
-                    }
-                    EndianStream blocksInfo;
-                    switch (flag & 0x3F)
-                    {
-                        default:
-                        case 0://None
-                            {
-                                blocksInfo = new EndianStream(new MemoryStream(blocksInfoBytes), EndianType.BigEndian);
-                                break;
-                            }
-                        case 1://LZMA
-                            {
-                                blocksInfo = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(blocksInfoBytes)), EndianType.BigEndian);
-                                break;
-                            }
-                        case 2://LZ4
-                        case 3://LZ4HC
-                            {
-                                byte[] uncompressedBytes = new byte[uncompressedSize];
-                                using (var mstream = new MemoryStream(blocksInfoBytes))
-                                {
-                                    var decoder = new Lz4DecoderStream(mstream);
-                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                    decoder.Dispose();
-                                }
-                                blocksInfo = new EndianStream(new MemoryStream(uncompressedBytes), EndianType.BigEndian);
-                                break;
-                            }
-                        //case 4:LZHAM?
-                    }
-                    using (blocksInfo)
-                    {
-                        blocksInfo.Position = 0x10;
-                        int blockcount = blocksInfo.ReadInt32();
-                        EndianStream assetsData;
-                        var assetsDataStream = new MemoryStream();
-                        for (int i = 0; i < blockcount; i++)
-                        {
-                            uncompressedSize = blocksInfo.ReadInt32();
-                            compressedSize = blocksInfo.ReadInt32();
-                            flag = blocksInfo.ReadInt16();
-                            var compressedBytes = b_Stream.ReadBytes(compressedSize);
-                            switch (flag & 0x3F)
-                            {
-                                default:
-                                case 0://None
-                                    {
-                                        assetsDataStream.Write(compressedBytes, 0, compressedSize);
-                                        break;
-                                    }
-                                case 1://LZMA
-                                    {
-                                        var uncompressedBytes = new byte[uncompressedSize];
-                                        using (var mstream = new MemoryStream(compressedBytes))
-                                        {
-                                            var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
-                                            decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                            decoder.Dispose();
-                                        }
-                                        assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
-                                        break;
-                                    }
-                                case 2://LZ4
-                                case 3://LZ4HC
-                                    {
-                                        var uncompressedBytes = new byte[uncompressedSize];
-                                        using (var mstream = new MemoryStream(compressedBytes))
-                                        {
-                                            var decoder = new Lz4DecoderStream(mstream);
-                                            decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                            decoder.Dispose();
-                                        }
-                                        assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
-                                        break;
-                                    }
-                                //case 4:LZHAM?
-                            }
-                        }
-                        assetsData = new EndianStream(assetsDataStream, EndianType.BigEndian);
-                        using (assetsData)
-                        {
-                            var entryinfo_count = blocksInfo.ReadInt32();
-                            for (int i = 0; i < entryinfo_count; i++)
-                            {
-                                var memFile = new MemoryAssetsFile();
-                                var entryinfo_offset = blocksInfo.ReadInt64();
-                                var entryinfo_size = blocksInfo.ReadInt64();
-                                var unknown = blocksInfo.ReadInt32();
-                                memFile.fileName = blocksInfo.ReadStringToNull();
-                                assetsData.Position = entryinfo_offset;
-                                var buffer = new byte[entryinfo_size];
-                                assetsData.Read(buffer, 0, (int)entryinfo_size);
-                                memFile.memStream = new MemoryStream(buffer);
-                                MemoryAssetsFileList.Add(memFile);
-                            }
-                        }
-                    }
+                    ReadFormat6(b_Stream);
                 }
             }
         }
@@ -251,6 +140,124 @@ namespace Unity_Studio
                 memFile.memStream = new MemoryStream(buffer);
                 MemoryAssetsFileList.Add(memFile);
                 f_Stream.Position = nextFile;
+            }
+        }
+
+        private void ReadFormat6(EndianStream b_Stream, bool padding = false)
+        {
+            var bundleSize = b_Stream.ReadInt64();
+            int compressedSize = b_Stream.ReadInt32();
+            int uncompressedSize = b_Stream.ReadInt32();
+            int flag = b_Stream.ReadInt32();
+            if (padding)
+                b_Stream.ReadByte();
+            byte[] blocksInfoBytes;
+            if ((flag & 0x80) != 0)//at end of file
+            {
+                var position = b_Stream.Position;
+                b_Stream.Position = b_Stream.BaseStream.Length - compressedSize;
+                blocksInfoBytes = b_Stream.ReadBytes(compressedSize);
+                b_Stream.Position = position;
+            }
+            else
+            {
+                blocksInfoBytes = b_Stream.ReadBytes(compressedSize);
+            }
+            EndianStream blocksInfo;
+            switch (flag & 0x3F)
+            {
+                default:
+                case 0://None
+                    {
+                        blocksInfo = new EndianStream(new MemoryStream(blocksInfoBytes), EndianType.BigEndian);
+                        break;
+                    }
+                case 1://LZMA
+                    {
+                        blocksInfo = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(blocksInfoBytes)), EndianType.BigEndian);
+                        break;
+                    }
+                case 2://LZ4
+                case 3://LZ4HC
+                    {
+                        byte[] uncompressedBytes = new byte[uncompressedSize];
+                        using (var mstream = new MemoryStream(blocksInfoBytes))
+                        {
+                            var decoder = new Lz4DecoderStream(mstream);
+                            decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                            decoder.Dispose();
+                        }
+                        blocksInfo = new EndianStream(new MemoryStream(uncompressedBytes), EndianType.BigEndian);
+                        break;
+                    }
+                    //case 4:LZHAM?
+            }
+            using (blocksInfo)
+            {
+                blocksInfo.Position = 0x10;
+                int blockcount = blocksInfo.ReadInt32();
+                EndianStream assetsData;
+                var assetsDataStream = new MemoryStream();
+                for (int i = 0; i < blockcount; i++)
+                {
+                    uncompressedSize = blocksInfo.ReadInt32();
+                    compressedSize = blocksInfo.ReadInt32();
+                    flag = blocksInfo.ReadInt16();
+                    var compressedBytes = b_Stream.ReadBytes(compressedSize);
+                    switch (flag & 0x3F)
+                    {
+                        default:
+                        case 0://None
+                            {
+                                assetsDataStream.Write(compressedBytes, 0, compressedSize);
+                                break;
+                            }
+                        case 1://LZMA
+                            {
+                                var uncompressedBytes = new byte[uncompressedSize];
+                                using (var mstream = new MemoryStream(compressedBytes))
+                                {
+                                    var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
+                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                                    decoder.Dispose();
+                                }
+                                assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
+                                break;
+                            }
+                        case 2://LZ4
+                        case 3://LZ4HC
+                            {
+                                var uncompressedBytes = new byte[uncompressedSize];
+                                using (var mstream = new MemoryStream(compressedBytes))
+                                {
+                                    var decoder = new Lz4DecoderStream(mstream);
+                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
+                                    decoder.Dispose();
+                                }
+                                assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
+                                break;
+                            }
+                            //case 4:LZHAM?
+                    }
+                }
+                assetsData = new EndianStream(assetsDataStream, EndianType.BigEndian);
+                using (assetsData)
+                {
+                    var entryinfo_count = blocksInfo.ReadInt32();
+                    for (int i = 0; i < entryinfo_count; i++)
+                    {
+                        var memFile = new MemoryAssetsFile();
+                        var entryinfo_offset = blocksInfo.ReadInt64();
+                        var entryinfo_size = blocksInfo.ReadInt64();
+                        var unknown = blocksInfo.ReadInt32();
+                        memFile.fileName = blocksInfo.ReadStringToNull();
+                        assetsData.Position = entryinfo_offset;
+                        var buffer = new byte[entryinfo_size];
+                        assetsData.Read(buffer, 0, (int)entryinfo_size);
+                        memFile.memStream = new MemoryStream(buffer);
+                        MemoryAssetsFileList.Add(memFile);
+                    }
+                }
             }
         }
     }
