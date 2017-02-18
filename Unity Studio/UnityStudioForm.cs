@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using static Unity_Studio.UnityStudio;
 
@@ -577,22 +576,6 @@ namespace Unity_Studio
         {
             resizeAssetListColumns();
         }
-
-        /*private void splitContainer1_Resize(object sender, EventArgs e)
-        {
-            switch (tabControl1.SelectedIndex)
-            {
-                case 1: resizeAssetListColumns(); break;
-            }
-        }
-
-        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-            switch (tabControl1.SelectedIndex)
-            {
-                case 1: resizeAssetListColumns(); break;
-            }
-        }*/
 
         private void listSearch_Enter(object sender, EventArgs e)
         {
