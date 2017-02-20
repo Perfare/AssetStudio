@@ -152,7 +152,7 @@
             this.geometryBox.Margin = new System.Windows.Forms.Padding(4);
             this.geometryBox.Name = "geometryBox";
             this.geometryBox.Padding = new System.Windows.Forms.Padding(4);
-            this.geometryBox.Size = new System.Drawing.Size(313, 161);
+            this.geometryBox.Size = new System.Drawing.Size(313, 152);
             this.geometryBox.TabIndex = 0;
             this.geometryBox.TabStop = false;
             this.geometryBox.Text = "Geometry";
@@ -416,7 +416,6 @@
             this.Controls.Add(this.fbxOKbutton);
             this.Controls.Add(this.advancedBox);
             this.Controls.Add(this.includeBox);
-            this.HelpButton = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;

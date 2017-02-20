@@ -12,8 +12,6 @@ namespace Unity_Studio
 {
     public partial class ExportOptions : Form
     {
-        public string selectedPath = "";
-
         public ExportOptions()
         {
             InitializeComponent();
