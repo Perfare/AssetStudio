@@ -24,12 +24,123 @@ namespace Unity_Studio
 
         public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
         public List<UnityShared> sharedAssetsList = new List<UnityShared>() { new UnityShared() };
-        private ClassIDReference UnityClassID = new ClassIDReference();
 
         public SortedDictionary<int, ClassStruct> ClassStructures = new SortedDictionary<int, ClassStruct>();
 
         private bool baseDefinitions;
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
+
+        public static string[] buildTypeSplit = { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        public static string[] strverSplit = {
+            ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+            "u", "v", "w", "x", "y", "z", "\n"
+        };
+
+        #region cmmon string
+        private static Dictionary<int, string> baseStrings = new Dictionary<int, string>()
+        {
+            {0, "AABB"},
+            {5, "AnimationClip"},
+            {19, "AnimationCurve"},
+            {34, "AnimationState"},
+            {49, "Array"},
+            {55, "Base"},
+            {60, "BitField"},
+            {69, "bitset"},
+            {76, "bool"},
+            {81, "char"},
+            {86, "ColorRGBA"},
+            {96, "Component"},
+            {106, "data"},
+            {111, "deque"},
+            {117, "double"},
+            {124, "dynamic_array"},
+            {138, "FastPropertyName"},
+            {155, "first"},
+            {161, "float"},
+            {167, "Font"},
+            {172, "GameObject"},
+            {183, "Generic Mono"},
+            {196, "GradientNEW"},
+            {208, "GUID"},
+            {213, "GUIStyle"},
+            {222, "int"},
+            {226, "list"},
+            {231, "long long"},
+            {241, "map"},
+            {245, "Matrix4x4f"},
+            {256, "MdFour"},
+            {263, "MonoBehaviour"},
+            {277, "MonoScript"},
+            {288, "m_ByteSize"},
+            {299, "m_Curve"},
+            {307, "m_EditorClassIdentifier"},
+            {331, "m_EditorHideFlags"},
+            {349, "m_Enabled"},
+            {359, "m_ExtensionPtr"},
+            {374, "m_GameObject"},
+            {387, "m_Index"},
+            {395, "m_IsArray"},
+            {405, "m_IsStatic"},
+            {416, "m_MetaFlag"},
+            {427, "m_Name"},
+            {434, "m_ObjectHideFlags"},
+            {452, "m_PrefabInternal"},
+            {469, "m_PrefabParentObject"},
+            {490, "m_Script"},
+            {499, "m_StaticEditorFlags"},
+            {519, "m_Type"},
+            {526, "m_Version"},
+            {536, "Object"},
+            {543, "pair"},
+            {548, "PPtr<Component>"},
+            {564, "PPtr<GameObject>"},
+            {581, "PPtr<Material>"},
+            {596, "PPtr<MonoBehaviour>"},
+            {616, "PPtr<MonoScript>"},
+            {633, "PPtr<Object>"},
+            {646, "PPtr<Prefab>"},
+            {659, "PPtr<Sprite>"},
+            {672, "PPtr<TextAsset>"},
+            {688, "PPtr<Texture>"},
+            {702, "PPtr<Texture2D>"},
+            {718, "PPtr<Transform>"},
+            {734, "Prefab"},
+            {741, "Quaternionf"},
+            {753, "Rectf"},
+            {759, "RectInt"},
+            {767, "RectOffset"},
+            {778, "second"},
+            {785, "set"},
+            {789, "short"},
+            {795, "size"},
+            {800, "SInt16"},
+            {807, "SInt32"},
+            {814, "SInt64"},
+            {821, "SInt8"},
+            {827, "staticvector"},
+            {840, "string"},
+            {847, "TextAsset"},
+            {857, "TextMesh"},
+            {866, "Texture"},
+            {874, "Texture2D"},
+            {884, "Transform"},
+            {894, "TypelessData"},
+            {907, "UInt16"},
+            {914, "UInt32"},
+            {921, "UInt64"},
+            {928, "UInt8"},
+            {934, "unsigned int"},
+            {947, "unsigned long long"},
+            {966, "unsigned short"},
+            {981, "vector"},
+            {988, "Vector2f"},
+            {997, "Vector3f"},
+            {1006, "Vector4f"},
+            {1015, "m_ScriptingClassIdentifier"},
+            {1042, "Gradient"},
+        };
+        #endregion
 
         public class UnityShared
         {
@@ -189,9 +300,10 @@ namespace Unity_Studio
                     }
                 }
 
-                if (UnityClassID.Names[asset.Type2] != null)
+                string typeString;
+                if (ClassIDReference.Names.TryGetValue(asset.Type2, out typeString))
                 {
-                    asset.TypeString = UnityClassID.Names[asset.Type2];
+                    asset.TypeString = typeString;
                 }
                 else
                 {
@@ -218,8 +330,8 @@ namespace Unity_Studio
             }
             #endregion
 
-            buildType = m_Version.Split(new[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
-            string[] strver = (m_Version.Split(new[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+            buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
+            var strver = m_Version.Split(strverSplit, StringSplitOptions.RemoveEmptyEntries);
             version = Array.ConvertAll(strver, int.Parse);
 
             if (fileGen >= 14)
@@ -311,110 +423,6 @@ namespace Unity_Studio
 
             if (baseDefinitions)
             {
-                #region cmmon string array
-                string[] baseStrings = new string[1043];
-                baseStrings[0] = "AABB";
-                baseStrings[5] = "AnimationClip";
-                baseStrings[19] = "AnimationCurve";
-                baseStrings[34] = "AnimationState";
-                baseStrings[49] = "Array";
-                baseStrings[55] = "Base";
-                baseStrings[60] = "BitField";
-                baseStrings[69] = "bitset";
-                baseStrings[76] = "bool";
-                baseStrings[81] = "char";
-                baseStrings[86] = "ColorRGBA";
-                baseStrings[96] = "Component";
-                baseStrings[106] = "data";
-                baseStrings[111] = "deque";
-                baseStrings[117] = "double";
-                baseStrings[124] = "dynamic_array";
-                baseStrings[138] = "FastPropertyName";
-                baseStrings[155] = "first";
-                baseStrings[161] = "float";
-                baseStrings[167] = "Font";
-                baseStrings[172] = "GameObject";
-                baseStrings[183] = "Generic Mono";
-                baseStrings[196] = "GradientNEW";
-                baseStrings[208] = "GUID";
-                baseStrings[213] = "GUIStyle";
-                baseStrings[222] = "int";
-                baseStrings[226] = "list";
-                baseStrings[231] = "long long";
-                baseStrings[241] = "map";
-                baseStrings[245] = "Matrix4x4f";
-                baseStrings[256] = "MdFour";
-                baseStrings[263] = "MonoBehaviour";
-                baseStrings[277] = "MonoScript";
-                baseStrings[288] = "m_ByteSize";
-                baseStrings[299] = "m_Curve";
-                baseStrings[307] = "m_EditorClassIdentifier";
-                baseStrings[331] = "m_EditorHideFlags";
-                baseStrings[349] = "m_Enabled";
-                baseStrings[359] = "m_ExtensionPtr";
-                baseStrings[374] = "m_GameObject";
-                baseStrings[387] = "m_Index";
-                baseStrings[395] = "m_IsArray";
-                baseStrings[405] = "m_IsStatic";
-                baseStrings[416] = "m_MetaFlag";
-                baseStrings[427] = "m_Name";
-                baseStrings[434] = "m_ObjectHideFlags";
-                baseStrings[452] = "m_PrefabInternal";
-                baseStrings[469] = "m_PrefabParentObject";
-                baseStrings[490] = "m_Script";
-                baseStrings[499] = "m_StaticEditorFlags";
-                baseStrings[519] = "m_Type";
-                baseStrings[526] = "m_Version";
-                baseStrings[536] = "Object";
-                baseStrings[543] = "pair";
-                baseStrings[548] = "PPtr<Component>";
-                baseStrings[564] = "PPtr<GameObject>";
-                baseStrings[581] = "PPtr<Material>";
-                baseStrings[596] = "PPtr<MonoBehaviour>";
-                baseStrings[616] = "PPtr<MonoScript>";
-                baseStrings[633] = "PPtr<Object>";
-                baseStrings[646] = "PPtr<Prefab>";
-                baseStrings[659] = "PPtr<Sprite>";
-                baseStrings[672] = "PPtr<TextAsset>";
-                baseStrings[688] = "PPtr<Texture>";
-                baseStrings[702] = "PPtr<Texture2D>";
-                baseStrings[718] = "PPtr<Transform>";
-                baseStrings[734] = "Prefab";
-                baseStrings[741] = "Quaternionf";
-                baseStrings[753] = "Rectf";
-                baseStrings[759] = "RectInt";
-                baseStrings[767] = "RectOffset";
-                baseStrings[778] = "second";
-                baseStrings[785] = "set";
-                baseStrings[789] = "short";
-                baseStrings[795] = "size";
-                baseStrings[800] = "SInt16";
-                baseStrings[807] = "SInt32";
-                baseStrings[814] = "SInt64";
-                baseStrings[821] = "SInt8";
-                baseStrings[827] = "staticvector";
-                baseStrings[840] = "string";
-                baseStrings[847] = "TextAsset";
-                baseStrings[857] = "TextMesh";
-                baseStrings[866] = "Texture";
-                baseStrings[874] = "Texture2D";
-                baseStrings[884] = "Transform";
-                baseStrings[894] = "TypelessData";
-                baseStrings[907] = "UInt16";
-                baseStrings[914] = "UInt32";
-                baseStrings[921] = "UInt64";
-                baseStrings[928] = "UInt8";
-                baseStrings[934] = "unsigned int";
-                baseStrings[947] = "unsigned long long";
-                baseStrings[966] = "unsigned short";
-                baseStrings[981] = "vector";
-                baseStrings[988] = "Vector2f";
-                baseStrings[997] = "Vector3f";
-                baseStrings[1006] = "Vector4f";
-                baseStrings[1015] = "m_ScriptingClassIdentifier";
-                baseStrings[1042] = "Gradient";
-                #endregion
-
                 int varCount = a_Stream.ReadInt32();
                 int stringSize = a_Stream.ReadInt32();
 
@@ -436,13 +444,13 @@ namespace Unity_Studio
                     if (test == 0) //varType is an offset in the string block
                     { varTypeStr = varStrings.Substring(varTypeIndex, varStrings.IndexOf('\0', varTypeIndex) - varTypeIndex); }//substringToNull
                     else //varType is an index in an internal strig array
-                    { varTypeStr = ((varTypeIndex < baseStrings.Length) && (baseStrings[varTypeIndex] != null)) ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
+                    { varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
 
                     ushort varNameIndex = a_Stream.ReadUInt16();
                     test = a_Stream.ReadUInt16();
                     string varNameStr;
                     if (test == 0) { varNameStr = varStrings.Substring(varNameIndex, varStrings.IndexOf('\0', varNameIndex) - varNameIndex); }
-                    else { varNameStr = baseStrings[varNameIndex] != null ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
+                    else { varNameStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
 
                     int size = a_Stream.ReadInt32();
                     int index = a_Stream.ReadInt32();

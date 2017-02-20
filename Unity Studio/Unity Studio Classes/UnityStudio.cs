@@ -154,8 +154,8 @@ namespace Unity_Studio
                 {
                     //make use of the bundle file version
                     assetsFile.m_Version = b_File.versionEngine;
-                    assetsFile.version = Array.ConvertAll((b_File.versionEngine.Split(new[] { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n" }, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
-                    assetsFile.buildType = b_File.versionEngine.Split(new[] { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, StringSplitOptions.RemoveEmptyEntries);
+                    assetsFile.version = Array.ConvertAll((b_File.versionEngine.Split(AssetsFile.strverSplit, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
+                    assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
                 }
                 if (validAssetsFile)
                 {

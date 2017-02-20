@@ -375,6 +375,7 @@ namespace Unity_Studio
                             break;
                         }
                     case TextureFormat.DXT1: //test pass
+                    case TextureFormat.DXT1Crunched: //test pass
                         {
                             SwapBytesForXbox(sourceFile.platform);
 
@@ -391,6 +392,7 @@ namespace Unity_Studio
                             break;
                         }
                     case TextureFormat.DXT5: //test pass
+                    case TextureFormat.DXT5Crunched: //test pass
                         {
                             SwapBytesForXbox(sourceFile.platform);
 
@@ -526,12 +528,6 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
-                    case TextureFormat.DXT1Crunched: //DXT1 Crunched
-                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT1_RGB;
-                        break;
-                    case TextureFormat.DXT5Crunched: //DXT1 Crunched
-                        q_format = QFORMAT.Q_FORMAT_S3TC_DXT5_RGBA;
-                        break;
                     case TextureFormat.PVRTC_RGB2: //test pass
                         {
                             pvrPixelFormat = 0;
