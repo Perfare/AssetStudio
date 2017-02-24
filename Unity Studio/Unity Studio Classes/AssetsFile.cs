@@ -31,10 +31,7 @@ namespace Unity_Studio
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
         public static string[] buildTypeSplit = { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-        public static string[] strverSplit = {
-            ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-            "u", "v", "w", "x", "y", "z", "\n"
-        };
+        public static string[] strverSplit = { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n", "-", "_" };
 
         #region cmmon string
         private static Dictionary<int, string> baseStrings = new Dictionary<int, string>()
@@ -234,6 +231,7 @@ namespace Unity_Studio
                 case 16: platformStr = "Google NaCl"; break;
                 case 21: platformStr = "WP8"; break;
                 case 25: platformStr = "Linux"; break;
+                case 29: platformStr = "Wii U"; break;
                 default: platformStr = "Unknown Platform"; break;
             }
 
