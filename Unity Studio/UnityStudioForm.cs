@@ -81,7 +81,7 @@ namespace Unity_Studio
                 mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
                 ThreadPool.QueueUserWorkItem(state =>
                 {
-                    if (openFileDialog1.FilterIndex == 1)
+                    if (openFileDialog1.FilterIndex == 1 || openFileDialog1.FilterIndex == 3)
                     {
                         MergeSplitAssets(mainPath);
 
