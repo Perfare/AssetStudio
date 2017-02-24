@@ -98,6 +98,7 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.timer = new System.Windows.Forms.Timer(this.components);
+            this.timerOpenTK = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFolderDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -112,6 +113,7 @@
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.progressbarPanel.SuspendLayout();
+            this.glControl1.SuspendLayout();
             this.previewPanel.SuspendLayout();
             this.FMODpanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FMODprogressBar)).BeginInit();
@@ -804,6 +806,11 @@
             // 
             this.timer.Interval = 10;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            //
+            // timerOpenTK
+            //
+            this.timerOpenTK.Interval = 1000/6;
+            this.timerOpenTK.Tick += new System.EventHandler(this.timerOpenTK_Tick);
             // 
             // openFileDialog1
             // 
@@ -862,6 +869,7 @@
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.progressbarPanel.ResumeLayout(false);
+            this.glControl1.ResumeLayout(false);
             this.previewPanel.ResumeLayout(false);
             this.previewPanel.PerformLayout();
             this.FMODpanel.ResumeLayout(false);
@@ -918,6 +926,7 @@
         private System.Windows.Forms.Label FMODtimerLabel;
         private System.Windows.Forms.Label FMODinfoLabel;
         private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Timer timerOpenTK;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem displayAll;

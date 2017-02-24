@@ -329,9 +329,9 @@ namespace Unity_Studio
             if (glControl1.Visible == true)
             {
                 // --> Right
-                if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
+                if (e.KeyCode == Keys.D)
                 {
-                    if (e.Alt && e.KeyCode == Keys.D) //Move
+                    if (e.Shift && e.KeyCode == Keys.D) //Move
                     {
                         viewMatrixData[0] *= Matrix4.CreateTranslation(0.1f, 0, 0);
                     }
@@ -344,9 +344,9 @@ namespace Unity_Studio
                 }
                 
                 // <-- Left
-                if (e.KeyCode == Keys.A || e.KeyCode == Keys.Left)
+                if (e.KeyCode == Keys.A)
                 {
-                    if (e.Alt && e.KeyCode == Keys.A) //Move
+                    if (e.Shift && e.KeyCode == Keys.A) //Move
                     {
                         viewMatrixData[0] *= Matrix4.CreateTranslation(-0.1f, 0, 0);
                     }
@@ -360,8 +360,13 @@ namespace Unity_Studio
 
                 // Up 
                 if (e.KeyCode == Keys.W)
-                {
-                    if (e.Alt && e.KeyCode == Keys.W) //Move
+                {                    
+                    if (e.Control && e.KeyCode == Keys.W) //Toggle WireFrame
+                    {
+                        wireFrameView = !wireFrameView;
+                        glControl1.Invalidate();
+                    }
+                    else if (e.Shift && e.KeyCode == Keys.W) //Move
                     {
                         viewMatrixData[0] *= Matrix4.CreateTranslation(0, 0.1f, 0);
                     }
@@ -376,7 +381,7 @@ namespace Unity_Studio
                 // Down
                 if (e.KeyCode == Keys.S)
                 {
-                    if (e.Alt && e.KeyCode == Keys.S) //Move
+                    if (e.Shift && e.KeyCode == Keys.S) //Move
                     {
                         viewMatrixData[0] *= Matrix4.CreateTranslation(0, -0.1f, 0);
                     }
@@ -387,12 +392,27 @@ namespace Unity_Studio
                     GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
                 }
-                
-                // Toggle WireFrame
+
+                // Zoom Out
                 if (e.KeyCode == Keys.Q)
                 {
-                    wireFrameView = !wireFrameView;
+                    viewMatrixData[0] *= Matrix4.CreateScale(0.9f);
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
+                }
+
+                // Zoom In
+                if (e.KeyCode == Keys.E)
+                {
+                    viewMatrixData[0] *= Matrix4.CreateScale(1.1f);
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Toggle Timer
+                if (e.KeyCode == Keys.T)
+                {
+                    timerOpenTK.Enabled = !timerOpenTK.Enabled;
                 }
             }
         }
@@ -972,8 +992,8 @@ namespace Unity_Studio
                                 indiceData[i + 2] = (int)m_Mesh.m_Indices[i + 2];
                             }
 
-                            normalData = new Vector3[m_Mesh.m_VertexCount];
-                            for (int n = 0; n < m_Mesh.m_VertexCount; n++)
+                            normalData = new Vector3[m_Mesh.m_Normals.Length/3];
+                            for (int n = 0; n < m_Mesh.m_Normals.Length/3; n++)
                             {
                                 normalData[n] = new Vector3(
                                     m_Mesh.m_Normals[n * count],
@@ -999,7 +1019,10 @@ namespace Unity_Studio
                         }
 
                         createVAO();
-                        StatusStripUpdate("Coming Soon!?!");
+                        
+                        StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) 
+                                        + "  |  'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | " 
+                                        + "'Shift WASD'=Move | 'Q/E'=Zoom | 'Ctl W' =Wireframe");
                     }
                     break;
                 #endregion
@@ -1623,6 +1646,16 @@ namespace Unity_Studio
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
         }
 
+        private void timerOpenTK_Tick(object sender, EventArgs e)
+        {
+            if (glControl1.Visible == true)
+            {
+                viewMatrixData[0] *= Matrix4.CreateRotationY(-0.1f);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                glControl1.Invalidate();
+            }
+        }
+
         private void initOpenTK()
         {
             pgmID = GL.CreateProgram();
@@ -1690,6 +1723,7 @@ namespace Unity_Studio
         
         private void createVAO()
         {
+            timerOpenTK.Stop();
             GL.DeleteVertexArray(vao);
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
@@ -1769,6 +1803,7 @@ namespace Unity_Studio
             };
 
             createVAO();
+            glControl1.Visible = false;
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
@@ -1776,6 +1811,7 @@ namespace Unity_Studio
             glControl1.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Less);
             GL.BindVertexArray(vao);
             if (wireFrameView == true)
             {
@@ -1787,6 +1823,7 @@ namespace Unity_Studio
             }
             GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
             GL.BindVertexArray(0);
+            GL.Flush();
             glControl1.SwapBuffers();
         }
 
