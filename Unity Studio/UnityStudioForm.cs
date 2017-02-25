@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using static Unity_Studio.UnityStudio;
 
 
@@ -33,6 +35,27 @@ namespace Unity_Studio
         private float FMODfrequency;
 
         private Bitmap imageTexture;
+
+        // OpenTK variables
+        int pgmID;
+        int vsID;
+        int fsID;
+        int attributeVertexPosition;
+        int attributeNormalDirection;
+        int attributeVertexColor;
+        int uniformViewMatrix;
+        int vao;
+        int vboPositions;
+        int vboNormals;
+        int vboColors;
+        int vboViewMatrix;
+        int eboElements;
+        Vector3[] vertexData;
+        Vector3[] normalData;
+        Vector4[] colorData;
+        Matrix4[] viewMatrixData;
+        int[] indiceData;
+        bool wireFrameView;
 
         //asset list sorting helpers
         private int firstSortColumn = -1;
@@ -301,6 +324,96 @@ namespace Unity_Studio
                 dontBuildHierarchyMenuItem.Checked = debugMenuItem.Visible;
                 if (tabControl1.TabPages.Contains(tabPage3)) { tabControl1.TabPages.Remove(tabPage3); }
                 else { tabControl1.TabPages.Add(tabPage3); }
+            }
+
+            if (glControl1.Visible == true)
+            {
+                // --> Right
+                if (e.KeyCode == Keys.D)
+                {
+                    if (e.Shift && e.KeyCode == Keys.D) //Move
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateTranslation(0.1f, 0, 0);
+                    }
+                    else //Rotate
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateRotationY(0.1f);
+                    }
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+                
+                // <-- Left
+                if (e.KeyCode == Keys.A)
+                {
+                    if (e.Shift && e.KeyCode == Keys.A) //Move
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateTranslation(-0.1f, 0, 0);
+                    }
+                    else //Rotate
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateRotationY(-0.1f);
+                    }
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Up 
+                if (e.KeyCode == Keys.W)
+                {                    
+                    if (e.Control && e.KeyCode == Keys.W) //Toggle WireFrame
+                    {
+                        wireFrameView = !wireFrameView;
+                        glControl1.Invalidate();
+                    }
+                    else if (e.Shift && e.KeyCode == Keys.W) //Move
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateTranslation(0, 0.1f, 0);
+                    }
+                    else //Rotate
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateRotationX(0.1f);
+                    }
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Down
+                if (e.KeyCode == Keys.S)
+                {
+                    if (e.Shift && e.KeyCode == Keys.S) //Move
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateTranslation(0, -0.1f, 0);
+                    }
+                    else //Rotate
+                    {
+                        viewMatrixData[0] *= Matrix4.CreateRotationX(-0.1f);
+                    }
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Zoom Out
+                if (e.KeyCode == Keys.Q)
+                {
+                    viewMatrixData[0] *= Matrix4.CreateScale(0.9f);
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Zoom In
+                if (e.KeyCode == Keys.E)
+                {
+                    viewMatrixData[0] *= Matrix4.CreateScale(1.1f);
+                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Toggle Timer
+                if (e.KeyCode == Keys.T)
+                {
+                    timerOpenTK.Enabled = !timerOpenTK.Enabled;
+                }
             }
         }
 
@@ -576,22 +689,6 @@ namespace Unity_Studio
             resizeAssetListColumns();
         }
 
-        /*private void splitContainer1_Resize(object sender, EventArgs e)
-        {
-            switch (tabControl1.SelectedIndex)
-            {
-                case 1: resizeAssetListColumns(); break;
-            }
-        }
-
-        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-            switch (tabControl1.SelectedIndex)
-            {
-                case 1: resizeAssetListColumns(); break;
-            }
-        }*/
-
         private void listSearch_Enter(object sender, EventArgs e)
         {
             if (listSearch.Text == " Filter ")
@@ -681,6 +778,7 @@ namespace Unity_Studio
             fontPreviewBox.Visible = false;
             pfc.Dispose();
             FMODpanel.Visible = false;
+            glControl1.Visible = false;
             lastLoadedAsset = null;
             StatusStripUpdate("");
 
@@ -860,6 +958,84 @@ namespace Unity_Studio
                         break;
                     }
                 #endregion
+                #region Mesh
+                case 43: //Mesh
+                    {
+                        glControl1.Visible = true;
+                        viewMatrixData = new Matrix4[] {
+                            Matrix4.Identity 
+                            * Matrix4.CreateTranslation( 0.0f, -1.0f, 0.0f )
+                            * Matrix4.CreateRotationY(-90.0f)};
+
+                        var m_Mesh = new Mesh(asset);
+
+                        if (m_Mesh.m_VertexCount > 0)
+                        {
+                            int count = 3;//vertex components
+                                          //skip last component in vector4
+                            if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4) { count = 4; }
+
+                            vertexData = new Vector3[m_Mesh.m_VertexCount];
+                            for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                            {
+                                vertexData[v] = new Vector3(
+                                    m_Mesh.m_Vertices[v * count],
+                                    m_Mesh.m_Vertices[v * count + 1],
+                                    m_Mesh.m_Vertices[v * count + 2]);
+                            }
+
+                            indiceData = new int[m_Mesh.m_Indices.Count];
+                            for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                            {
+                                indiceData[i] = (int)m_Mesh.m_Indices[i];
+                                indiceData[i + 1] = (int)m_Mesh.m_Indices[i + 1];
+                                indiceData[i + 2] = (int)m_Mesh.m_Indices[i + 2];
+                            }
+
+                            if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3) { count = 3; }
+                            else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4) { count = 4; }
+
+                            normalData = new Vector3[m_Mesh.m_VertexCount];
+                            for (int n = 0; n < m_Mesh.m_VertexCount; n++)
+                            {
+                                normalData[n] = new Vector3(
+                                    m_Mesh.m_Normals[n * count],
+                                    m_Mesh.m_Normals[n * count + 1],
+                                    m_Mesh.m_Normals[n * count + 2]);
+                            }
+
+                            if (m_Mesh.m_Colors == null || m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
+                            {
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
+                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                                {
+                                    colorData[c] = new Vector4(
+                                        0.5f, 0.5f, 0.5f, 1.0f);
+                                }
+                            }
+                            else
+                            {
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
+                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                                {
+                                    colorData[c] = new Vector4(
+                                    m_Mesh.m_Colors[c * 4],
+                                    m_Mesh.m_Colors[c * 4 + 1],
+                                    m_Mesh.m_Colors[c * 4 + 2],
+                                    m_Mesh.m_Colors[c * 4 + 3]);
+                                }
+                            }
+                        }
+
+                        createVAO();
+                        
+                        StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) 
+                                        + "  |  'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | " 
+                                        + "'Shift WASD'=Move | 'Q/E'=Zoom | 'Ctl W' =Wireframe");
+                    }
+                    break;
+                #endregion
+
                 default:
                     {
                         StatusStripUpdate("Only supported export the raw file.");
@@ -1479,6 +1655,197 @@ namespace Unity_Studio
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
         }
 
+        private void timerOpenTK_Tick(object sender, EventArgs e)
+        {
+            if (glControl1.Visible == true)
+            {
+                viewMatrixData[0] *= Matrix4.CreateRotationY(-0.1f);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                glControl1.Invalidate();
+            }
+        }
+
+        private void initOpenTK()
+        {
+            pgmID = GL.CreateProgram();
+            loadShader("vs.glsl", ShaderType.VertexShader, pgmID, out vsID);
+            loadShader("fs.glsl", ShaderType.FragmentShader, pgmID, out fsID);
+            GL.LinkProgram(pgmID);
+            GL.UseProgram(pgmID);
+            attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
+            attributeNormalDirection = GL.GetAttribLocation(pgmID, "normalDirection");
+            attributeVertexColor = GL.GetAttribLocation(pgmID, "vertexColor");
+            uniformViewMatrix = GL.GetUniformLocation(pgmID, "viewMatrix");
+        }
+
+        private void loadShader(string filename, ShaderType type, int program, out int address)
+        {
+            address = GL.CreateShader(type);
+            using (StreamReader sr = new StreamReader(filename))
+            {
+                GL.ShaderSource(address, sr.ReadToEnd());
+            }
+            GL.CompileShader(address);
+            GL.AttachShader(program, address);
+            GL.DeleteShader(address);
+        }
+
+        private void createVBO(int vboAddress, Vector3[] data, int address)
+        {
+            GL.GenBuffers(1, out vboAddress);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
+            GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
+                                    (IntPtr)(data.Length * Vector3.SizeInBytes),
+                                    data,
+                                    BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(address, 3, VertexAttribPointerType.Float, false, 0, 0);
+            GL.EnableVertexAttribArray(address);
+        }
+
+        private void createVBO(int vboAddress, Vector4[] data, int address)
+        {
+            GL.GenBuffers(1, out vboAddress);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
+            GL.BufferData<Vector4>(BufferTarget.ArrayBuffer,
+                                    (IntPtr)(data.Length * Vector4.SizeInBytes),
+                                    data,
+                                    BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(address, 4, VertexAttribPointerType.Float, false, 0, 0);
+            GL.EnableVertexAttribArray(address);
+        }
+
+        private void createVBO(int vboAddress, Matrix4[] data, int address)
+        {
+            GL.GenBuffers(1, out vboAddress);
+            GL.UniformMatrix4(address, false, ref data[0]);
+        }
+
+        private void createEBO(int address, int[] data)
+        {
+            GL.GenBuffers(1, out address);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, address);
+            GL.BufferData(BufferTarget.ElementArrayBuffer,
+                            (IntPtr)(data.Length * sizeof(int)),
+                            data,
+                            BufferUsageHint.StaticDraw);
+        }
+        
+        private void createVAO()
+        {
+            timerOpenTK.Stop();
+            GL.DeleteVertexArray(vao);
+            GL.GenVertexArrays(1, out vao);
+            GL.BindVertexArray(vao);
+            createVBO(vboPositions, vertexData, attributeVertexPosition);
+            createVBO(vboColors, colorData, attributeVertexColor);
+            createVBO(vboViewMatrix, viewMatrixData, uniformViewMatrix);
+            createEBO(eboElements, indiceData);
+            createVBO(vboNormals, normalData, attributeNormalDirection);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            glControl1_Resize(this, EventArgs.Empty);
+            GL.ClearColor(Color.CadetBlue);
+            initOpenTK();
+
+            vertexData = new Vector3[]
+            {
+                new Vector3(-0.5f, -0.5f, -0.5f),
+                new Vector3(0.5f, -0.5f, -0.5f),
+                new Vector3(0.5f, 0.5f, -0.5f),
+                new Vector3(-0.5f, 0.5f, -0.5f),
+
+                new Vector3(-0.5f, -0.5f, 0.5f),
+                new Vector3(0.5f, -0.5f, 0.5f),
+                new Vector3(0.5f, 0.5f, 0.5f),
+                new Vector3(-0.5f, 0.5f, 0.5f)
+            };
+            indiceData = new int[]
+            {
+                //left
+                0,2,1,
+                0,3,2,
+                //back
+                1,2,6,
+                6,5,1,
+                //right
+                4,5,6,
+                6,7,4,
+                //top
+                2,3,6,
+                6,3,7,
+                //front
+                0,7,3,
+                0,4,7,
+                //bottom
+                0,1,5,
+                0,5,4
+            };
+            normalData = new Vector3[]
+            {
+                //left
+                new Vector3(-1.0f, 0.0f, 0.0f)
+                //back
+                //new Vector3(0.0f, 0.0f, -1.0f),
+                //right
+                //new Vector3(1.0f, 0.0f, 0.0f),
+                //top
+                //new Vector3(0.0f, 1.0f, 0.0f),
+                //front
+                //new Vector3(0.0f, 0.0f, 1.0f),
+                //bottom
+                //new Vector3(0.0f, -1.0f, 0.0f)
+            };
+            colorData = new Vector4[vertexData.Length];
+            for (int c = 0; c < vertexData.Length; c++)
+            {
+                colorData[c] = new Vector4(
+                    0.5f, 0.5f, 0.5f, 1.0f);
+            };
+            viewMatrixData = new Matrix4[]
+            {
+                Matrix4.Identity
+            };
+
+            createVAO();
+            glControl1.Visible = false;
+        }
+
+        private void glControl1_Paint(object sender, PaintEventArgs e)
+        {
+            glControl1.MakeCurrent();
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Less);
+            GL.BindVertexArray(vao);                  
+            if (wireFrameView == true)
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); //Wireframe
+            }
+            else
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            }
+            GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
+            GL.BindVertexArray(0);
+            GL.Flush();
+            glControl1.SwapBuffers();
+        }
+
+        private void glControl1_Resize(object sender, EventArgs e)
+        {
+            if (glControl1.ClientSize.Height == 0)
+            {
+                glControl1.ClientSize = new System.Drawing.Size(glControl1.ClientSize.Width, 1);
+            }
+
+            GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
+        }
+
         private void resetForm()
         {
             /*Properties.Settings.Default["uniqueNames"] = uniqueNamesMenuItem.Checked;
@@ -1509,6 +1876,7 @@ namespace Unity_Studio
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
             fontPreviewBox.Visible = false;
+            glControl1.Visible = false;
             lastSelectedItem = null;
             lastLoadedAsset = null;
             firstSortColumn = -1;
