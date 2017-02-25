@@ -965,7 +965,7 @@ namespace Unity_Studio
                         viewMatrixData = new Matrix4[] {
                             Matrix4.Identity 
                             * Matrix4.CreateTranslation( 0.0f, -1.0f, 0.0f )
-                            * Matrix4.CreateRotationY(90.0f)};
+                            * Matrix4.CreateRotationY(-90.0f)};
 
                         var m_Mesh = new Mesh(asset);
 
@@ -973,7 +973,7 @@ namespace Unity_Studio
                         {
                             int count = 3;//vertex components
                                           //skip last component in vector4
-                            if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4) { count++; }
+                            if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4) { count = 4; }
 
                             vertexData = new Vector3[m_Mesh.m_VertexCount];
                             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
@@ -992,8 +992,11 @@ namespace Unity_Studio
                                 indiceData[i + 2] = (int)m_Mesh.m_Indices[i + 2];
                             }
 
-                            normalData = new Vector3[m_Mesh.m_Normals.Length/3];
-                            for (int n = 0; n < m_Mesh.m_Normals.Length/3; n++)
+                            if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3) { count = 3; }
+                            else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4) { count = 4; }
+
+                            normalData = new Vector3[m_Mesh.m_VertexCount];
+                            for (int n = 0; n < m_Mesh.m_VertexCount; n++)
                             {
                                 normalData[n] = new Vector3(
                                     m_Mesh.m_Normals[n * count],
@@ -1001,21 +1004,27 @@ namespace Unity_Studio
                                     m_Mesh.m_Normals[n * count + 2]);
                             }
 
-                            colorData = new Vector4[m_Mesh.m_VertexCount];
-                            for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                            if (m_Mesh.m_Colors == null || m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
                             {
-                                colorData[c] = new Vector4(
-                                    0.5f, 0.5f, 0.5f, 1.0f);
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
+                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                                {
+                                    colorData[c] = new Vector4(
+                                        0.5f, 0.5f, 0.5f, 1.0f);
+                                }
                             }
-                            /*colorData = new Vector4[m_Mesh.m_Colors.Length];
-                            for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                            else
                             {
-                                colorData[c] = new Vector4(
-                                m_Mesh.m_Colors[c * 2],
-                                m_Mesh.m_Colors[c * 2 + 1],
-                                m_Mesh.m_Colors[c * 2 + 2],
-                                m_Mesh.m_Colors[c * 2 + 3]);
-                            }*/
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
+                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                                {
+                                    colorData[c] = new Vector4(
+                                    m_Mesh.m_Colors[c * 4],
+                                    m_Mesh.m_Colors[c * 4 + 1],
+                                    m_Mesh.m_Colors[c * 4 + 2],
+                                    m_Mesh.m_Colors[c * 4 + 3]);
+                                }
+                            }
                         }
 
                         createVAO();
@@ -1728,10 +1737,10 @@ namespace Unity_Studio
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
             createVBO(vboPositions, vertexData, attributeVertexPosition);
-            createVBO(vboNormals, normalData, attributeNormalDirection);
             createVBO(vboColors, colorData, attributeVertexColor);
             createVBO(vboViewMatrix, viewMatrixData, uniformViewMatrix);
             createEBO(eboElements, indiceData);
+            createVBO(vboNormals, normalData, attributeNormalDirection);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
         }
@@ -1779,17 +1788,17 @@ namespace Unity_Studio
             normalData = new Vector3[]
             {
                 //left
-                new Vector3(-1.0f, 0.0f, 0.0f),
+                new Vector3(-1.0f, 0.0f, 0.0f)
                 //back
-                new Vector3(0.0f, 0.0f, -1.0f),
+                //new Vector3(0.0f, 0.0f, -1.0f),
                 //right
-                new Vector3(1.0f, 0.0f, 0.0f),
+                //new Vector3(1.0f, 0.0f, 0.0f),
                 //top
-                new Vector3(0.0f, 1.0f, 0.0f),
+                //new Vector3(0.0f, 1.0f, 0.0f),
                 //front
-                new Vector3(0.0f, 0.0f, 1.0f),
+                //new Vector3(0.0f, 0.0f, 1.0f),
                 //bottom
-                new Vector3(0.0f, -1.0f, 0.0f)
+                //new Vector3(0.0f, -1.0f, 0.0f)
             };
             colorData = new Vector4[vertexData.Length];
             for (int c = 0; c < vertexData.Length; c++)
@@ -1812,7 +1821,7 @@ namespace Unity_Studio
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
-            GL.BindVertexArray(vao);
+            GL.BindVertexArray(vao);                  
             if (wireFrameView == true)
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); //Wireframe

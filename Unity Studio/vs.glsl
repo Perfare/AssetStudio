@@ -11,7 +11,7 @@ out vec4 color;
 
 void main()
 {
-	vec3 lightPosition = vec3(20000.0, 20000.0, 2000.0);
+	vec3 lightPosition = vec3(200.0, 200.0, 200.0);
 	gl_Position = viewMatrix * vec4(vertexPosition, 1.0);
 	surfaceNormal = normalDirection;
 	toLightVector = lightPosition - vertexPosition;
