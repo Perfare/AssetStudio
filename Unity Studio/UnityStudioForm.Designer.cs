@@ -575,9 +575,9 @@
             this.FMODpanel.Controls.Add(this.FMODstopButton);
             this.FMODpanel.Controls.Add(this.FMODpauseButton);
             this.FMODpanel.Controls.Add(this.FMODplayButton);
-            this.FMODpanel.Location = new System.Drawing.Point(223, 217);
+            this.FMODpanel.Location = new System.Drawing.Point(0, 0);
             this.FMODpanel.Name = "FMODpanel";
-            this.FMODpanel.Size = new System.Drawing.Size(400, 200);
+            this.FMODpanel.Size = new System.Drawing.Size(838, 635);
             this.FMODpanel.TabIndex = 2;
             this.FMODpanel.Visible = false;
             // 
@@ -585,7 +585,7 @@
             // 
             this.FMODcopyright.AutoSize = true;
             this.FMODcopyright.ForeColor = System.Drawing.SystemColors.ControlLight;
-            this.FMODcopyright.Location = new System.Drawing.Point(117, 187);
+            this.FMODcopyright.Location = new System.Drawing.Point(249, 380);
             this.FMODcopyright.Name = "FMODcopyright";
             this.FMODcopyright.Size = new System.Drawing.Size(283, 13);
             this.FMODcopyright.TabIndex = 9;
@@ -594,7 +594,7 @@
             // FMODinfoLabel
             // 
             this.FMODinfoLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODinfoLabel.Location = new System.Drawing.Point(82, 54);
+            this.FMODinfoLabel.Location = new System.Drawing.Point(305, 271);
             this.FMODinfoLabel.Name = "FMODinfoLabel";
             this.FMODinfoLabel.Size = new System.Drawing.Size(176, 13);
             this.FMODinfoLabel.TabIndex = 8;
@@ -602,7 +602,7 @@
             // FMODtimerLabel
             // 
             this.FMODtimerLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODtimerLabel.Location = new System.Drawing.Point(212, 54);
+            this.FMODtimerLabel.Location = new System.Drawing.Point(435, 271);
             this.FMODtimerLabel.Name = "FMODtimerLabel";
             this.FMODtimerLabel.Size = new System.Drawing.Size(158, 13);
             this.FMODtimerLabel.TabIndex = 7;
@@ -612,7 +612,7 @@
             // FMODstatusLabel
             // 
             this.FMODstatusLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODstatusLabel.Location = new System.Drawing.Point(26, 54);
+            this.FMODstatusLabel.Location = new System.Drawing.Point(249, 271);
             this.FMODstatusLabel.Name = "FMODstatusLabel";
             this.FMODstatusLabel.Size = new System.Drawing.Size(50, 13);
             this.FMODstatusLabel.TabIndex = 6;
@@ -621,7 +621,7 @@
             // FMODprogressBar
             // 
             this.FMODprogressBar.AutoSize = false;
-            this.FMODprogressBar.Location = new System.Drawing.Point(29, 73);
+            this.FMODprogressBar.Location = new System.Drawing.Point(252, 290);
             this.FMODprogressBar.Maximum = 1000;
             this.FMODprogressBar.Name = "FMODprogressBar";
             this.FMODprogressBar.Size = new System.Drawing.Size(348, 24);
@@ -634,7 +634,7 @@
             // FMODvolumeBar
             // 
             this.FMODvolumeBar.LargeChange = 2;
-            this.FMODvolumeBar.Location = new System.Drawing.Point(273, 103);
+            this.FMODvolumeBar.Location = new System.Drawing.Point(496, 320);
             this.FMODvolumeBar.Name = "FMODvolumeBar";
             this.FMODvolumeBar.Size = new System.Drawing.Size(104, 45);
             this.FMODvolumeBar.TabIndex = 4;
@@ -645,7 +645,7 @@
             // FMODloopButton
             // 
             this.FMODloopButton.Appearance = System.Windows.Forms.Appearance.Button;
-            this.FMODloopButton.Location = new System.Drawing.Point(212, 103);
+            this.FMODloopButton.Location = new System.Drawing.Point(435, 320);
             this.FMODloopButton.Name = "FMODloopButton";
             this.FMODloopButton.Size = new System.Drawing.Size(55, 46);
             this.FMODloopButton.TabIndex = 3;
@@ -656,7 +656,7 @@
             // 
             // FMODstopButton
             // 
-            this.FMODstopButton.Location = new System.Drawing.Point(151, 103);
+            this.FMODstopButton.Location = new System.Drawing.Point(374, 320);
             this.FMODstopButton.Name = "FMODstopButton";
             this.FMODstopButton.Size = new System.Drawing.Size(55, 46);
             this.FMODstopButton.TabIndex = 2;
@@ -666,7 +666,7 @@
             // 
             // FMODpauseButton
             // 
-            this.FMODpauseButton.Location = new System.Drawing.Point(90, 103);
+            this.FMODpauseButton.Location = new System.Drawing.Point(313, 320);
             this.FMODpauseButton.Name = "FMODpauseButton";
             this.FMODpauseButton.Size = new System.Drawing.Size(55, 46);
             this.FMODpauseButton.TabIndex = 1;
@@ -676,7 +676,7 @@
             // 
             // FMODplayButton
             // 
-            this.FMODplayButton.Location = new System.Drawing.Point(29, 103);
+            this.FMODplayButton.Location = new System.Drawing.Point(252, 320);
             this.FMODplayButton.Name = "FMODplayButton";
             this.FMODplayButton.Size = new System.Drawing.Size(55, 46);
             this.FMODplayButton.TabIndex = 0;
@@ -717,7 +717,6 @@
             this.glControl1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.glControl1.Location = new System.Drawing.Point(0, 0);
-            this.glControl1.Margin = new System.Windows.Forms.Padding(6);
             this.glControl1.Name = "glControl1";
             this.glControl1.Size = new System.Drawing.Size(838, 635);
             this.glControl1.TabIndex = 4;

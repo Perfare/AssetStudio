@@ -380,6 +380,7 @@ namespace Unity_Studio
             fileNodes = new List<GameObject>();
             if (buildHierarchyMenuItem)
             {
+                SetProgressBarMaximum(1);
                 SetProgressBarValue(1);
                 SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count) + 1);
                 foreach (var assetsFile in assetsfileList)
