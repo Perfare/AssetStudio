@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Drawing.Imaging;
 using System.Web.Script.Serialization;
+using ManagedFbx;
 
 
 namespace Unity_Studio
@@ -280,7 +281,6 @@ namespace Unity_Studio
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
                                     break;
                                 }
-                            //case 21: //Material
                             case 28: //Texture2D
                                 {
                                     Texture2D m_Texture2D = new Texture2D(asset, false);
@@ -324,8 +324,13 @@ namespace Unity_Studio
                                     productName = plSet.productName;
                                     break;
                                 }
-                            case 21: //Material
                             case 43: //Mesh
+                                {
+                                    Mesh m_Mesh = new Mesh(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
+                            case 21: //Material                            
                             case 74: //AnimationClip
                             case 90: //Avatar
                             case 91: //AnimatorController
@@ -920,7 +925,7 @@ namespace Unity_Studio
                 //StatusStripUpdate("Writing Geometry");
                 foreach (var MeshPD in Meshes)
                 {
-                    Mesh m_Mesh = new Mesh(MeshPD);
+                    Mesh m_Mesh = new Mesh(MeshPD, true);
                     MeshFBX(m_Mesh, MeshPD.uniqueID, ob);
 
                     //write data 8MB at a time
@@ -951,7 +956,7 @@ namespace Unity_Studio
                         //find a way to test if a mesh instance was loaded previously and if it uses the same skeleton, then create instance or copy
                         var keepID = MeshPD.uniqueID;
                         MeshPD.uniqueID = SkinnedMeshPD.uniqueID;
-                        Mesh m_Mesh = new Mesh(MeshPD);
+                        Mesh m_Mesh = new Mesh(MeshPD, true);
                         MeshFBX(m_Mesh, MeshPD.uniqueID, ob);
 
                         //write data 8MB at a time
@@ -1732,6 +1737,111 @@ namespace Unity_Studio
             {
                 File.WriteAllBytes(exportFilename, m_Font.m_FontData);
             }
+        }
+
+        public static void ExportMesh(Mesh m_Mesh, string exportPath)
+        {
+            Scene m_scene = Scene.CreateScene("Scene");
+            SceneNode root = m_scene.RootNode;
+            SceneNode meshnode = Scene.CreateNode(m_scene, m_Mesh.m_Name);
+            SceneNode.AddChild(root, meshnode);
+            ManagedFbx.Mesh mesh = Scene.CreateMesh(m_scene, meshnode, "Mesh");
+            if (m_Mesh.m_VertexCount > 0)
+            {
+                #region Vertices
+                int count = 3;
+                if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
+                {
+                    count = 4;
+                }
+                var vertices = new ManagedFbx.Vector3[m_Mesh.m_VertexCount];
+                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                {
+                    vertices[v] = new ManagedFbx.Vector3(
+                        m_Mesh.m_Vertices[v * count],
+                        m_Mesh.m_Vertices[v * count + 1],
+                        m_Mesh.m_Vertices[v * count + 2]);
+                }
+                mesh.Vertices = vertices;
+                #endregion
+                #region Indicies
+                List<int> indices = new List<int>();
+                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                {
+                    indices.Add((int)m_Mesh.m_Indices[i]);
+                    indices.Add((int)m_Mesh.m_Indices[i + 1]);
+                    indices.Add((int)m_Mesh.m_Indices[i + 2]);
+                }
+                mesh.AddPolygons(indices, 0);
+                #endregion
+                #region Normals
+                if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
+                {
+                    if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
+                    {
+                        count = 3;
+                    }
+                    else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
+                    {
+                        count = 4;
+                    }
+
+                    var normals = new ManagedFbx.Vector3[m_Mesh.m_VertexCount];
+                    for (int n = 0; n < m_Mesh.m_VertexCount; n++)
+                    {
+                        normals[n] = new ManagedFbx.Vector3(
+                            m_Mesh.m_Normals[n * count],
+                            m_Mesh.m_Normals[n * count + 1],
+                            m_Mesh.m_Normals[n * count + 2]);
+                    }
+                    mesh.Normals = normals;
+                }
+                #endregion
+                #region Colors
+                if (m_Mesh.m_Colors == null)
+                {
+                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colors[c] = new ManagedFbx.Colour(
+                            0.5f, 0.5f, 0.5f, 1.0f);
+                    }
+                    mesh.VertexColours = colors;
+                }
+                else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
+                {
+                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colors[c] = new ManagedFbx.Colour(
+                            m_Mesh.m_Colors[c * 4],
+                            m_Mesh.m_Colors[c * 4 + 1],
+                            m_Mesh.m_Colors[c * 4 + 2],
+                            1.0f);
+                    }
+                    mesh.VertexColours = colors;
+                }
+                else
+                {
+                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colors[c] = new ManagedFbx.Colour(
+                        m_Mesh.m_Colors[c * 4],
+                        m_Mesh.m_Colors[c * 4 + 1],
+                        m_Mesh.m_Colors[c * 4 + 2],
+                        m_Mesh.m_Colors[c * 4 + 3]);
+                    }
+                    mesh.VertexColours = colors;
+                }
+                #endregion
+            }
+            SceneNode.AddMesh(meshnode, mesh);
+
+            m_scene.Save(exportPath); //default is .fbx
+            //m_scene.Save(exportPath + ".fbx");
+            m_scene.Save(exportPath + ".obj");
+            m_scene.Save(exportPath + ".dae");
         }
 
         public static bool ExportFileExists(string filename)
