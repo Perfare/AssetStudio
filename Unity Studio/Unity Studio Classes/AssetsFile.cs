@@ -448,7 +448,7 @@ namespace Unity_Studio
                     test = a_Stream.ReadUInt16();
                     string varNameStr;
                     if (test == 0) { varNameStr = varStrings.Substring(varNameIndex, varStrings.IndexOf('\0', varNameIndex) - varNameIndex); }
-                    else { varNameStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
+                    else { varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
 
                     int size = a_Stream.ReadInt32();
                     int index = a_Stream.ReadInt32();

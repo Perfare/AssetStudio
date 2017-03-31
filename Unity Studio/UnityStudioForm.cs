@@ -1062,7 +1062,14 @@ namespace Unity_Studio
 
                 default:
                     {
-                        StatusStripUpdate("Only supported export the raw file.");
+                        /*string str;
+                        if ((str = asset.ViewStruct()) != null)
+                        {
+                            textPreviewBox.Text = str;
+                            textPreviewBox.Visible = true;
+                        }
+                        else*/
+                            StatusStripUpdate("Only supported export the raw file.");
                         break;
                     }
             }
@@ -1568,13 +1575,13 @@ namespace Unity_Studio
                                 }
                                 break;
                             case 43: //Mesh
-                                Mesh m_Mesh = new Mesh(asset, true);                                
+                                Mesh m_Mesh = new Mesh(asset, true);
                                 if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
                                     ExportMesh(m_Mesh, exportpath + asset.Text);
                                     exportedCount++;
                                 }
-                                
+
                                 break;
                             default:
                                 if (!ExportFileExists(exportpath + asset.Text + asset.extension))
