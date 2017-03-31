@@ -240,7 +240,7 @@ namespace Unity_Studio
             return extractedCount;
         }
 
-        public static void BuildAssetStructures(bool loadAssetsMenuItem, bool displayAll, bool buildHierarchyMenuItem, bool buildClassStructuresMenuItem)
+        public static void BuildAssetStructures(bool loadAssetsMenuItem, bool displayAll, bool buildHierarchyMenuItem, bool buildClassStructuresMenuItem, bool displayOriginalName)
         {
             #region first loop - read asset data & create list
             if (loadAssetsMenuItem)
@@ -255,7 +255,7 @@ namespace Unity_Studio
                     StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
 
                     string fileID = i.ToString(fileIDfmt);
-
+                    AssetBundle ab = null;
                     foreach (var asset in assetsFile.preloadTable.Values)
                     {
                         asset.uniqueID = fileID + asset.uniqueID;
@@ -330,6 +330,11 @@ namespace Unity_Studio
                                     exportable = true;
                                     break;
                                 }
+                            case 142: //AssetBundle
+                                {
+                                    ab = new AssetBundle(asset);
+                                    break;
+                                }
                             case 21: //Material                            
                             case 74: //AnimationClip
                             case 90: //Avatar
@@ -369,6 +374,15 @@ namespace Unity_Studio
                             assetsFile.exportableAssets.Add(asset);
                         }
                         ProgressBarPerformStep();
+                    }
+                    if (displayOriginalName)
+                    {
+                        assetsFile.exportableAssets.ForEach(x =>
+                        {
+                            var replacename = ab?.m_Container.Find(y => y.second.asset.m_PathID == x.m_PathID)?.first;
+                            if (!string.IsNullOrEmpty(replacename))
+                                x.Text = replacename.Replace(Path.GetExtension(replacename), "");
+                        });
                     }
                     exportableAssets.AddRange(assetsFile.exportableAssets);
                     //if (assetGroup.Items.Count > 0) { listView1.Groups.Add(assetGroup); }

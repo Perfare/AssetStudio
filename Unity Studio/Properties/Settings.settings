@@ -53,5 +53,8 @@
     <Setting Name="convertType" Type="System.String" Scope="User">
       <Value Profile="(Default)">PNG</Value>
     </Setting>
+    <Setting Name="displayOriginalName" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

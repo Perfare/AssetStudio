@@ -269,7 +269,7 @@ namespace Unity_Studio
             bool optionBuildHierarchyMenuItem = !dontBuildHierarchyMenuItem.Checked;
             bool optionBuildClassStructuresMenuItem = buildClassStructuresMenuItem.Checked;
 
-            BuildAssetStructures(optionLoadAssetsMenuItem, optionDisplayAll, optionBuildHierarchyMenuItem, optionBuildClassStructuresMenuItem);
+            BuildAssetStructures(optionLoadAssetsMenuItem, optionDisplayAll, optionBuildHierarchyMenuItem, optionBuildClassStructuresMenuItem, displayOriginalName.Checked);
 
             BeginInvoke(new Action(() =>
             {
@@ -1069,7 +1069,7 @@ namespace Unity_Studio
                             textPreviewBox.Visible = true;
                         }
                         else*/
-                            StatusStripUpdate("Only supported export the raw file.");
+                        StatusStripUpdate("Only supported export the raw file.");
                         break;
                     }
             }
@@ -1682,6 +1682,7 @@ namespace Unity_Studio
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
+            displayOriginalName.Checked = (bool)Properties.Settings.Default["displayOriginalName"];
             displayAll.Checked = (bool)Properties.Settings.Default["displayAll"];
             displayInfo.Checked = (bool)Properties.Settings.Default["displayInfo"];
             enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];

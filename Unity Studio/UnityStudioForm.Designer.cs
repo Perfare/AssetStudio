@@ -45,6 +45,7 @@
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayOriginalName = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePreview = new System.Windows.Forms.ToolStripMenuItem();
             this.displayInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.openAfterExport = new System.Windows.Forms.ToolStripMenuItem();
@@ -233,6 +234,7 @@
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.displayAll,
+            this.displayOriginalName,
             this.enablePreview,
             this.displayInfo,
             this.openAfterExport,
@@ -241,6 +243,15 @@
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // displayOriginalName
+            // 
+            this.displayOriginalName.CheckOnClick = true;
+            this.displayOriginalName.Name = "displayOriginalName";
+            this.displayOriginalName.Size = new System.Drawing.Size(252, 22);
+            this.displayOriginalName.Text = "Display asset original name";
+            this.displayOriginalName.ToolTipText = "Check this option will use asset original name when display and export";
+            this.displayOriginalName.CheckedChanged += new System.EventHandler(this.MenuItem_CheckedChanged);
             // 
             // displayAll
             // 
@@ -808,7 +819,7 @@
             //
             // timerOpenTK
             //
-            this.timerOpenTK.Interval = 1000/6;
+            this.timerOpenTK.Interval = 1000 / 6;
             this.timerOpenTK.Tick += new System.EventHandler(this.timerOpenTK_Tick);
             // 
             // openFileDialog1
@@ -929,6 +940,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem displayAll;
+        private System.Windows.Forms.ToolStripMenuItem displayOriginalName;
         private System.Windows.Forms.ToolStripMenuItem enablePreview;
         private System.Windows.Forms.ToolStripMenuItem displayInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;

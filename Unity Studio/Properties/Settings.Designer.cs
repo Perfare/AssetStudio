@@ -226,5 +226,17 @@ namespace Unity_Studio.Properties {
                 this["convertType"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool displayOriginalName {
+            get {
+                return ((bool)(this["displayOriginalName"]));
+            }
+            set {
+                this["displayOriginalName"] = value;
+            }
+        }
     }
 }
