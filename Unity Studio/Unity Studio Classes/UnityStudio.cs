@@ -365,6 +365,7 @@ namespace Unity_Studio
                             {
                                 asset.Text += " #" + asset.uniqueID;
                             }
+                            asset.Text = FixFileName(asset.Text);
                             assetsFile.exportableAssets.Add(asset);
                         }
                         ProgressBarPerformStep();
@@ -1852,6 +1853,12 @@ namespace Unity_Studio
             }
             Directory.CreateDirectory(Path.GetDirectoryName(filename));
             return false;
+        }
+
+        private static string FixFileName(string str)
+        {
+            if (str.Length >= 260) return Path.GetRandomFileName();
+            return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
     }
 }
