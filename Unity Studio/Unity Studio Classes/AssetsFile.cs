@@ -365,8 +365,7 @@ namespace Unity_Studio
             int index = a_Stream.ReadInt32();
             int isArray = a_Stream.ReadInt32();
             int num0 = a_Stream.ReadInt32();
-            int num1 = a_Stream.ReadInt16();
-            int num2 = a_Stream.ReadInt16();
+            int flag = a_Stream.ReadInt32();
             int childrenCount = a_Stream.ReadInt32();
 
             //Debug.WriteLine(baseFormat + " " + baseName + " " + childrenCount);
@@ -375,7 +374,8 @@ namespace Unity_Studio
                 Level = level - 1,
                 Type = varType,
                 Name = varName,
-                Size = size
+                Size = size,
+                Flag = flag
             });
             for (int i = 0; i < childrenCount; i++) { readBase(cb, level + 1); }
         }
@@ -452,7 +452,7 @@ namespace Unity_Studio
 
                     int size = a_Stream.ReadInt32();
                     int index = a_Stream.ReadInt32();
-                    int num1 = a_Stream.ReadInt32();
+                    int flag = a_Stream.ReadInt32();
 
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
                     else
@@ -462,7 +462,8 @@ namespace Unity_Studio
                             Level = level - 1,
                             Type = varTypeStr,
                             Name = varNameStr,
-                            Size = size
+                            Size = size,
+                            Flag = flag
                         });
                     }
 

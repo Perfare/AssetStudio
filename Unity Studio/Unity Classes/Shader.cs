@@ -27,7 +27,7 @@ namespace Unity_Studio
             {
                 if (readSwitch)
                 {
-                    m_Script = Encoding.UTF8.GetBytes("Serialized Shader can't be read");
+                    m_Script = Encoding.UTF8.GetBytes(preloadData.ViewStruct());
                 }
                 else
                 {

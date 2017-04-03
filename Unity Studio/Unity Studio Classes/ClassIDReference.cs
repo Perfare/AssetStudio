@@ -31,6 +31,7 @@ namespace Unity_Studio
         public string Type;
         public string Name;
         public int Size;
+        public int Flag;
     }
 
     public static class ClassIDReference

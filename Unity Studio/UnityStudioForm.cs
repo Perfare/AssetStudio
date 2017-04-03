@@ -13,7 +13,6 @@ using System.Diagnostics;
 using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using ManagedFbx;
 using static Unity_Studio.UnityStudio;
 
 namespace Unity_Studio
@@ -1062,14 +1061,14 @@ namespace Unity_Studio
 
                 default:
                     {
-                        /*string str;
+                        string str;
                         if ((str = asset.ViewStruct()) != null)
                         {
                             textPreviewBox.Text = str;
                             textPreviewBox.Visible = true;
                         }
-                        else*/
-                        StatusStripUpdate("Only supported export the raw file.");
+                        else
+                            StatusStripUpdate("Only supported export the raw file.");
                         break;
                     }
             }
