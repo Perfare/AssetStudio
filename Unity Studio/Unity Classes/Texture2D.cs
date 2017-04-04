@@ -126,7 +126,7 @@ namespace Unity_Studio
             }
 
             m_IsReadable = a_Stream.ReadBoolean(); //2.6.0 and up
-            m_ReadAllowed = a_Stream.ReadBoolean(); //3.0.0 and up
+            m_ReadAllowed = a_Stream.ReadBoolean(); //3.0.0 - 5.4
             a_Stream.AlignStream(4);
 
             m_ImageCount = a_Stream.ReadInt32();
