@@ -138,10 +138,7 @@ namespace Unity_Studio
                 {
                     return member2;
                 }
-                else
-                {
-                    member2.Add(member);
-                }
+                member2.Add(member);
             }
             return member2;
         }

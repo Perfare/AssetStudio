@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Lz4;
+using SevenZip.Compression.LZMA;
 
 namespace Unity_Studio
 {
@@ -97,7 +97,7 @@ namespace Unity_Studio
                             byte[] lzmaBuffer = new byte[lzmaSize];
                             b_Stream.Read(lzmaBuffer, 0, lzmaSize);
 
-                            using (var lzmaStream = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(lzmaBuffer)), EndianType.BigEndian))
+                            using (var lzmaStream = new EndianStream(SevenZipHelper.StreamDecompress(new MemoryStream(lzmaBuffer)), EndianType.BigEndian))
                             {
                                 getFiles(lzmaStream, 0);
                             }
@@ -166,15 +166,14 @@ namespace Unity_Studio
             EndianStream blocksInfo;
             switch (flag & 0x3F)
             {
-                default:
-                case 0://None
+                default://None
                     {
                         blocksInfo = new EndianStream(new MemoryStream(blocksInfoBytes), EndianType.BigEndian);
                         break;
                     }
                 case 1://LZMA
                     {
-                        blocksInfo = new EndianStream(SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(new MemoryStream(blocksInfoBytes)), EndianType.BigEndian);
+                        blocksInfo = new EndianStream(SevenZipHelper.StreamDecompress(new MemoryStream(blocksInfoBytes)), EndianType.BigEndian);
                         break;
                     }
                 case 2://LZ4
@@ -206,8 +205,7 @@ namespace Unity_Studio
                     var compressedBytes = b_Stream.ReadBytes(compressedSize);
                     switch (flag & 0x3F)
                     {
-                        default:
-                        case 0://None
+                        default://None
                             {
                                 assetsDataStream.Write(compressedBytes, 0, compressedSize);
                                 break;
@@ -217,7 +215,7 @@ namespace Unity_Studio
                                 var uncompressedBytes = new byte[uncompressedSize];
                                 using (var mstream = new MemoryStream(compressedBytes))
                                 {
-                                    var decoder = SevenZip.Compression.LZMA.SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
+                                    var decoder = SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
                                     decoder.Read(uncompressedBytes, 0, uncompressedSize);
                                     decoder.Dispose();
                                 }

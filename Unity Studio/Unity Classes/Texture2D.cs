@@ -168,15 +168,14 @@ namespace Unity_Studio
                     if (File.Exists(path) ||
                     File.Exists(path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(path))))
                     {
-                        image_data = new byte[image_data_size];
                         BinaryReader reader = new BinaryReader(File.OpenRead(path));
                         reader.BaseStream.Position = offset;
-                        reader.Read(image_data, 0, image_data_size);
+                        image_data = reader.ReadBytes(image_data_size);
                         reader.Close();
                     }
                     else
                     {
-                        EndianStream estream = null;
+                        EndianStream estream;
                         if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
                         {
                             estream.Position = offset;
@@ -186,8 +185,7 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    image_data = new byte[image_data_size];
-                    a_Stream.Read(image_data, 0, image_data_size);
+                    image_data = a_Stream.ReadBytes(image_data_size);
                 }
 
                 switch (m_TextureFormat)

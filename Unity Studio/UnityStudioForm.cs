@@ -49,9 +49,9 @@ namespace Unity_Studio
         int vboColors;
         int vboViewMatrix;
         int eboElements;
-        OpenTK.Vector3[] vertexData;
-        OpenTK.Vector3[] normalData;
-        OpenTK.Vector4[] colorData;
+        Vector3[] vertexData;
+        Vector3[] normalData;
+        Vector4[] colorData;
         Matrix4[] viewMatrixData;
         int[] indiceData;
         bool wireFrameView;
@@ -73,7 +73,7 @@ namespace Unity_Studio
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
 
-        private void loadFile_Click(object sender, System.EventArgs e)
+        private void loadFile_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -118,7 +118,7 @@ namespace Unity_Studio
             }
         }
 
-        private void loadFolder_Click(object sender, System.EventArgs e)
+        private void loadFolder_Click(object sender, EventArgs e)
         {
             /*FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
 
@@ -274,11 +274,11 @@ namespace Unity_Studio
             {
                 if (productName != "")
                 {
-                    this.Text = "Unity Studio - " + productName + " - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
+                    Text = "Unity Studio - " + productName + " - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
                 }
                 else if (assetsfileList.Count > 0)
                 {
-                    this.Text = "Unity Studio - no productName - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
+                    Text = "Unity Studio - no productName - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
                 }
                 if (!dontLoadAssetsMenuItem.Checked)
                 {
@@ -596,7 +596,7 @@ namespace Unity_Studio
             if (treeSearch.Text == " Search ")
             {
                 treeSearch.Text = "";
-                treeSearch.ForeColor = System.Drawing.SystemColors.WindowText;
+                treeSearch.ForeColor = SystemColors.WindowText;
             }
         }
 
@@ -605,7 +605,7 @@ namespace Unity_Studio
             if (treeSearch.Text == "")
             {
                 treeSearch.Text = " Search ";
-                treeSearch.ForeColor = System.Drawing.SystemColors.GrayText;
+                treeSearch.ForeColor = SystemColors.GrayText;
             }
         }
 
@@ -694,7 +694,7 @@ namespace Unity_Studio
             if (listSearch.Text == " Filter ")
             {
                 listSearch.Text = "";
-                listSearch.ForeColor = System.Drawing.SystemColors.WindowText;
+                listSearch.ForeColor = SystemColors.WindowText;
                 enableFiltering = true;
             }
         }
@@ -705,7 +705,7 @@ namespace Unity_Studio
             {
                 enableFiltering = false;
                 listSearch.Text = " Filter ";
-                listSearch.ForeColor = System.Drawing.SystemColors.GrayText;
+                listSearch.ForeColor = SystemColors.GrayText;
             }
         }
 
@@ -716,7 +716,7 @@ namespace Unity_Studio
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
                 //visibleListAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(ListSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
-                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) >= 0);
+                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
                 assetListView.VirtualListSize = visibleAssets.Count;
                 assetListView.EndUpdate();
             }
@@ -742,7 +742,7 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
-                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Size.CompareTo(b.Size);
+                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Size.CompareTo(b.Size);
                     });
                     break;
                 case 1:
@@ -750,7 +750,7 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
-                        else return secondSortColumn == 2 ? a.Size.CompareTo(b.Size) : a.Text.CompareTo(b.Text);
+                        return secondSortColumn == 2 ? a.Size.CompareTo(b.Size) : a.Text.CompareTo(b.Text);
                     });
                     break;
                 case 2:
@@ -758,7 +758,7 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.Size.CompareTo(a.Size) : a.Size.CompareTo(b.Size);
                         if (xdiff != 0) return xdiff;
-                        else return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
+                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
                     });
                     break;
             }
@@ -771,7 +771,7 @@ namespace Unity_Studio
         private void selectAsset(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             previewPanel.BackgroundImage = Properties.Resources.preview;
-            previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            previewPanel.BackgroundImageLayout = ImageLayout.Center;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
@@ -975,10 +975,10 @@ namespace Unity_Studio
                             {
                                 count = 4;
                             }
-                            vertexData = new OpenTK.Vector3[m_Mesh.m_VertexCount];
+                            vertexData = new Vector3[m_Mesh.m_VertexCount];
                             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                             {
-                                vertexData[v] = new OpenTK.Vector3(
+                                vertexData[v] = new Vector3(
                                     m_Mesh.m_Vertices[v * count],
                                     m_Mesh.m_Vertices[v * count + 1],
                                     m_Mesh.m_Vertices[v * count + 2]);
@@ -1005,10 +1005,10 @@ namespace Unity_Studio
                                     count = 4;
                                 }
 
-                                normalData = new OpenTK.Vector3[m_Mesh.m_VertexCount];
+                                normalData = new Vector3[m_Mesh.m_VertexCount];
                                 for (int n = 0; n < m_Mesh.m_VertexCount; n++)
                                 {
-                                    normalData[n] = new OpenTK.Vector3(
+                                    normalData[n] = new Vector3(
                                         m_Mesh.m_Normals[n * count],
                                         m_Mesh.m_Normals[n * count + 1],
                                         m_Mesh.m_Normals[n * count + 2]);
@@ -1018,19 +1018,19 @@ namespace Unity_Studio
                             #region Colors
                             if (m_Mesh.m_Colors == null)
                             {
-                                colorData = new OpenTK.Vector4[m_Mesh.m_VertexCount];
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                                 {
-                                    colorData[c] = new OpenTK.Vector4(
+                                    colorData[c] = new Vector4(
                                         0.5f, 0.5f, 0.5f, 1.0f);
                                 }
                             }
                             else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
                             {
-                                colorData = new OpenTK.Vector4[m_Mesh.m_VertexCount];
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                                 {
-                                    colorData[c] = new OpenTK.Vector4(
+                                    colorData[c] = new Vector4(
                                         m_Mesh.m_Colors[c * 4],
                                         m_Mesh.m_Colors[c * 4 + 1],
                                         m_Mesh.m_Colors[c * 4 + 2],
@@ -1039,10 +1039,10 @@ namespace Unity_Studio
                             }
                             else
                             {
-                                colorData = new OpenTK.Vector4[m_Mesh.m_VertexCount];
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                                 {
-                                    colorData[c] = new OpenTK.Vector4(
+                                    colorData[c] = new Vector4(
                                     m_Mesh.m_Colors[c * 4],
                                     m_Mesh.m_Colors[c * 4 + 1],
                                     m_Mesh.m_Colors[c * 4 + 2],
@@ -1375,7 +1375,7 @@ namespace Unity_Studio
                 //Environment.Exit(-1);
                 return true;
             }
-            else { return false; }
+            return false;
         }
 
         private void all3DObjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1734,24 +1734,24 @@ namespace Unity_Studio
             GL.DeleteShader(address);
         }
 
-        private void createVBO(out int vboAddress, OpenTK.Vector3[] data, int address)
+        private void createVBO(out int vboAddress, Vector3[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
-            GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer,
-                                    (IntPtr)(data.Length * OpenTK.Vector3.SizeInBytes),
+            GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
+                                    (IntPtr)(data.Length * Vector3.SizeInBytes),
                                     data,
                                     BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(address, 3, VertexAttribPointerType.Float, false, 0, 0);
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(out int vboAddress, OpenTK.Vector4[] data, int address)
+        private void createVBO(out int vboAddress, Vector4[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
-            GL.BufferData<OpenTK.Vector4>(BufferTarget.ArrayBuffer,
-                                    (IntPtr)(data.Length * OpenTK.Vector4.SizeInBytes),
+            GL.BufferData<Vector4>(BufferTarget.ArrayBuffer,
+                                    (IntPtr)(data.Length * Vector4.SizeInBytes),
                                     data,
                                     BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(address, 4, VertexAttribPointerType.Float, false, 0, 0);
@@ -1823,7 +1823,7 @@ namespace Unity_Studio
             Properties.Settings.Default["displayInfo"] = displayAssetInfoMenuItem.Checked;
             Properties.Settings.Default.Save();*/
 
-            base.Text = "Unity Studio";
+            Text = "Unity Studio";
 
             unityFiles.Clear();
             assetsfileList.Clear();
@@ -1841,7 +1841,7 @@ namespace Unity_Studio
             classesListView.Groups.Clear();
 
             previewPanel.BackgroundImage = Properties.Resources.preview;
-            previewPanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            previewPanel.BackgroundImageLayout = ImageLayout.Center;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;

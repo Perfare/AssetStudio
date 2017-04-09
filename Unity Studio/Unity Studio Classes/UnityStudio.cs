@@ -1105,10 +1105,6 @@ namespace Unity_Studio
                                     }
                                 }
                             }
-                            else
-                            {
-                                //bool stop = true;
-                            }
                         }
 
                         MeshPD.uniqueID = keepID;
@@ -1653,7 +1649,8 @@ namespace Unity_Studio
         public static bool ExportAudioClip(AssetPreloadData asset, string exportFilename, string exportFileextension)
         {
             var oldextension = exportFileextension;
-            if ((bool)Properties.Settings.Default["convertfsb"] && exportFileextension == ".fsb")
+            var convertfsb = (bool)Properties.Settings.Default["convertfsb"];
+            if (convertfsb && exportFileextension == ".fsb")
             {
                 exportFileextension = ".wav";
             }
@@ -1661,7 +1658,7 @@ namespace Unity_Studio
             if (ExportFileExists(exportFullname))
                 return false;
             var m_AudioClip = new AudioClip(asset, true);
-            if ((bool)Properties.Settings.Default["convertfsb"] && oldextension == ".fsb")
+            if (convertfsb && oldextension == ".fsb")
             {
                 FMOD.System system;
                 FMOD.Sound sound;
@@ -1769,10 +1766,10 @@ namespace Unity_Studio
                 {
                     count = 4;
                 }
-                var vertices = new ManagedFbx.Vector3[m_Mesh.m_VertexCount];
+                var vertices = new Vector3[m_Mesh.m_VertexCount];
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    vertices[v] = new ManagedFbx.Vector3(
+                    vertices[v] = new Vector3(
                         m_Mesh.m_Vertices[v * count],
                         m_Mesh.m_Vertices[v * count + 1],
                         m_Mesh.m_Vertices[v * count + 2]);
@@ -1801,10 +1798,10 @@ namespace Unity_Studio
                         count = 4;
                     }
 
-                    var normals = new ManagedFbx.Vector3[m_Mesh.m_VertexCount];
+                    var normals = new Vector3[m_Mesh.m_VertexCount];
                     for (int n = 0; n < m_Mesh.m_VertexCount; n++)
                     {
-                        normals[n] = new ManagedFbx.Vector3(
+                        normals[n] = new Vector3(
                             m_Mesh.m_Normals[n * count],
                             m_Mesh.m_Normals[n * count + 1],
                             m_Mesh.m_Normals[n * count + 2]);
@@ -1815,20 +1812,20 @@ namespace Unity_Studio
                 #region Colors
                 if (m_Mesh.m_Colors == null)
                 {
-                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    var colors = new Colour[m_Mesh.m_VertexCount];
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
-                        colors[c] = new ManagedFbx.Colour(
+                        colors[c] = new Colour(
                             0.5f, 0.5f, 0.5f, 1.0f);
                     }
                     mesh.VertexColours = colors;
                 }
                 else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
                 {
-                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    var colors = new Colour[m_Mesh.m_VertexCount];
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
-                        colors[c] = new ManagedFbx.Colour(
+                        colors[c] = new Colour(
                             m_Mesh.m_Colors[c * 4],
                             m_Mesh.m_Colors[c * 4 + 1],
                             m_Mesh.m_Colors[c * 4 + 2],
@@ -1838,10 +1835,10 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    var colors = new ManagedFbx.Colour[m_Mesh.m_VertexCount];
+                    var colors = new Colour[m_Mesh.m_VertexCount];
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
-                        colors[c] = new ManagedFbx.Colour(
+                        colors[c] = new Colour(
                         m_Mesh.m_Colors[c * 4],
                         m_Mesh.m_Colors[c * 4 + 1],
                         m_Mesh.m_Colors[c * 4 + 2],
@@ -1853,19 +1850,19 @@ namespace Unity_Studio
                 #region UV
                 if (m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length == m_Mesh.m_VertexCount * 2)
                 {
-                    var uv = new ManagedFbx.Vector2[m_Mesh.m_VertexCount];
+                    var uv = new Vector2[m_Mesh.m_VertexCount];
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
-                        uv[c] = new ManagedFbx.Vector2(m_Mesh.m_UV1[c * 2], m_Mesh.m_UV1[c * 2 + 1]);
+                        uv[c] = new Vector2(m_Mesh.m_UV1[c * 2], m_Mesh.m_UV1[c * 2 + 1]);
                     }
                     mesh.TextureCoords = uv;
                 }
                 else if (m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length == m_Mesh.m_VertexCount * 2)
                 {
-                    var uv = new ManagedFbx.Vector2[m_Mesh.m_VertexCount];
+                    var uv = new Vector2[m_Mesh.m_VertexCount];
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
-                        uv[c] = new ManagedFbx.Vector2(m_Mesh.m_UV2[c * 2], m_Mesh.m_UV2[c * 2 + 1]);
+                        uv[c] = new Vector2(m_Mesh.m_UV2[c * 2], m_Mesh.m_UV2[c * 2 + 1]);
                     }
                     mesh.TextureCoords = uv;
                 }

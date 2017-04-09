@@ -94,23 +94,21 @@ namespace Unity_Studio
 
             if (readSwitch)
             {
-                m_AudioData = new byte[m_Size];
-
                 if (m_Source == null)
                 {
-                    a_Stream.Read(m_AudioData, 0, (int)m_Size);
+                    m_AudioData = a_Stream.ReadBytes((int)m_Size);
                 }
                 else if (File.Exists(m_Source) ||
                     File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
                 {
                     BinaryReader reader = new BinaryReader(File.OpenRead(m_Source));
                     reader.BaseStream.Position = m_Offset;
-                    reader.Read(m_AudioData, 0, (int)m_Size);
+                    m_AudioData = reader.ReadBytes((int)m_Size);
                     reader.Close();
                 }
                 else
                 {
-                    EndianStream estream = null;
+                    EndianStream estream;
                     if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
