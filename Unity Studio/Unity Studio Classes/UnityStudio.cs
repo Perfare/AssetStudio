@@ -1141,7 +1141,7 @@ namespace Unity_Studio
                     //TODO check texture type and set path accordingly; eg. CubeMap, Texture3D
                     string texPathName = Path.GetDirectoryName(FBXfile) + "\\Texture2D\\";
                     ExportTexture(TexturePD, texPathName, false);
-                    texPathName += TexturePD.Text + ".png";//必须是png文件
+                    texPathName = Path.GetFullPath(Path.Combine(texPathName, $"{TexturePD.Text}.png"));//必须是png文件
                     ob.AppendFormat("\n\tTexture: 7{0}, \"Texture::{1}\", \"\" {{", TexturePD.uniqueID, TexturePD.Text);
                     ob.Append("\n\t\tType: \"TextureVideoClip\"");
                     ob.Append("\n\t\tVersion: 202");
@@ -1152,7 +1152,7 @@ namespace Unity_Studio
                     ob.Append("\n\t\t}");
                     ob.AppendFormat("\n\t\tMedia: \"Video::{0}\"", TexturePD.Text);
                     ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPathName);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPathName));
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", texPathName.Replace($"{Path.GetDirectoryName(FBXfile)}\\", ""));
                     ob.Append("\n\t}");
 
                     ob.AppendFormat("\n\tVideo: 8{0}, \"Video::{1}\", \"Clip\" {{", TexturePD.uniqueID, TexturePD.Text);
@@ -1161,7 +1161,7 @@ namespace Unity_Studio
                     ob.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", texPathName);
                     ob.Append("\n\t\t}");
                     ob.AppendFormat("\n\t\tFileName: \"{0}\"", texPathName);
-                    ob.AppendFormat("\n\t\tRelativeFilename: \"Texture2D\\{0}\"", Path.GetFileName(texPathName));
+                    ob.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", texPathName.Replace($"{Path.GetDirectoryName(FBXfile)}\\", ""));
                     ob.Append("\n\t}");
 
                     //connect video to texture
