@@ -1734,7 +1734,7 @@ namespace Unity_Studio
             GL.DeleteShader(address);
         }
 
-        private void createVBO(int vboAddress, OpenTK.Vector3[] data, int address)
+        private void createVBO(out int vboAddress, OpenTK.Vector3[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
@@ -1746,7 +1746,7 @@ namespace Unity_Studio
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(int vboAddress, OpenTK.Vector4[] data, int address)
+        private void createVBO(out int vboAddress, OpenTK.Vector4[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
@@ -1758,13 +1758,13 @@ namespace Unity_Studio
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(int vboAddress, Matrix4[] data, int address)
+        private void createVBO(out int vboAddress, Matrix4[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.UniformMatrix4(address, false, ref data[0]);
         }
 
-        private void createEBO(int address, int[] data)
+        private void createEBO(out int address, int[] data)
         {
             GL.GenBuffers(1, out address);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, address);
@@ -1780,11 +1780,11 @@ namespace Unity_Studio
             GL.DeleteVertexArray(vao);
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
-            createVBO(vboPositions, vertexData, attributeVertexPosition);
-            createVBO(vboNormals, normalData, attributeNormalDirection);
-            createVBO(vboColors, colorData, attributeVertexColor);
-            createVBO(vboViewMatrix, viewMatrixData, uniformViewMatrix);
-            createEBO(eboElements, indiceData);
+            createVBO(out vboPositions, vertexData, attributeVertexPosition);
+            createVBO(out vboNormals, normalData, attributeNormalDirection);
+            createVBO(out vboColors, colorData, attributeVertexColor);
+            createVBO(out vboViewMatrix, viewMatrixData, uniformViewMatrix);
+            createEBO(out eboElements, indiceData);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
         }

@@ -1850,13 +1850,33 @@ namespace Unity_Studio
                     mesh.VertexColours = colors;
                 }
                 #endregion
+                #region UV
+                if (m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length == m_Mesh.m_VertexCount * 2)
+                {
+                    var uv = new ManagedFbx.Vector2[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        uv[c] = new ManagedFbx.Vector2(m_Mesh.m_UV1[c * 2], m_Mesh.m_UV1[c * 2 + 1]);
+                    }
+                    mesh.TextureCoords = uv;
+                }
+                else if (m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length == m_Mesh.m_VertexCount * 2)
+                {
+                    var uv = new ManagedFbx.Vector2[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        uv[c] = new ManagedFbx.Vector2(m_Mesh.m_UV2[c * 2], m_Mesh.m_UV2[c * 2 + 1]);
+                    }
+                    mesh.TextureCoords = uv;
+                }
+                #endregion
             }
             SceneNode.AddMesh(meshnode, mesh);
 
-            m_scene.Save(exportPath); //default is .fbx
+            //m_scene.Save(exportPath); //default is .fbx
             //m_scene.Save(exportPath + ".fbx");
             m_scene.Save(exportPath + ".obj");
-            m_scene.Save(exportPath + ".dae");
+            //m_scene.Save(exportPath + ".dae");
         }
 
         public static bool ExportFileExists(string filename)
