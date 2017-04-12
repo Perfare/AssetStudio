@@ -997,14 +997,9 @@ namespace Unity_Studio
                             if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
                             {
                                 if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
-                                {
                                     count = 3;
-                                }
                                 else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
-                                {
                                     count = 4;
-                                }
-
                                 normalData = new Vector3[m_Mesh.m_VertexCount];
                                 for (int n = 0; n < m_Mesh.m_VertexCount; n++)
                                 {
@@ -1014,6 +1009,8 @@ namespace Unity_Studio
                                         m_Mesh.m_Normals[n * count + 2]);
                                 }
                             }
+                            else
+                                normalData = null;
                             #endregion
                             #region Colors
                             if (m_Mesh.m_Colors == null)
@@ -1738,7 +1735,7 @@ namespace Unity_Studio
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
-            GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
+            GL.BufferData(BufferTarget.ArrayBuffer,
                                     (IntPtr)(data.Length * Vector3.SizeInBytes),
                                     data,
                                     BufferUsageHint.StaticDraw);
@@ -1750,7 +1747,7 @@ namespace Unity_Studio
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
-            GL.BufferData<Vector4>(BufferTarget.ArrayBuffer,
+            GL.BufferData(BufferTarget.ArrayBuffer,
                                     (IntPtr)(data.Length * Vector4.SizeInBytes),
                                     data,
                                     BufferUsageHint.StaticDraw);
@@ -1781,7 +1778,8 @@ namespace Unity_Studio
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
             createVBO(out vboPositions, vertexData, attributeVertexPosition);
-            createVBO(out vboNormals, normalData, attributeNormalDirection);
+            if (normalData != null)
+                createVBO(out vboNormals, normalData, attributeNormalDirection);
             createVBO(out vboColors, colorData, attributeVertexColor);
             createVBO(out vboViewMatrix, viewMatrixData, uniformViewMatrix);
             createEBO(out eboElements, indiceData);
