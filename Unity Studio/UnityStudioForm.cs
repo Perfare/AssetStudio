@@ -1028,9 +1028,9 @@ namespace Unity_Studio
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                                 {
                                     colorData[c] = new Vector4(
-                                        m_Mesh.m_Colors[c * 4],
-                                        m_Mesh.m_Colors[c * 4 + 1],
-                                        m_Mesh.m_Colors[c * 4 + 2],
+                                        m_Mesh.m_Colors[c * 3],
+                                        m_Mesh.m_Colors[c * 3 + 1],
+                                        m_Mesh.m_Colors[c * 3 + 2],
                                         1.0f);
                                 }
                             }

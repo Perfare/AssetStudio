@@ -1304,16 +1304,29 @@ namespace Unity_Studio
                     //ob.Append(string.Join(",", m_Mesh.m_Colors));
 
                     lineSplit = ob.Length;
-                    for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                    if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
                     {
-                        ob.AppendFormat("{0},{1},{2},{3},", m_Mesh.m_Colors[i * 2], m_Mesh.m_Colors[i * 2 + 1], m_Mesh.m_Colors[i * 2 + 2], m_Mesh.m_Colors[i * 2 + 3]);
-
-                        if (ob.Length - lineSplit > 2000)
+                        for (int i = 0; i < m_Mesh.m_VertexCount; i++)
                         {
-                            ob.Append("\n");
-                            lineSplit = ob.Length;
+                            ob.AppendFormat("{0},{1},{2},{3},", m_Mesh.m_Colors[i * 3], m_Mesh.m_Colors[i * 3 + 1], m_Mesh.m_Colors[i * 3 + 2], 1.0f);
+                            if (ob.Length - lineSplit > 2000)
+                            {
+                                ob.Append("\n");
+                                lineSplit = ob.Length;
+                            }
                         }
-
+                    }
+                    else
+                    {
+                        for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                        {
+                            ob.AppendFormat("{0},{1},{2},{3},", m_Mesh.m_Colors[i * 4], m_Mesh.m_Colors[i * 4 + 1], m_Mesh.m_Colors[i * 4 + 2], m_Mesh.m_Colors[i * 4 + 3]);
+                            if (ob.Length - lineSplit > 2000)
+                            {
+                                ob.Append("\n");
+                                lineSplit = ob.Length;
+                            }
+                        }
                     }
                     ob.Length--;//remove last comma
 
@@ -1826,9 +1839,9 @@ namespace Unity_Studio
                     for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                     {
                         colors[c] = new Colour(
-                            m_Mesh.m_Colors[c * 4],
-                            m_Mesh.m_Colors[c * 4 + 1],
-                            m_Mesh.m_Colors[c * 4 + 2],
+                            m_Mesh.m_Colors[c * 3],
+                            m_Mesh.m_Colors[c * 3 + 1],
+                            m_Mesh.m_Colors[c * 3 + 2],
                             1.0f);
                     }
                     mesh.VertexColours = colors;
