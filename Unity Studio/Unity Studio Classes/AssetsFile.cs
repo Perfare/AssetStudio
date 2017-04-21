@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Unity_Studio
 {
@@ -31,7 +33,6 @@ namespace Unity_Studio
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
         public static string[] buildTypeSplit = { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-        public static string[] strverSplit = { ".", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "\n", "-", "_" };
 
         #region cmmon string
         private static Dictionary<int, string> baseStrings = new Dictionary<int, string>()
@@ -229,6 +230,7 @@ namespace Unity_Studio
                 case 11: platformStr = "Xbox 360"; break;
                 case 13: platformStr = "Android"; break;
                 case 16: platformStr = "Google NaCl"; break;
+                case 19: platformStr = "CollabPreview"; break;
                 case 21: platformStr = "WP8"; break;
                 case 25: platformStr = "Linux"; break;
                 case 29: platformStr = "Wii U"; break;
@@ -329,8 +331,8 @@ namespace Unity_Studio
             #endregion
 
             buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
-            var strver = m_Version.Split(strverSplit, StringSplitOptions.RemoveEmptyEntries);
-            version = Array.ConvertAll(strver, int.Parse);
+            var strver = from Match m in Regex.Matches(m_Version, @"[0-9]") select m.Value;
+            version = Array.ConvertAll(strver.ToArray(), int.Parse);
 
             if (fileGen >= 14)
             {

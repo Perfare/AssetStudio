@@ -155,7 +155,7 @@ namespace Unity_Studio
                 {
                     //make use of the bundle file version
                     assetsFile.m_Version = b_File.versionEngine;
-                    assetsFile.version = Array.ConvertAll((b_File.versionEngine.Split(AssetsFile.strverSplit, StringSplitOptions.RemoveEmptyEntries)), int.Parse);
+                    assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
                     assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
                 }
                 if (validAssetsFile)
