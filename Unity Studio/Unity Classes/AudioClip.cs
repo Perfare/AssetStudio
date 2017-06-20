@@ -113,6 +113,10 @@ namespace Unity_Studio
                     {
                         estream.Position = m_Offset;
                         m_AudioData = estream.ReadBytes((int)m_Size);
+                    }else
+                    {
+                        // can't find m_source file
+                        m_AudioData = a_Stream.ReadBytes((int)m_Size);
                     }
                 }
             }
