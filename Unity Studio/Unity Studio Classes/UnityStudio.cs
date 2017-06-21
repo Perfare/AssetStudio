@@ -131,35 +131,19 @@ namespace Unity_Studio
 
             foreach (var memFile in b_File.MemoryAssetsFileList) //filter unity files
             {
-                bool validAssetsFile = false;
-                switch (Path.GetExtension(memFile.fileName))
-                {
-                    case ".assets":
-                    case ".sharedAssets":
-                        validAssetsFile = true;
-                        break;
-                    case "":
-                        validAssetsFile = (memFile.fileName == "mainData" ||
-                                            Regex.IsMatch(memFile.fileName, "level.*?") ||
-                                            Regex.IsMatch(memFile.fileName, "CustomAssetBundle-.*?") ||
-                                            Regex.IsMatch(memFile.fileName, "CAB-.*?") ||
-                                            Regex.IsMatch(memFile.fileName, "BuildPlayer-.*?"));
-                        break;
-                }
                 StatusStripUpdate("Loading " + memFile.fileName);
                 //create dummy path to be used for asset extraction
                 memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
-
                 AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
-                if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
+                if (assetsFile.valid)
                 {
-                    //make use of the bundle file version
-                    assetsFile.m_Version = b_File.versionEngine;
-                    assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
-                    assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
-                }
-                if (validAssetsFile)
-                {
+                    if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
+                    {
+                        //make use of the bundle file version
+                        assetsFile.m_Version = b_File.versionEngine;
+                        assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
+                        assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
+                    }
                     b_assetsfileList.Add(assetsFile);
                 }
                 assetsfileandstream[assetsFile.fileName] = assetsFile.a_Stream;

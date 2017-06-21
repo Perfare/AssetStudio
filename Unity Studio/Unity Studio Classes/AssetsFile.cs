@@ -13,6 +13,7 @@ namespace Unity_Studio
         public string filePath;
         public string fileName;
         public int fileGen;
+        public bool valid;
         public string m_Version = "2.5.0f5";
         public int[] version = new int[4] { 0, 0, 0, 0 };
         public string[] buildType;
@@ -149,212 +150,264 @@ namespace Unity_Studio
 
         public AssetsFile(string fullName, EndianStream fileStream)
         {
-            //if (memFile != null) { Stream = new EndianStream(memFile, endianType); }
-            //else { Stream = new EndianStream(File.OpenRead(fileName), endianType); }
             a_Stream = fileStream;
-
             filePath = fullName;
             fileName = Path.GetFileName(fullName);
-            int tableSize = a_Stream.ReadInt32();
-            int dataEnd = a_Stream.ReadInt32();
-            fileGen = a_Stream.ReadInt32();
-            uint dataOffset = a_Stream.ReadUInt32();
-            sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
-
-            switch (fileGen)
+            try
             {
-                case 6://2.5.0 - 2.6.1
-                    {
-                        a_Stream.Position = (dataEnd - tableSize);
-                        a_Stream.Position += 1;
+                int tableSize = a_Stream.ReadInt32();
+                int dataEnd = a_Stream.ReadInt32();
+                fileGen = a_Stream.ReadInt32();
+                uint dataOffset = a_Stream.ReadUInt32();
+                sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
+
+                switch (fileGen)
+                {
+                    case 6: //2.5.0 - 2.6.1
+                        {
+                            a_Stream.Position = (dataEnd - tableSize);
+                            a_Stream.Position += 1;
+                            break;
+                        }
+                    case 7: //3.0.0 beta
+                        {
+                            a_Stream.Position = (dataEnd - tableSize);
+                            a_Stream.Position += 1;
+                            m_Version = a_Stream.ReadStringToNull();
+                            break;
+                        }
+                    case 8: //3.0.0 - 3.4.2
+                        {
+                            a_Stream.Position = (dataEnd - tableSize);
+                            a_Stream.Position += 1;
+                            m_Version = a_Stream.ReadStringToNull();
+                            platform = a_Stream.ReadInt32();
+                            break;
+                        }
+                    case 9: //3.5.0 - 4.6.x
+                        {
+                            a_Stream.Position += 4; //azero
+                            m_Version = a_Stream.ReadStringToNull();
+                            platform = a_Stream.ReadInt32();
+                            break;
+                        }
+                    case 14: //5.0.0 beta and final
+                    case 15: //5.0.1 - 5.4
+                    case 16: //??.. no sure
+                    case 17: //5.5.0 and up
+                        {
+                            a_Stream.Position += 4; //azero
+                            m_Version = a_Stream.ReadStringToNull();
+                            platform = a_Stream.ReadInt32();
+                            baseDefinitions = a_Stream.ReadBoolean();
+                            break;
+                        }
+                    default:
+                        {
+                            //MessageBox.Show("Unsupported Unity version!" + fileGen, "Unity Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                }
+
+                if (platform > 255 || platform < 0)
+                {
+                    byte[] b32 = BitConverter.GetBytes(platform);
+                    Array.Reverse(b32);
+                    platform = BitConverter.ToInt32(b32, 0);
+                    //endianType = EndianType.LittleEndian;
+                    a_Stream.endian = EndianType.LittleEndian;
+                }
+
+                switch (platform)
+                {
+                    case -2:
+                        platformStr = "Unity Package";
                         break;
-                    }
-                case 7://3.0.0 beta
-                    {
-                        a_Stream.Position = (dataEnd - tableSize);
-                        a_Stream.Position += 1;
-                        m_Version = a_Stream.ReadStringToNull();
+                    case 4:
+                        platformStr = "OSX";
                         break;
-                    }
-                case 8://3.0.0 - 3.4.2
-                    {
-                        a_Stream.Position = (dataEnd - tableSize);
-                        a_Stream.Position += 1;
-                        m_Version = a_Stream.ReadStringToNull();
-                        platform = a_Stream.ReadInt32();
+                    case 5:
+                        platformStr = "PC";
                         break;
-                    }
-                case 9://3.5.0 - 4.6.x
-                    {
-                        a_Stream.Position += 4;//azero
-                        m_Version = a_Stream.ReadStringToNull();
-                        platform = a_Stream.ReadInt32();
+                    case 6:
+                        platformStr = "Web";
                         break;
-                    }
-                case 14://5.0.0 beta and final
-                case 15://5.0.1 - 5.4
-                case 16://??.. no sure
-                case 17://5.5.0 and up
-                    {
-                        a_Stream.Position += 4;//azero
-                        m_Version = a_Stream.ReadStringToNull();
-                        platform = a_Stream.ReadInt32();
-                        baseDefinitions = a_Stream.ReadBoolean();
+                    case 7:
+                        platformStr = "Web streamed";
                         break;
-                    }
-                default:
+                    case 9:
+                        platformStr = "iOS";
+                        break;
+                    case 10:
+                        platformStr = "PS3";
+                        break;
+                    case 11:
+                        platformStr = "Xbox 360";
+                        break;
+                    case 13:
+                        platformStr = "Android";
+                        break;
+                    case 16:
+                        platformStr = "Google NaCl";
+                        break;
+                    case 19:
+                        platformStr = "CollabPreview";
+                        break;
+                    case 21:
+                        platformStr = "WP8";
+                        break;
+                    case 25:
+                        platformStr = "Linux";
+                        break;
+                    case 29:
+                        platformStr = "Wii U";
+                        break;
+                    default:
+                        platformStr = "Unknown Platform";
+                        break;
+                }
+
+                int baseCount = a_Stream.ReadInt32();
+                for (int i = 0; i < baseCount; i++)
+                {
+                    if (fileGen < 14)
                     {
-                        //MessageBox.Show("Unsupported Unity version!" + fileGen, "Unity Studio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
+                        int classID = a_Stream.ReadInt32();
+                        string baseType = a_Stream.ReadStringToNull();
+                        string baseName = a_Stream.ReadStringToNull();
+                        a_Stream.Position += 20;
+                        int memberCount = a_Stream.ReadInt32();
+
+                        var cb = new List<ClassMember>();
+                        for (int m = 0; m < memberCount; m++)
+                        {
+                            readBase(cb, 1);
+                        }
+
+                        var aClass = new ClassStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb };
+                        aClass.SubItems.Add(classID.ToString());
+                        ClassStructures.Add(classID, aClass);
                     }
-            }
-
-            if (platform > 255 || platform < 0)
-            {
-                byte[] b32 = BitConverter.GetBytes(platform);
-                Array.Reverse(b32);
-                platform = BitConverter.ToInt32(b32, 0);
-                //endianType = EndianType.LittleEndian;
-                a_Stream.endian = EndianType.LittleEndian;
-            }
-
-            switch (platform)
-            {
-                case -2: platformStr = "Unity Package"; break;
-                case 4: platformStr = "OSX"; break;
-                case 5: platformStr = "PC"; break;
-                case 6: platformStr = "Web"; break;
-                case 7: platformStr = "Web streamed"; break;
-                case 9: platformStr = "iOS"; break;
-                case 10: platformStr = "PS3"; break;
-                case 11: platformStr = "Xbox 360"; break;
-                case 13: platformStr = "Android"; break;
-                case 16: platformStr = "Google NaCl"; break;
-                case 19: platformStr = "CollabPreview"; break;
-                case 21: platformStr = "WP8"; break;
-                case 25: platformStr = "Linux"; break;
-                case 29: platformStr = "Wii U"; break;
-                default: platformStr = "Unknown Platform"; break;
-            }
-
-            int baseCount = a_Stream.ReadInt32();
-            for (int i = 0; i < baseCount; i++)
-            {
-                if (fileGen < 14)
-                {
-                    int classID = a_Stream.ReadInt32();
-                    string baseType = a_Stream.ReadStringToNull();
-                    string baseName = a_Stream.ReadStringToNull();
-                    a_Stream.Position += 20;
-                    int memberCount = a_Stream.ReadInt32();
-
-                    var cb = new List<ClassMember>();
-                    for (int m = 0; m < memberCount; m++) { readBase(cb, 1); }
-
-                    var aClass = new ClassStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb };
-                    aClass.SubItems.Add(classID.ToString());
-                    ClassStructures.Add(classID, aClass);
-                }
-                else { readBase5(); }
-            }
-
-            if (fileGen >= 7 && fileGen < 14) { a_Stream.Position += 4; }//azero
-
-            int assetCount = a_Stream.ReadInt32();
-
-            #region asset preload table
-            string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
-
-            for (int i = 0; i < assetCount; i++)
-            {
-                //each table entry is aligned individually, not the whole table
-                if (fileGen >= 14) { a_Stream.AlignStream(4); }
-
-                AssetPreloadData asset = new AssetPreloadData();
-                if (fileGen < 14) { asset.m_PathID = a_Stream.ReadInt32(); }
-                else { asset.m_PathID = a_Stream.ReadInt64(); }
-                asset.Offset = a_Stream.ReadUInt32();
-                asset.Offset += dataOffset;
-                asset.Size = a_Stream.ReadInt32();
-                if (fileGen > 15)
-                {
-                    int index = a_Stream.ReadInt32();
-                    asset.Type1 = classIDs[index][0];
-                    asset.Type2 = (ushort)classIDs[index][1];
-                }
-                else
-                {
-                    asset.Type1 = a_Stream.ReadInt32();
-                    asset.Type2 = a_Stream.ReadUInt16();
-                    a_Stream.Position += 2;
-                }
-                if (fileGen == 15)
-                {
-                    byte unknownByte = a_Stream.ReadByte();
-                    //this is a single byte, not an int32
-                    //the next entry is aligned after this
-                    //but not the last!
-                    if (unknownByte != 0)
+                    else
                     {
-                        //bool investigate = true;
+                        readBase5();
                     }
                 }
 
-                string typeString;
-                if (ClassIDReference.Names.TryGetValue(asset.Type2, out typeString))
+                if (fileGen >= 7 && fileGen < 14)
                 {
-                    asset.TypeString = typeString;
-                }
-                else
-                {
-                    asset.TypeString = "Unknown Type " + asset.Type2;
+                    a_Stream.Position += 4; //azero
                 }
 
-                asset.uniqueID = i.ToString(assetIDfmt);
+                int assetCount = a_Stream.ReadInt32();
 
-                asset.sourceFile = this;
+                #region asset preload table
+                string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
 
-                preloadTable.Add(asset.m_PathID, asset);
-
-                #region read BuildSettings to get version for unity 2.x files
-                if (asset.Type2 == 141 && fileGen == 6)
+                for (int i = 0; i < assetCount; i++)
                 {
-                    long nextAsset = a_Stream.Position;
+                    //each table entry is aligned individually, not the whole table
+                    if (fileGen >= 14)
+                    {
+                        a_Stream.AlignStream(4);
+                    }
 
-                    BuildSettings BSettings = new BuildSettings(asset);
-                    m_Version = BSettings.m_Version;
+                    AssetPreloadData asset = new AssetPreloadData();
+                    if (fileGen < 14)
+                    {
+                        asset.m_PathID = a_Stream.ReadInt32();
+                    }
+                    else
+                    {
+                        asset.m_PathID = a_Stream.ReadInt64();
+                    }
+                    asset.Offset = a_Stream.ReadUInt32();
+                    asset.Offset += dataOffset;
+                    asset.Size = a_Stream.ReadInt32();
+                    if (fileGen > 15)
+                    {
+                        int index = a_Stream.ReadInt32();
+                        asset.Type1 = classIDs[index][0];
+                        asset.Type2 = (ushort)classIDs[index][1];
+                    }
+                    else
+                    {
+                        asset.Type1 = a_Stream.ReadInt32();
+                        asset.Type2 = a_Stream.ReadUInt16();
+                        a_Stream.Position += 2;
+                    }
+                    if (fileGen == 15)
+                    {
+                        byte unknownByte = a_Stream.ReadByte();
+                        //this is a single byte, not an int32
+                        //the next entry is aligned after this
+                        //but not the last!
+                        if (unknownByte != 0)
+                        {
+                            //bool investigate = true;
+                        }
+                    }
 
-                    a_Stream.Position = nextAsset;
+                    string typeString;
+                    if (ClassIDReference.Names.TryGetValue(asset.Type2, out typeString))
+                    {
+                        asset.TypeString = typeString;
+                    }
+                    else
+                    {
+                        asset.TypeString = "Unknown Type " + asset.Type2;
+                    }
+
+                    asset.uniqueID = i.ToString(assetIDfmt);
+
+                    asset.sourceFile = this;
+
+                    preloadTable.Add(asset.m_PathID, asset);
+
+                    #region read BuildSettings to get version for unity 2.x files
+                    if (asset.Type2 == 141 && fileGen == 6)
+                    {
+                        long nextAsset = a_Stream.Position;
+
+                        BuildSettings BSettings = new BuildSettings(asset);
+                        m_Version = BSettings.m_Version;
+
+                        a_Stream.Position = nextAsset;
+                    }
+                    #endregion
                 }
                 #endregion
-            }
-            #endregion
 
-            buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
-            var strver = from Match m in Regex.Matches(m_Version, @"[0-9]") select m.Value;
-            version = Array.ConvertAll(strver.ToArray(), int.Parse);
+                buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
+                var strver = from Match m in Regex.Matches(m_Version, @"[0-9]") select m.Value;
+                version = Array.ConvertAll(strver.ToArray(), int.Parse);
 
-            if (fileGen >= 14)
-            {
-                //this looks like a list of assets that need to be preloaded in memory before anytihng else
-                int someCount = a_Stream.ReadInt32();
-                for (int i = 0; i < someCount; i++)
+                if (fileGen >= 14)
                 {
-                    int num1 = a_Stream.ReadInt32();
-                    a_Stream.AlignStream(4);
-                    long m_PathID = a_Stream.ReadInt64();
+                    //this looks like a list of assets that need to be preloaded in memory before anytihng else
+                    int someCount = a_Stream.ReadInt32();
+                    for (int i = 0; i < someCount; i++)
+                    {
+                        int num1 = a_Stream.ReadInt32();
+                        a_Stream.AlignStream(4);
+                        long m_PathID = a_Stream.ReadInt64();
+                    }
                 }
-            }
 
-            int sharedFileCount = a_Stream.ReadInt32();
-            for (int i = 0; i < sharedFileCount; i++)
+                int sharedFileCount = a_Stream.ReadInt32();
+                for (int i = 0; i < sharedFileCount; i++)
+                {
+                    UnityShared shared = new UnityShared();
+                    shared.aName = a_Stream.ReadStringToNull();
+                    a_Stream.Position += 20;
+                    string sharedFileName = a_Stream.ReadStringToNull(); //relative path
+                    shared.fileName = sharedFileName.Replace("/", "\\");
+                    sharedAssetsList.Add(shared);
+                }
+                valid = true;
+            }
+            catch (Exception e)
             {
-                UnityShared shared = new UnityShared();
-                shared.aName = a_Stream.ReadStringToNull();
-                a_Stream.Position += 20;
-                string sharedFileName = a_Stream.ReadStringToNull(); //relative path
-                shared.fileName = sharedFileName.Replace("/", "\\");
-                sharedAssetsList.Add(shared);
             }
         }
 

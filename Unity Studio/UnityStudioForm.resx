@@ -149,7 +149,7 @@ The quick brown fox jumps over the lazy dog. 1234567890</value>
     <value>636, 17</value>
   </data>
   <data name="openFileDialog1.Filter" xml:space="preserve">
-    <value>Unity asset files|level*; globalgamemanagers; mainData; CustomAssetBundle-*; CAB-*; BuildPlayer-*; *.assets; *.sharedAssets|Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundle; *.bundle; *.bytes|Unity asset files|*.*|Unity bundle files|*.*</value>
+    <value>Unity asset files|*.*|Unity bundle files|*.*|Unity asset files|level*; globalgamemanagers; mainData; CustomAssetBundle-*; CAB-*; BuildPlayer-*; *.assets; *.sharedAssets|Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundle; *.bundle; *.bytes</value>
   </data>
   <data name="openFolderDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>169, 17</value>

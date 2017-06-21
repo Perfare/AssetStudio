@@ -149,7 +149,7 @@ namespace Unity_Studio
         {
             var bytes = new List<byte>();
             byte b;
-            while ((b = ReadByte()) != 0)
+            while (BaseStream.Position != BaseStream.Length && (b = ReadByte()) != 0)
                 bytes.Add(b);
             return Encoding.UTF8.GetString(bytes.ToArray());
         }
