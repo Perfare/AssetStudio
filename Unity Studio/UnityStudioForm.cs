@@ -1574,7 +1574,7 @@ namespace Unity_Studio
                                 Mesh m_Mesh = new Mesh(asset, true);
                                 if (!ExportFileExists(exportpath + asset.Text + asset.extension))
                                 {
-                                    ExportMesh(m_Mesh, exportpath + asset.Text);
+                                    ExportMesh(m_Mesh, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
 

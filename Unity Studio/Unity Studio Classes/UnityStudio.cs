@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Drawing.Imaging;
 using System.Web.Script.Serialization;
-using ManagedFbx;
 
 
 namespace Unity_Studio
@@ -1750,127 +1749,63 @@ namespace Unity_Studio
 
         public static void ExportMesh(Mesh m_Mesh, string exportPath)
         {
-            Scene m_scene = Scene.CreateScene("Scene");
-            SceneNode root = m_scene.RootNode;
-            SceneNode meshnode = Scene.CreateNode(m_scene, m_Mesh.m_Name);
-            SceneNode.AddChild(root, meshnode);
-            ManagedFbx.Mesh mesh = Scene.CreateMesh(m_scene, meshnode, "Mesh");
-            if (m_Mesh.m_VertexCount > 0)
+            var sb = new StringBuilder();
+            sb.AppendLine("g " + m_Mesh.m_Name);
+            #region Vertices
+            int c = 3;
+            if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
             {
-                #region Vertices
-                int count = 3;
-                if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
-                {
-                    count = 4;
-                }
-                var vertices = new Vector3[m_Mesh.m_VertexCount];
+                c = 4;
+            }
+            for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+            {
+                sb.AppendFormat("v {0} {1} {2}\r\n", -m_Mesh.m_Vertices[v * c], m_Mesh.m_Vertices[v * c + 1], m_Mesh.m_Vertices[v * c + 2]);
+            }
+            #endregion
+
+            #region UV
+            if (m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length == m_Mesh.m_VertexCount * 2)
+            {
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    vertices[v] = new Vector3(
-                        m_Mesh.m_Vertices[v * count],
-                        m_Mesh.m_Vertices[v * count + 1],
-                        m_Mesh.m_Vertices[v * count + 2]);
+                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV1[v * 2], m_Mesh.m_UV1[v * 2 + 1]);
                 }
-                mesh.Vertices = vertices;
-                #endregion
-                #region Indicies
-                List<int> indices = new List<int>();
-                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
-                {
-                    indices.Add((int)m_Mesh.m_Indices[i]);
-                    indices.Add((int)m_Mesh.m_Indices[i + 1]);
-                    indices.Add((int)m_Mesh.m_Indices[i + 2]);
-                }
-                mesh.AddPolygons(indices, 0);
-                #endregion
-                #region Normals
-                if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
-                {
-                    if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
-                    {
-                        count = 3;
-                    }
-                    else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
-                    {
-                        count = 4;
-                    }
-
-                    var normals = new Vector3[m_Mesh.m_VertexCount];
-                    for (int n = 0; n < m_Mesh.m_VertexCount; n++)
-                    {
-                        normals[n] = new Vector3(
-                            m_Mesh.m_Normals[n * count],
-                            m_Mesh.m_Normals[n * count + 1],
-                            m_Mesh.m_Normals[n * count + 2]);
-                    }
-                    mesh.Normals = normals;
-                }
-                #endregion
-                #region Colors
-                if (m_Mesh.m_Colors == null)
-                {
-                    var colors = new Colour[m_Mesh.m_VertexCount];
-                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                    {
-                        colors[c] = new Colour(
-                            0.5f, 0.5f, 0.5f, 1.0f);
-                    }
-                    mesh.VertexColours = colors;
-                }
-                else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
-                {
-                    var colors = new Colour[m_Mesh.m_VertexCount];
-                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                    {
-                        colors[c] = new Colour(
-                            m_Mesh.m_Colors[c * 3],
-                            m_Mesh.m_Colors[c * 3 + 1],
-                            m_Mesh.m_Colors[c * 3 + 2],
-                            1.0f);
-                    }
-                    mesh.VertexColours = colors;
-                }
-                else
-                {
-                    var colors = new Colour[m_Mesh.m_VertexCount];
-                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                    {
-                        colors[c] = new Colour(
-                        m_Mesh.m_Colors[c * 4],
-                        m_Mesh.m_Colors[c * 4 + 1],
-                        m_Mesh.m_Colors[c * 4 + 2],
-                        m_Mesh.m_Colors[c * 4 + 3]);
-                    }
-                    mesh.VertexColours = colors;
-                }
-                #endregion
-                #region UV
-                if (m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length == m_Mesh.m_VertexCount * 2)
-                {
-                    var uv = new Vector2[m_Mesh.m_VertexCount];
-                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                    {
-                        uv[c] = new Vector2(m_Mesh.m_UV1[c * 2], m_Mesh.m_UV1[c * 2 + 1]);
-                    }
-                    mesh.TextureCoords = uv;
-                }
-                else if (m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length == m_Mesh.m_VertexCount * 2)
-                {
-                    var uv = new Vector2[m_Mesh.m_VertexCount];
-                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                    {
-                        uv[c] = new Vector2(m_Mesh.m_UV2[c * 2], m_Mesh.m_UV2[c * 2 + 1]);
-                    }
-                    mesh.TextureCoords = uv;
-                }
-                #endregion
             }
-            SceneNode.AddMesh(meshnode, mesh);
+            else if (m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length == m_Mesh.m_VertexCount * 2)
+            {
+                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                {
+                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV2[v * 2], m_Mesh.m_UV2[v * 2 + 1]);
+                }
+            }
+            #endregion
 
-            //m_scene.Save(exportPath); //default is .fbx
-            //m_scene.Save(exportPath + ".fbx");
-            m_scene.Save(exportPath + ".obj");
-            //m_scene.Save(exportPath + ".dae");
+            #region Normals
+            if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
+            {
+                if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
+                {
+                    c = 3;
+                }
+                else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
+                {
+                    c = 4;
+                }
+                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                {
+                    sb.AppendFormat("vn {0} {1} {2}\r\n", -m_Mesh.m_Normals[v * c], m_Mesh.m_Normals[v * c + 1], m_Mesh.m_Normals[v * c + 2]);
+                }
+            }
+            #endregion
+
+            #region Face
+            for (int f = 0; f < m_Mesh.m_Indices.Count / 3; f++)
+            {
+                sb.AppendFormat("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n", m_Mesh.m_Indices[f * 3 + 2] + 1, m_Mesh.m_Indices[f * 3 + 1] + 1, m_Mesh.m_Indices[f * 3] + 1);
+            }
+            #endregion
+
+            File.WriteAllText(exportPath, sb.ToString());
         }
 
         public static bool ExportFileExists(string filename)

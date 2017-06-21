@@ -406,7 +406,7 @@ namespace Unity_Studio
                 }
                 valid = true;
             }
-            catch (Exception e)
+            catch
             {
             }
         }
