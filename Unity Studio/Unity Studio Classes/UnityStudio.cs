@@ -364,7 +364,10 @@ namespace Unity_Studio
                         {
                             var replacename = ab?.m_Container.Find(y => y.second.asset.m_PathID == x.m_PathID)?.first;
                             if (!string.IsNullOrEmpty(replacename))
-                                x.Text = replacename.Replace(Path.GetExtension(replacename), "");
+                            {
+                                var ex = Path.GetExtension(replacename);
+                                x.Text = !string.IsNullOrEmpty(ex) ? replacename.Replace(ex, "") : replacename;
+                            }
                         });
                     }
                     exportableAssets.AddRange(assetsFile.exportableAssets);
