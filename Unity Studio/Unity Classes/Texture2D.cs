@@ -986,9 +986,26 @@ namespace Unity_Studio
 
         private Bitmap RGB565ToBitmap()
         {
-            var hObject = GCHandle.Alloc(image_data, GCHandleType.Pinned);
+            //stride = m_Width * 2 + m_Width * 2 % 4
+            //所以m_Width * 2不为4的倍数时，需要在每行补上相应的像素
+            byte[] buff;
+            var padding = m_Width * 2 % 4;
+            var stride = m_Width * 2 + padding;
+            if (padding != 0)
+            {
+                buff = new byte[stride * m_Height];
+                for (int i = 0; i < m_Height; i++)
+                {
+                    Array.Copy(image_data, i * m_Width * 2, buff, i * stride, m_Width * 2);
+                }
+            }
+            else
+            {
+                buff = image_data;
+            }
+            var hObject = GCHandle.Alloc(buff, GCHandleType.Pinned);
             var pObject = hObject.AddrOfPinnedObject();
-            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 2, PixelFormat.Format16bppRgb565, pObject);
+            var bitmap = new Bitmap(m_Width, m_Height, stride, PixelFormat.Format16bppRgb565, pObject);
             hObject.Free();
             return bitmap;
         }
