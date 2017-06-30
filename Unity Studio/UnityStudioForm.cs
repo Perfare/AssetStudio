@@ -69,6 +69,8 @@ namespace Unity_Studio
 
         private PrivateFontCollection pfc = new PrivateFontCollection();
 
+        private AssetPreloadData selectasset;
+
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -1855,6 +1857,22 @@ namespace Unity_Studio
             //FMODinit();
             FMODreset();
 
+        }
+
+        private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var args = $"/select, {selectasset.sourceFile.filePath}";
+            var pfi = new ProcessStartInfo("explorer.exe", args);
+            Process.Start(pfi);
+        }
+
+        private void assetListView_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];  
+                contextMenuStrip1.Show(assetListView, e.X, e.Y);
+            }
         }
     }
 }
