@@ -1762,7 +1762,7 @@ namespace Unity_Studio
             }
             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
             {
-                sb.AppendFormat("v {0} {1} {2}\r\n", -m_Mesh.m_Vertices[v * c], m_Mesh.m_Vertices[v * c + 1], m_Mesh.m_Vertices[v * c + 2]);
+                sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "v {0} {1} {2}\r\n", -m_Mesh.m_Vertices[v * c], m_Mesh.m_Vertices[v * c + 1], m_Mesh.m_Vertices[v * c + 2]);
             }
             #endregion
 
@@ -1771,14 +1771,14 @@ namespace Unity_Studio
             {
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV1[v * 2], m_Mesh.m_UV1[v * 2 + 1]);
+                    sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "vt {0} {1}\r\n", m_Mesh.m_UV1[v * 2], m_Mesh.m_UV1[v * 2 + 1]);
                 }
             }
             else if (m_Mesh.m_UV2 != null && m_Mesh.m_UV2.Length == m_Mesh.m_VertexCount * 2)
             {
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV2[v * 2], m_Mesh.m_UV2[v * 2 + 1]);
+                    sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "vt {0} {1}\r\n", m_Mesh.m_UV2[v * 2], m_Mesh.m_UV2[v * 2 + 1]);
                 }
             }
             #endregion
@@ -1796,7 +1796,7 @@ namespace Unity_Studio
                 }
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    sb.AppendFormat("vn {0} {1} {2}\r\n", -m_Mesh.m_Normals[v * c], m_Mesh.m_Normals[v * c + 1], m_Mesh.m_Normals[v * c + 2]);
+                    sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "vn {0} {1} {2}\r\n", -m_Mesh.m_Normals[v * c], m_Mesh.m_Normals[v * c + 1], m_Mesh.m_Normals[v * c + 2]);
                 }
             }
             #endregion
@@ -1804,7 +1804,7 @@ namespace Unity_Studio
             #region Face
             for (int f = 0; f < m_Mesh.m_Indices.Count / 3; f++)
             {
-                sb.AppendFormat("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n", m_Mesh.m_Indices[f * 3 + 2] + 1, m_Mesh.m_Indices[f * 3 + 1] + 1, m_Mesh.m_Indices[f * 3] + 1);
+                sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n", m_Mesh.m_Indices[f * 3 + 2] + 1, m_Mesh.m_Indices[f * 3 + 1] + 1, m_Mesh.m_Indices[f * 3] + 1);
             }
             #endregion
 
