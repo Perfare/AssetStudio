@@ -56,5 +56,8 @@
     <Setting Name="displayOriginalName" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="extractBundle" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Single</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

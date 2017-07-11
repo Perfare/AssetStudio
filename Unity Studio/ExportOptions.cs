@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -36,6 +36,8 @@ namespace Unity_Studio
                     break;
                 }
             }
+			// Defaults to Single on Designer.
+			eBundleMultiple.Checked = ((string)Properties.Settings.Default["extractBundle"] == "Multiple");
         }
 
         private void exportOpnions_CheckedChanged(object sender, EventArgs e)
@@ -63,6 +65,7 @@ namespace Unity_Studio
                     break;
                 }
             }
+			Properties.Settings.Default["extractBundle"] = eBundleMultiple.Checked ? "Multiple" : "Single";
             Properties.Settings.Default.Save();
             DialogResult = DialogResult.OK;
             Close();
@@ -79,5 +82,17 @@ namespace Unity_Studio
             exportOpnions_CheckedChanged(sender, e);
             convertDummies.Enabled = exportDeformers.Checked;
         }
+
+		private void eBundleSingle_CheckedChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default["extractBundle"] = eBundleSingle.Checked ? "Single" : "Multiple";
+			Properties.Settings.Default.Save();
+		}
+
+		private void eBundleMultiple_CheckedChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default["extractBundle"] = eBundleMultiple.Checked ? "Multiple" : "Single";
+			Properties.Settings.Default.Save();
+		}
     }
 }
