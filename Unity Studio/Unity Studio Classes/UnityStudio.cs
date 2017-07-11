@@ -1821,7 +1821,7 @@ namespace Unity_Studio
             return false;
         }
 
-        private static string FixFileName(string str)
+        public static string FixFileName(string str)
         {
             if (str.Length >= 260) return Path.GetRandomFileName();
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));

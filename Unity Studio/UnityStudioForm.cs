@@ -1385,6 +1385,7 @@ namespace Unity_Studio
                     if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
                     { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
                     savePath = savePath + "\\";
+                    var exportSameNameMesh = (bool)Properties.Settings.Default["exportSameNameMesh"];
                     switch ((bool)Properties.Settings.Default["showExpOpt"])
                     {
                         case true:
@@ -1417,13 +1418,17 @@ namespace Unity_Studio
                                             foreach (TreeNode j in i.Nodes)
                                             {
                                                 //加上时间，因为可能有重名的object
-                                                var filename = j.Text + DateTime.Now.ToString("_mm_ss_ffff");
-                                                //选中它和它的子节点
-                                                sceneTreeView.Invoke(new Action(() => j.Checked = true));
-                                                //导出FBX
-                                                WriteFBX(savePath + filename + ".fbx", false);
-                                                //取消选中
-                                                sceneTreeView.Invoke(new Action(() => j.Checked = false));
+                                                var filename = j.Text + (exportSameNameMesh ? DateTime.Now.ToString("_mm_ss_ffff") : "");
+                                                var fullpath = savePath + FixFileName(filename) + ".fbx";
+                                                if (!ExportFileExists(fullpath))
+                                                {
+                                                    //选中它和它的子节点
+                                                    sceneTreeView.Invoke(new Action(() => j.Checked = true));
+                                                    //导出FBX
+                                                    WriteFBX(fullpath, false);
+                                                    //取消选中
+                                                    sceneTreeView.Invoke(new Action(() => j.Checked = false));
+                                                }
                                             }
                                         }
                                         ProgressBarPerformStep();
