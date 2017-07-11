@@ -105,6 +105,8 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.saveFolderDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -122,6 +124,7 @@
             this.classPreviewPanel.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -498,6 +501,7 @@
             this.assetListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.assetListView_ColumnClick);
             this.assetListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.selectAsset);
             this.assetListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.assetListView_RetrieveVirtualItem);
+            this.assetListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.assetListView_MouseClick);
             // 
             // columnHeaderName
             // 
@@ -851,6 +855,21 @@
             this.saveFolderDialog1.RestoreDirectory = true;
             this.saveFolderDialog1.Title = "Browse for folder";
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.showOriginalFileToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(202, 56);
+            // 
+            // showOriginalFileToolStripMenuItem
+            // 
+            this.showOriginalFileToolStripMenuItem.Name = "showOriginalFileToolStripMenuItem";
+            this.showOriginalFileToolStripMenuItem.Size = new System.Drawing.Size(201, 24);
+            this.showOriginalFileToolStripMenuItem.Text = "show original file";
+            this.showOriginalFileToolStripMenuItem.Click += new System.EventHandler(this.showOriginalFileToolStripMenuItem_Click);
+            // 
             // UnityStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -891,6 +910,7 @@
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -973,6 +993,8 @@
         private System.Windows.Forms.Label FMODcopyright;
         private System.Windows.Forms.ToolStripMenuItem all3DObjectssplitToolStripMenuItem;
         private OpenTK.GLControl glControl1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem showOriginalFileToolStripMenuItem;
     }
 }
 
