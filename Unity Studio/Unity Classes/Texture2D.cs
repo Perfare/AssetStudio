@@ -136,7 +136,11 @@ namespace Unity_Studio
             m_Aniso = a_Stream.ReadInt32();
             m_MipBias = a_Stream.ReadSingle();
             m_WrapMode = a_Stream.ReadInt32();
-
+            if (sourceFile.version[0] == 2017)//2017.x
+            {
+                int m_WrapV = a_Stream.ReadInt32();
+                int m_WrapW = a_Stream.ReadInt32();
+            }
             if (sourceFile.version[0] >= 3)
             {
                 m_LightmapFormat = a_Stream.ReadInt32();

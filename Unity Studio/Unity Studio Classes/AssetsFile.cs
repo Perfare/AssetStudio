@@ -11,6 +11,7 @@ namespace Unity_Studio
     {
         public EndianStream a_Stream;
         public string filePath;
+        public string bundlePath;
         public string fileName;
         public int fileGen;
         public bool valid;
@@ -381,7 +382,13 @@ namespace Unity_Studio
                 buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
                 var strver = from Match m in Regex.Matches(m_Version, @"[0-9]") select m.Value;
                 version = Array.ConvertAll(strver.ToArray(), int.Parse);
-
+                if (version[0] == 2 && version[1] == 0 && version[2] == 1 && version[3] == 7)//2017.x
+                {
+                    var nversion = new int[version.Length - 3];
+                    nversion[0] = 2017;
+                    Array.Copy(version, 4, nversion, 1, version.Length - 4);
+                    version = nversion;
+                }
                 if (fileGen >= 14)
                 {
                     //this looks like a list of assets that need to be preloaded in memory before anytihng else

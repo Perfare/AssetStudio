@@ -40,20 +40,21 @@ namespace Unity_Studio
                     m_ShaderKeywords[i] = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
                 }
             }
-            else if (sourceFile.version[0] == 5)
+            else if (sourceFile.version[0] >= 5)//5.0 and up
             {
                 m_ShaderKeywords = new string[1] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
                 uint m_LightmapFlags = a_Stream.ReadUInt32();
-                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 6) || sourceFile.version[0] > 5)//5.6.0 and up
+                if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 6 || sourceFile.version[0] > 5)//5.6.0 and up
                 {
                     var m_EnableInstancingVariants = a_Stream.ReadBoolean();
+                    //var m_DoubleSidedGI = a_Stream.ReadBoolean();//2017.x
                     a_Stream.AlignStream(4);
                 }
             }
 
-            if (sourceFile.version[0] > 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] >= 3)) { m_CustomRenderQueue = a_Stream.ReadInt32(); }
+            if (sourceFile.version[0] > 4 || sourceFile.version[0] == 4 && sourceFile.version[1] >= 3) { m_CustomRenderQueue = a_Stream.ReadInt32(); }
 
-            if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 1)
+            if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 1 || sourceFile.version[0] > 5)//5.1 and up
             {
                 string[][] stringTagMap = new string[a_Stream.ReadInt32()][];
                 for (int i = 0; i < stringTagMap.Length; i++)

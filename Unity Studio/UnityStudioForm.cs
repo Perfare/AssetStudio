@@ -1861,7 +1861,7 @@ namespace Unity_Studio
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var args = $"/select, {selectasset.sourceFile.filePath}";
+            var args = $"/select, {selectasset.sourceFile.bundlePath ?? selectasset.sourceFile.filePath}";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
         }

@@ -136,6 +136,7 @@ namespace Unity_Studio
                 AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
                 if (assetsFile.valid)
                 {
+                    assetsFile.bundlePath = bundleFileName;
                     if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
                     {
                         //make use of the bundle file version
