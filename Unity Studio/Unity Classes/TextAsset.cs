@@ -10,7 +10,6 @@ namespace Unity_Studio
     {
         public string m_Name;
         public byte[] m_Script;
-        public string m_PathName;
 
         public TextAsset(AssetPreloadData preloadData, bool readSwitch)
         {
@@ -28,36 +27,16 @@ namespace Unity_Studio
 
             m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
 
-            int m_Script_size = a_Stream.ReadInt32();
-
-            if (readSwitch) //asset is read for preview or export
+            if (readSwitch)
             {
-                m_Script = new byte[m_Script_size];
-                a_Stream.Read(m_Script, 0, m_Script_size);
-
-                if (m_Script[0] == 93)
-                {
-                    try
-                    {
-                        m_Script = SevenZip.Compression.LZMA.SevenZipHelper.Decompress(m_Script);
-                    }
-                    catch { }
-                }
-                if (m_Script[0] == 60 || (m_Script[0] == 239 && m_Script[1] == 187 && m_Script[2] == 191 && m_Script[3] == 60)) { preloadData.extension = ".xml"; }
+                m_Script = a_Stream.ReadBytes(a_Stream.ReadInt32());
             }
             else
             {
-                byte lzmaTest = a_Stream.ReadByte();
-
-                a_Stream.Position += m_Script_size - 1;
-
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
                 preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
             }
-            a_Stream.AlignStream(4);
-
-            m_PathName = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
         }
     }
 }
