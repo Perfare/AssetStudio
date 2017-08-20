@@ -192,10 +192,15 @@ namespace Unity_Studio
         public static int extractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
+			string extractPath;
 
             StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ,,,");
 
-            string extractPath = bundleFileName + "_unpacked\\";
+			if ((string)Properties.Settings.Default["extractBundle"] == "Single")
+				extractPath = Path.GetDirectoryName(bundleFileName) + Path.DirectorySeparatorChar + "Unpacked" + Path.DirectorySeparatorChar;
+			else
+				extractPath = bundleFileName + "_unpacked" + Path.DirectorySeparatorChar;
+
             Directory.CreateDirectory(extractPath);
 
             BundleFile b_File = new BundleFile(bundleFileName);
