@@ -1096,6 +1096,7 @@ public enum TextureFormat
     RGFloat,
     RGBAFloat,
     YUY2,
+    RGB9e5Float,
     BC4 = 26,
     BC5,
     BC6H = 24,
@@ -1129,7 +1130,9 @@ public enum TextureFormat
     ASTC_RGBA_10x10,
     ASTC_RGBA_12x12,
     ETC_RGB4_3DS,
-    ETC_RGBA8_3DS
+    ETC_RGBA8_3DS,
+    RG16,
+    R8
 }
 
 public static class KTXHeader
