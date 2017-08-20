@@ -1400,6 +1400,7 @@ namespace Unity_Studio
                                 //防止主界面假死
                                 ThreadPool.QueueUserWorkItem(delegate
                                 {
+                                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
                                     sceneTreeView.Invoke(new Action(() =>
                                     {
                                         //挂起控件防止更新
@@ -1507,6 +1508,7 @@ namespace Unity_Studio
 
                 ThreadPool.QueueUserWorkItem(delegate
                 {
+                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
                     var savePath = saveFolderDialog1.FileName;
                     if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
                     { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
