@@ -127,7 +127,7 @@ namespace Unity_Studio
             }
         }
 
-        private static List<ClassMember> ReadArray(List<ClassMember> members, int level, int index)
+        public static List<ClassMember> ReadArray(List<ClassMember> members, int level, int index)
         {
             var member2 = new List<ClassMember>();
             for (int i = index + 2; i < members.Count; i++)//skip int size
