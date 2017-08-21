@@ -878,6 +878,7 @@ namespace Unity_Studio
                         Shader m_TextAsset = new Shader(asset, true);
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
+                        m_Script_Text = m_Script_Text.Replace("\0", "\\0");
                         textPreviewBox.Text = m_Script_Text;
                         textPreviewBox.Visible = true;
                         break;

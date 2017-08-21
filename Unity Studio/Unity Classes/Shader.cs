@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Script.Serialization;
 using Lz4;
 
 namespace Unity_Studio
@@ -33,19 +34,11 @@ namespace Unity_Studio
                 if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 5 || sourceFile.version[0] > 5)//5.5.0 and up
                 {
                     a_Stream.Position = preloadData.Offset;
-                    ClassStruct classStructure;
-                    //TODO 不依赖Bundle进行读取
-                    if (sourceFile.ClassStructures.TryGetValue(preloadData.Type1, out classStructure))
-                    {
-                        var member = classStructure.members;
-                        m_Script = ReadSerializedShader(member, a_Stream);
-                    }
-                    else
-                    {
-                        m_Script = Encoding.UTF8.GetBytes("Serialized Shader can't be read");
-                    }
+                    var str = (string)ShaderResource.ResourceManager.GetObject($"Shader{sourceFile.version[0]}{sourceFile.version[1]}");
+                    var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
+                    m_Script = ReadSerializedShader(members, a_Stream);
                 }
-                else 
+                else
                 {
                     m_Script = a_Stream.ReadBytes(a_Stream.ReadInt32());
                     if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) //5.3 - 5.4
