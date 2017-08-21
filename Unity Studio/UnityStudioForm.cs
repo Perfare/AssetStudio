@@ -1712,8 +1712,8 @@ namespace Unity_Studio
             GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
             GL.ClearColor(Color.CadetBlue);
             pgmID = GL.CreateProgram();
-            loadShader("vs.glsl", ShaderType.VertexShader, pgmID, out vsID);
-            loadShader("fs.glsl", ShaderType.FragmentShader, pgmID, out fsID);
+            loadShader("vs", ShaderType.VertexShader, pgmID, out vsID);
+            loadShader("fs", ShaderType.FragmentShader, pgmID, out fsID);
             GL.LinkProgram(pgmID);
             GL.UseProgram(pgmID);
             attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
@@ -1726,10 +1726,8 @@ namespace Unity_Studio
         private void loadShader(string filename, ShaderType type, int program, out int address)
         {
             address = GL.CreateShader(type);
-            using (StreamReader sr = new StreamReader(filename))
-            {
-                GL.ShaderSource(address, sr.ReadToEnd());
-            }
+            var str = (string)Resource1.ResourceManager.GetObject(filename);
+            GL.ShaderSource(address, str);
             GL.CompileShader(address);
             GL.AttachShader(program, address);
             GL.DeleteShader(address);
@@ -1872,7 +1870,7 @@ namespace Unity_Studio
         {
             if (e.Button == MouseButtons.Right)
             {
-                selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];  
+                selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
                 contextMenuStrip1.Show(assetListView, e.X, e.Y);
             }
         }
