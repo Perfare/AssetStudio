@@ -112,6 +112,7 @@ namespace Unity_Studio
                             LoadBundleFile(filename);
                             ProgressBarPerformStep();
                         }
+                        LoadAssetsFromBundle();
                     }
                     BuildAssetStrucutres();
                     unityFilesHash.Clear();

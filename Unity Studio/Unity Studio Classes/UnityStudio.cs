@@ -126,8 +126,6 @@ namespace Unity_Studio
             StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + "...");
             BundleFile b_File = new BundleFile(bundleFileName);
 
-            List<AssetsFile> b_assetsfileList = new List<AssetsFile>();
-
             foreach (var memFile in b_File.MemoryAssetsFileList) //filter unity files
             {
                 StatusStripUpdate("Loading " + memFile.fileName);
@@ -144,24 +142,19 @@ namespace Unity_Studio
                         assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
                         assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
                     }
-                    b_assetsfileList.Add(assetsFile);
+                    assetsfileList.Add(assetsFile);
                 }
                 assetsfileandstream[assetsFile.fileName] = assetsFile.a_Stream;
             }
-            if (b_assetsfileList.Count > 0)
+        }
+
+        public static void LoadAssetsFromBundle()
+        {
+            foreach (var assetsFile in assetsfileList)
             {
-                assetsfileList.AddRange(b_assetsfileList);
-                foreach (var assetsFile in b_assetsfileList)
+                foreach (var sharedFile in assetsFile.sharedAssetsList)
                 {
-                    foreach (var sharedFile in assetsFile.sharedAssetsList)
-                    {
-                        sharedFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + sharedFile.fileName;
-                        var loadedSharedFile = b_assetsfileList.Find(aFile => aFile.filePath == sharedFile.fileName);
-                        if (loadedSharedFile != null)
-                        {
-                            sharedFile.Index = assetsfileList.IndexOf(loadedSharedFile);
-                        }
-                    }
+                    sharedFile.Index = assetsfileList.FindIndex(aFile => aFile.fileName.ToUpper() == sharedFile.fileName.ToUpper());
                 }
             }
         }
