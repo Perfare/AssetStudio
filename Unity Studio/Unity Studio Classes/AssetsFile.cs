@@ -139,6 +139,7 @@ namespace Unity_Studio
             {1006, "Vector4f"},
             {1015, "m_ScriptingClassIdentifier"},
             {1042, "Gradient"},
+            {1051, "Type*"}
         };
         #endregion
 

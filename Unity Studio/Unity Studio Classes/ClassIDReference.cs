@@ -1,39 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Collections.Generic;
 
 namespace Unity_Studio
 {
-    public class ClassStruct : ListViewItem
-    {
-        public int ID;
-        public List<ClassMember> members;
-
-        public string membersstr
-        {
-            get
-            {
-                var sb = new StringBuilder();
-                foreach (var i in members)
-                {
-                    sb.AppendFormat("{0}{1} {2} {3}\r\n", (new string('\t', i.Level)), i.Type, i.Name, i.Size);
-                }
-                return sb.ToString();
-            }
-        }
-    }
-
-    public class ClassMember
-    {
-        public int Level;
-        public string Type;
-        public string Name;
-        public int Size;
-        public int Flag;
-    }
-
     public static class ClassIDReference
     {
         public static Dictionary<int, string> Names = new Dictionary<int, string>()

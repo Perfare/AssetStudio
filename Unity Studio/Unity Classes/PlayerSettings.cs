@@ -39,7 +39,7 @@ namespace Unity_Studio
                 if ((sourceFile.version[0] == 5 && sourceFile.version[1] < 1) || (sourceFile.version[0] == 4 && sourceFile.version[1] == 6 && sourceFile.version[2] >= 3))
                 { int targetIOSGraphics = a_Stream.ReadInt32(); }
 
-                if (sourceFile.version[0] == 5 && (sourceFile.version[1] > 2 || (sourceFile.version[1] == 2 && sourceFile.version[2] >= 1)))
+                if (sourceFile.version[0] >= 5 || sourceFile.version[0] == 5 && (sourceFile.version[1] > 2 || (sourceFile.version[1] == 2 && sourceFile.version[2] >= 1)))
                 { bool useOnDemandResources = a_Stream.ReadBoolean(); a_Stream.AlignStream(4); }
 
                 if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 3))

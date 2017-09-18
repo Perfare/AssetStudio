@@ -151,6 +151,7 @@
     <Compile Include="Unity Classes\AudioClip.cs" />
     <Compile Include="Unity Classes\BuildSettings.cs" />
     <Compile Include="Unity Studio Classes\BundleFile.cs" />
+    <Compile Include="Unity Studio Classes\ClassStruct.cs" />
     <Compile Include="Unity Studio Classes\UnityStudio.cs" />
     <Compile Include="Unity Studio Classes\ClassIDReference.cs" />
     <Compile Include="Unity Studio Classes\EndianStream.cs" />

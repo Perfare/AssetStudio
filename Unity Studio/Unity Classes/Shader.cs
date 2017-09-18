@@ -112,6 +112,8 @@ namespace Unity_Studio
                     return decompressedBlob;
                 }
                 var align = (member.Flag & 0x4000) != 0;
+                if (member.alignBefore)
+                    a_Stream.AlignStream(4);
                 if (varTypeStr == "SInt8")//sbyte
                 {
                     a_Stream.ReadSByte();
@@ -132,7 +134,7 @@ namespace Unity_Studio
                 {
                     a_Stream.ReadInt32();
                 }
-                else if (varTypeStr == "UInt32" || varTypeStr == "unsigned int")//UInt32
+                else if (varTypeStr == "UInt32" || varTypeStr == "unsigned int" || varTypeStr == "Type*")//UInt32
                 {
                     a_Stream.ReadUInt32();
                 }
@@ -166,7 +168,7 @@ namespace Unity_Studio
                     if ((members[i - 1].Flag & 0x4000) != 0)
                         align = true;
                     var size = a_Stream.ReadInt32();
-                    var array = AssetPreloadData.ReadArray(members, level, i);
+                    var array = ClassStructHelper.ReadArray(members, level, i);
                     for (int j = 0; j < size; j++)
                     {
                         ReadSerializedShader(array, a_Stream);
@@ -175,7 +177,11 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    align = false;
+                    if (align)
+                    {
+                        align = false;
+                        ClassStructHelper.SetAlignBefore(members, level, i + 1);
+                    }
                 }
                 if (align)
                     a_Stream.AlignStream(4);
