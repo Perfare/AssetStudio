@@ -127,18 +127,18 @@ namespace Unity_Studio
             }
             else
             {
-                if (version[0] >= 4 || (version[0] == 4 && version[1] >= 3))
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 3))
                 {
                     int m_BlendShapeWeights = a_Stream.ReadInt32();
                     a_Stream.Position += m_BlendShapeWeights * 4; //floats
                 }
 
-                if (version[0] >= 4 || (version[0] >= 3 && version[1] >= 5))
+                if (version[0] > 4 || (version[0] >= 3 && version[1] >= 5))
                 {
                     PPtr m_RootBone = sourceFile.ReadPPtr();
                 }
 
-                if (version[0] >= 4 || (version[0] == 3 && version[1] >= 4))
+                if (version[0] > 4 || (version[0] == 3 && version[1] >= 4))
                 {
                     //AABB
                     float[] m_Center = { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
