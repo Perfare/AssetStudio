@@ -560,12 +560,6 @@ namespace Unity_Studio
             exportOpt.ShowDialog();
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            AboutBox aboutWindow = new AboutBox();
-            aboutWindow.ShowDialog();
-        }
-
         private void assetListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             e.Item = visibleAssets[e.ItemIndex];
@@ -575,14 +569,22 @@ namespace Unity_Studio
         {
             switch (e.TabPageIndex)
             {
-                case 0: treeSearch.Select(); break;
+                case 0:
+                    treeSearch.Select();
+                    _3DToolStripMenuItem.Visible = true;
+                    exportToolStripMenuItem.Visible = false;
+                    break;
                 case 1:
+                    _3DToolStripMenuItem.Visible = false;
+                    exportToolStripMenuItem.Visible = true;
                     resizeAssetListColumns(); //required because the ListView is not visible on app launch
                     classPreviewPanel.Visible = false;
                     previewPanel.Visible = true;
                     listSearch.Select();
                     break;
                 case 2:
+                    _3DToolStripMenuItem.Visible = false;
+                    exportToolStripMenuItem.Visible = false;
                     previewPanel.Visible = false;
                     classPreviewPanel.Visible = true;
                     break;
