@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Unity_Studio
 {
@@ -112,7 +113,11 @@ namespace Unity_Studio
                     if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
-                        m_AudioData = estream.ReadBytes((int)m_Size);
+                        m_AudioData = estream.ReadBytes((int) m_Size);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"can't find the resource file {Path.GetFileName(m_Source)}");
                     }
                 }
             }

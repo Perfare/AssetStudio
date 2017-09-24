@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace Unity_Studio
 {
@@ -184,6 +185,10 @@ namespace Unity_Studio
                         {
                             estream.Position = offset;
                             image_data = estream.ReadBytes(image_data_size);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"can't find the resource file {Path.GetFileName(path)}");
                         }
                     }
                 }
