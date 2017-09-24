@@ -1002,9 +1002,11 @@ namespace Unity_Studio
                                 if(min[i] + 1e-5 < max[i])
                                 {
                                     scale[i] = 1.5f / (max[i] - min[i]);
-                                    offset[i] = (max[i] + min[i]) / 2;
                                 }
+                                offset[i] = (max[i] + min[i]) / 2;
                             }
+                            float minScale = Math.Min(scale.X, Math.Min(scale.Y, scale.Z));
+                            scale = new Vector3(minScale);
 
                             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                             {
