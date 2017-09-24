@@ -998,23 +998,32 @@ namespace Unity_Studio
                             }
                             #endregion
                             #region Normals
-                            if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
+                            normalData = new Vector3[m_Mesh.m_VertexCount];
+                            int[] normalCalculatedCount = new int[m_Mesh.m_VertexCount];
+                            for (int i = 0; i < m_Mesh.m_VertexCount; i++)
                             {
-                                if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
-                                    count = 3;
-                                else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
-                                    count = 4;
-                                normalData = new Vector3[m_Mesh.m_VertexCount];
-                                for (int n = 0; n < m_Mesh.m_VertexCount; n++)
+                                normalData[i] = Vector3.Zero;
+                                normalCalculatedCount[i] = 0;
+                            }
+                            for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                            {
+                                Vector3 dir1 = vertexData[indiceData[i + 1]] - vertexData[indiceData[i]];
+                                Vector3 dir2 = vertexData[indiceData[i + 2]] - vertexData[indiceData[i]];
+                                Vector3 normal = Vector3.Cross(dir1, dir2);
+                                normal.Normalize();
+                                for (int j = 0; j < 3; j++)
                                 {
-                                    normalData[n] = new Vector3(
-                                        m_Mesh.m_Normals[n * count],
-                                        m_Mesh.m_Normals[n * count + 1],
-                                        m_Mesh.m_Normals[n * count + 2]);
+                                    normalData[indiceData[i + j]] += normal;
+                                    normalCalculatedCount[indiceData[i + j]] ++;
                                 }
                             }
-                            else
-                                normalData = null;
+                            for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                            {
+                                if(normalCalculatedCount[i] == 0)
+                                    normalData[i] = new Vector3(0, 1, 0);
+                                else
+                                    normalData[i] /= normalCalculatedCount[i];
+                            }
                             #endregion
                             #region Colors
                             if (m_Mesh.m_Colors == null)
