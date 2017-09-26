@@ -970,7 +970,6 @@ namespace Unity_Studio
                         glControl1.Visible = true;
                         viewMatrixData = new Matrix4[] {
                             Matrix4.Identity
-                            * Matrix4.CreateTranslation( 0.0f, -1.0f, 0.0f )
                             * Matrix4.CreateRotationY(-90.0f)};
                         var m_Mesh = new Mesh(asset, true);
                         if (m_Mesh.m_VertexCount > 0)
@@ -982,12 +981,41 @@ namespace Unity_Studio
                                 count = 4;
                             }
                             vertexData = new Vector3[m_Mesh.m_VertexCount];
+                            // Calculate Bounding
+                            float[] min = new float[3];
+                            float[] max = new float[3];
+                            for (int i = 0; i < 3; i++)
+                            {
+                                min[i] = m_Mesh.m_Vertices[i];
+                                max[i] = m_Mesh.m_Vertices[i];
+                            }
+                            for (int v = 1; v < m_Mesh.m_VertexCount; v++)
+                            {
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    min[i] = Math.Min(min[i], m_Mesh.m_Vertices[v * count + i]);
+                                    max[i] = Math.Max(max[i], m_Mesh.m_Vertices[v * count + i]);
+                                }
+                            }
+                            // Calculate offset & scale to remapping vertex
+                            Vector3 scale = Vector3.One, offset = Vector3.Zero;
+                            for (int i = 0; i < 3; i++)
+                            {
+                                if(min[i] + 1e-5 < max[i])
+                                {
+                                    scale[i] = 1.5f / (max[i] - min[i]);
+                                }
+                                offset[i] = (max[i] + min[i]) / 2;
+                            }
+                            float minScale = Math.Min(scale.X, Math.Min(scale.Y, scale.Z));
+                            scale = new Vector3(minScale);
+
                             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                             {
-                                vertexData[v] = new Vector3(
+                                vertexData[v] = (new Vector3(
                                     m_Mesh.m_Vertices[v * count],
                                     m_Mesh.m_Vertices[v * count + 1],
-                                    m_Mesh.m_Vertices[v * count + 2]);
+                                    m_Mesh.m_Vertices[v * count + 2]) - offset) * scale;
                             }
                             #endregion
                             #region Indicies
