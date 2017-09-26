@@ -461,6 +461,11 @@ namespace Unity_Studio
         {
             var timestamp = DateTime.Now;
 
+            string folder = Path.GetDirectoryName(FBXfile);
+            if (!Directory.Exists(folder)) {
+                Directory.CreateDirectory(folder);
+            }
+
             using (StreamWriter FBXwriter = new StreamWriter(FBXfile))
             {
                 StringBuilder fbx = new StringBuilder();
