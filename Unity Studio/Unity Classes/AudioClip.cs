@@ -61,8 +61,9 @@ namespace Unity_Studio
                 {
                     int m_Stream = a_Stream.ReadInt32();
                     m_Size = a_Stream.ReadInt32();
-                    var asize = m_Size % 4 != 0 ? m_Size + 4 - m_Size % 4 : m_Size;
-                    if (m_Stream > 1 && preloadData.Size + preloadData.Offset - a_Stream.Position > asize)
+                    var tsize = m_Size % 4 != 0 ? m_Size + 4 - m_Size % 4 : m_Size;
+                    //TODO: Need more test
+                    if (preloadData.Size + preloadData.Offset - a_Stream.Position != tsize)
                     {
                         m_Offset = a_Stream.ReadInt32();
                         m_Source = sourceFile.filePath + ".resS";
