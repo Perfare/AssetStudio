@@ -120,30 +120,42 @@
   <data name="fs" xml:space="preserve">
     <value>#version 140
 
-in vec3 surfaceNormal;
-in vec3 toLightVector;
-in vec4 color;
+in vec3 normal;
 
 out vec4 outputColor;
 
 void main()
 {
-	vec3 lightColor = vec3(0.5, 0.5, 0.5);
+	vec3 unitNormal = normalize(normal);
+	float nDotProduct = clamp(dot(unitNormal, vec3(0.707, 0, 0.707)), 0, 1);
+	vec2 ContributionWeightsSqrt = vec2(0.5, 0.5f) + vec2(0.5f, -0.5f) * unitNormal.y;
+	vec2 ContributionWeights = ContributionWeightsSqrt * ContributionWeightsSqrt;
 
-	// Ambient
-	float ambientStrength = 0.9;
-	vec3 ambient = ambientStrength * lightColor;
+	vec3 color = nDotProduct * vec3(1, 0.957, 0.839) / 3.14159;
+	color += vec3(0.779, 0.716, 0.453) * ContributionWeights.y;
+	color += vec3(0.368, 0.477, 0.735) * ContributionWeights.x;
+	outputColor = vec4(sqrt(color), 1);
+}</value>
+  </data>
+  <data name="fsBlack" xml:space="preserve">
+    <value>#version 140
 
-	// Diffuse
-	vec3 unitNormal = normalize(surfaceNormal);
-	vec3 unitLightVector = normalize(toLightVector);
-	float nDotProduct = dot(unitNormal, unitLightVector);
-	float brightness = clamp(nDotProduct, 0, 1);  // max(nDotProduct, 0.0);
-	vec3 diffuse = brightness * lightColor;
+out vec4 outputColor;
 
-	// Output Color
-	vec4 result = color * vec4((ambient + diffuse/2), 0.0);
-	outputColor = result;
+void main()
+{
+	outputColor = vec4(0, 0, 0, 1);
+}</value>
+  </data>
+  <data name="fsColor" xml:space="preserve">
+    <value>#version 140
+
+out vec4 outputColor;
+in vec4 color;
+
+void main()
+{
+	outputColor = color;
 }</value>
   </data>
   <data name="vs" xml:space="preserve">
@@ -154,16 +166,13 @@ in vec3 normalDirection;
 in vec4 vertexColor;
 uniform mat4 viewMatrix;
 
-out vec3 surfaceNormal;
-out vec3 toLightVector;
+out vec3 normal;
 out vec4 color;
 
 void main()
 {
-	vec3 lightPosition = vec3(200.0, 200.0, 200.0);
 	gl_Position = viewMatrix * vec4(vertexPosition, 1.0);
-	surfaceNormal = normalDirection;
-	toLightVector = lightPosition - vertexPosition;
+	normal = normalDirection;
 	color = vertexColor; 
 }</value>
   </data>

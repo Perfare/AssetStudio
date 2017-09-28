@@ -36,9 +36,7 @@ namespace Unity_Studio
         private Bitmap imageTexture;
 
         #region OpenTK variables
-        int pgmID;
-        int vsID;
-        int fsID;
+        int pgmID, pgmColorID, pgmBlackID;
         int attributeVertexPosition;
         int attributeNormalDirection;
         int attributeVertexColor;
@@ -51,10 +49,13 @@ namespace Unity_Studio
         int eboElements;
         Vector3[] vertexData;
         Vector3[] normalData;
+        Vector3[] normal2Data;
         Vector4[] colorData;
         Matrix4[] viewMatrixData;
         int[] indiceData;
-        bool wireFrameView;
+        int wireFrameMode;
+        int shadeMode;
+        int normalMode;
         #endregion
 
         //asset list sorting helpers
@@ -366,7 +367,7 @@ namespace Unity_Studio
                 {
                     if (e.Control && e.KeyCode == Keys.W) //Toggle WireFrame
                     {
-                        wireFrameView = !wireFrameView;
+                        wireFrameMode = (wireFrameMode + 1) % 3;
                         glControl1.Invalidate();
                     }
                     else if (e.Shift && e.KeyCode == Keys.W) //Move
@@ -384,7 +385,12 @@ namespace Unity_Studio
                 // Down
                 if (e.KeyCode == Keys.S)
                 {
-                    if (e.Shift && e.KeyCode == Keys.S) //Move
+                    if (e.Control && e.KeyCode == Keys.S) //Toggle Shade
+                    {
+                        shadeMode = (shadeMode + 1) % 2;
+                        glControl1.Invalidate();
+                    }
+                    else if (e.Shift && e.KeyCode == Keys.S) //Move
                     {
                         viewMatrixData[0] *= Matrix4.CreateTranslation(0, -0.1f, 0);
                     }
@@ -409,6 +415,14 @@ namespace Unity_Studio
                 {
                     viewMatrixData[0] *= Matrix4.CreateScale(1.1f);
                     GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    glControl1.Invalidate();
+                }
+
+                // Normal mode
+                if (e.Control && e.KeyCode == Keys.N)
+                {
+                    normalMode = (normalMode + 1) % 2;
+                    createVAO();
                     glControl1.Invalidate();
                 }
 
@@ -1045,6 +1059,33 @@ namespace Unity_Studio
                             }
                             else
                                 normalData = null;
+                            // calculate normal by ourself
+                            normal2Data = new Vector3[m_Mesh.m_VertexCount];
+                            int[] normalCalculatedCount = new int[m_Mesh.m_VertexCount];
+                            for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                            {
+                                normal2Data[i] = Vector3.Zero;
+                                normalCalculatedCount[i] = 0;
+                            }
+                            for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                            {
+                                Vector3 dir1 = vertexData[indiceData[i + 1]] - vertexData[indiceData[i]];
+                                Vector3 dir2 = vertexData[indiceData[i + 2]] - vertexData[indiceData[i]];
+                                Vector3 normal = Vector3.Cross(dir1, dir2);
+                                normal.Normalize();
+                                for (int j = 0; j < 3; j++)
+                                {
+                                    normal2Data[indiceData[i + j]] += normal;
+                                    normalCalculatedCount[indiceData[i + j]] ++;
+                                }
+                            }
+                            for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                            {
+                                if(normalCalculatedCount[i] == 0)
+                                    normal2Data[i] = new Vector3(0, 1, 0);
+                                else
+                                    normal2Data[i] /= normalCalculatedCount[i];
+                            }
                             #endregion
                             #region Colors
                             if (m_Mesh.m_Colors == null)
@@ -1052,8 +1093,7 @@ namespace Unity_Studio
                                 colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
                                 {
-                                    colorData[c] = new Vector4(
-                                        0.5f, 0.5f, 0.5f, 1.0f);
+                                    colorData[c] = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
                                 }
                             }
                             else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
@@ -1083,9 +1123,9 @@ namespace Unity_Studio
                             #endregion
                         }
                         createVAO();
-                        StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version)
-                                        + "  |  'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | "
-                                        + "'Shift WASD'=Move | 'Q/E'=Zoom | 'Ctl W' =Wireframe");
+                        StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
+                                        + "'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | 'Shift WASD'=Move | 'Q/E'=Zoom \n"
+                                        + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
                     }
                     break;
                 #endregion
@@ -1743,14 +1783,27 @@ namespace Unity_Studio
         {
             GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
             GL.ClearColor(Color.CadetBlue);
+            int vsID, fsID;
+
             pgmID = GL.CreateProgram();
             loadShader("vs", ShaderType.VertexShader, pgmID, out vsID);
             loadShader("fs", ShaderType.FragmentShader, pgmID, out fsID);
             GL.LinkProgram(pgmID);
-            GL.UseProgram(pgmID);
+
+            pgmColorID = GL.CreateProgram();
+            loadShader("vs", ShaderType.VertexShader, pgmColorID, out vsID);
+            loadShader("fsColor", ShaderType.FragmentShader, pgmColorID, out fsID);
+            GL.LinkProgram(pgmColorID);
+
+            pgmBlackID = GL.CreateProgram();
+            loadShader("vs", ShaderType.VertexShader, pgmBlackID, out vsID);
+            loadShader("fsBlack", ShaderType.FragmentShader, pgmBlackID, out fsID);
+            GL.LinkProgram(pgmBlackID);
+            
             attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
             attributeNormalDirection = GL.GetAttribLocation(pgmID, "normalDirection");
-            attributeVertexColor = GL.GetAttribLocation(pgmID, "vertexColor");
+            attributeVertexColor = GL.GetAttribLocation(pgmColorID, "vertexColor");
+            var str = GL.GetError();
             uniformViewMatrix = GL.GetUniformLocation(pgmID, "viewMatrix");
             glControl1.Visible = false;
         }
@@ -1812,8 +1865,15 @@ namespace Unity_Studio
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
             createVBO(out vboPositions, vertexData, attributeVertexPosition);
-            if (normalData != null)
-                createVBO(out vboNormals, normalData, attributeNormalDirection);
+            if (normalMode == 0)
+            {
+                createVBO(out vboNormals, normal2Data, attributeNormalDirection);
+            }
+            else
+            {
+                if (normalData != null)
+                    createVBO(out vboNormals, normalData, attributeNormalDirection);
+            }
             createVBO(out vboColors, colorData, attributeVertexColor);
             createVBO(out vboViewMatrix, viewMatrixData, uniformViewMatrix);
             createEBO(out eboElements, indiceData);
@@ -1832,17 +1892,26 @@ namespace Unity_Studio
             glControl1.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
+            GL.DepthFunc(DepthFunction.Lequal);
             GL.BindVertexArray(vao);
-            if (wireFrameView == true)
+            if (wireFrameMode == 0 || wireFrameMode == 2)
             {
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line); //Wireframe
-            }
-            else
-            {
+                GL.UseProgram(shadeMode == 0 ? pgmID : pgmColorID);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
             }
-            GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
+            //Wireframe
+            if (wireFrameMode == 1 || wireFrameMode == 2)
+            {
+                GL.Enable(EnableCap.PolygonOffsetLine);
+                GL.PolygonOffset(-1, -1);
+                GL.UseProgram(pgmBlackID);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
+                GL.Disable(EnableCap.PolygonOffsetLine);
+            }
             GL.BindVertexArray(0);
             GL.Flush();
             glControl1.SwapBuffers();
