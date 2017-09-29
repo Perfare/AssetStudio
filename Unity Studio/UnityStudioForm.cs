@@ -40,18 +40,21 @@ namespace Unity_Studio
         int attributeVertexPosition;
         int attributeNormalDirection;
         int attributeVertexColor;
+        int uniformModelMatrix;
         int uniformViewMatrix;
         int vao;
         int vboPositions;
         int vboNormals;
         int vboColors;
+        int vboModelMatrix;
         int vboViewMatrix;
         int eboElements;
         Vector3[] vertexData;
         Vector3[] normalData;
         Vector3[] normal2Data;
         Vector4[] colorData;
-        Matrix4[] viewMatrixData;
+        Matrix4 modelMatrixData;
+        Matrix4 viewMatrixData;
         int[] indiceData;
         int wireFrameMode;
         int shadeMode;
@@ -335,86 +338,80 @@ namespace Unity_Studio
                 // --> Right
                 if (e.KeyCode == Keys.D)
                 {
-                    if (e.Shift && e.KeyCode == Keys.D) //Move
+                    if (e.Shift) //Move
                     {
-                        viewMatrixData[0] *= Matrix4.CreateTranslation(0.1f, 0, 0);
+                        viewMatrixData *= Matrix4.CreateTranslation(0.1f, 0, 0);
                     }
                     else //Rotate
                     {
-                        viewMatrixData[0] *= Matrix4.CreateRotationY(0.1f);
+                        viewMatrixData *= Matrix4.CreateRotationY(0.1f);
                     }
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
                 }
 
                 // <-- Left
                 if (e.KeyCode == Keys.A)
                 {
-                    if (e.Shift && e.KeyCode == Keys.A) //Move
+                    if (e.Shift) //Move
                     {
-                        viewMatrixData[0] *= Matrix4.CreateTranslation(-0.1f, 0, 0);
+                        viewMatrixData *= Matrix4.CreateTranslation(-0.1f, 0, 0);
                     }
                     else //Rotate
                     {
-                        viewMatrixData[0] *= Matrix4.CreateRotationY(-0.1f);
+                        viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
                     }
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
                 }
 
                 // Up 
                 if (e.KeyCode == Keys.W)
                 {
-                    if (e.Control && e.KeyCode == Keys.W) //Toggle WireFrame
+                    if (e.Control) //Toggle WireFrame
                     {
                         wireFrameMode = (wireFrameMode + 1) % 3;
                         glControl1.Invalidate();
                     }
-                    else if (e.Shift && e.KeyCode == Keys.W) //Move
+                    else if (e.Shift) //Move
                     {
-                        viewMatrixData[0] *= Matrix4.CreateTranslation(0, 0.1f, 0);
+                        viewMatrixData *= Matrix4.CreateTranslation(0, 0.1f, 0);
                     }
                     else //Rotate
                     {
-                        viewMatrixData[0] *= Matrix4.CreateRotationX(0.1f);
+                        viewMatrixData *= Matrix4.CreateRotationX(0.1f);
                     }
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
                 }
 
                 // Down
                 if (e.KeyCode == Keys.S)
                 {
-                    if (e.Control && e.KeyCode == Keys.S) //Toggle Shade
+                    if (e.Control) //Toggle Shade
                     {
                         shadeMode = (shadeMode + 1) % 2;
                         glControl1.Invalidate();
                     }
-                    else if (e.Shift && e.KeyCode == Keys.S) //Move
+                    else if (e.Shift) //Move
                     {
-                        viewMatrixData[0] *= Matrix4.CreateTranslation(0, -0.1f, 0);
+                        viewMatrixData *= Matrix4.CreateTranslation(0, -0.1f, 0);
                     }
                     else //Rotate
                     {
-                        viewMatrixData[0] *= Matrix4.CreateRotationX(-0.1f);
+                        viewMatrixData *= Matrix4.CreateRotationX(-0.1f);
                     }
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
                     glControl1.Invalidate();
                 }
 
                 // Zoom Out
                 if (e.KeyCode == Keys.Q)
                 {
-                    viewMatrixData[0] *= Matrix4.CreateScale(0.9f);
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    viewMatrixData *= Matrix4.CreateScale(0.9f);
                     glControl1.Invalidate();
                 }
 
                 // Zoom In
                 if (e.KeyCode == Keys.E)
                 {
-                    viewMatrixData[0] *= Matrix4.CreateScale(1.1f);
-                    GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                    viewMatrixData *= Matrix4.CreateScale(1.1f);
                     glControl1.Invalidate();
                 }
 
@@ -982,9 +979,8 @@ namespace Unity_Studio
                 case 43: //Mesh
                     {
                         glControl1.Visible = true;
-                        viewMatrixData = new Matrix4[] {
-                            Matrix4.Identity
-                            * Matrix4.CreateRotationY(-90.0f)};
+                        viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
+
                         var m_Mesh = new Mesh(asset, true);
                         if (m_Mesh.m_VertexCount > 0)
                         {
@@ -1003,34 +999,29 @@ namespace Unity_Studio
                                 min[i] = m_Mesh.m_Vertices[i];
                                 max[i] = m_Mesh.m_Vertices[i];
                             }
-                            for (int v = 1; v < m_Mesh.m_VertexCount; v++)
+                            for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                             {
                                 for (int i = 0; i < 3; i++)
                                 {
                                     min[i] = Math.Min(min[i], m_Mesh.m_Vertices[v * count + i]);
                                     max[i] = Math.Max(max[i], m_Mesh.m_Vertices[v * count + i]);
                                 }
-                            }
-                            // Calculate offset & scale to remapping vertex
-                            Vector3 scale = Vector3.One, offset = Vector3.Zero;
-                            for (int i = 0; i < 3; i++)
-                            {
-                                if(min[i] + 1e-5 < max[i])
-                                {
-                                    scale[i] = 1.5f / (max[i] - min[i]);
-                                }
-                                offset[i] = (max[i] + min[i]) / 2;
-                            }
-                            float minScale = Math.Min(scale.X, Math.Min(scale.Y, scale.Z));
-                            scale = new Vector3(minScale);
-
-                            for (int v = 0; v < m_Mesh.m_VertexCount; v++)
-                            {
-                                vertexData[v] = (new Vector3(
+                                vertexData[v] = new Vector3(
                                     m_Mesh.m_Vertices[v * count],
                                     m_Mesh.m_Vertices[v * count + 1],
-                                    m_Mesh.m_Vertices[v * count + 2]) - offset) * scale;
+                                    m_Mesh.m_Vertices[v * count + 2]);
                             }
+
+                            // Calculate modelMatrix
+                            Vector3 dist = Vector3.One, offset = Vector3.Zero;
+                            for (int i = 0; i < 3; i++)
+                            {
+                                dist[i] = max[i] - min[i];
+                                offset[i] = (max[i] + min[i]) / 2;
+                            }
+                            float d = Math.Max(1e-5f, dist.Length);
+                            Vector3 scale = new Vector3(2f / d);
+                            modelMatrixData = Matrix4.CreateScale(2f / d) * Matrix4.CreateTranslation(-offset);
                             #endregion
                             #region Indicies
                             indiceData = new int[m_Mesh.m_Indices.Count];
@@ -1773,8 +1764,7 @@ namespace Unity_Studio
         {
             if (glControl1.Visible == true)
             {
-                viewMatrixData[0] *= Matrix4.CreateRotationY(-0.1f);
-                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
                 glControl1.Invalidate();
             }
         }
@@ -1803,7 +1793,7 @@ namespace Unity_Studio
             attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
             attributeNormalDirection = GL.GetAttribLocation(pgmID, "normalDirection");
             attributeVertexColor = GL.GetAttribLocation(pgmColorID, "vertexColor");
-            var str = GL.GetError();
+            uniformModelMatrix = GL.GetUniformLocation(pgmID, "modelMatrix");
             uniformViewMatrix = GL.GetUniformLocation(pgmID, "viewMatrix");
             glControl1.Visible = false;
         }
@@ -1842,10 +1832,10 @@ namespace Unity_Studio
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(out int vboAddress, Matrix4[] data, int address)
+        private void createVBO(out int vboAddress, Matrix4 data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
-            GL.UniformMatrix4(address, false, ref data[0]);
+            GL.UniformMatrix4(address, false, ref data);
         }
 
         private void createEBO(out int address, int[] data)
@@ -1875,6 +1865,7 @@ namespace Unity_Studio
                     createVBO(out vboNormals, normalData, attributeNormalDirection);
             }
             createVBO(out vboColors, colorData, attributeVertexColor);
+            createVBO(out vboModelMatrix, modelMatrixData, uniformModelMatrix);
             createVBO(out vboViewMatrix, viewMatrixData, uniformViewMatrix);
             createEBO(out eboElements, indiceData);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -1897,7 +1888,8 @@ namespace Unity_Studio
             if (wireFrameMode == 0 || wireFrameMode == 2)
             {
                 GL.UseProgram(shadeMode == 0 ? pgmID : pgmColorID);
-                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                GL.UniformMatrix4(uniformModelMatrix, false, ref modelMatrixData);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
             }
@@ -1907,7 +1899,8 @@ namespace Unity_Studio
                 GL.Enable(EnableCap.PolygonOffsetLine);
                 GL.PolygonOffset(-1, -1);
                 GL.UseProgram(pgmBlackID);
-                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData[0]);
+                GL.UniformMatrix4(uniformModelMatrix, false, ref modelMatrixData);
+                GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
                 GL.Disable(EnableCap.PolygonOffsetLine);

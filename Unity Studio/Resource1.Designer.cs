@@ -123,6 +123,7 @@ namespace Unity_Studio {
         ///in vec3 vertexPosition;
         ///in vec3 normalDirection;
         ///in vec4 vertexColor;
+        ///uniform mat4 modelMatrix;
         ///uniform mat4 viewMatrix;
         ///
         ///out vec3 normal;
@@ -130,7 +131,7 @@ namespace Unity_Studio {
         ///
         ///void main()
         ///{
-        ///	gl_Position = viewMatrix * vec4(vertexPosition, 1.0);
+        ///	gl_Position = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
         ///	normal = normalDirection;
         ///	color = vertexColor; 
         ///}.
