@@ -1021,7 +1021,7 @@ namespace Unity_Studio
                             }
                             float d = Math.Max(1e-5f, dist.Length);
                             Vector3 scale = new Vector3(2f / d);
-                            modelMatrixData = Matrix4.CreateScale(2f / d) * Matrix4.CreateTranslation(-offset);
+                            modelMatrixData = Matrix4.CreateTranslation(-offset) * Matrix4.CreateScale(2f / d);
                             #endregion
                             #region Indicies
                             indiceData = new int[m_Mesh.m_Indices.Count];
