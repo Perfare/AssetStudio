@@ -537,7 +537,7 @@ namespace Unity_Studio
 
                 var aClass = new ClassStruct() { ID = classID, Text = className, members = classVar };
                 aClass.SubItems.Add(classID.ToString());
-                ClassStructures.Add(classID, aClass);
+                ClassStructures[classID] = aClass;
             }
         }
     }
