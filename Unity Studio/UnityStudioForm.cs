@@ -127,84 +127,70 @@ namespace Unity_Studio
 
         private void loadFolder_Click(object sender, EventArgs e)
         {
-            /*FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
-
-            folderBrowserDialog1.Description = "Load all Unity assets from folder and subfolders";
-            folderBrowserDialog1.ShowNewFolderButton = false;
-            //folderBrowserDialog1.SelectedPath = "E:\\Assets\\Unity";
-            folderBrowserDialog1.SelectedPath = "E:\\Assets\\Unity\\WebPlayer\\Porsche\\92AAF1\\defaultGeometry";*/
-
-            if (openFolderDialog1.ShowDialog() == DialogResult.OK)
+            var openFolderDialog1 = new OpenFolderDialog();
+            if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                //mainPath = folderBrowserDialog1.SelectedPath;
-                mainPath = openFolderDialog1.FileName;
-                if (Path.GetFileName(mainPath) == "Select folder")
-                { mainPath = Path.GetDirectoryName(mainPath); }
+                mainPath = openFolderDialog1.Folder;
+                resetForm();
 
-                if (Directory.Exists(mainPath))
+                //TODO find a way to read data directly instead of merging files
+                MergeSplitAssets(mainPath);
+
+                for (int t = 0; t < fileTypes.Length; t++)
                 {
-                    resetForm();
-
-                    //TODO find a way to read data directly instead of merging files
-                    MergeSplitAssets(mainPath);
-
-                    for (int t = 0; t < fileTypes.Length; t++)
+                    string[] fileNames = Directory.GetFiles(mainPath, fileTypes[t], SearchOption.AllDirectories);
+                    #region  sort specific types alphanumerically
+                    if (fileNames.Length > 0 && (t == 1 || t == 2))
                     {
-                        string[] fileNames = Directory.GetFiles(mainPath, fileTypes[t], SearchOption.AllDirectories);
-                        #region  sort specific types alphanumerically
-                        if (fileNames.Length > 0 && (t == 1 || t == 2))
+                        var sortedList = fileNames.ToList();
+                        sortedList.Sort((s1, s2) =>
                         {
-                            var sortedList = fileNames.ToList();
-                            sortedList.Sort((s1, s2) =>
-                            {
-                                string pattern = "([A-Za-z\\s]*)([0-9]*)";
-                                string h1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[1].Value;
-                                string h2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[1].Value;
-                                if (h1 != h2)
-                                    return h1.CompareTo(h2);
-                                string t1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[2].Value;
-                                string t2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[2].Value;
-                                if (t1 != "" && t2 != "")
-                                    return int.Parse(t1).CompareTo(int.Parse(t2));
-                                return 0;
-                            });
-                            foreach (var i in sortedList)
-                            {
-                                unityFiles.Add(i);
-                                unityFilesHash.Add(Path.GetFileName(i));
-                            }
-
+                            string pattern = "([A-Za-z\\s]*)([0-9]*)";
+                            string h1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[1].Value;
+                            string h2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[1].Value;
+                            if (h1 != h2)
+                                return h1.CompareTo(h2);
+                            string t1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[2].Value;
+                            string t2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[2].Value;
+                            if (t1 != "" && t2 != "")
+                                return int.Parse(t1).CompareTo(int.Parse(t2));
+                            return 0;
+                        });
+                        foreach (var i in sortedList)
+                        {
+                            unityFiles.Add(i);
+                            unityFilesHash.Add(Path.GetFileName(i));
                         }
-                        #endregion
-                        else
+
+                    }
+                    #endregion
+                    else
+                    {
+                        foreach (var i in fileNames)
                         {
-                            foreach (var i in fileNames)
-                            {
-                                unityFiles.Add(i);
-                                unityFilesHash.Add(Path.GetFileName(i));
-                            }
+                            unityFiles.Add(i);
+                            unityFilesHash.Add(Path.GetFileName(i));
                         }
                     }
-
-                    unityFiles = unityFiles.Distinct().ToList();
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = unityFiles.Count;
-                    ThreadPool.QueueUserWorkItem(delegate
-                    {
-                        //use a for loop because list size can change
-                        for (int f = 0; f < unityFiles.Count; f++)
-                        {
-                            var fileName = unityFiles[f];
-                            StatusStripUpdate("Loading " + Path.GetFileName(fileName));
-                            LoadAssetsFile(fileName);
-                            ProgressBarPerformStep();
-                        }
-                        unityFilesHash.Clear();
-                        assetsfileListHash.Clear();
-                        BuildAssetStrucutres();
-                    });
                 }
-                else { StatusStripUpdate("Selected path deos not exist."); }
+
+                unityFiles = unityFiles.Distinct().ToList();
+                progressBar1.Value = 0;
+                progressBar1.Maximum = unityFiles.Count;
+                ThreadPool.QueueUserWorkItem(delegate
+                {
+                    //use a for loop because list size can change
+                    for (int f = 0; f < unityFiles.Count; f++)
+                    {
+                        var fileName = unityFiles[f];
+                        StatusStripUpdate("Loading " + Path.GetFileName(fileName));
+                        LoadAssetsFile(fileName);
+                        ProgressBarPerformStep();
+                    }
+                    unityFilesHash.Clear();
+                    assetsfileListHash.Clear();
+                    BuildAssetStrucutres();
+                });
             }
         }
 
@@ -238,16 +224,10 @@ namespace Unity_Studio
             int extractedCount = 0;
             List<string> bundleFiles = new List<string>();
 
-            /*FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
-            folderBrowserDialog1.Description = "Extract all Unity bundles from folder and subfolders";
-            folderBrowserDialog1.ShowNewFolderButton = false;*/
-
-            if (openFolderDialog1.ShowDialog() == DialogResult.OK)
+            var openFolderDialog1 = new OpenFolderDialog();
+            if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                string startPath = openFolderDialog1.FileName;
-                if (Path.GetFileName(startPath) == "Select folder")
-                { startPath = Path.GetDirectoryName(startPath); }
-
+                string startPath = openFolderDialog1.Folder;
                 string[] fileTypes = new string[6] { "*.unity3d", "*.unity3d.lz4", "*.assetbundle", "*.assetbundle-*", "*.bundle", "*.bytes" };
                 foreach (var fileType in fileTypes)
                 {
@@ -317,7 +297,6 @@ namespace Unity_Studio
                 }
                 StatusStripUpdate("Finished loading " + assetsfileList.Count + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count) + " exportable assets.");
                 treeSearch.Select();
-                saveFolderDialog1.InitialDirectory = mainPath;
             }));
         }
 
@@ -445,15 +424,13 @@ namespace Unity_Studio
         {
             if (AllClassStructures.Count > 0)
             {
-                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     progressBar1.Value = 0;
                     progressBar1.Maximum = AllClassStructures.Count;
 
-                    var savePath = saveFolderDialog1.FileName;
-                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
-                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
-
+                    var savePath = saveFolderDialog1.Folder;
                     foreach (var version in AllClassStructures)
                     {
                         if (version.Value.Count > 0)
@@ -1067,12 +1044,12 @@ namespace Unity_Studio
                                 for (int j = 0; j < 3; j++)
                                 {
                                     normal2Data[indiceData[i + j]] += normal;
-                                    normalCalculatedCount[indiceData[i + j]] ++;
+                                    normalCalculatedCount[indiceData[i + j]]++;
                                 }
                             }
                             for (int i = 0; i < m_Mesh.m_VertexCount; i++)
                             {
-                                if(normalCalculatedCount[i] == 0)
+                                if (normalCalculatedCount[i] == 0)
                                     normal2Data[i] = new Vector3(0, 1, 0);
                                 else
                                     normal2Data[i] /= normalCalculatedCount[i];
@@ -1444,11 +1421,10 @@ namespace Unity_Studio
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                if (saveFolderDialog1.ShowDialog() == DialogResult.OK)
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    var savePath = saveFolderDialog1.FileName;
-                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
-                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+                    var savePath = saveFolderDialog1.Folder;
                     savePath = savePath + "\\";
                     switch ((bool)Properties.Settings.Default["showExpOpt"])
                     {
@@ -1547,7 +1523,8 @@ namespace Unity_Studio
 
         private void ExportAssets_Click(object sender, EventArgs e)
         {
-            if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog() == DialogResult.OK)
+            var saveFolderDialog1 = new OpenFolderDialog();
+            if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 timer.Stop();
                 List<AssetPreloadData> toExportAssets = null;
@@ -1572,9 +1549,7 @@ namespace Unity_Studio
                 ThreadPool.QueueUserWorkItem(delegate
                 {
                     Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-                    var savePath = saveFolderDialog1.FileName;
-                    if (Path.GetFileName(savePath) == "Select folder or write folder name to create")
-                    { savePath = Path.GetDirectoryName(saveFolderDialog1.FileName); }
+                    var savePath = saveFolderDialog1.Folder;
 
                     int toExport = toExportAssets.Count;
                     int exportedCount = 0;
@@ -1789,7 +1764,7 @@ namespace Unity_Studio
             loadShader("vs", ShaderType.VertexShader, pgmBlackID, out vsID);
             loadShader("fsBlack", ShaderType.FragmentShader, pgmBlackID, out fsID);
             GL.LinkProgram(pgmBlackID);
-            
+
             attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
             attributeNormalDirection = GL.GetAttribLocation(pgmID, "normalDirection");
             attributeVertexColor = GL.GetAttribLocation(pgmColorID, "vertexColor");

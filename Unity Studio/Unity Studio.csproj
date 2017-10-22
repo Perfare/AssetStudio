@@ -130,6 +130,7 @@
     <Compile Include="7zip\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="OpenFolderDialog.cs" />
     <Compile Include="Resource1.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

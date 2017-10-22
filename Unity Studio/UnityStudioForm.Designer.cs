@@ -99,9 +99,7 @@
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.timerOpenTK = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.openFolderDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.saveFolderDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -818,27 +816,10 @@
             this.openFileDialog1.Multiselect = true;
             this.openFileDialog1.RestoreDirectory = true;
             // 
-            // openFolderDialog1
-            // 
-            this.openFolderDialog1.AddExtension = false;
-            this.openFolderDialog1.CheckFileExists = false;
-            this.openFolderDialog1.FileName = "Select folder";
-            this.openFolderDialog1.Filter = "Folders|*.";
-            this.openFolderDialog1.RestoreDirectory = true;
-            this.openFolderDialog1.Title = "Browse for folder";
-            // 
             // saveFileDialog1
             // 
-            this.saveFileDialog1.Filter = "FBX file|*.fbx|Collada|*.dae";
+            this.saveFileDialog1.Filter = "FBX file|*.fbx";
             this.saveFileDialog1.RestoreDirectory = true;
-            // 
-            // saveFolderDialog1
-            // 
-            this.saveFolderDialog1.AddExtension = false;
-            this.saveFolderDialog1.FileName = "Select folder or write folder name to create";
-            this.saveFolderDialog1.Filter = "Folders|*.";
-            this.saveFolderDialog1.RestoreDirectory = true;
-            this.saveFolderDialog1.Title = "Browse for folder";
             // 
             // contextMenuStrip1
             // 
@@ -953,9 +934,7 @@
         private System.Windows.Forms.ToolStripMenuItem exportAll3DMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelected3DMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.OpenFileDialog openFolderDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.SaveFileDialog saveFolderDialog1;
         private System.Windows.Forms.ToolStripComboBox assetGroupOptions;
         private System.Windows.Forms.ToolStripMenuItem openAfterExport;
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
