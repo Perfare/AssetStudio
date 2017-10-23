@@ -777,6 +777,8 @@ namespace Unity_Studio
 
         public byte[] ConvertToContainer()
         {
+            if (image_data == null || image_data.Length == 0)
+                return null;
             switch (m_TextureFormat)
             {
                 case TextureFormat.Alpha8:

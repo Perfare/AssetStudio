@@ -1610,6 +1610,8 @@ namespace Unity_Studio
         public static bool ExportTexture(AssetPreloadData asset, string exportPathName, bool flip)
         {
             var m_Texture2D = new Texture2D(asset, true);
+            if (m_Texture2D.image_data == null)
+                return false;
             var convert = (bool)Properties.Settings.Default["convertTexture"];
             if (convert)
             {
@@ -1631,6 +1633,7 @@ namespace Unity_Studio
                     bitmap.Dispose();
                     return true;
                 }
+                return false;
             }
             var exportFullName2 = exportPathName + asset.Text + asset.extension;
             if (ExportFileExists(exportFullName2))
@@ -1641,6 +1644,9 @@ namespace Unity_Studio
 
         public static bool ExportAudioClip(AssetPreloadData asset, string exportFilename, string exportFileextension)
         {
+            var m_AudioClip = new AudioClip(asset, true);
+            if (m_AudioClip.m_AudioData == null)
+                return false;
             var oldextension = exportFileextension;
             var convertfsb = (bool)Properties.Settings.Default["convertfsb"];
             if (convertfsb && exportFileextension == ".fsb")
@@ -1650,7 +1656,6 @@ namespace Unity_Studio
             var exportFullname = exportFilename + exportFileextension;
             if (ExportFileExists(exportFullname))
                 return false;
-            var m_AudioClip = new AudioClip(asset, true);
             if (convertfsb && oldextension == ".fsb")
             {
                 FMOD.System system;

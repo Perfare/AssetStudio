@@ -821,7 +821,7 @@ namespace Unity_Studio
                         }
                         else
                         {
-                            StatusStripUpdate("Unsupported image for preview. Can only export the texture file.");
+                            StatusStripUpdate("Unsupported image for preview");
                         }
                         break;
                     }
