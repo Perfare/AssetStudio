@@ -19,7 +19,7 @@ namespace Unity_Studio {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ShaderResource {
@@ -66,6 +66,15 @@ namespace Unity_Studio {
         internal static string Shader20171 {
             get {
                 return ResourceManager.GetString("Shader20171", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [{&quot;Level&quot;:0,&quot;Type&quot;:&quot;string&quot;,&quot;Name&quot;:&quot;m_Name&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32769},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;Array&quot;,&quot;Name&quot;:&quot;Array&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:16385},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;int&quot;,&quot;Name&quot;:&quot;size&quot;,&quot;Size&quot;:4,&quot;Flag&quot;:1},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;char&quot;,&quot;Name&quot;:&quot;data&quot;,&quot;Size&quot;:1,&quot;Flag&quot;:1},{&quot;Level&quot;:0,&quot;Type&quot;:&quot;SerializedShader&quot;,&quot;Name&quot;:&quot;m_ParsedForm&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;SerializedProperties&quot;,&quot;Name&quot;:&quot;m_PropInfo&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;vector&quot;,&quot;Name&quot;:&quot;m_Props&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:3,&quot;Type&quot;:&quot;Arr... 的本地化字符串。
+        /// </summary>
+        internal static string Shader20172 {
+            get {
+                return ResourceManager.GetString("Shader20172", resourceCulture);
             }
         }
         

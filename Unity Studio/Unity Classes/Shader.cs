@@ -33,10 +33,24 @@ namespace Unity_Studio
             {
                 if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 5 || sourceFile.version[0] > 5)//5.5.0 and up
                 {
-                    a_Stream.Position = preloadData.Offset;
                     var str = (string)ShaderResource.ResourceManager.GetObject($"Shader{sourceFile.version[0]}{sourceFile.version[1]}");
-                    var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
-                    m_Script = ReadSerializedShader(members, a_Stream);
+                    if (str == null)
+                    {
+                        str = preloadData.ViewStruct();
+                        if (str == null)
+                            m_Script = Encoding.UTF8.GetBytes("Serialized Shader can't be read");
+                        else
+                            m_Script = Encoding.UTF8.GetBytes(str);
+                    }
+                    else
+                    {
+                        a_Stream.Position = preloadData.Offset;
+                        var sb = new StringBuilder();
+                        var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
+                        ClassStructHelper.ReadClassStruct(sb, members, a_Stream);
+                        m_Script = Encoding.UTF8.GetBytes(sb.ToString());
+                        //m_Script = ReadSerializedShader(members, a_Stream);
+                    }
                 }
                 else
                 {
@@ -66,7 +80,7 @@ namespace Unity_Studio
             }
         }
 
-        private static byte[] ReadSerializedShader(List<ClassMember> members, EndianBinaryReader a_Stream)
+        /*private static byte[] ReadSerializedShader(List<ClassMember> members, EndianBinaryReader a_Stream)
         {
             var offsets = new List<uint>();
             var compressedLengths = new List<uint>();
@@ -187,6 +201,6 @@ namespace Unity_Studio
                     a_Stream.AlignStream(4);
             }
             return null;
-        }
+        }*/
     }
 }
