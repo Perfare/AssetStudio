@@ -241,10 +241,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\unity.ico" />
+    <None Include="Resources\preview.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\preview.png" />
+    <None Include="Resources\unity.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
