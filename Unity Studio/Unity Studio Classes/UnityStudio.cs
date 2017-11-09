@@ -17,7 +17,7 @@ namespace Unity_Studio
         public static HashSet<string> unityFilesHash = new HashSet<string>(); //improve performance
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
         public static HashSet<string> assetsfileListHash = new HashSet<string>(); //improve performance
-        public static Dictionary<string, EndianStream> assetsfileandstream = new Dictionary<string, EndianStream>(); //use for read res files
+        public static Dictionary<string, EndianBinaryReader> assetsfileandstream = new Dictionary<string, EndianBinaryReader>(); //use for read res files
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //improve performance
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
@@ -44,7 +44,7 @@ namespace Unity_Studio
             {
                 //open file here and pass the stream to facilitate loading memory files
                 //also by keeping the stream as a property of AssetsFile, it can be used later on to read assets
-                AssetsFile assetsFile = new AssetsFile(fileName, new EndianStream(File.OpenRead(fileName), EndianType.BigEndian));
+                AssetsFile assetsFile = new AssetsFile(fileName, new EndianBinaryReader(File.OpenRead(fileName)));
                 //if (Path.GetFileName(fileName) == "mainData") { mainDataFile = assetsFile; }
 
                 //totalAssetCount += assetsFile.preloadTable.Count;
@@ -64,7 +64,7 @@ namespace Unity_Studio
                     }
                     else if (File.Exists(Path.GetDirectoryName(fileName) + "\\mainData"))
                     {
-                        mainDataFile = new AssetsFile(Path.GetDirectoryName(fileName) + "\\mainData", new EndianStream(File.OpenRead(Path.GetDirectoryName(fileName) + "\\mainData"), EndianType.BigEndian));
+                        mainDataFile = new AssetsFile(Path.GetDirectoryName(fileName) + "\\mainData", new EndianBinaryReader(File.OpenRead(Path.GetDirectoryName(fileName) + "\\mainData")));
 
                         assetsFile.m_Version = mainDataFile.m_Version;
                         assetsFile.version = mainDataFile.version;
@@ -131,7 +131,7 @@ namespace Unity_Studio
                 StatusStripUpdate("Loading " + memFile.fileName);
                 //create dummy path to be used for asset extraction
                 memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
-                AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianStream(memFile.memStream, EndianType.BigEndian));
+                AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianBinaryReader(memFile.memStream));
                 if (assetsFile.valid)
                 {
                     assetsFile.bundlePath = bundleFileName;
@@ -186,7 +186,7 @@ namespace Unity_Studio
         {
             int extractedCount = 0;
 
-            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ,,,");
+            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ...");
 
             string extractPath = bundleFileName + "_unpacked\\";
             Directory.CreateDirectory(extractPath);
@@ -1821,6 +1821,24 @@ namespace Unity_Studio
         {
             if (str.Length >= 260) return Path.GetRandomFileName();
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
+        }
+
+        public static bool CheckBundleFile(string fileName)
+        {
+            using (var stream = new EndianBinaryReader(File.OpenRead(fileName)))
+            {
+                var signature = stream.ReadStringToNull();
+                switch (signature)
+                {
+                    case "UnityWeb":
+                    case "UnityRaw":
+                    case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
+                    case "UnityFS":
+                        return true;
+                    default:
+                        return false;
+                }
+            }
         }
     }
 }

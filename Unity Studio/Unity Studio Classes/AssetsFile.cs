@@ -9,7 +9,7 @@ namespace Unity_Studio
 {
     public class AssetsFile
     {
-        public EndianStream a_Stream;
+        public EndianBinaryReader a_Stream;
         public string filePath;
         public string bundlePath;
         public string fileName;
@@ -150,7 +150,7 @@ namespace Unity_Studio
             public string fileName = "";
         }
 
-        public AssetsFile(string fullName, EndianStream fileStream)
+        public AssetsFile(string fullName, EndianBinaryReader fileStream)
         {
             a_Stream = fileStream;
             filePath = fullName;

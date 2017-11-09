@@ -180,7 +180,7 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        EndianStream estream;
+                        EndianBinaryReader estream;
                         if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
                         {
                             estream.Position = offset;

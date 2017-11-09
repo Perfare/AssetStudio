@@ -11,16 +11,20 @@ namespace Unity_Studio
         LittleEndian
     }
 
-    public class EndianStream : BinaryReader
+    public class EndianBinaryReader : BinaryReader
     {
         public EndianType endian;
         private byte[] a16 = new byte[2];
         private byte[] a32 = new byte[4];
         private byte[] a64 = new byte[8];
 
-        public EndianStream(Stream stream, EndianType endian) : base(stream) { }
+        public EndianBinaryReader(Stream stream, EndianType endian = EndianType.BigEndian) : base(stream) { this.endian = endian; }
 
-        public long Position { get { return BaseStream.Position; } set { BaseStream.Position = value; } }
+        public long Position
+        {
+            get => BaseStream.Position;
+            set => BaseStream.Position = value;
+        }
 
         public override short ReadInt16()
         {

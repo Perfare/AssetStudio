@@ -66,7 +66,7 @@ namespace Unity_Studio
             }
         }
 
-        private static byte[] ReadSerializedShader(List<ClassMember> members, EndianStream a_Stream)
+        private static byte[] ReadSerializedShader(List<ClassMember> members, EndianBinaryReader a_Stream)
         {
             var offsets = new List<uint>();
             var compressedLengths = new List<uint>();

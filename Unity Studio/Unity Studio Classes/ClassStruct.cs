@@ -53,7 +53,7 @@ namespace Unity_Studio
             return null;
         }
 
-        private static void ReadClassStruct(StringBuilder sb, List<ClassMember> members, EndianStream a_Stream)
+        private static void ReadClassStruct(StringBuilder sb, List<ClassMember> members, EndianBinaryReader a_Stream)
         {
             for (int i = 0; i < members.Count; i++)
             {

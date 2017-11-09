@@ -102,7 +102,7 @@ namespace Unity_Studio
 {
     public class Mesh
     {
-        private EndianStream a_Stream;
+        private EndianBinaryReader a_Stream;
         public string m_Name;
         public List<SubMesh> m_SubMeshes = new List<SubMesh>();
         public List<uint> m_Indices = new List<uint>(); //use a list because I don't always know the facecount for triangle strips

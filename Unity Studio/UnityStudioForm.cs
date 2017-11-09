@@ -91,7 +91,13 @@ namespace Unity_Studio
                     {
                         MergeSplitAssets(mainPath);
 
-                        //unityFiles.AddRange(openFileDialog1.FileNames);
+                        //Only verify whether the first file is bundle file
+                        if (CheckBundleFile(openFileDialog1.FileNames[0]))
+                        {
+                            MessageBox.Show($"{Path.GetFileName(openFileDialog1.FileNames[0])} is bundle file, please select bundle file type to load this file");
+                            return;
+                        }
+
                         foreach (var i in openFileDialog1.FileNames)
                         {
                             unityFiles.Add(i);
@@ -197,7 +203,7 @@ namespace Unity_Studio
         private void extractBundleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openBundleDialog = new OpenFileDialog();
-            openBundleDialog.Filter = "Unity bundle files|*.unity3d; *.unity3d.lz4; *.assetbundle; *.bundle; *.bytes|All files (use at your own risk!)|*.*";
+            openBundleDialog.Filter = "Unity bundle files|*.*";
             openBundleDialog.FilterIndex = 1;
             openBundleDialog.RestoreDirectory = true;
             openBundleDialog.Multiselect = true;
