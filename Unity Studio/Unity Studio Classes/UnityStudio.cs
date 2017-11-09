@@ -1748,6 +1748,8 @@ namespace Unity_Studio
 
         public static void ExportMesh(Mesh m_Mesh, string exportPath)
         {
+            if (m_Mesh.m_VertexCount <= 0)
+                return;
             var sb = new StringBuilder();
             sb.AppendLine("g " + m_Mesh.m_Name);
             #region Vertices

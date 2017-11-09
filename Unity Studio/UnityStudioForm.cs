@@ -961,12 +961,11 @@ namespace Unity_Studio
                 #region Mesh
                 case 43: //Mesh
                     {
-                        glControl1.Visible = true;
-                        viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
-
                         var m_Mesh = new Mesh(asset, true);
                         if (m_Mesh.m_VertexCount > 0)
                         {
+                            glControl1.Visible = true;
+                            viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
                             #region Vertices
                             int count = 3;
                             if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
@@ -1095,8 +1094,8 @@ namespace Unity_Studio
                                 }
                             }
                             #endregion
+                            createVAO();
                         }
-                        createVAO();
                         StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
                                         + "'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | 'Shift WASD'=Move | 'Q/E'=Zoom \n"
                                         + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
