@@ -1666,10 +1666,7 @@ namespace Unity_Studio
                 result = FMOD.Factory.System_Create(out system);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                result = system.setOutput(FMOD.OUTPUTTYPE.NOSOUND_NRT);
-                if (result != FMOD.RESULT.OK) { return false; }
-
-                result = system.init(1, FMOD.INITFLAGS.NORMAL, (IntPtr)null);
+                result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
                 if (result != FMOD.RESULT.OK) { return false; }
 
                 exinfo.cbsize = Marshal.SizeOf(exinfo);
@@ -1678,22 +1675,21 @@ namespace Unity_Studio
                 result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out sound);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                result = sound.getSubSound(0, out sound);
+                result = sound.getSubSound(0, out var subsound);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                result = sound.setMode(FMOD.MODE.LOOP_OFF);
+                result = subsound.getFormat(out var type, out var format, out int NumChannels, out int BitsPerSample);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                result = sound.setLoopCount(-1);
+                result = subsound.getDefaults(out var frequency, out int priority);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                uint length;
-                result = sound.getLength(out length, FMOD.TIMEUNIT.PCMBYTES);
+                var SampleRate = (int)frequency;
+
+                result = subsound.getLength(out var length, FMOD.TIMEUNIT.PCMBYTES);
                 if (result != FMOD.RESULT.OK) { return false; }
 
-                IntPtr ptr1, ptr2;
-                uint len1, len2;
-                result = sound.@lock(0, length, out ptr1, out ptr2, out len1, out len2);
+                result = subsound.@lock(0, length, out var ptr1, out var ptr2, out var len1, out var len2);
                 if (result != FMOD.RESULT.OK) { return false; }
 
                 byte[] buffer = new byte[len1 + 44];
@@ -1703,19 +1699,20 @@ namespace Unity_Studio
                 Encoding.UTF8.GetBytes("WAVEfmt ").CopyTo(buffer, 8);
                 BitConverter.GetBytes(16).CopyTo(buffer, 16);
                 BitConverter.GetBytes((short)1).CopyTo(buffer, 20);
-                BitConverter.GetBytes((short)m_AudioClip.m_Channels).CopyTo(buffer, 22);
-                BitConverter.GetBytes(m_AudioClip.m_Frequency).CopyTo(buffer, 24);
-                BitConverter.GetBytes(m_AudioClip.m_Frequency * m_AudioClip.m_Channels * m_AudioClip.m_BitsPerSample / 8).CopyTo(buffer, 28);
-                BitConverter.GetBytes((short)(m_AudioClip.m_Channels * m_AudioClip.m_BitsPerSample / 8)).CopyTo(buffer, 32);
-                BitConverter.GetBytes((short)m_AudioClip.m_BitsPerSample).CopyTo(buffer, 34);
+                BitConverter.GetBytes((short)NumChannels).CopyTo(buffer, 22);
+                BitConverter.GetBytes(SampleRate).CopyTo(buffer, 24);
+                BitConverter.GetBytes(SampleRate * NumChannels * BitsPerSample / 8).CopyTo(buffer, 28);
+                BitConverter.GetBytes((short)(NumChannels * BitsPerSample / 8)).CopyTo(buffer, 32);
+                BitConverter.GetBytes((short)BitsPerSample).CopyTo(buffer, 34);
                 Encoding.UTF8.GetBytes("data").CopyTo(buffer, 36);
                 BitConverter.GetBytes(len1).CopyTo(buffer, 40);
                 Marshal.Copy(ptr1, buffer, 44, (int)len1);
                 File.WriteAllBytes(exportFullname, buffer);
 
-                result = sound.unlock(ptr1, ptr2, len1, len2);
+                result = subsound.unlock(ptr1, ptr2, len1, len2);
                 if (result != FMOD.RESULT.OK) { return false; }
 
+                subsound.release();
                 sound.release();
                 system.release();
             }

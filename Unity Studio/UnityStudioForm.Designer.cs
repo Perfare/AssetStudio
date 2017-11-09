@@ -591,6 +591,7 @@
             // 
             // FMODinfoLabel
             // 
+            this.FMODinfoLabel.AutoSize = true;
             this.FMODinfoLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.FMODinfoLabel.Location = new System.Drawing.Point(305, 271);
             this.FMODinfoLabel.Name = "FMODinfoLabel";
@@ -600,9 +601,9 @@
             // FMODtimerLabel
             // 
             this.FMODtimerLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODtimerLabel.Location = new System.Drawing.Point(435, 271);
+            this.FMODtimerLabel.Location = new System.Drawing.Point(440, 271);
             this.FMODtimerLabel.Name = "FMODtimerLabel";
-            this.FMODtimerLabel.Size = new System.Drawing.Size(158, 13);
+            this.FMODtimerLabel.Size = new System.Drawing.Size(155, 13);
             this.FMODtimerLabel.TabIndex = 7;
             this.FMODtimerLabel.Text = "0:00.0 / 0:00.0";
             this.FMODtimerLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -619,10 +620,10 @@
             // FMODprogressBar
             // 
             this.FMODprogressBar.AutoSize = false;
-            this.FMODprogressBar.Location = new System.Drawing.Point(252, 290);
+            this.FMODprogressBar.Location = new System.Drawing.Point(249, 290);
             this.FMODprogressBar.Maximum = 1000;
             this.FMODprogressBar.Name = "FMODprogressBar";
-            this.FMODprogressBar.Size = new System.Drawing.Size(348, 24);
+            this.FMODprogressBar.Size = new System.Drawing.Size(350, 24);
             this.FMODprogressBar.TabIndex = 5;
             this.FMODprogressBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.FMODprogressBar.Scroll += new System.EventHandler(this.FMODprogressBar_Scroll);

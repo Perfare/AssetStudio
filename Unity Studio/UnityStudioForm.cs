@@ -1131,7 +1131,7 @@ namespace Unity_Studio
                 Application.Exit();
             }
 
-            result = system.init(1, FMOD.INITFLAGS.NORMAL, (IntPtr)null);
+            result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
             if (ERRCHECK(result)) { return; }
 
             //result = system.getMasterChannelGroup(out channelGroup);
@@ -1155,7 +1155,7 @@ namespace Unity_Studio
             if (sound != null)
             {
                 var result = sound.release();
-                if (result != FMOD.RESULT.OK) { StatusStripUpdate("FMOD error! " + result + " - " + FMOD.Error.String(result)); }
+                ERRCHECK(result);
                 sound = null;
             }
         }
