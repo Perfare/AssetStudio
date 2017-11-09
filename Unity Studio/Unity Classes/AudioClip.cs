@@ -114,7 +114,7 @@ namespace Unity_Studio
                     if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
                     {
                         estream.Position = m_Offset;
-                        m_AudioData = estream.ReadBytes((int) m_Size);
+                        m_AudioData = estream.ReadBytes((int)m_Size);
                     }
                     else
                     {
@@ -183,7 +183,9 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
+                if (m_Source != null)
+                    preloadData.fullSize = preloadData.Size + (int)m_Size;
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.fullSize.ToString() });
             }
         }
     }

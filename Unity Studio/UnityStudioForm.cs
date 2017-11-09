@@ -735,7 +735,7 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Size.CompareTo(b.Size);
+                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.fullSize.CompareTo(b.fullSize);
                     });
                     break;
                 case 1:
@@ -743,13 +743,13 @@ namespace Unity_Studio
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 2 ? a.Size.CompareTo(b.Size) : a.Text.CompareTo(b.Text);
+                        return secondSortColumn == 2 ? a.fullSize.CompareTo(b.fullSize) : a.Text.CompareTo(b.Text);
                     });
                     break;
                 case 2:
                     visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        int xdiff = reverseSort ? b.Size.CompareTo(a.Size) : a.Size.CompareTo(b.Size);
+                        int xdiff = reverseSort ? b.fullSize.CompareTo(a.fullSize) : a.fullSize.CompareTo(b.fullSize);
                         if (xdiff != 0) return xdiff;
                         return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
                     });

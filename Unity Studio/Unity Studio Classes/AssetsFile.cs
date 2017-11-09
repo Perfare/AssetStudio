@@ -362,6 +362,7 @@ namespace Unity_Studio
 
                     asset.uniqueID = i.ToString(assetIDfmt);
 
+                    asset.fullSize = asset.Size;
                     asset.sourceFile = this;
 
                     preloadTable.Add(asset.m_PathID, asset);

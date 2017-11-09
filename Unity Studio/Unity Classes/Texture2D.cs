@@ -758,7 +758,9 @@ namespace Unity_Studio
 
                 if (m_Name != "") { preloadData.Text = m_Name; }
                 else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
+                if (!string.IsNullOrEmpty(path))
+                    preloadData.fullSize = preloadData.Size + (int)size;
+                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.fullSize.ToString() });
             }
         }
 
