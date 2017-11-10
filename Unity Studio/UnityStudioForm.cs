@@ -1102,11 +1102,22 @@ namespace Unity_Studio
                     }
                     break;
                 #endregion
-
+                #region VideoClip
+                case 329:
+                    {
+                        string str = asset.ViewStruct();
+                        if (str != null)
+                        {
+                            textPreviewBox.Text = str;
+                            textPreviewBox.Visible = true;
+                        }
+                        break;
+                    }
+                #endregion
                 default:
                     {
-                        string str;
-                        if ((str = asset.ViewStruct()) != null)
+                        string str = asset.ViewStruct();
+                        if (str != null)
                         {
                             textPreviewBox.Text = str;
                             textPreviewBox.Visible = true;
@@ -1624,7 +1635,14 @@ namespace Unity_Studio
                                     ExportMesh(m_Mesh, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
-
+                                break;
+                            case 329: //VideoClip
+                                var m_VideoClip = new VideoClip(asset, true);
+                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                                {
+                                    ExportVideo(m_VideoClip, exportpath + asset.Text + asset.extension);
+                                    exportedCount++;
+                                }
                                 break;
                             default:
                                 if (!ExportFileExists(exportpath + asset.Text + asset.extension))

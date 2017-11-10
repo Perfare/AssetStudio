@@ -312,6 +312,12 @@ namespace Unity_Studio
                                     ab = new AssetBundle(asset);
                                     break;
                                 }
+                            case 329: //VideoClip
+                                {
+                                    var m_VideoClip = new VideoClip(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
                             case 21: //Material                            
                             case 74: //AnimationClip
                             case 90: //Avatar
@@ -1807,6 +1813,14 @@ namespace Unity_Studio
             #endregion
 
             File.WriteAllText(exportPath, sb.ToString());
+        }
+
+        public static void ExportVideo(VideoClip m_VideoClip, string exportFilename)
+        {
+            if (m_VideoClip.m_VideoData != null)
+            {
+                File.WriteAllBytes(exportFilename, m_VideoClip.m_VideoData);
+            }
         }
 
         public static bool ExportFileExists(string filename)
