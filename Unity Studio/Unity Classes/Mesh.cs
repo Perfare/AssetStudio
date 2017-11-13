@@ -333,7 +333,6 @@ namespace Unity_Studio
             var version = MeshPD.sourceFile.version;
             a_Stream = MeshPD.sourceFile.a_Stream;
             a_Stream.Position = MeshPD.Offset;
-            MeshPD.extension = ".obj";
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;
 
@@ -1226,9 +1225,8 @@ namespace Unity_Studio
             }
             else
             {
-                if (m_Name != "") { MeshPD.Text = m_Name; }
-                else { MeshPD.Text = MeshPD.TypeString + " #" + MeshPD.uniqueID; }
-                MeshPD.SubItems.AddRange(new[] { MeshPD.TypeString, MeshPD.Size.ToString() });
+                MeshPD.extension = ".obj";
+                MeshPD.Text = m_Name;
             }
         }
     }

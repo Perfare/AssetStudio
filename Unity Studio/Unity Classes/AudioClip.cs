@@ -88,7 +88,8 @@ namespace Unity_Studio
                 m_3D = m_Legacy3D;
 
                 m_Source = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
+                if (m_Source != "")
+                    m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
                 m_Offset = a_Stream.ReadInt64();
                 m_Size = a_Stream.ReadInt64();
                 m_CompressionFormat = a_Stream.ReadInt32();
@@ -96,9 +97,10 @@ namespace Unity_Studio
 
             if (readSwitch)
             {
-                if (m_Source == null)
+                if (string.IsNullOrEmpty(m_Source))
                 {
-                    m_AudioData = a_Stream.ReadBytes((int)m_Size);
+                    if (m_Size > 0)
+                        m_AudioData = a_Stream.ReadBytes((int)m_Size);
                 }
                 else if (File.Exists(m_Source) ||
                     File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
@@ -181,11 +183,9 @@ namespace Unity_Studio
                 }
                 preloadData.InfoText += "\n3D: " + m_3D;
 
-                if (m_Name != "") { preloadData.Text = m_Name; }
-                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.Text = m_Name;
                 if (m_Source != null)
                     preloadData.fullSize = preloadData.Size + (int)m_Size;
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.fullSize.ToString() });
             }
         }
     }

@@ -16,7 +16,6 @@ namespace Unity_Studio
             var sourceFile = preloadData.sourceFile;
             var a_Stream = preloadData.sourceFile.a_Stream;
             a_Stream.Position = preloadData.Offset;
-            preloadData.extension = ".txt";
 
             if (sourceFile.platform == -2)
             {
@@ -33,9 +32,8 @@ namespace Unity_Studio
             }
             else
             {
-                if (m_Name != "") { preloadData.Text = m_Name; }
-                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.extension = ".txt";
+                preloadData.Text = m_Name;
             }
         }
     }

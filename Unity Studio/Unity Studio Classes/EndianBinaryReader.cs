@@ -18,7 +18,9 @@ namespace Unity_Studio
         private byte[] a32 = new byte[4];
         private byte[] a64 = new byte[8];
 
-        public EndianBinaryReader(Stream stream, EndianType endian = EndianType.BigEndian) : base(stream) { this.endian = endian; }
+        public EndianBinaryReader(Stream stream, EndianType endian = EndianType.BigEndian)
+            : base(stream)
+        { this.endian = endian; }
 
         public long Position
         {
@@ -121,28 +123,17 @@ namespace Unity_Studio
 
         public void AlignStream(int alignment)
         {
-            long pos = BaseStream.Position;
-            //long padding = alignment - pos + (pos / alignment) * alignment;
-            //if (padding != alignment) { base.BaseStream.Position += padding; }
-            if ((pos % alignment) != 0) { BaseStream.Position += alignment - (pos % alignment); }
+            var pos = BaseStream.Position;
+            var mod = pos % alignment;
+            if (mod != 0) { BaseStream.Position += alignment - mod; }
         }
 
         public string ReadAlignedString(int length)
         {
-            if (length > 0 && length < (BaseStream.Length - BaseStream.Position))//crude failsafe
+            if (length > 0 && length < (BaseStream.Length - BaseStream.Position))
             {
-                byte[] stringData = new byte[length];
-                Read(stringData, 0, length);
-                var result = Encoding.UTF8.GetString(stringData); //must verify strange characters in PS3
-
-                /*string result = "";
-                char c;
-                for (int i = 0; i < length; i++)
-                {
-                    c = (char)base.ReadByte();
-                    result += c.ToString();
-                }*/
-
+                var stringData = ReadBytes(length);
+                var result = Encoding.UTF8.GetString(stringData);
                 AlignStream(4);
                 return result;
             }

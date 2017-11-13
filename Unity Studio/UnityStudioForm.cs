@@ -139,7 +139,6 @@ namespace Unity_Studio
                 mainPath = openFolderDialog1.Folder;
                 resetForm();
 
-                //TODO find a way to read data directly instead of merging files
                 MergeSplitAssets(mainPath);
 
                 for (int t = 0; t < fileTypes.Length; t++)
@@ -714,7 +713,6 @@ namespace Unity_Studio
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
-                //visibleListAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(ListSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
                 visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
                 assetListView.VirtualListSize = visibleAssets.Count;
                 assetListView.EndUpdate();
@@ -836,7 +834,8 @@ namespace Unity_Studio
                 case 83: //AudioClip
                     {
                         AudioClip m_AudioClip = new AudioClip(asset, true);
-
+                        if (m_AudioClip.m_AudioData == null)
+                            break;
                         FMOD.RESULT result;
                         FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
 
@@ -1105,7 +1104,7 @@ namespace Unity_Studio
                 #region VideoClip
                 case 329:
                     {
-                        string str = asset.ViewStruct();
+                        var str = asset.ViewStruct();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;
@@ -1116,7 +1115,7 @@ namespace Unity_Studio
                 #endregion
                 default:
                     {
-                        string str = asset.ViewStruct();
+                        var str = asset.ViewStruct();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;
@@ -1149,9 +1148,6 @@ namespace Unity_Studio
 
             result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
             if (ERRCHECK(result)) { return; }
-
-            //result = system.getMasterChannelGroup(out channelGroup);
-            //if (ERRCHECK(result)) { return; }
 
             result = system.getMasterSoundGroup(out masterSoundGroup);
             if (ERRCHECK(result)) { return; }
@@ -1204,7 +1200,6 @@ namespace Unity_Studio
                     result = system.playSound(sound, null, false, out channel);
                     if (ERRCHECK(result)) { return; }
                     FMODstatusLabel.Text = "Playing";
-                    //FMODinfoLabel.Text = FMODfrequency.ToString();
 
                     if (FMODprogressBar.Value > 0)
                     {
@@ -1242,9 +1237,6 @@ namespace Unity_Studio
                     if (ERRCHECK(result)) { return; }
                     result = channel.setPaused(!paused);
                     if (ERRCHECK(result)) { return; }
-
-                    //FMODstatusLabel.Text = (!paused ? "Paused" : playing ? "Playing" : "Stopped");
-                    //FMODpauseButton.Text = (!paused ? "Resume" : playing ? "Pause" : "Pause");
 
                     if (paused)
                     {
@@ -1409,7 +1401,6 @@ namespace Unity_Studio
                 }
             }
 
-            //statusBar.Text = "Time " + (ms / 1000 / 60) + ":" + (ms / 1000 % 60) + ":" + (ms / 10 % 100) + "/" + (lenms / 1000 / 60) + ":" + (lenms / 1000 % 60) + ":" + (lenms / 10 % 100) + " : " + (paused ? "Paused " : playing ? "Playing" : "Stopped");
             FMODtimerLabel.Text = (ms / 1000 / 60) + ":" + (ms / 1000 % 60) + "." + (ms / 10 % 100) + " / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
             FMODprogressBar.Value = (int)(ms * 1000 / FMODlenms);
             FMODstatusLabel.Text = (paused ? "Paused " : playing ? "Playing" : "Stopped");
@@ -1424,10 +1415,8 @@ namespace Unity_Studio
         {
             if (result != FMOD.RESULT.OK)
             {
-                //FMODinit();
                 FMODreset();
                 StatusStripUpdate("FMOD error! " + result + " - " + FMOD.Error.String(result));
-                //Environment.Exit(-1);
                 return true;
             }
             return false;
@@ -1580,74 +1569,59 @@ namespace Unity_Studio
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
                         StatusStripUpdate("Exporting " + asset.TypeString + ": " + asset.Text);
-                        //AudioClip and Texture2D extensions are set when the list is built
-                        //so their overwrite tests can be done without loading them again
                         switch (asset.Type2)
                         {
-                            case 28:
-                                if (ExportTexture(asset, exportpath, true))
+                            case 28: //Texture2D
+                                if (ExportTexture2D(asset, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 83:
-                                if (ExportAudioClip(asset, exportpath + asset.Text, asset.extension))
+                            case 83: //AudioClip
+                                if (ExportAudioClip(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 48:
-                                Shader m_Shader = new Shader(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                            case 48: //Shader
+                                if (ExportShader(asset, exportpath))
                                 {
-                                    ExportShader(m_Shader, exportpath + asset.Text + ".txt");
                                     exportedCount++;
                                 }
                                 break;
-                            case 49:
-                                TextAsset m_TextAsset = new TextAsset(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                            case 49: //TextAsset
+                                if (ExportTextAsset(asset, exportpath))
                                 {
-                                    ExportText(m_TextAsset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
-                            case 114:
-                                MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                            case 114: //MonoBehaviour
+                                if (ExportMonoBehaviour(asset, exportpath))
                                 {
-                                    ExportMonoBehaviour(m_MonoBehaviour, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
-                            case 128:
-                                unityFont m_Font = new unityFont(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                            case 128: //Font
+                                if (ExportFont(asset, exportpath))
                                 {
-                                    ExportFont(m_Font, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             case 43: //Mesh
-                                Mesh m_Mesh = new Mesh(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                                if (ExportMesh(asset, exportpath))
                                 {
-                                    ExportMesh(m_Mesh, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             case 329: //VideoClip
-                                var m_VideoClip = new VideoClip(asset, true);
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                                if (ExportVideoClip(asset, exportpath))
                                 {
-                                    ExportVideo(m_VideoClip, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
                             default:
-                                if (!ExportFileExists(exportpath + asset.Text + asset.extension))
+                                if (ExportRawFile(asset, exportpath))
                                 {
-                                    ExportRawFile(asset, exportpath + asset.Text + asset.extension);
                                     exportedCount++;
                                 }
                                 break;
@@ -1910,11 +1884,6 @@ namespace Unity_Studio
 
         private void resetForm()
         {
-            /*Properties.Settings.Default["uniqueNames"] = uniqueNamesMenuItem.Checked;
-            Properties.Settings.Default["enablePreview"] = enablePreviewMenuItem.Checked;
-            Properties.Settings.Default["displayInfo"] = displayAssetInfoMenuItem.Checked;
-            Properties.Settings.Default.Save();*/
-
             Text = "Unity Studio";
 
             unityFiles.Clear();
@@ -1927,7 +1896,6 @@ namespace Unity_Studio
 
             assetListView.VirtualListSize = 0;
             assetListView.Items.Clear();
-            //assetListView.Groups.Clear();
 
             classesListView.Items.Clear();
             classesListView.Groups.Clear();

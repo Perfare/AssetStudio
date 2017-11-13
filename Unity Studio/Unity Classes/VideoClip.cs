@@ -24,8 +24,11 @@ namespace Unity_Studio
             var m_ProxyHeight = a_Stream.ReadUInt32();
             var Width = a_Stream.ReadUInt32();
             var Height = a_Stream.ReadUInt32();
-            var m_PixelAspecRatioNum = a_Stream.ReadUInt32();
-            var m_PixelAspecRatioDen = a_Stream.ReadUInt32();
+            if (sourceFile.version[0] == 2017)//2017.x
+            {
+                var m_PixelAspecRatioNum = a_Stream.ReadUInt32();
+                var m_PixelAspecRatioDen = a_Stream.ReadUInt32();
+            }
             var m_FrameRate = a_Stream.ReadDouble();
             var m_FrameCount = a_Stream.ReadUInt64();
             var m_Format = a_Stream.ReadInt32();
@@ -44,16 +47,18 @@ namespace Unity_Studio
             }
             //StreamedResource m_ExternalResources
             var m_Source = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-            m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
+            if (m_Source != "")
+                m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
             var m_Offset = a_Stream.ReadUInt64();
             var m_Size = a_Stream.ReadUInt64();
             var m_HasSplitAlpha = a_Stream.ReadBoolean();
 
             if (readSwitch)
             {
-                if (m_Source == null)
+                if (string.IsNullOrEmpty(m_Source))
                 {
-                    m_VideoData = a_Stream.ReadBytes((int)m_Size);
+                    if (m_Size > 0)
+                        m_VideoData = a_Stream.ReadBytes((int)m_Size);
                 }
                 else if (File.Exists(m_Source) || File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
                 {
@@ -79,11 +84,9 @@ namespace Unity_Studio
             else
             {
                 preloadData.extension = Path.GetExtension(m_OriginalPath);
-                if (m_Name != "") { preloadData.Text = m_Name; }
-                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.Text = m_Name;
                 if (m_Source != null)
                     preloadData.fullSize = preloadData.Size + (int)m_Size;
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.fullSize.ToString() });
             }
         }
     }

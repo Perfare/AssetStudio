@@ -71,8 +71,7 @@ namespace Unity_Studio
                     int m_FontData_size = a_Stream.ReadInt32();
                     if (m_FontData_size > 0)
                     {
-                        m_FontData = new byte[m_FontData_size];
-                        a_Stream.Read(m_FontData, 0, m_FontData_size);
+                        m_FontData = a_Stream.ReadBytes(m_FontData_size);
 
                         if (m_FontData[0] == 79 && m_FontData[1] == 84 && m_FontData[2] == 84 && m_FontData[3] == 79)
                         { preloadData.extension = ".otf"; }
@@ -153,8 +152,7 @@ namespace Unity_Studio
                     int m_FontData_size = a_Stream.ReadInt32();
                     if (m_FontData_size > 0)
                     {
-                        m_FontData = new byte[m_FontData_size];
-                        a_Stream.Read(m_FontData, 0, m_FontData_size);
+                        m_FontData = a_Stream.ReadBytes(m_FontData_size);
 
                         if (m_FontData[0] == 79 && m_FontData[1] == 84 && m_FontData[2] == 84 && m_FontData[3] == 79)
                         { preloadData.extension = ".otf"; }
@@ -186,9 +184,7 @@ namespace Unity_Studio
             }
             else
             {
-                if (m_Name != "") { preloadData.Text = m_Name; }
-                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.Text = m_Name;
             }
         }
     }

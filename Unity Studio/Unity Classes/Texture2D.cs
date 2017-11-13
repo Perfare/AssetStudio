@@ -756,11 +756,9 @@ namespace Unity_Studio
                     case 1: preloadData.InfoText += "\nWrap mode: Clamp"; break;
                 }
 
-                if (m_Name != "") { preloadData.Text = m_Name; }
-                else { preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID; }
+                preloadData.Text = m_Name;
                 if (!string.IsNullOrEmpty(path))
                     preloadData.fullSize = preloadData.Size + (int)size;
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.fullSize.ToString() });
             }
         }
 

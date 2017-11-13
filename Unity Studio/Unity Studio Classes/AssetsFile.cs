@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace Unity_Studio
 {
@@ -20,8 +21,6 @@ namespace Unity_Studio
         public string[] buildType;
         public int platform = 100663296;
         public string platformStr = "";
-        //public EndianType endianType = EndianType.BigEndian;
-        //public List<AssetPreloadData> preloadTable = new List<AssetPreloadData>();
         public Dictionary<long, AssetPreloadData> preloadTable = new Dictionary<long, AssetPreloadData>();
         public Dictionary<long, GameObject> GameObjectList = new Dictionary<long, GameObject>();
         public Dictionary<long, Transform> TransformList = new Dictionary<long, Transform>();
@@ -216,7 +215,6 @@ namespace Unity_Studio
                     byte[] b32 = BitConverter.GetBytes(platform);
                     Array.Reverse(b32);
                     platform = BitConverter.ToInt32(b32, 0);
-                    //endianType = EndianType.LittleEndian;
                     a_Stream.endian = EndianType.LittleEndian;
                 }
 
@@ -344,10 +342,6 @@ namespace Unity_Studio
                         //this is a single byte, not an int32
                         //the next entry is aligned after this
                         //but not the last!
-                        if (unknownByte != 0)
-                        {
-                            //bool investigate = true;
-                        }
                     }
 
                     string typeString;
@@ -424,7 +418,6 @@ namespace Unity_Studio
         {
             string varType = a_Stream.ReadStringToNull();
             string varName = a_Stream.ReadStringToNull();
-            //a_Stream.Position += 20;
             int size = a_Stream.ReadInt32();
             int index = a_Stream.ReadInt32();
             int isArray = a_Stream.ReadInt32();
@@ -432,7 +425,6 @@ namespace Unity_Studio
             int flag = a_Stream.ReadInt32();
             int childrenCount = a_Stream.ReadInt32();
 
-            //Debug.WriteLine(baseFormat + " " + baseName + " " + childrenCount);
             cb.Add(new ClassMember()
             {
                 Level = level - 1,
@@ -461,7 +453,7 @@ namespace Unity_Studio
                 }
                 classIDs.Add(new[] { type1, classID });
                 classID = type1;
-                /*TODO 替换？
+                /*TODO 用来替换下方的代码
                 if(classID == 114)
                 {
                     a_Stream.Position += 16;
@@ -530,9 +522,6 @@ namespace Unity_Studio
                             Flag = flag
                         });
                     }
-
-                    //for (int t = 0; t < level; t++) { Debug.Write("\t"); }
-                    //Debug.WriteLine(varTypeStr + " " + varNameStr + " " + size);
                 }
                 a_Stream.Position += stringSize;
 

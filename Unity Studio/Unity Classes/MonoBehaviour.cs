@@ -22,7 +22,6 @@ namespace Unity_Studio
             var m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
             if (readSwitch)
             {
-                preloadData.extension = ".txt";
                 if ((serializedText = preloadData.ViewStruct()) == null)
                 {
                     var str = "PPtr<GameObject> m_GameObject\r\n";
@@ -38,15 +37,8 @@ namespace Unity_Studio
             }
             else
             {
-                if (m_Name != "")
-                {
-                    preloadData.Text = m_Name;
-                }
-                else
-                {
-                    preloadData.Text = preloadData.TypeString + " #" + preloadData.uniqueID;
-                }
-                preloadData.SubItems.AddRange(new[] { preloadData.TypeString, preloadData.Size.ToString() });
+                preloadData.extension = ".txt";
+                preloadData.Text = m_Name;
             }
         }
     }
