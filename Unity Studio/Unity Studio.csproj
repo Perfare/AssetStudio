@@ -142,6 +142,7 @@
       <DependentUpon>ShaderResource.resx</DependentUpon>
     </Compile>
     <Compile Include="Unity Classes\AssetBundle.cs" />
+    <Compile Include="Unity Classes\MovieTexture.cs" />
     <Compile Include="Unity Classes\VideoClip.cs" />
     <Compile Include="Unity Studio Classes\AssetPreloadData.cs" />
     <Compile Include="Unity Classes\AudioClip.cs" />

@@ -1103,13 +1103,9 @@ namespace Unity_Studio
                 #endregion
                 #region VideoClip
                 case 329:
+                case 152: //MovieTexture
                     {
-                        var str = asset.ViewStruct();
-                        if (str != null)
-                        {
-                            textPreviewBox.Text = str;
-                            textPreviewBox.Visible = true;
-                        }
+                        StatusStripUpdate("Only supported export.");
                         break;
                     }
                 #endregion
@@ -1615,6 +1611,12 @@ namespace Unity_Studio
                                 break;
                             case 329: //VideoClip
                                 if (ExportVideoClip(asset, exportpath))
+                                {
+                                    exportedCount++;
+                                }
+                                break;
+                            case 152: //MovieTexture
+                                if (ExportMovieTexture(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }

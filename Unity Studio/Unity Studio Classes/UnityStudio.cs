@@ -295,6 +295,12 @@ namespace Unity_Studio
                                     exportable = true;
                                     break;
                                 }
+                            case 152: //MovieTexture
+                                {
+                                    var m_MovieTexture = new MovieTexture(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
                             case 21: //Material                            
                             case 74: //AnimationClip
                             case 90: //Avatar
@@ -1824,6 +1830,16 @@ namespace Unity_Studio
                 return true;
             }
             return false;
+        }
+
+        public static bool ExportMovieTexture(AssetPreloadData asset, string exportPath)
+        {
+            var m_MovieTexture = new MovieTexture(asset, true);
+            var exportFullName = exportPath + asset.Text + asset.extension;
+            if (ExportFileExists(exportFullName))
+                return false;
+            File.WriteAllBytes(exportFullName, m_MovieTexture.m_MovieData);
+            return true;
         }
 
         public static bool ExportRawFile(AssetPreloadData asset, string exportPath)
