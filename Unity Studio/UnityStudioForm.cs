@@ -84,20 +84,32 @@ namespace Unity_Studio
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 resetForm();
-                mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
                 ThreadPool.QueueUserWorkItem(state =>
                 {
+                    mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
+                    var bundle = false;
                     if (openFileDialog1.FilterIndex == 1 || openFileDialog1.FilterIndex == 3)
                     {
-                        MergeSplitAssets(mainPath);
-
-                        //Only verify whether the first file is bundle file
                         if (CheckBundleFile(openFileDialog1.FileNames[0]))
                         {
-                            MessageBox.Show($"{Path.GetFileName(openFileDialog1.FileNames[0])} is bundle file, please select bundle file type to load this file");
-                            return;
+                            if (openFileDialog1.FileNames.Length > 1)
+                            {
+                                MessageBox.Show($"{Path.GetFileName(openFileDialog1.FileNames[0])} is bundle file, please select bundle file type to load this file");
+                                return;
+                            }
+                            else
+                            {
+                                bundle = true;
+                            }
                         }
-
+                    }
+                    else
+                    {
+                        bundle = true;
+                    }
+                    if (!bundle)
+                    {
+                        MergeSplitAssets(mainPath);
                         foreach (var i in openFileDialog1.FileNames)
                         {
                             unityFiles.Add(i);
@@ -1463,8 +1475,10 @@ namespace Unity_Studio
                                                 var filename = j.Text + DateTime.Now.ToString("_mm_ss_ffff");
                                                 //选中它和它的子节点
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = true));
+                                                //处理非法文件名
+                                                var name = FixFileName(savePath + filename + ".fbx");
                                                 //导出FBX
-                                                WriteFBX(savePath + filename + ".fbx", false);
+                                                WriteFBX(name, false);
                                                 //取消选中
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = false));
                                             }
@@ -1916,9 +1930,7 @@ namespace Unity_Studio
             reverseSort = false;
             enableFiltering = false;
 
-            //FMODinit();
             FMODreset();
-
         }
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)

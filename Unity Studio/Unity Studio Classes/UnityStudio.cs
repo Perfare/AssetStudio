@@ -1595,7 +1595,7 @@ namespace Unity_Studio
             if (m_Texture2D.image_data == null)
                 return false;
             var convert = (bool)Properties.Settings.Default["convertTexture"];
-            if (convert)
+            if (convert && asset.extension != ".dat")
             {
                 ImageFormat format = null;
                 var ext = (string)Properties.Settings.Default["convertType"];
@@ -1863,7 +1863,7 @@ namespace Unity_Studio
             return false;
         }
 
-        private static string FixFileName(string str)
+        public static string FixFileName(string str)
         {
             if (str.Length >= 260) return Path.GetRandomFileName();
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));

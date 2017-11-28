@@ -738,6 +738,8 @@ namespace Unity_Studio
                     case TextureFormat.EAC_RG:
                     case TextureFormat.EAC_RG_SIGNED:
                         preloadData.extension = ".ktx"; break;
+                    default:
+                        preloadData.extension = ".dat"; break;
                 }
 
                 switch (m_FilterMode)
