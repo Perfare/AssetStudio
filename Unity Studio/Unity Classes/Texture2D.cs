@@ -112,6 +112,12 @@ namespace Unity_Studio
             }
 
             m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            if (sourceFile.version[0] > 2017 || (sourceFile.version[0] == 2017 && sourceFile.version[1] >= 3))//2017.3 and up
+            {
+                var m_ForcedFallbackFormat = a_Stream.ReadInt32();
+                var m_DownscaleFallback = a_Stream.ReadBoolean();
+                a_Stream.AlignStream(4);
+            }
             m_Width = a_Stream.ReadInt32();
             m_Height = a_Stream.ReadInt32();
             m_CompleteImageSize = a_Stream.ReadInt32();
@@ -137,7 +143,7 @@ namespace Unity_Studio
             m_Aniso = a_Stream.ReadInt32();
             m_MipBias = a_Stream.ReadSingle();
             m_WrapMode = a_Stream.ReadInt32();
-            if (sourceFile.version[0] == 2017)//2017.x
+            if (sourceFile.version[0] >= 2017)//2017.x and up
             {
                 int m_WrapV = a_Stream.ReadInt32();
                 int m_WrapW = a_Stream.ReadInt32();

@@ -387,7 +387,11 @@ namespace Unity_Studio
 					}
 					if (version[0] >= 3)
 					{
-						m_SubMeshes[s].firstVertex = a_Stream.ReadUInt32();
+                        if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
+                        {
+                            var baseVertex = a_Stream.ReadUInt32();
+                        }
+                        m_SubMeshes[s].firstVertex = a_Stream.ReadUInt32();
 						m_SubMeshes[s].vertexCount = a_Stream.ReadUInt32();
 						a_Stream.Position += 24; //Axis-Aligned Bounding Box
 					}
@@ -465,8 +469,11 @@ namespace Unity_Studio
 						bool m_KeepIndices = a_Stream.ReadBoolean();
 					}
 					a_Stream.AlignStream(4);
-
-					int m_IndexBuffer_size = a_Stream.ReadInt32();
+                    if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
+                    {
+                        var m_IndexFormat = a_Stream.ReadInt32();
+                    }
+                    int m_IndexBuffer_size = a_Stream.ReadInt32();
 
 					if (m_Use16BitIndices)
 					{

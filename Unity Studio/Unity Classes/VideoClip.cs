@@ -24,7 +24,7 @@ namespace Unity_Studio
             var m_ProxyHeight = a_Stream.ReadUInt32();
             var Width = a_Stream.ReadUInt32();
             var Height = a_Stream.ReadUInt32();
-            if (sourceFile.version[0] == 2017)//2017.x
+            if (sourceFile.version[0] >= 2017)//2017.x and up
             {
                 var m_PixelAspecRatioNum = a_Stream.ReadUInt32();
                 var m_PixelAspecRatioDen = a_Stream.ReadUInt32();

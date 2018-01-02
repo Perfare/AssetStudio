@@ -81,6 +81,15 @@ namespace Unity_Studio {
         /// <summary>
         ///   查找类似 [{&quot;Level&quot;:0,&quot;Type&quot;:&quot;string&quot;,&quot;Name&quot;:&quot;m_Name&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32769},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;Array&quot;,&quot;Name&quot;:&quot;Array&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:16385},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;int&quot;,&quot;Name&quot;:&quot;size&quot;,&quot;Size&quot;:4,&quot;Flag&quot;:1},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;char&quot;,&quot;Name&quot;:&quot;data&quot;,&quot;Size&quot;:1,&quot;Flag&quot;:1},{&quot;Level&quot;:0,&quot;Type&quot;:&quot;SerializedShader&quot;,&quot;Name&quot;:&quot;m_ParsedForm&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;SerializedProperties&quot;,&quot;Name&quot;:&quot;m_PropInfo&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;vector&quot;,&quot;Name&quot;:&quot;m_Props&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:3,&quot;Type&quot;:&quot;Arr... 的本地化字符串。
         /// </summary>
+        internal static string Shader20173 {
+            get {
+                return ResourceManager.GetString("Shader20173", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [{&quot;Level&quot;:0,&quot;Type&quot;:&quot;string&quot;,&quot;Name&quot;:&quot;m_Name&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32769},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;Array&quot;,&quot;Name&quot;:&quot;Array&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:16385},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;int&quot;,&quot;Name&quot;:&quot;size&quot;,&quot;Size&quot;:4,&quot;Flag&quot;:1},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;char&quot;,&quot;Name&quot;:&quot;data&quot;,&quot;Size&quot;:1,&quot;Flag&quot;:1},{&quot;Level&quot;:0,&quot;Type&quot;:&quot;SerializedShader&quot;,&quot;Name&quot;:&quot;m_ParsedForm&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:1,&quot;Type&quot;:&quot;SerializedProperties&quot;,&quot;Name&quot;:&quot;m_PropInfo&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:2,&quot;Type&quot;:&quot;vector&quot;,&quot;Name&quot;:&quot;m_Props&quot;,&quot;Size&quot;:-1,&quot;Flag&quot;:32768},{&quot;Level&quot;:3,&quot;Type&quot;:&quot;Arr... 的本地化字符串。
+        /// </summary>
         internal static string Shader55 {
             get {
                 return ResourceManager.GetString("Shader55", resourceCulture);
