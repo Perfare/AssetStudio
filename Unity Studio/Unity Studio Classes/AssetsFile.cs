@@ -452,22 +452,11 @@ namespace Unity_Studio
                     type1 = classID;
                 }
                 classIDs.Add(new[] { type1, classID });
+                if (classID == 114)
+                {
+                    a_Stream.Position += 16;
+                }
                 classID = type1;
-                /*TODO 用来替换下方的代码
-                if(classID == 114)
-                {
-                    a_Stream.Position += 16;
-                }*/
-                var temp = a_Stream.ReadInt32();
-                if (temp == 0)
-                {
-                    a_Stream.Position += 16;
-                }
-                a_Stream.Position -= 4;
-                if (type1 < 0)
-                {
-                    a_Stream.Position += 16;
-                }
             }
             else if (classID < 0)
             {
@@ -481,7 +470,7 @@ namespace Unity_Studio
                 int stringSize = a_Stream.ReadInt32();
 
                 a_Stream.Position += varCount * 24;
-                string varStrings = Encoding.UTF8.GetString(a_Stream.ReadBytes(stringSize));
+                var stringReader = new EndianBinaryReader(new MemoryStream(a_Stream.ReadBytes(stringSize)));
                 string className = "";
                 var classVar = new List<ClassMember>();
                 //build Class Structures
@@ -496,15 +485,27 @@ namespace Unity_Studio
                     ushort test = a_Stream.ReadUInt16();
                     string varTypeStr;
                     if (test == 0) //varType is an offset in the string block
-                    { varTypeStr = varStrings.Substring(varTypeIndex, varStrings.IndexOf('\0', varTypeIndex) - varTypeIndex); }//substringToNull
+                    {
+                        stringReader.Position = varTypeIndex;
+                        varTypeStr = stringReader.ReadStringToNull();
+                    }
                     else //varType is an index in an internal strig array
-                    { varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString(); }
+                    {
+                        varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString();
+                    }
 
                     ushort varNameIndex = a_Stream.ReadUInt16();
                     test = a_Stream.ReadUInt16();
                     string varNameStr;
-                    if (test == 0) { varNameStr = varStrings.Substring(varNameIndex, varStrings.IndexOf('\0', varNameIndex) - varNameIndex); }
-                    else { varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString(); }
+                    if (test == 0)
+                    {
+                        stringReader.Position = varNameIndex;
+                        varNameStr = stringReader.ReadStringToNull();
+                    }
+                    else
+                    {
+                        varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString();
+                    }
 
                     int size = a_Stream.ReadInt32();
                     int index = a_Stream.ReadInt32();
@@ -523,6 +524,7 @@ namespace Unity_Studio
                         });
                     }
                 }
+                stringReader.Dispose();
                 a_Stream.Position += stringSize;
 
                 var aClass = new ClassStruct() { ID = classID, Text = className, members = classVar };

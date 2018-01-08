@@ -1172,7 +1172,7 @@ namespace Unity_Studio
             FMODstatusLabel.Text = "Stopped";
             FMODinfoLabel.Text = "";
 
-            if (sound != null)
+            if (sound != null && sound.isValid())
             {
                 var result = sound.release();
                 ERRCHECK(result);
