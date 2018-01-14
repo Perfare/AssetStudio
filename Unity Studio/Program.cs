@@ -13,7 +13,6 @@ namespace Unity_Studio
         [STAThread]
         static void Main()
         {
-            OpenTK.Toolkit.Init(new OpenTK.ToolkitOptions { EnableHighResolution = false });
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new UnityStudioForm());

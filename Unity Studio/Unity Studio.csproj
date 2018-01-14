@@ -169,7 +169,7 @@
     <Compile Include="Unity Classes\Material.cs" />
     <Compile Include="Unity Classes\Mesh.cs" />
     <Compile Include="Unity Classes\GameObject.cs" />
-    <Compile Include="Unity Studio Classes\helpers.cs" />
+    <Compile Include="Unity Studio Classes\Helpers.cs" />
     <Compile Include="Unity Classes\MonoBehaviour.cs" />
     <Compile Include="Unity Classes\PlayerSettings.cs" />
     <Compile Include="Unity Classes\RectTransform.cs" />
