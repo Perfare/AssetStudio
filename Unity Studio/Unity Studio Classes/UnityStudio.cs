@@ -1430,8 +1430,8 @@ namespace Unity_Studio
                 else { ob.Append("ByPolygon\""); }
                 ob.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
                 ob.AppendFormat("\n\t\t\tMaterials: *{0} {{", m_Mesh.m_materialIDs.Count);
-                ob.Append("\n\t\t\t\t");
-                if (m_Mesh.m_SubMeshes.Count == 1) { ob.Append("0"); }
+                ob.Append("\n\t\t\t\ta: ");
+                if (m_Mesh.m_materialIDs.Count == 1) { ob.Append("0"); }
                 else
                 {
                     lineSplit = ob.Length;
