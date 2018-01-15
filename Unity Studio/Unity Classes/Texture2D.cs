@@ -221,15 +221,7 @@ namespace Unity_Studio
                             {
                                 BGRA32[i * 4 + 3] = image_data[i];
                             }
-                            image_data = BGRA32;
-                            image_data_size = BGRA32.Length;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.ARGB4444: //test pass
@@ -258,15 +250,7 @@ namespace Unity_Studio
                                     pixelNew[j] = (byte)((pixelNew[j] << 4) | pixelNew[j]);
                                 pixelNew.CopyTo(BGRA32, i * 4);
                             }
-                            image_data = BGRA32;
-                            image_data_size = BGRA32.Length;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.RGB24: //test pass
@@ -287,15 +271,7 @@ namespace Unity_Studio
                                 BGRA32[i * 4 + 2] = image_data[i * 3 + 0];
                                 BGRA32[i * 4 + 3] = 255;
                             }
-                            image_data = BGRA32;
-                            image_data_size = BGRA32.Length;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.RGBA32: //test pass
@@ -316,14 +292,7 @@ namespace Unity_Studio
                                 BGRA32[i + 2] = image_data[i + 0];
                                 BGRA32[i + 3] = image_data[i + 3];
                             }
-                            image_data = BGRA32;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.ARGB32://test pass
@@ -344,14 +313,7 @@ namespace Unity_Studio
                                 BGRA32[i + 2] = image_data[i + 1];
                                 BGRA32[i + 3] = image_data[i + 0];
                             }
-                            image_data = BGRA32;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.RGB565: //test pass
@@ -376,15 +338,7 @@ namespace Unity_Studio
                                 BGRA32[i * 2 + 2] = (byte)Math.Ceiling(f * 255);//R
                                 BGRA32[i * 2 + 3] = 255;//A
                             }
-                            image_data = BGRA32;
-                            image_data_size *= 2;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.DXT1: //test pass
@@ -445,15 +399,7 @@ namespace Unity_Studio
                                     pixelNew[j] = (byte)((pixelNew[j] << 4) | pixelNew[j]);
                                 pixelNew.CopyTo(BGRA32, i * 4);
                             }
-                            image_data = BGRA32;
-                            image_data_size = BGRA32.Length;
-
-                            dwFlags2 = 0x41;
-                            dwRGBBitCount = 0x20;
-                            dwRBitMask = 0xFF0000;
-                            dwGBitMask = 0xFF00;
-                            dwBBitMask = 0xFF;
-                            dwABitMask = -16777216;
+                            SetBGRA32Info(BGRA32);
                             break;
                         }
                     case TextureFormat.BGRA32: //test pass
@@ -513,28 +459,33 @@ namespace Unity_Studio
                             pvrPixelFormat = 17;
                             break;
                         }
-                    case TextureFormat.BC4:
+                    case TextureFormat.RGB9e5Float:
+                        {
+                            q_format = QFORMAT.Q_FORMAT_RGB9_E5;
+                            break;
+                        }
+                    case TextureFormat.BC4: //test pass
                         {
                             texturetype = texgenpack_texturetype.RGTC1;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RED_RGTC1;
                             glBaseInternalFormat = KTXHeader.GL_RED;
                             break;
                         }
-                    case TextureFormat.BC5:
+                    case TextureFormat.BC5: //test pass
                         {
                             texturetype = texgenpack_texturetype.RGTC2;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RG_RGTC2;
                             glBaseInternalFormat = KTXHeader.GL_RG;
                             break;
                         }
-                    case TextureFormat.BC6H:
+                    case TextureFormat.BC6H: //test pass
                         {
                             texturetype = texgenpack_texturetype.BPTC_FLOAT;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
                             glBaseInternalFormat = KTXHeader.GL_RGB;
                             break;
                         }
-                    case TextureFormat.BC7:
+                    case TextureFormat.BC7: //test pass
                         {
                             texturetype = texgenpack_texturetype.BPTC;
                             glInternalFormat = KTXHeader.GL_COMPRESSED_RGBA_BPTC_UNORM;
@@ -569,6 +520,7 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
+                    case TextureFormat.ETC_RGB4Crunched:
                     case TextureFormat.ETC_RGB4_3DS: //test pass
                     case TextureFormat.ETC_RGB4: //test pass
                         {
@@ -633,6 +585,7 @@ namespace Unity_Studio
                             glBaseInternalFormat = KTXHeader.GL_RGBA;
                             break;
                         }
+                    case TextureFormat.ETC2_RGBA8Crunched:
                     case TextureFormat.ETC_RGBA8_3DS: //test pass
                     case TextureFormat.ETC2_RGBA8:  //test pass
                         {
@@ -677,6 +630,31 @@ namespace Unity_Studio
                             pvrPixelFormat = 40;
                             break;
                         }
+                    case TextureFormat.RG16: //test pass
+                        {
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size * 2];
+                            for (var i = 0; i < image_data_size; i += 2)
+                            {
+                                BGRA32[i * 2 + 1] = image_data[i + 1];//G
+                                BGRA32[i * 2 + 2] = image_data[i];//R
+                                BGRA32[i * 2 + 3] = 255;//A
+                            }
+                            SetBGRA32Info(BGRA32);
+                            break;
+                        }
+                    case TextureFormat.R8: //test pass
+                        {
+                            //转BGRA32
+                            var BGRA32 = new byte[image_data_size * 4];
+                            for (var i = 0; i < image_data_size; i++)
+                            {
+                                BGRA32[i * 4 + 2] = image_data[i];//R
+                                BGRA32[i * 4 + 3] = 255;//A
+                            }
+                            SetBGRA32Info(BGRA32);
+                            break;
+                        }
                 }
             }
             else
@@ -699,9 +677,13 @@ namespace Unity_Studio
                     case TextureFormat.DXT5:
                     case TextureFormat.RGBA4444:
                     case TextureFormat.BGRA32:
+                    case TextureFormat.RG16:
+                    case TextureFormat.R8:
                         preloadData.extension = ".dds"; break;
                     case TextureFormat.DXT1Crunched:
                     case TextureFormat.DXT5Crunched:
+                    case TextureFormat.ETC_RGB4Crunched:
+                    case TextureFormat.ETC2_RGBA8Crunched:
                         preloadData.extension = ".crn"; break;
                     case TextureFormat.YUY2:
                     case TextureFormat.PVRTC_RGB2:
@@ -745,7 +727,7 @@ namespace Unity_Studio
                     case TextureFormat.EAC_RG_SIGNED:
                         preloadData.extension = ".ktx"; break;
                     default:
-                        preloadData.extension = ".dat"; break;
+                        preloadData.extension = ".tex"; break;
                 }
 
                 switch (m_FilterMode)
@@ -774,13 +756,25 @@ namespace Unity_Studio
         {
             if (platform == 11) //swap bytes for Xbox confirmed, PS3 not encountered
             {
-                for (var i = 0; i < (image_data_size / 2); i++)
+                for (var i = 0; i < image_data_size / 2; i++)
                 {
                     var b0 = image_data[i * 2];
                     image_data[i * 2] = image_data[i * 2 + 1];
                     image_data[i * 2 + 1] = b0;
                 }
             }
+        }
+
+        private void SetBGRA32Info(byte[] BGRA32)
+        {
+            image_data = BGRA32;
+            image_data_size = BGRA32.Length;
+            dwFlags2 = 0x41;
+            dwRGBBitCount = 0x20;
+            dwRBitMask = 0xFF0000;
+            dwGBitMask = 0xFF00;
+            dwBBitMask = 0xFF;
+            dwABitMask = -16777216;
         }
 
         public byte[] ConvertToContainer()
@@ -800,6 +794,8 @@ namespace Unity_Studio
                 case TextureFormat.DXT5:
                 case TextureFormat.RGBA4444:
                 case TextureFormat.BGRA32:
+                case TextureFormat.RG16:
+                case TextureFormat.R8:
                     return ConvertToDDS();
                 case TextureFormat.YUY2:
                 case TextureFormat.PVRTC_RGB2:
@@ -921,7 +917,7 @@ namespace Unity_Studio
         {
             if (image_data == null || image_data.Length == 0)
                 return null;
-            Bitmap bitmap = null;
+            Bitmap bitmap;
             switch (m_TextureFormat)
             {
                 case TextureFormat.Alpha8:
@@ -932,6 +928,8 @@ namespace Unity_Studio
                 case TextureFormat.R16:
                 case TextureFormat.RGBA4444:
                 case TextureFormat.BGRA32:
+                case TextureFormat.RG16:
+                case TextureFormat.R8:
                     bitmap = BGRA32ToBitmap();
                     break;
                 case TextureFormat.RGB565:
@@ -970,6 +968,7 @@ namespace Unity_Studio
                 case TextureFormat.RFloat:
                 case TextureFormat.RGFloat:
                 case TextureFormat.RGBAFloat:
+                case TextureFormat.RGB9e5Float:
                 case TextureFormat.ATC_RGB4:
                 case TextureFormat.ATC_RGBA8:
                 case TextureFormat.EAC_R:
@@ -986,8 +985,16 @@ namespace Unity_Studio
                     break;
                 case TextureFormat.DXT1Crunched:
                 case TextureFormat.DXT5Crunched:
-                    bitmap = CRNToBitmap();
+                    DecompressCRN();
+                    bitmap = TextureConverter();
                     break;
+                case TextureFormat.ETC_RGB4Crunched:
+                case TextureFormat.ETC2_RGBA8Crunched:
+                    DecompressCRN();
+                    bitmap = PVRToBitmap(ConvertToPVR());
+                    break;
+                default:
+                    return null;
             }
             if (bitmap != null && flip)
                 bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -1062,20 +1069,16 @@ namespace Unity_Studio
             return bitmap;
         }
 
-        private Bitmap CRNToBitmap()
+        private void DecompressCRN()
         {
-            IntPtr dxtdata;
-            int dxtsize;
-            if (DecompressCRN(image_data, image_data_size, out dxtdata, out dxtsize))
+            if (DecompressCRN(image_data, image_data_size, out IntPtr dxtdata, out int dxtsize))
             {
                 var dxtbytes = new byte[dxtsize];
                 Marshal.Copy(dxtdata, dxtbytes, 0, dxtsize);
                 Marshal.FreeHGlobal(dxtdata);
                 image_data = dxtbytes;
                 image_data_size = dxtsize;
-                return TextureConverter();
             }
-            return null;
         }
 
         private Bitmap Texgenpack()
@@ -1147,7 +1150,9 @@ public enum TextureFormat
     ETC_RGB4_3DS,
     ETC_RGBA8_3DS,
     RG16,
-    R8
+    R8,
+    ETC_RGB4Crunched,
+    ETC2_RGBA8Crunched,
 }
 
 public static class KTXHeader

@@ -1595,33 +1595,39 @@ namespace Unity_Studio
             if (m_Texture2D.image_data == null)
                 return false;
             var convert = (bool)Properties.Settings.Default["convertTexture"];
-            if (convert && asset.extension != ".dat")
+            var bitmap = m_Texture2D.ConvertToBitmap(flip);
+            if (convert && bitmap != null)
             {
                 ImageFormat format = null;
                 var ext = (string)Properties.Settings.Default["convertType"];
-                if (ext == "BMP")
-                    format = ImageFormat.Bmp;
-                else if (ext == "PNG")
-                    format = ImageFormat.Png;
-                else if (ext == "JPEG")
-                    format = ImageFormat.Jpeg;
+                switch (ext)
+                {
+                    case "BMP":
+                        format = ImageFormat.Bmp;
+                        break;
+                    case "PNG":
+                        format = ImageFormat.Png;
+                        break;
+                    case "JPEG":
+                        format = ImageFormat.Jpeg;
+                        break;
+                }
                 var exportFullName = exportPathName + asset.Text + "." + ext.ToLower();
                 if (ExportFileExists(exportFullName))
                     return false;
-                var bitmap = m_Texture2D.ConvertToBitmap(flip);
-                if (bitmap != null)
-                {
-                    bitmap.Save(exportFullName, format);
-                    bitmap.Dispose();
-                    return true;
-                }
-                return false;
+                bitmap.Save(exportFullName, format);
+                bitmap.Dispose();
+                return true;
             }
-            var exportFullName2 = exportPathName + asset.Text + asset.extension;
-            if (ExportFileExists(exportFullName2))
-                return false;
-            File.WriteAllBytes(exportFullName2, m_Texture2D.ConvertToContainer());
-            return true;
+            if (!convert)
+            {
+                var exportFullName = exportPathName + asset.Text + asset.extension;
+                if (ExportFileExists(exportFullName))
+                    return false;
+                File.WriteAllBytes(exportFullName, m_Texture2D.ConvertToContainer());
+                return true;
+            }
+            return false;
         }
 
         public static bool ExportAudioClip(AssetPreloadData asset, string exportPath)
