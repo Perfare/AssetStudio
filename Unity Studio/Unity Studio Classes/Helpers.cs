@@ -25,8 +25,7 @@ namespace Unity_Studio
             if (FileID >= 0 && FileID < sourceFile.sharedAssetsList.Count)
             { result.m_FileID = sourceFile.sharedAssetsList[FileID].Index; }
 
-            if (sourceFile.fileGen < 14) { result.m_PathID = a_Stream.ReadInt32(); }
-            else { result.m_PathID = a_Stream.ReadInt64(); }
+            result.m_PathID = sourceFile.fileGen < 14 ? a_Stream.ReadInt32() : a_Stream.ReadInt64();
 
             return result;
         }
@@ -81,8 +80,7 @@ namespace Unity_Studio
                 if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
                 {
                     AssetsFile sourceFile = assetsfileList[m_Component.m_FileID];
-                    AssetPreloadData asset;
-                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out asset))
+                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
                     {
                         switch (asset.Type2)
                         {

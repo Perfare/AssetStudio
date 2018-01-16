@@ -163,7 +163,7 @@ namespace Unity_Studio
         {
             int extractedCount = 0;
 
-            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + " ...");
+            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
 
             string extractPath = bundleFileName + "_unpacked\\";
             Directory.CreateDirectory(extractPath);
@@ -180,7 +180,7 @@ namespace Unity_Studio
                 }
                 if (!File.Exists(filePath))
                 {
-                    StatusStripUpdate("Extracting " + Path.GetFileName(memFile.fileName));
+                    StatusStripUpdate($"Extracting {Path.GetFileName(memFile.fileName)}");
                     extractedCount += 1;
 
                     using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -385,11 +385,9 @@ namespace Unity_Studio
 
                         var parentNode = fileNode;
 
-                        Transform m_Transform;
-                        if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out m_Transform))
+                        if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
                         {
-                            Transform m_Father;
-                            if (assetsfileList.TryGetTransform(m_Transform.m_Father, out m_Father))
+                            if (assetsfileList.TryGetTransform(m_Transform.m_Father, out var m_Father))
                             {
                                 //GameObject Parent;
                                 if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
@@ -413,7 +411,7 @@ namespace Unity_Studio
 
                 if (File.Exists(mainPath + "\\materials.json"))
                 {
-                    string matLine = "";
+                    string matLine;
                     using (StreamReader reader = File.OpenText(mainPath + "\\materials.json"))
                     { matLine = reader.ReadToEnd(); }
 
@@ -429,8 +427,7 @@ namespace Unity_Studio
                 //group class structures by versionv
                 foreach (var assetsFile in assetsfileList)
                 {
-                    SortedDictionary<int, ClassStruct> curVer;
-                    if (AllClassStructures.TryGetValue(assetsFile.m_Version, out curVer))
+                    if (AllClassStructures.TryGetValue(assetsFile.m_Version, out var curVer))
                     {
                         foreach (var uClass in assetsFile.ClassStructures)
                         {
@@ -491,14 +488,12 @@ namespace Unity_Studio
                         {
                             GameObjects.Add(m_GameObject);
 
-                            AssetPreloadData MeshFilterPD;
-                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshFilter, out MeshFilterPD))
+                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshFilter, out var MeshFilterPD))
                             {
                                 //MeshFilters are not unique!
                                 //MeshFilters.Add(MeshFilterPD);
                                 MeshFilter m_MeshFilter = new MeshFilter(MeshFilterPD);
-                                AssetPreloadData MeshPD;
-                                if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out MeshPD))
+                                if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
                                 {
                                     Meshes.Add(MeshPD);
 
@@ -510,15 +505,13 @@ namespace Unity_Studio
                             }
 
                             #region get Renderer
-                            AssetPreloadData RendererPD;
-                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out RendererPD))
+                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out var RendererPD))
                             {
                                 MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
 
                                 foreach (var MaterialPPtr in m_Renderer.m_Materials)
                                 {
-                                    AssetPreloadData MaterialPD;
-                                    if (assetsfileList.TryGetPD(MaterialPPtr, out MaterialPD))
+                                    if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
                                     {
                                         Materials.Add(MaterialPD);
                                         cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
@@ -526,11 +519,11 @@ namespace Unity_Studio
                                     }
                                 }
                             }
+
                             #endregion
 
                             #region get SkinnedMeshRenderer
-                            AssetPreloadData SkinnedMeshPD;
-                            if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out SkinnedMeshPD))
+                            if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out var SkinnedMeshPD))
                             {
                                 Skins.Add(SkinnedMeshPD);
 
@@ -538,8 +531,7 @@ namespace Unity_Studio
 
                                 foreach (var MaterialPPtr in m_SkinnedMeshRenderer.m_Materials)
                                 {
-                                    AssetPreloadData MaterialPD;
-                                    if (assetsfileList.TryGetPD(MaterialPPtr, out MaterialPD))
+                                    if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
                                     {
                                         Materials.Add(MaterialPD);
                                         cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
@@ -554,11 +546,9 @@ namespace Unity_Studio
                                     //collect skeleton dummies to make sure they are exported
                                     foreach (var bonePPtr in m_SkinnedMeshRenderer.m_Bones)
                                     {
-                                        Transform b_Transform;
-                                        if (assetsfileList.TryGetTransform(bonePPtr, out b_Transform))
+                                        if (assetsfileList.TryGetTransform(bonePPtr, out var b_Transform))
                                         {
-                                            GameObject m_Bone;
-                                            if (assetsfileList.TryGetGameObject(b_Transform.m_GameObject, out m_Bone))
+                                            if (assetsfileList.TryGetGameObject(b_Transform.m_GameObject, out var m_Bone))
                                             {
                                                 LimbNodes.Add(m_Bone);
                                                 //also collect the root bone
@@ -569,11 +559,9 @@ namespace Unity_Studio
                                             #region collect children because m_SkinnedMeshRenderer.m_Bones doesn't contain terminations
                                             foreach (var ChildPPtr in b_Transform.m_Children)
                                             {
-                                                Transform ChildTR;
-                                                if (assetsfileList.TryGetTransform(ChildPPtr, out ChildTR))
+                                                if (assetsfileList.TryGetTransform(ChildPPtr, out var ChildTR))
                                                 {
-                                                    GameObject m_Child;
-                                                    if (assetsfileList.TryGetGameObject(ChildTR.m_GameObject, out m_Child))
+                                                    if (assetsfileList.TryGetGameObject(ChildTR.m_GameObject, out var m_Child))
                                                     {
                                                         //check that the Model doesn't contain a Mesh, although this won't ensure it's part of the skeleton
                                                         if (m_Child.m_MeshFilter == null && m_Child.m_SkinnedMeshRenderer == null)
@@ -662,15 +650,12 @@ namespace Unity_Studio
                     #region write texture connections
                     foreach (var m_TexEnv in m_Material.m_TexEnvs)
                     {
-                        AssetPreloadData TexturePD;
                         #region get Porsche material from json
-                        if (!assetsfileList.TryGetPD(m_TexEnv.m_Texture, out TexturePD) && jsonMats != null)
+                        if (!assetsfileList.TryGetPD(m_TexEnv.m_Texture, out var TexturePD) && jsonMats != null)
                         {
-                            Dictionary<string, string> matProp;
-                            if (jsonMats.TryGetValue(m_Material.m_Name, out matProp))
+                            if (jsonMats.TryGetValue(m_Material.m_Name, out var matProp))
                             {
-                                string texName;
-                                if (matProp.TryGetValue(m_TexEnv.name, out texName))
+                                if (matProp.TryGetValue(m_TexEnv.name, out var texName))
                                 {
                                     foreach (var asset in exportableAssets)
                                     {
@@ -872,8 +857,7 @@ namespace Unity_Studio
                     ob.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
                     ob.Append("\n\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",0");
 
-                    Transform m_Transform;
-                    if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out m_Transform))
+                    if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
                     {
                         float[] m_EulerRotation = QuatToEuler(new[] { m_Transform.m_LocalRotation[0], -m_Transform.m_LocalRotation[1], -m_Transform.m_LocalRotation[2], m_Transform.m_LocalRotation[3] });
 
@@ -929,10 +913,7 @@ namespace Unity_Studio
                 foreach (var SkinnedMeshPD in Skins)
                 {
                     SkinnedMeshRenderer m_SkinnedMeshRenderer = new SkinnedMeshRenderer(SkinnedMeshPD);
-
-                    GameObject m_GameObject;
-                    AssetPreloadData MeshPD;
-                    if (assetsfileList.TryGetGameObject(m_SkinnedMeshRenderer.m_GameObject, out m_GameObject) && assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out MeshPD))
+                    if (assetsfileList.TryGetGameObject(m_SkinnedMeshRenderer.m_GameObject, out var m_GameObject) && assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out var MeshPD))
                     {
                         //generate unique Geometry ID for instanced mesh objects
                         //instanced skinned geometry is possible in FBX, but all instances are linked to the same skeleton nodes
@@ -984,11 +965,9 @@ namespace Unity_Studio
 
                                 for (int b = 0; b < m_SkinnedMeshRenderer.m_Bones.Length; b++)
                                 {
-                                    Transform m_Transform;
-                                    if (assetsfileList.TryGetTransform(m_SkinnedMeshRenderer.m_Bones[b], out m_Transform))
+                                    if (assetsfileList.TryGetTransform(m_SkinnedMeshRenderer.m_Bones[b], out var m_Transform))
                                     {
-                                        GameObject m_Bone;
-                                        if (assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out m_Bone))
+                                        if (assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out var m_Bone))
                                         {
                                             int influences = 0, ibSplit = 0, wbSplit = 0;
                                             StringBuilder ib = new StringBuilder();//indices (vertex)
@@ -1426,8 +1405,7 @@ namespace Unity_Studio
                 ob.Append("\n\t\t\tVersion: 101");
                 ob.Append("\n\t\t\tName: \"\"");
                 ob.Append("\n\t\t\tMappingInformationType: \"");
-                if (m_Mesh.m_SubMeshes.Count == 1) { ob.Append("AllSame\""); }
-                else { ob.Append("ByPolygon\""); }
+                ob.Append(m_Mesh.m_SubMeshes.Count == 1 ? "AllSame\"" : "ByPolygon\"");
                 ob.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
                 ob.AppendFormat("\n\t\t\tMaterials: *{0} {{", m_Mesh.m_materialIDs.Count);
                 ob.Append("\n\t\t\t\ta: ");
@@ -1573,7 +1551,7 @@ namespace Unity_Studio
                 eaz = 0;
             }
 
-            return new float[3] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
+            return new[] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
 
         private static byte[] RandomColorGenerator(string name)
@@ -1586,7 +1564,7 @@ namespace Unity_Studio
             byte green = (byte)r.Next(0, 255);
             byte blue = (byte)r.Next(0, 255);
 
-            return new byte[3] { red, green, blue };
+            return new[] { red, green, blue };
         }
 
         public static bool ExportTexture2D(AssetPreloadData asset, string exportPathName, bool flip)
@@ -1647,12 +1625,9 @@ namespace Unity_Studio
                 return false;
             if (convertfsb && oldextension == ".fsb")
             {
-                FMOD.System system;
-                FMOD.Sound sound;
-                FMOD.RESULT result;
                 FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
 
-                result = FMOD.Factory.System_Create(out system);
+                var result = FMOD.Factory.System_Create(out var system);
                 if (result != FMOD.RESULT.OK) { return false; }
 
                 result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
@@ -1661,7 +1636,7 @@ namespace Unity_Studio
                 exinfo.cbsize = Marshal.SizeOf(exinfo);
                 exinfo.length = (uint)m_AudioClip.m_Size;
 
-                result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out sound);
+                result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
                 if (result != FMOD.RESULT.OK) { return false; }
 
                 result = sound.getSubSound(0, out var subsound);

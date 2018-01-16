@@ -112,8 +112,7 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    EndianBinaryReader estream;
-                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out estream))
+                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out var estream))
                     {
                         estream.Position = m_Offset;
                         m_AudioData = estream.ReadBytes((int)m_Size);

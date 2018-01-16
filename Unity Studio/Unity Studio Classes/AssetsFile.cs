@@ -17,7 +17,7 @@ namespace Unity_Studio
         public int fileGen;
         public bool valid;
         public string m_Version = "2.5.0f5";
-        public int[] version = new int[4] { 0, 0, 0, 0 };
+        public int[] version = { 0, 0, 0, 0 };
         public string[] buildType;
         public int platform = 100663296;
         public string platformStr = "";
@@ -313,14 +313,7 @@ namespace Unity_Studio
                     }
 
                     AssetPreloadData asset = new AssetPreloadData();
-                    if (fileGen < 14)
-                    {
-                        asset.m_PathID = a_Stream.ReadInt32();
-                    }
-                    else
-                    {
-                        asset.m_PathID = a_Stream.ReadInt64();
-                    }
+                    asset.m_PathID = fileGen < 14 ? a_Stream.ReadInt32() : a_Stream.ReadInt64();
                     asset.Offset = a_Stream.ReadUInt32();
                     asset.Offset += dataOffset;
                     asset.Size = a_Stream.ReadInt32();
@@ -344,8 +337,7 @@ namespace Unity_Studio
                         //but not the last!
                     }
 
-                    string typeString;
-                    if (ClassIDReference.Names.TryGetValue(asset.Type2, out typeString))
+                    if (ClassIDReference.Names.TryGetValue(asset.Type2, out var typeString))
                     {
                         asset.TypeString = typeString;
                     }

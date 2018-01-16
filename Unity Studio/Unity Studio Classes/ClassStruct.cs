@@ -43,8 +43,7 @@ namespace Unity_Studio
         {
             var a_Stream = asset.sourceFile.a_Stream;
             a_Stream.Position = asset.Offset;
-            ClassStruct classStructure;
-            if (asset.sourceFile.ClassStructures.TryGetValue(asset.Type1, out classStructure))
+            if (asset.sourceFile.ClassStructures.TryGetValue(asset.Type1, out var classStructure))
             {
                 var sb = new StringBuilder();
                 ReadClassStruct(sb, classStructure.members, a_Stream);

@@ -721,6 +721,7 @@
             this.glControl1.TabIndex = 4;
             this.glControl1.VSync = false;
             this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
+            this.glControl1.MouseWheel += new System.Windows.Forms.MouseEventHandler(glControl1_MouseWheel);
             // 
             // classPreviewPanel
             // 

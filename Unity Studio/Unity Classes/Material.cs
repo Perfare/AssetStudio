@@ -42,7 +42,7 @@ namespace Unity_Studio
             }
             else if (sourceFile.version[0] >= 5)//5.0 and up
             {
-                m_ShaderKeywords = new string[1] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
+                m_ShaderKeywords = new[] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
                 uint m_LightmapFlags = a_Stream.ReadUInt32();
                 if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 6 || sourceFile.version[0] > 5)//5.6.0 and up
                 {
@@ -59,7 +59,7 @@ namespace Unity_Studio
                 string[][] stringTagMap = new string[a_Stream.ReadInt32()][];
                 for (int i = 0; i < stringTagMap.Length; i++)
                 {
-                    stringTagMap[i] = new string[2] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()), a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
+                    stringTagMap[i] = new[] { a_Stream.ReadAlignedString(a_Stream.ReadInt32()), a_Stream.ReadAlignedString(a_Stream.ReadInt32()) };
                 }
             }
             //disabledShaderPasses
@@ -79,8 +79,8 @@ namespace Unity_Studio
                 {
                     name = a_Stream.ReadAlignedString(a_Stream.ReadInt32()),
                     m_Texture = sourceFile.ReadPPtr(),
-                    m_Scale = new float[2] { a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                    m_Offset = new float[2] { a_Stream.ReadSingle(), a_Stream.ReadSingle() }
+                    m_Scale = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle() },
+                    m_Offset = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle() }
                 };
                 m_TexEnvs[i] = m_TexEnv;
             }
@@ -102,7 +102,7 @@ namespace Unity_Studio
                 strColorPair m_Color = new strColorPair()
                 {
                     first = a_Stream.ReadAlignedString(a_Stream.ReadInt32()),
-                    second = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() }
+                    second = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() }
                 };
                 m_Colors[i] = m_Color;
             }

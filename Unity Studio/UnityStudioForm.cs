@@ -22,7 +22,8 @@ namespace Unity_Studio
         private AssetPreloadData lastSelectedItem;
         private AssetPreloadData lastLoadedAsset;
 
-        private string[] fileTypes = { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
+        private string[] assetsFileTypes = { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
+        private string[] bundleFileTypes = { "*.unity3d", "*.unity3d.lz4", "*.assetbundle", "*.assetbundle-*", "*.bundle", "*.bytes" };
 
         private FMOD.System system;
         private FMOD.Sound sound;
@@ -153,9 +154,9 @@ namespace Unity_Studio
 
                 MergeSplitAssets(mainPath);
 
-                for (int t = 0; t < fileTypes.Length; t++)
+                for (int t = 0; t < assetsFileTypes.Length; t++)
                 {
-                    string[] fileNames = Directory.GetFiles(mainPath, fileTypes[t], SearchOption.AllDirectories);
+                    string[] fileNames = Directory.GetFiles(mainPath, assetsFileTypes[t], SearchOption.AllDirectories);
                     #region  sort specific types alphanumerically
                     if (fileNames.Length > 0 && (t == 1 || t == 2))
                     {
@@ -231,7 +232,7 @@ namespace Unity_Studio
                         extractedCount += extractBundleFile(fileName);
                         ProgressBarPerformStep();
                     }
-                    StatusStripUpdate("Finished extracting " + extractedCount + " files.");
+                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
                 });
             }
         }
@@ -245,8 +246,7 @@ namespace Unity_Studio
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 string startPath = openFolderDialog1.Folder;
-                string[] fileTypes = new string[6] { "*.unity3d", "*.unity3d.lz4", "*.assetbundle", "*.assetbundle-*", "*.bundle", "*.bytes" };
-                foreach (var fileType in fileTypes)
+                foreach (var fileType in bundleFileTypes)
                 {
                     string[] fileNames = Directory.GetFiles(startPath, fileType, SearchOption.AllDirectories);
                     bundleFiles.AddRange(fileNames);
@@ -260,7 +260,7 @@ namespace Unity_Studio
                         extractedCount += extractBundleFile(fileName);
                         ProgressBarPerformStep();
                     }
-                    StatusStripUpdate("Finished extracting " + extractedCount + " files.");
+                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
                 });
             }
         }
@@ -278,11 +278,11 @@ namespace Unity_Studio
             {
                 if (productName != "")
                 {
-                    Text = "Unity Studio - " + productName + " - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
+                    Text = $"Unity Studio - {productName} - {assetsfileList[0].m_Version} - {assetsfileList[0].platformStr}";
                 }
                 else if (assetsfileList.Count > 0)
                 {
-                    Text = "Unity Studio - no productName - " + assetsfileList[0].m_Version + " - " + assetsfileList[0].platformStr;
+                    Text = $"Unity Studio - no productName - {assetsfileList[0].m_Version} - {assetsfileList[0].platformStr}";
                 }
                 if (!dontLoadAssetsMenuItem.Checked)
                 {
@@ -312,7 +312,7 @@ namespace Unity_Studio
                     }
                     classesListView.EndUpdate();
                 }
-                StatusStripUpdate("Finished loading " + assetsfileList.Count + " files with " + (assetListView.Items.Count + sceneTreeView.Nodes.Count) + " exportable assets.");
+                StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
             }));
         }
@@ -329,88 +329,73 @@ namespace Unity_Studio
                 else { tabControl1.TabPages.Add(tabPage3); }
             }
 
-            if (glControl1.Visible == true)
+            if (glControl1.Visible)
             {
-                // --> Right
-                if (e.KeyCode == Keys.D)
+                switch (e.KeyCode)
                 {
-                    if (e.Shift) //Move
-                    {
-                        viewMatrixData *= Matrix4.CreateTranslation(0.1f, 0, 0);
-                    }
-                    else //Rotate
-                    {
-                        viewMatrixData *= Matrix4.CreateRotationY(0.1f);
-                    }
-                    glControl1.Invalidate();
-                }
-
-                // <-- Left
-                if (e.KeyCode == Keys.A)
-                {
-                    if (e.Shift) //Move
-                    {
-                        viewMatrixData *= Matrix4.CreateTranslation(-0.1f, 0, 0);
-                    }
-                    else //Rotate
-                    {
-                        viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
-                    }
-                    glControl1.Invalidate();
-                }
-
-                // Up 
-                if (e.KeyCode == Keys.W)
-                {
-                    if (e.Control) //Toggle WireFrame
-                    {
-                        wireFrameMode = (wireFrameMode + 1) % 3;
+                    case Keys.D: // --> Right
+                        if (e.Shift) //Move
+                        {
+                            viewMatrixData *= Matrix4.CreateTranslation(0.1f, 0, 0);
+                        }
+                        else //Rotate
+                        {
+                            viewMatrixData *= Matrix4.CreateRotationY(0.1f);
+                        }
                         glControl1.Invalidate();
-                    }
-                    else if (e.Shift) //Move
-                    {
-                        viewMatrixData *= Matrix4.CreateTranslation(0, 0.1f, 0);
-                    }
-                    else //Rotate
-                    {
-                        viewMatrixData *= Matrix4.CreateRotationX(0.1f);
-                    }
-                    glControl1.Invalidate();
-                }
-
-                // Down
-                if (e.KeyCode == Keys.S)
-                {
-                    if (e.Control) //Toggle Shade
-                    {
-                        shadeMode = (shadeMode + 1) % 2;
+                        break;
+                    case Keys.A: // <-- Left
+                        if (e.Shift) //Move
+                        {
+                            viewMatrixData *= Matrix4.CreateTranslation(-0.1f, 0, 0);
+                        }
+                        else //Rotate
+                        {
+                            viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
+                        }
                         glControl1.Invalidate();
-                    }
-                    else if (e.Shift) //Move
-                    {
-                        viewMatrixData *= Matrix4.CreateTranslation(0, -0.1f, 0);
-                    }
-                    else //Rotate
-                    {
-                        viewMatrixData *= Matrix4.CreateRotationX(-0.1f);
-                    }
-                    glControl1.Invalidate();
+                        break;
+                    case Keys.W: // Up 
+                        if (e.Control) //Toggle WireFrame
+                        {
+                            wireFrameMode = (wireFrameMode + 1) % 3;
+                            glControl1.Invalidate();
+                        }
+                        else if (e.Shift) //Move
+                        {
+                            viewMatrixData *= Matrix4.CreateTranslation(0, 0.1f, 0);
+                        }
+                        else //Rotate
+                        {
+                            viewMatrixData *= Matrix4.CreateRotationX(0.1f);
+                        }
+                        glControl1.Invalidate();
+                        break;
+                    case Keys.S: // Down
+                        if (e.Control) //Toggle Shade
+                        {
+                            shadeMode = (shadeMode + 1) % 2;
+                            glControl1.Invalidate();
+                        }
+                        else if (e.Shift) //Move
+                        {
+                            viewMatrixData *= Matrix4.CreateTranslation(0, -0.1f, 0);
+                        }
+                        else //Rotate
+                        {
+                            viewMatrixData *= Matrix4.CreateRotationX(-0.1f);
+                        }
+                        glControl1.Invalidate();
+                        break;
+                    case Keys.Q: // Zoom Out
+                        viewMatrixData *= Matrix4.CreateScale(0.9f);
+                        glControl1.Invalidate();
+                        break;
+                    case Keys.E: // Zoom In
+                        viewMatrixData *= Matrix4.CreateScale(1.1f);
+                        glControl1.Invalidate();
+                        break;
                 }
-
-                // Zoom Out
-                if (e.KeyCode == Keys.Q)
-                {
-                    viewMatrixData *= Matrix4.CreateScale(0.9f);
-                    glControl1.Invalidate();
-                }
-
-                // Zoom In
-                if (e.KeyCode == Keys.E)
-                {
-                    viewMatrixData *= Matrix4.CreateScale(1.1f);
-                    glControl1.Invalidate();
-                }
-
                 // Normal mode
                 if (e.Control && e.KeyCode == Keys.N)
                 {
@@ -418,7 +403,6 @@ namespace Unity_Studio
                     createVAO();
                     glControl1.Invalidate();
                 }
-
                 // Toggle Timer
                 if (e.KeyCode == Keys.T)
                 {
@@ -457,7 +441,7 @@ namespace Unity_Studio
 
                             foreach (var uclass in version.Value)
                             {
-                                string saveFile = versionPath + "\\" + uclass.Key + " " + uclass.Value.Text + ".txt";
+                                string saveFile = $"{versionPath}\\{uclass.Key} {uclass.Value.Text}.txt";
                                 using (StreamWriter TXTwriter = new StreamWriter(saveFile))
                                 {
                                     TXTwriter.Write(uclass.Value.membersstr);
@@ -507,10 +491,7 @@ namespace Unity_Studio
 
                             if (sound != null && channel != null)
                             {
-                                FMOD.RESULT result;
-
-                                bool playing = false;
-                                result = channel.isPlaying(out playing);
+                                var result = channel.isPlaying(out var playing);
                                 if (result == FMOD.RESULT.OK && playing)
                                 {
                                     result = channel.stop();
@@ -823,8 +804,7 @@ namespace Unity_Studio
                 #region Texture2D
                 case 28: //Texture2D
                     {
-                        if (imageTexture != null)
-                            imageTexture.Dispose();
+                        imageTexture?.Dispose();
                         var m_Texture2D = new Texture2D(asset, true);
                         imageTexture = m_Texture2D.ConvertToBitmap(true);
                         if (imageTexture != null)
@@ -848,17 +828,15 @@ namespace Unity_Studio
                         AudioClip m_AudioClip = new AudioClip(asset, true);
                         if (m_AudioClip.m_AudioData == null)
                             break;
-                        FMOD.RESULT result;
                         FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
 
                         exinfo.cbsize = Marshal.SizeOf(exinfo);
                         exinfo.length = (uint)m_AudioClip.m_Size;
 
-                        result = system.createSound(m_AudioClip.m_AudioData, (FMOD.MODE.OPENMEMORY | loopMode), ref exinfo, out sound);
+                        var result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY | loopMode, ref exinfo, out sound);
                         if (ERRCHECK(result)) { break; }
 
-                        FMOD.Sound subsound;
-                        result = sound.getSubSound(0, out subsound);
+                        result = sound.getSubSound(0, out var subsound);
                         if (result == FMOD.RESULT.OK)
                         {
                             sound = subsound;
@@ -876,7 +854,7 @@ namespace Unity_Studio
                         if (ERRCHECK(result)) { break; }
 
                         FMODinfoLabel.Text = FMODfrequency + " Hz";
-                        FMODtimerLabel.Text = "0:0.0 / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
+                        FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
                         break;
                     }
                 #endregion
@@ -1013,7 +991,6 @@ namespace Unity_Studio
                                 offset[i] = (max[i] + min[i]) / 2;
                             }
                             float d = Math.Max(1e-5f, dist.Length);
-                            Vector3 scale = new Vector3(2f / d);
                             modelMatrixData = Matrix4.CreateTranslation(-offset) * Matrix4.CreateScale(2f / d);
                             #endregion
                             #region Indicies
@@ -1140,17 +1117,14 @@ namespace Unity_Studio
         {
             FMODreset();
 
-            FMOD.RESULT result;
-            uint version = 0;
-
-            result = FMOD.Factory.System_Create(out system);
+            var result = FMOD.Factory.System_Create(out system);
             if (ERRCHECK(result)) { return; }
 
-            result = system.getVersion(out version);
+            result = system.getVersion(out var version);
             ERRCHECK(result);
             if (version < FMOD.VERSION.number)
             {
-                MessageBox.Show("Error!  You are using an old version of FMOD " + version.ToString("X") + ".  This program requires " + FMOD.VERSION.number.ToString("X") + ".");
+                MessageBox.Show($"Error!  You are using an old version of FMOD {version:X}.  This program requires {FMOD.VERSION.number:X}.");
                 Application.Exit();
             }
 
@@ -1182,12 +1156,10 @@ namespace Unity_Studio
 
         private void FMODplayButton_Click(object sender, EventArgs e)
         {
-            FMOD.RESULT result;
             if (sound != null && channel != null)
             {
                 timer.Start();
-                bool playing = false;
-                result = channel.isPlaying(out playing);
+                var result = channel.isPlaying(out var playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
@@ -1226,14 +1198,9 @@ namespace Unity_Studio
 
         private void FMODpauseButton_Click(object sender, EventArgs e)
         {
-            FMOD.RESULT result;
-
             if (sound != null && channel != null)
             {
-                bool playing = false;
-                bool paused = false;
-
-                result = channel.isPlaying(out playing);
+                var result = channel.isPlaying(out var playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
@@ -1241,14 +1208,14 @@ namespace Unity_Studio
 
                 if (playing)
                 {
-                    result = channel.getPaused(out paused);
+                    result = channel.getPaused(out var paused);
                     if (ERRCHECK(result)) { return; }
                     result = channel.setPaused(!paused);
                     if (ERRCHECK(result)) { return; }
 
                     if (paused)
                     {
-                        FMODstatusLabel.Text = (playing ? "Playing" : "Stopped");
+                        FMODstatusLabel.Text = "Playing";
                         FMODpauseButton.Text = "Pause";
                         timer.Start();
                     }
@@ -1264,11 +1231,9 @@ namespace Unity_Studio
 
         private void FMODstopButton_Click(object sender, EventArgs e)
         {
-            FMOD.RESULT result;
             if (channel != null)
             {
-                bool playing = false;
-                result = channel.isPlaying(out playing);
+                var result = channel.isPlaying(out var playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
@@ -1293,14 +1258,7 @@ namespace Unity_Studio
         {
             FMOD.RESULT result;
 
-            if (FMODloopButton.Checked)
-            {
-                loopMode = FMOD.MODE.LOOP_NORMAL;
-            }
-            else
-            {
-                loopMode = FMOD.MODE.LOOP_OFF;
-            }
+            loopMode = FMODloopButton.Checked ? FMOD.MODE.LOOP_NORMAL : FMOD.MODE.LOOP_OFF;
 
             if (sound != null)
             {
@@ -1310,15 +1268,13 @@ namespace Unity_Studio
 
             if (channel != null)
             {
-                bool playing = false;
-                result = channel.isPlaying(out playing);
+                result = channel.isPlaying(out var playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
                 }
 
-                bool paused = false;
-                result = channel.getPaused(out paused);
+                result = channel.getPaused(out var paused);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
@@ -1334,10 +1290,9 @@ namespace Unity_Studio
 
         private void FMODvolumeBar_ValueChanged(object sender, EventArgs e)
         {
-            FMOD.RESULT result;
             FMODVolume = Convert.ToSingle(FMODvolumeBar.Value) / 10;
 
-            result = masterSoundGroup.setVolume(FMODVolume);
+            var result = masterSoundGroup.setVolume(FMODVolume);
             if (ERRCHECK(result)) { return; }
         }
 
@@ -1346,7 +1301,7 @@ namespace Unity_Studio
             if (channel != null)
             {
                 uint newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
-                FMODtimerLabel.Text = (newms / 1000 / 60) + ":" + (newms / 1000 % 60) + "." + (newms / 10 % 100) + "/" + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
+                FMODtimerLabel.Text = $"{newms / 1000 / 60}:{newms / 1000 % 60}.{newms / 10 % 100}/{FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
             }
         }
 
@@ -1359,19 +1314,16 @@ namespace Unity_Studio
         {
             if (channel != null)
             {
-                FMOD.RESULT result;
-
                 uint newms = FMODlenms / 1000 * (uint)FMODprogressBar.Value;
 
-                result = channel.setPosition(newms, FMOD.TIMEUNIT.MS);
+                var result = channel.setPosition(newms, FMOD.TIMEUNIT.MS);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
                 }
 
-                bool playing = false;
 
-                result = channel.isPlaying(out playing);
+                result = channel.isPlaying(out var playing);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     if (ERRCHECK(result)) { return; }
@@ -1383,14 +1335,13 @@ namespace Unity_Studio
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            FMOD.RESULT result;
             uint ms = 0;
             bool playing = false;
             bool paused = false;
 
             if (channel != null)
             {
-                result = channel.getPosition(out ms, FMOD.TIMEUNIT.MS);
+                var result = channel.getPosition(out ms, FMOD.TIMEUNIT.MS);
                 if ((result != FMOD.RESULT.OK) && (result != FMOD.RESULT.ERR_INVALID_HANDLE))
                 {
                     ERRCHECK(result);
@@ -1409,9 +1360,9 @@ namespace Unity_Studio
                 }
             }
 
-            FMODtimerLabel.Text = (ms / 1000 / 60) + ":" + (ms / 1000 % 60) + "." + (ms / 10 % 100) + " / " + (FMODlenms / 1000 / 60) + ":" + (FMODlenms / 1000 % 60) + "." + (FMODlenms / 10 % 100);
+            FMODtimerLabel.Text = $"{ms / 1000 / 60}:{ms / 1000 % 60}.{ms / 10 % 100} / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
             FMODprogressBar.Value = (int)(ms * 1000 / FMODlenms);
-            FMODstatusLabel.Text = (paused ? "Paused " : playing ? "Playing" : "Stopped");
+            FMODstatusLabel.Text = paused ? "Paused " : playing ? "Playing" : "Stopped";
 
             if (system != null && channel != null)
             {
@@ -1424,7 +1375,7 @@ namespace Unity_Studio
             if (result != FMOD.RESULT.OK)
             {
                 FMODreset();
-                StatusStripUpdate("FMOD error! " + result + " - " + FMOD.Error.String(result));
+                StatusStripUpdate($"FMOD error! {result} - {FMOD.Error.String(result)}");
                 return true;
             }
             return false;
@@ -1502,7 +1453,7 @@ namespace Unity_Studio
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                bool exportSwitch = (((ToolStripItem)sender).Name == "exportAll3DMenuItem") ? true : false;
+                bool exportSwitch = ((ToolStripItem)sender).Name == "exportAll3DMenuItem";
 
 
                 var timestamp = DateTime.Now;
@@ -1543,21 +1494,21 @@ namespace Unity_Studio
             {
                 timer.Stop();
                 List<AssetPreloadData> toExportAssets = null;
-                if (((ToolStripItem)sender).Name == "exportAllAssetsMenuItem")
+                switch (((ToolStripItem)sender).Name)
                 {
-                    toExportAssets = exportableAssets;
-                }
-                else if (((ToolStripItem)sender).Name == "exportFilteredAssetsMenuItem")
-                {
-                    toExportAssets = visibleAssets;
-                }
-                else if (((ToolStripItem)sender).Name == "exportSelectedAssetsMenuItem")
-                {
-                    toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
-                    foreach (var i in assetListView.SelectedIndices.OfType<int>())
-                    {
-                        toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
-                    }
+                    case "exportAllAssetsMenuItem":
+                        toExportAssets = exportableAssets;
+                        break;
+                    case "exportFilteredAssetsMenuItem":
+                        toExportAssets = visibleAssets;
+                        break;
+                    case "exportSelectedAssetsMenuItem":
+                        toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
+                        foreach (var i in assetListView.SelectedIndices.OfType<int>())
+                        {
+                            toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
+                        }
+                        break;
                 }
                 int assetGroupSelectedIndex = assetGroupOptions.SelectedIndex;
 
@@ -1578,7 +1529,7 @@ namespace Unity_Studio
                         string exportpath = savePath + "\\";
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
-                        StatusStripUpdate("Exporting " + asset.TypeString + ": " + asset.Text);
+                        StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
                         switch (asset.Type2)
                         {
                             case 28: //Texture2D
@@ -1645,18 +1596,18 @@ namespace Unity_Studio
                         }
                         ProgressBarPerformStep();
                     }
-                    string statusText = "";
+                    string statusText;
                     switch (exportedCount)
                     {
                         case 0:
                             statusText = "Nothing exported.";
                             break;
                         default:
-                            statusText = "Finished exporting " + exportedCount + " assets.";
+                            statusText = $"Finished exporting {exportedCount} assets.";
                             break;
                     }
 
-                    if (toExport > exportedCount) { statusText += " " + (toExport - exportedCount) + " assets skipped (not extractable or files already exist)"; }
+                    if (toExport > exportedCount) { statusText += $" {toExport - exportedCount} assets skipped (not extractable or files already exist)"; }
 
                     StatusStripUpdate(statusText);
 
@@ -1750,7 +1701,7 @@ namespace Unity_Studio
 
         private void timerOpenTK_Tick(object sender, EventArgs e)
         {
-            if (glControl1.Visible == true)
+            if (glControl1.Visible)
             {
                 viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
                 glControl1.Invalidate();
@@ -1761,11 +1712,9 @@ namespace Unity_Studio
         {
             GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
             GL.ClearColor(Color.CadetBlue);
-            int vsID, fsID;
-
             pgmID = GL.CreateProgram();
-            loadShader("vs", ShaderType.VertexShader, pgmID, out vsID);
-            loadShader("fs", ShaderType.FragmentShader, pgmID, out fsID);
+            loadShader("vs", ShaderType.VertexShader, pgmID, out int vsID);
+            loadShader("fs", ShaderType.FragmentShader, pgmID, out int fsID);
             GL.LinkProgram(pgmID);
 
             pgmColorID = GL.CreateProgram();
@@ -1946,6 +1895,15 @@ namespace Unity_Studio
             {
                 selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
                 contextMenuStrip1.Show(assetListView, e.X, e.Y);
+            }
+        }
+
+        private void glControl1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (glControl1.Visible)
+            {
+                viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
+                glControl1.Invalidate();
             }
         }
     }

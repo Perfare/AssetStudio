@@ -85,8 +85,7 @@ namespace Unity_Studio
             {
                 preloadData.extension = Path.GetExtension(m_OriginalPath);
                 preloadData.Text = m_Name;
-                if (m_Source != null)
-                    preloadData.fullSize = preloadData.Size + (int)m_Size;
+                preloadData.fullSize = preloadData.Size + (int)m_Size;
             }
         }
     }

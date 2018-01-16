@@ -39,24 +39,21 @@ namespace Unity_Studio
         private DialogResult ShowVistaDialog(IWin32Window owner)
         {
             var frm = (NativeMethods.IFileDialog)(new NativeMethods.FileOpenDialogRCW());
-            uint options;
-            frm.GetOptions(out options);
+            frm.GetOptions(out var options);
             options |= NativeMethods.FOS_PICKFOLDERS | NativeMethods.FOS_FORCEFILESYSTEM | NativeMethods.FOS_NOVALIDATE | NativeMethods.FOS_NOTESTFILECREATE | NativeMethods.FOS_DONTADDTORECENT;
             frm.SetOptions(options);
             if (this.InitialFolder != null)
             {
-                NativeMethods.IShellItem directoryShellItem;
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
-                if (NativeMethods.SHCreateItemFromParsingName(this.InitialFolder, IntPtr.Zero, ref riid, out directoryShellItem) == NativeMethods.S_OK)
+                if (NativeMethods.SHCreateItemFromParsingName(this.InitialFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
                 {
                     frm.SetFolder(directoryShellItem);
                 }
             }
             if (this.DefaultFolder != null)
             {
-                NativeMethods.IShellItem directoryShellItem;
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
-                if (NativeMethods.SHCreateItemFromParsingName(this.DefaultFolder, IntPtr.Zero, ref riid, out directoryShellItem) == NativeMethods.S_OK)
+                if (NativeMethods.SHCreateItemFromParsingName(this.DefaultFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
                 {
                     frm.SetDefaultFolder(directoryShellItem);
                 }
@@ -64,11 +61,9 @@ namespace Unity_Studio
 
             if (frm.Show(owner.Handle) == NativeMethods.S_OK)
             {
-                NativeMethods.IShellItem shellItem;
-                if (frm.GetResult(out shellItem) == NativeMethods.S_OK)
+                if (frm.GetResult(out var shellItem) == NativeMethods.S_OK)
                 {
-                    IntPtr pszString;
-                    if (shellItem.GetDisplayName(NativeMethods.SIGDN_FILESYSPATH, out pszString) == NativeMethods.S_OK)
+                    if (shellItem.GetDisplayName(NativeMethods.SIGDN_FILESYSPATH, out var pszString) == NativeMethods.S_OK)
                     {
                         if (pszString != IntPtr.Zero)
                         {

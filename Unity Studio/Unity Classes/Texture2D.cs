@@ -186,8 +186,7 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        EndianBinaryReader estream;
-                        if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out estream))
+                        if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out var estream))
                         {
                             estream.Position = offset;
                             image_data = estream.ReadBytes(image_data_size);
