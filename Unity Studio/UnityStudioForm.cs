@@ -22,9 +22,6 @@ namespace Unity_Studio
         private AssetPreloadData lastSelectedItem;
         private AssetPreloadData lastLoadedAsset;
 
-        private string[] assetsFileTypes = { "globalgamemanagers", "maindata.", "level*.", "*.assets", "*.sharedAssets", "CustomAssetBundle-*", "CAB-*", "BuildPlayer-*" };
-        private string[] bundleFileTypes = { "*.unity3d", "*.unity3d.lz4", "*.assetbundle", "*.assetbundle-*", "*.bundle", "*.bytes" };
-
         private FMOD.System system;
         private FMOD.Sound sound;
         private FMOD.Channel channel;
@@ -87,7 +84,6 @@ namespace Unity_Studio
                 resetForm();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
-                    mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
                     var bundle = false;
                     if (openFileDialog1.FilterIndex == 1 || openFileDialog1.FilterIndex == 3)
                     {
@@ -98,10 +94,7 @@ namespace Unity_Studio
                                 MessageBox.Show($"{Path.GetFileName(openFileDialog1.FileNames[0])} is bundle file, please select bundle file type to load this file");
                                 return;
                             }
-                            else
-                            {
-                                bundle = true;
-                            }
+                            bundle = true;
                         }
                     }
                     else
@@ -110,8 +103,10 @@ namespace Unity_Studio
                     }
                     if (!bundle)
                     {
+                        mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
                         MergeSplitAssets(mainPath);
-                        foreach (var i in openFileDialog1.FileNames)
+                        var readFile = ProcessingSplitFiles(openFileDialog1.FileNames.ToList());
+                        foreach (var i in readFile)
                         {
                             unityFiles.Add(i);
                             unityFilesHash.Add(Path.GetFileName(i));
@@ -121,8 +116,9 @@ namespace Unity_Studio
                         //use a for loop because list size can change
                         for (int f = 0; f < unityFiles.Count; f++)
                         {
-                            StatusStripUpdate("Loading " + Path.GetFileName(unityFiles[f]));
-                            LoadAssetsFile(unityFiles[f]);
+                            var fileName = unityFiles[f];
+                            StatusStripUpdate("Loading " + Path.GetFileName(fileName));
+                            LoadAssetsFile(fileName);
                             ProgressBarPerformStep();
                         }
                     }
@@ -135,11 +131,12 @@ namespace Unity_Studio
                             LoadBundleFile(filename);
                             ProgressBarPerformStep();
                         }
-                        LoadAssetsFromBundle();
+                        BuildSharedIndex();
                     }
-                    BuildAssetStrucutres();
                     unityFilesHash.Clear();
                     assetsfileListHash.Clear();
+                    sharedFileIndex.Clear();
+                    BuildAssetStrucutres();
                 });
             }
         }
@@ -149,54 +146,20 @@ namespace Unity_Studio
             var openFolderDialog1 = new OpenFolderDialog();
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                mainPath = openFolderDialog1.Folder;
                 resetForm();
-
-                MergeSplitAssets(mainPath);
-
-                for (int t = 0; t < assetsFileTypes.Length; t++)
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    string[] fileNames = Directory.GetFiles(mainPath, assetsFileTypes[t], SearchOption.AllDirectories);
-                    #region  sort specific types alphanumerically
-                    if (fileNames.Length > 0 && (t == 1 || t == 2))
+                    mainPath = openFolderDialog1.Folder;
+                    MergeSplitAssets(mainPath);
+                    var files = Directory.GetFiles(mainPath, "*.*", SearchOption.AllDirectories).ToList();
+                    var readFile = ProcessingSplitFiles(files);
+                    foreach (var i in readFile)
                     {
-                        var sortedList = fileNames.ToList();
-                        sortedList.Sort((s1, s2) =>
-                        {
-                            string pattern = "([A-Za-z\\s]*)([0-9]*)";
-                            string h1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[1].Value;
-                            string h2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[1].Value;
-                            if (h1 != h2)
-                                return h1.CompareTo(h2);
-                            string t1 = Regex.Match(Path.GetFileNameWithoutExtension(s1), pattern).Groups[2].Value;
-                            string t2 = Regex.Match(Path.GetFileNameWithoutExtension(s2), pattern).Groups[2].Value;
-                            if (t1 != "" && t2 != "")
-                                return int.Parse(t1).CompareTo(int.Parse(t2));
-                            return 0;
-                        });
-                        foreach (var i in sortedList)
-                        {
-                            unityFiles.Add(i);
-                            unityFilesHash.Add(Path.GetFileName(i));
-                        }
-
+                        unityFiles.Add(i);
+                        unityFilesHash.Add(Path.GetFileName(i));
                     }
-                    #endregion
-                    else
-                    {
-                        foreach (var i in fileNames)
-                        {
-                            unityFiles.Add(i);
-                            unityFilesHash.Add(Path.GetFileName(i));
-                        }
-                    }
-                }
-
-                unityFiles = unityFiles.Distinct().ToList();
-                progressBar1.Value = 0;
-                progressBar1.Maximum = unityFiles.Count;
-                ThreadPool.QueueUserWorkItem(delegate
-                {
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(unityFiles.Count);
                     //use a for loop because list size can change
                     for (int f = 0; f < unityFiles.Count; f++)
                     {
@@ -207,6 +170,7 @@ namespace Unity_Studio
                     }
                     unityFilesHash.Clear();
                     assetsfileListHash.Clear();
+                    sharedFileIndex.Clear();
                     BuildAssetStrucutres();
                 });
             }
@@ -240,17 +204,11 @@ namespace Unity_Studio
         private void extractFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int extractedCount = 0;
-            List<string> bundleFiles = new List<string>();
-
             var openFolderDialog1 = new OpenFolderDialog();
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 string startPath = openFolderDialog1.Folder;
-                foreach (var fileType in bundleFileTypes)
-                {
-                    string[] fileNames = Directory.GetFiles(startPath, fileType, SearchOption.AllDirectories);
-                    bundleFiles.AddRange(fileNames);
-                }
+                var bundleFiles = Directory.GetFiles(startPath, "*.*", SearchOption.AllDirectories).ToList();
                 progressBar1.Value = 0;
                 progressBar1.Maximum = bundleFiles.Count;
                 ThreadPool.QueueUserWorkItem(delegate
@@ -287,6 +245,7 @@ namespace Unity_Studio
                 if (!dontLoadAssetsMenuItem.Checked)
                 {
                     assetListView.VirtualListSize = visibleAssets.Count;
+                    //will only work if ListView is visible
                     resizeAssetListColumns();
                 }
                 if (!dontBuildHierarchyMenuItem.Checked)
@@ -1427,9 +1386,9 @@ namespace Unity_Studio
                                                 //选中它和它的子节点
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = true));
                                                 //处理非法文件名
-                                                var name = FixFileName(savePath + filename + ".fbx");
+                                                filename = FixFileName(filename);
                                                 //导出FBX
-                                                WriteFBX(name, false);
+                                                WriteFBX(savePath + filename + ".fbx", false);
                                                 //取消选中
                                                 sceneTreeView.Invoke(new Action(() => j.Checked = false));
                                             }

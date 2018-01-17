@@ -14,12 +14,13 @@ namespace Unity_Studio
     internal static class UnityStudio
     {
         public static List<string> unityFiles = new List<string>(); //files to load
-        public static HashSet<string> unityFilesHash = new HashSet<string>(); //improve performance
+        public static HashSet<string> unityFilesHash = new HashSet<string>(); //to improve the loading speed
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
-        public static HashSet<string> assetsfileListHash = new HashSet<string>(); //improve performance
+        public static HashSet<string> assetsfileListHash = new HashSet<string>(); //to improve the loading speed
+        public static Dictionary<string, int> sharedFileIndex = new Dictionary<string, int>(); //to improve the loading speed
         public static Dictionary<string, EndianBinaryReader> assetsfileandstream = new Dictionary<string, EndianBinaryReader>(); //use for read res files
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
-        private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //improve performance
+        private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
 
         public static string productName = "";
@@ -89,7 +90,12 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        sharedFile.Index = unityFiles.IndexOf(sharedFilePath);
+                        if (!sharedFileIndex.TryGetValue(sharedFilePath, out var index))
+                        {
+                            index = unityFiles.IndexOf(sharedFilePath);
+                            sharedFileIndex.Add(sharedFilePath, index);
+                        }
+                        sharedFile.Index = index;
                     }
                 }
                 if (value > 0)
@@ -124,7 +130,7 @@ namespace Unity_Studio
             }
         }
 
-        public static void LoadAssetsFromBundle()
+        public static void BuildSharedIndex()
         {
             foreach (var assetsFile in assetsfileList)
             {
@@ -162,35 +168,31 @@ namespace Unity_Studio
         public static int extractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
-
-            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-
-            string extractPath = bundleFileName + "_unpacked\\";
-            Directory.CreateDirectory(extractPath);
-
-            BundleFile b_File = new BundleFile(bundleFileName);
-
-            foreach (var memFile in b_File.MemoryAssetsFileList)
+            if (CheckBundleFile(bundleFileName))
             {
-                string filePath = extractPath + memFile.fileName.Replace('/', '\\');
-                if (!Directory.Exists(Path.GetDirectoryName(filePath)))
+                StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
+                var extractPath = bundleFileName + "_unpacked\\";
+                Directory.CreateDirectory(extractPath);
+                var b_File = new BundleFile(bundleFileName);
+                foreach (var memFile in b_File.MemoryAssetsFileList)
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                }
-                if (!File.Exists(filePath))
-                {
-                    StatusStripUpdate($"Extracting {Path.GetFileName(memFile.fileName)}");
-                    extractedCount += 1;
-
-                    using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                    var filePath = extractPath + memFile.fileName.Replace('/', '\\');
+                    if (!Directory.Exists(Path.GetDirectoryName(filePath)))
                     {
-                        memFile.memStream.WriteTo(file);
-                        memFile.memStream.Close();
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                    }
+                    if (!File.Exists(filePath))
+                    {
+                        StatusStripUpdate($"Extracting {Path.GetFileName(memFile.fileName)}");
+                        extractedCount += 1;
+                        using (var file = File.Create(filePath))
+                        {
+                            memFile.memStream.WriteTo(file);
+                            memFile.memStream.Close();
+                        }
                     }
                 }
             }
-
             return extractedCount;
         }
 
@@ -359,8 +361,6 @@ namespace Unity_Studio
                 }
 
                 visibleAssets = exportableAssets;
-
-                //will only work if ListView is visible
                 exportableAssetsHash.Clear();
             }
             #endregion
@@ -1866,6 +1866,23 @@ namespace Unity_Studio
                         return false;
                 }
             }
+        }
+
+        public static string[] ProcessingSplitFiles(List<string> selectFile)
+        {
+            var splitFiles = selectFile.Where(x => x.Contains(".split"))
+                .Select(x => Path.GetDirectoryName(x) + "\\" + Path.GetFileNameWithoutExtension(x))
+                .Distinct()
+                .ToList();
+            selectFile.RemoveAll(x => x.Contains(".split"));
+            foreach (var file in splitFiles)
+            {
+                if (File.Exists(file))
+                {
+                    selectFile.Add(file);
+                }
+            }
+            return selectFile.Distinct().ToArray();
         }
     }
 }

@@ -153,14 +153,14 @@
             // 
             this.loadFileToolStripMenuItem.Name = "loadFileToolStripMenuItem";
             this.loadFileToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.loadFileToolStripMenuItem.Text = "Load file...";
+            this.loadFileToolStripMenuItem.Text = "Load file";
             this.loadFileToolStripMenuItem.Click += new System.EventHandler(this.loadFile_Click);
             // 
             // loadFolderToolStripMenuItem
             // 
             this.loadFolderToolStripMenuItem.Name = "loadFolderToolStripMenuItem";
             this.loadFolderToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.loadFolderToolStripMenuItem.Text = "Load folder...";
+            this.loadFolderToolStripMenuItem.Text = "Load folder";
             this.loadFolderToolStripMenuItem.Click += new System.EventHandler(this.loadFolder_Click);
             // 
             // toolStripMenuItem1
@@ -172,14 +172,14 @@
             // 
             this.extractBundleToolStripMenuItem.Name = "extractBundleToolStripMenuItem";
             this.extractBundleToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.extractBundleToolStripMenuItem.Text = "Extract bundle...";
+            this.extractBundleToolStripMenuItem.Text = "Extract bundle";
             this.extractBundleToolStripMenuItem.Click += new System.EventHandler(this.extractBundleToolStripMenuItem_Click);
             // 
             // extractFolderToolStripMenuItem
             // 
             this.extractFolderToolStripMenuItem.Name = "extractFolderToolStripMenuItem";
             this.extractFolderToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.extractFolderToolStripMenuItem.Text = "Extract folder...";
+            this.extractFolderToolStripMenuItem.Text = "Extract folder";
             this.extractFolderToolStripMenuItem.Click += new System.EventHandler(this.extractFolderToolStripMenuItem_Click);
             // 
             // debugMenuItem
@@ -310,7 +310,7 @@
             // 
             this.showExpOpt.Name = "showExpOpt";
             this.showExpOpt.Size = new System.Drawing.Size(252, 22);
-            this.showExpOpt.Text = "Export options...";
+            this.showExpOpt.Text = "Export options";
             this.showExpOpt.Click += new System.EventHandler(this.showExpOpt_Click);
             // 
             // exportToolStripMenuItem
