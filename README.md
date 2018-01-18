@@ -5,22 +5,18 @@ Unity Studio is a tool for exploring, extracting and exporting assets from Unity
 
 ## Current features
 
-* Extraction of assets that can be used as standalone resources:
-  * **Texture2D**: 
-    * DDS (Alpha8, ARGB4444, RGB24, RGBA32, ARGB32, RGB565, R16, DXT1, DXT5, RGBA4444, BGRA32)
-    * PVR (YUY2, PVRTC_RGB2, PVRTC_RGBA2, PVRTC_RGB4, PVRTC_RGBA4, ETC_RGB4, ETC2_RGB, ETC2_RGBA1, ETC2_RGBA8, ASTC_RGB_4x4, ASTC_RGB_5x5, ASTC_RGB_6x6, ASTC_RGB_8x8, ASTC_RGB_10x10, ASTC_RGB_12x12, ASTC_RGBA_4x4, ASTC_RGBA_5x5, ASTC_RGBA_6x6, ASTC_RGBA_8x8, ASTC_RGBA_10x10, ASTC_RGBA_12x12, ETC_RGB4_3DS, ETC_RGBA8_3DS)
-    * KTX (RHalf, RGHalf, RGBAHalf, RFloat, RGFloat, RGBAFloat, BC4, BC5, BC6H, BC7, ATC_RGB4, ATC_RGBA8, EAC_R, EAC_R_SIGNED, EAC_RG, EAC_RG_SIGNED)
-  * **AudioClip**: fsb, mp3, ogg, wav, m4a, xbox wav
-  * **Font**: ttf, otf
-  * **Mesh**: obj
-  * **TextAsset**
+* Support Unity3D Asset types:  
+  * **Texture2D**: support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX  
+  * **Sprite**: png  
+  * **AudioClip**: mp3, ogg, wav, m4a, fsb. support convert FSB file to WAV(PCM)  
+  * **Font**: ttf, otf  
+  * **Mesh**: obj  
+  * **TextAsset**: txt
   * **Shader**
   * **MovieTexture**: ogv
   * **VideoClip**
   * **MonoBehaviour**
-* Support convert all textures to bmp, png or jpeg
-* Support convert FSB file to wav
-* Export to FBX, with complete hierarchy, transformations, materials and textures. Geometry is exported with normals, tangents, UV coordinates, vertex colors and deformers. Skeleton nodes can be exported either as bones or dummy deformers.
+* Export model to FBX format, with complete hierarchy, transformations, materials and textures. Geometry is exported with normals, tangents, UV coordinates, vertex colors and deformers. Skeleton nodes can be exported either as bones or dummy deformers.
 * Real-time preview window for the above-mentioned assets
 * Diagnostics mode with useful tools for research
 
