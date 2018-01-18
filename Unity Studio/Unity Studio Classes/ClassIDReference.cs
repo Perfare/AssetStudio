@@ -266,6 +266,12 @@ namespace Unity_Studio
             {1112, "SubstanceImporter"},
             {1113, "LightmapParameters"},
             {1120, "LightmapSnapshot"},
+            {367388927, "SubDerived"},
+            {334799969, "SiblingDerived"},
+            {687078895, "SpriteAtlas"},
+            {1091556383, "Derived"},
+            {1480428607, "LowerResBlitTexture"},
+            {1571458007, "RenderPassAttachment"}
         };
     }
 }

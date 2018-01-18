@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -22,6 +23,7 @@ namespace Unity_Studio
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
+        private static Dictionary<AssetPreloadData, Bitmap> spriteCache = new Dictionary<AssetPreloadData, Bitmap>();
 
         public static string productName = "";
         public static string mainPath = "";
@@ -303,12 +305,18 @@ namespace Unity_Studio
                                     exportable = true;
                                     break;
                                 }
-                            case 21: //Material                            
+                            case 213: //Sprite
+                                {
+                                    var m_Sprite = new Sprite(asset, false);
+                                    exportable = true;
+                                    break;
+                                }
+                            /*case 21: //Material                            
                             case 74: //AnimationClip
                             case 90: //Avatar
                             case 91: //AnimatorController
                             case 115: //MonoScript
-                            case 213: //Sprite
+                            case 687078895: //SpriteAtlas
                                 {
                                     if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
                                         break;
@@ -320,7 +328,7 @@ namespace Unity_Studio
                                         asset.Text = Encoding.UTF8.GetString(bytes);
                                     }
                                     break;
-                                }
+                                }*/
                         }
                         if (!exportable && displayAll)
                         {
@@ -1823,6 +1831,20 @@ namespace Unity_Studio
             return true;
         }
 
+        public static bool ExportSprite(AssetPreloadData asset, string exportPath)
+        {
+            var exportFullName = exportPath + asset.Text + asset.extension;
+            if (ExportFileExists(exportFullName))
+                return false;
+            var bitmap = GetImageFromSprite(asset);
+            if (bitmap != null)
+            {
+                bitmap.Save(exportFullName, ImageFormat.Png);
+                return true;
+            }
+            return false;
+        }
+
         public static bool ExportRawFile(AssetPreloadData asset, string exportPath)
         {
             var exportFullName = exportPath + asset.Text + asset.extension;
@@ -1883,6 +1905,62 @@ namespace Unity_Studio
                 }
             }
             return selectFile.Distinct().ToArray();
+        }
+
+        //TODO Tight方式的Sprite需要读取多边形信息进行绘图
+        public static Bitmap GetImageFromSprite(AssetPreloadData asset)
+        {
+            if (spriteCache.TryGetValue(asset, out var bitmap))
+                return (Bitmap)bitmap.Clone();
+            var m_Sprite = new Sprite(asset, true);
+            if (m_Sprite.m_SpriteAtlas != null && assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
+            {
+                var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
+                bool find = false;
+                int index = 0;
+                for (; index < m_SpriteAtlas.m_PackedSprites.Count; index++)
+                {
+                    if (assetsfileList.TryGetPD(m_SpriteAtlas.m_PackedSprites[index], out assetPreloadData) && assetPreloadData == asset)
+                    {
+                        find = true;
+                        break;
+                    }
+                }
+                if (find && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
+                {
+                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                }
+            }
+            else
+            {
+                if (assetsfileList.TryGetPD(m_Sprite.texture, out assetPreloadData))
+                {
+                    return CutImage(asset, assetPreloadData, m_Sprite.textureRect);
+                }
+            }
+
+            return null;
+        }
+
+        private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect)
+        {
+            var texture2D = new Texture2D(texture2DAsset, true);
+            using (var originalImage = texture2D.ConvertToBitmap(false))
+            {
+                if (originalImage != null)
+                {
+                    var info = texture2DAsset.InfoText;
+                    var start = info.IndexOf("Format");
+                    info = info.Substring(start, info.Length - start);
+                    asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
+                    var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
+                    spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    spriteCache.Add(asset, spriteImage);
+                    return (Bitmap)spriteImage.Clone();
+                }
+            }
+
+            return null;
         }
     }
 }

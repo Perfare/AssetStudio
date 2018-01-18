@@ -424,6 +424,7 @@ namespace Unity_Studio
                 switch (lastLoadedAsset.Type2)
                 {
                     case 28:
+                    case 213:
                         {
                             if (enablePreview.Checked && imageTexture != null)
                             {
@@ -737,13 +738,15 @@ namespace Unity_Studio
 
             if (e.IsSelected)
             {
-                assetInfoLabel.Text = lastSelectedItem.InfoText;
-                if (displayInfo.Checked && assetInfoLabel.Text != null) { assetInfoLabel.Visible = true; } //only display the label if asset has info text
-
                 if (enablePreview.Checked)
                 {
                     lastLoadedAsset = lastSelectedItem;
                     PreviewAsset(lastLoadedAsset);
+                }
+                if (displayInfo.Checked && assetInfoLabel.Text != null)//only display the label if asset has info text
+                {
+                    assetInfoLabel.Text = lastSelectedItem.InfoText;
+                    assetInfoLabel.Visible = true;
                 }
             }
         }
@@ -1049,11 +1052,31 @@ namespace Unity_Studio
                     }
                     break;
                 #endregion
-                #region VideoClip
-                case 329:
+                #region VideoClip and MovieTexture
+                case 329: //VideoClip
                 case 152: //MovieTexture
                     {
                         StatusStripUpdate("Only supported export.");
+                        break;
+                    }
+                #endregion
+                #region Sprite
+                case 213: //Sprite
+                    {
+                        imageTexture?.Dispose();
+                        imageTexture = GetImageFromSprite(asset);
+                        if (imageTexture != null)
+                        {
+                            previewPanel.BackgroundImage = imageTexture;
+                            if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
+                                previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
+                            else
+                                previewPanel.BackgroundImageLayout = ImageLayout.Center;
+                        }
+                        else
+                        {
+                            StatusStripUpdate("Unsupported sprite for preview");
+                        }
                         break;
                     }
                 #endregion
@@ -1541,6 +1564,12 @@ namespace Unity_Studio
                                 break;
                             case 152: //MovieTexture
                                 if (ExportMovieTexture(asset, exportpath))
+                                {
+                                    exportedCount++;
+                                }
+                                break;
+                            case 213: //Sprite
+                                if (ExportSprite(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }

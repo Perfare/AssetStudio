@@ -321,7 +321,7 @@ namespace Unity_Studio
                     {
                         int index = a_Stream.ReadInt32();
                         asset.Type1 = classIDs[index][0];
-                        asset.Type2 = (ushort)classIDs[index][1];
+                        asset.Type2 = classIDs[index][1];
                     }
                     else
                     {

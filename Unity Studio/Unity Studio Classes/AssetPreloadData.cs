@@ -12,7 +12,7 @@ namespace Unity_Studio
         public uint Offset;
         public int Size;
         public int Type1;
-        public ushort Type2;
+        public int Type2;
 
         public string TypeString;
         public int fullSize;

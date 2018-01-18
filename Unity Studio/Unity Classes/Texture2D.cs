@@ -658,7 +658,7 @@ namespace Unity_Studio
             }
             else
             {
-                preloadData.InfoText = "Width: " + m_Width + "\nHeight: " + m_Height + "\nFormat: ";
+                preloadData.InfoText = $"Width: {m_Width}\nHeight: {m_Height}\nFormat: ";
 
                 string type = m_TextureFormat.ToString();
                 preloadData.InfoText += type;
@@ -737,7 +737,7 @@ namespace Unity_Studio
 
                 }
 
-                preloadData.InfoText += "\nAnisotropic level: " + m_Aniso + "\nMip map bias: " + m_MipBias;
+                preloadData.InfoText += $"\nAnisotropic level: {m_Aniso}\nMip map bias: {m_MipBias}";
 
                 switch (m_WrapMode)
                 {
