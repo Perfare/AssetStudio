@@ -117,11 +117,71 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="fs" xml:space="preserve">
+    <value>#version 140
+
+in vec3 normal;
+
+out vec4 outputColor;
+
+void main()
+{
+	vec3 unitNormal = normalize(normal);
+	float nDotProduct = clamp(dot(unitNormal, vec3(0.707, 0, 0.707)), 0, 1);
+	vec2 ContributionWeightsSqrt = vec2(0.5, 0.5f) + vec2(0.5f, -0.5f) * unitNormal.y;
+	vec2 ContributionWeights = ContributionWeightsSqrt * ContributionWeightsSqrt;
+
+	vec3 color = nDotProduct * vec3(1, 0.957, 0.839) / 3.14159;
+	color += vec3(0.779, 0.716, 0.453) * ContributionWeights.y;
+	color += vec3(0.368, 0.477, 0.735) * ContributionWeights.x;
+	outputColor = vec4(sqrt(color), 1);
+}</value>
+  </data>
+  <data name="fsBlack" xml:space="preserve">
+    <value>#version 140
+
+out vec4 outputColor;
+
+void main()
+{
+	outputColor = vec4(0, 0, 0, 1);
+}</value>
+  </data>
+  <data name="fsColor" xml:space="preserve">
+    <value>#version 140
+
+out vec4 outputColor;
+in vec4 color;
+
+void main()
+{
+	outputColor = color;
+}</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="preview" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\preview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="unity" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\unity.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="vs" xml:space="preserve">
+    <value>#version 140
+
+in vec3 vertexPosition;
+in vec3 normalDirection;
+in vec4 vertexColor;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+
+out vec3 normal;
+out vec4 color;
+
+void main()
+{
+	gl_Position = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+	normal = normalDirection;
+	color = vertexColor; 
+}</value>
   </data>
 </root>

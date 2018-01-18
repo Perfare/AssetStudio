@@ -1726,7 +1726,7 @@ namespace Unity_Studio
         private void loadShader(string filename, ShaderType type, int program, out int address)
         {
             address = GL.CreateShader(type);
-            var str = (string)Resource1.ResourceManager.GetObject(filename);
+            var str = (string)Properties.Resources.ResourceManager.GetObject(filename);
             GL.ShaderSource(address, str);
             GL.CompileShader(address);
             GL.AttachShader(program, address);
