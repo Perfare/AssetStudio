@@ -311,24 +311,24 @@ namespace Unity_Studio
                                     exportable = true;
                                     break;
                                 }
-                            /*case 21: //Material                            
-                            case 74: //AnimationClip
-                            case 90: //Avatar
-                            case 91: //AnimatorController
-                            case 115: //MonoScript
-                            case 687078895: //SpriteAtlas
-                                {
-                                    if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
-                                        break;
-                                    asset.sourceFile.a_Stream.Position = asset.Offset;
-                                    var len = asset.sourceFile.a_Stream.ReadInt32();
-                                    if (len > 0 && len < asset.Size - 4)
+                                /*case 21: //Material                            
+                                case 74: //AnimationClip
+                                case 90: //Avatar
+                                case 91: //AnimatorController
+                                case 115: //MonoScript
+                                case 687078895: //SpriteAtlas
                                     {
-                                        var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
-                                        asset.Text = Encoding.UTF8.GetString(bytes);
-                                    }
-                                    break;
-                                }*/
+                                        if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
+                                            break;
+                                        asset.sourceFile.a_Stream.Position = asset.Offset;
+                                        var len = asset.sourceFile.a_Stream.ReadInt32();
+                                        if (len > 0 && len < asset.Size - 4)
+                                        {
+                                            var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
+                                            asset.Text = Encoding.UTF8.GetString(bytes);
+                                        }
+                                        break;
+                                    }*/
                         }
                         if (!exportable && displayAll)
                         {
@@ -1797,12 +1797,21 @@ namespace Unity_Studio
             #endregion
 
             #region Face
-            for (int f = 0; f < m_Mesh.m_Indices.Count / 3; f++)
+            int sum = 0;
+            for (var i = 0; i < m_Mesh.m_SubMeshes.Count; i++)
             {
-                sb.AppendFormat("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n", m_Mesh.m_Indices[f * 3 + 2] + 1, m_Mesh.m_Indices[f * 3 + 1] + 1, m_Mesh.m_Indices[f * 3] + 1);
+                sb.AppendLine($"g {m_Mesh.m_Name}_{i}");
+                int indexCount = (int)m_Mesh.m_SubMeshes[i].indexCount;
+                var end = sum + indexCount / 3;
+                for (int f = sum; f < end; f++)
+                {
+                    sb.AppendFormat("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n", m_Mesh.m_Indices[f * 3 + 2] + 1, m_Mesh.m_Indices[f * 3 + 1] + 1, m_Mesh.m_Indices[f * 3] + 1);
+                }
+                sum = end;
             }
             #endregion
 
+            sb.Replace("NaN", "0");
             File.WriteAllText(exportFullName, sb.ToString());
             return true;
         }
