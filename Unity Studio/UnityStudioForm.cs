@@ -73,6 +73,10 @@ namespace Unity_Studio
 
         private AssetPreloadData selectasset;
 
+        //list search
+        private List<string> checkType = new List<string>();
+        private bool isCheckTypeAll = false;
+
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -666,7 +670,15 @@ namespace Unity_Studio
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
-                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
+                if (allToolStripMenuItem.Checked)
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
+                }
+                else
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) &&
+                      checkType.Contains(ListAsset.TypeString));
+                }
                 assetListView.VirtualListSize = visibleAssets.Count;
                 assetListView.EndUpdate();
             }
@@ -1668,7 +1680,8 @@ namespace Unity_Studio
             }
         }
 
-        public UnityStudioForm()
+
+        public UnityStudioForm(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
@@ -1685,6 +1698,33 @@ namespace Unity_Studio
             UnityStudio.ProgressBarPerformStep = ProgressBarPerformStep;
             UnityStudio.StatusStripUpdate = StatusStripUpdate;
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
+
+            if (args.Length > 0) { LoadFileInit(args); }
+        }
+
+        public void LoadFileInit(string[] args)
+        {
+
+           
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                if (CheckBundleFile(args[0]))
+                {
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(1);
+                    foreach (var filename in args)
+                    {
+                        LoadBundleFile(filename);
+                        ProgressBarPerformStep();
+                        
+                    }
+                }
+                BuildSharedIndex();
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+                sharedFileIndex.Clear();
+                BuildAssetStrucutres();
+            });
         }
 
         private void timerOpenTK_Tick(object sender, EventArgs e)
@@ -1893,6 +1933,198 @@ namespace Unity_Studio
                 viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
                 glControl1.Invalidate();
             }
+        }
+
+
+        private void typeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            ToolStripMenuItem typeItem = (ToolStripMenuItem)sender;
+
+            
+            switch (typeItem.Text)
+            {
+                case "All":
+                    isCheckTypeAll = true;
+                    if (typeItem.Checked)
+                    {
+                        this.gameobjectToolStripMenuItem.Checked = true;
+                        this.transformToolStripMenuItem.Checked = true;
+                        this.recttransformToolStripMenuItem.Checked = true;
+                        this.texture2DToolStripMenuItem.Checked = true;
+                        this.shaderToolStripMenuItem.Checked = true;
+                        this.textAssetToolStripMenuItem.Checked = true;
+                        this.audioclipToolStripMenuItem.Checked = true;
+                        this.monobehaviourToolStripMenuItem.Checked = true;
+                        this.fontToolStripMenuItem.Checked = true;
+                        this.playersettingsToolStripMenuItem.Checked = true;
+                        this.meshToolStripMenuItem.Checked = true;
+                        this.assetbundleToolStripMenuItem.Checked = true;
+                        this.videoClipToolStripMenuItem.Checked = true;
+                        this.movietextureToolStripMenuItem.Checked = true;
+                        this.spriteToolStripMenuItem.Checked = true;
+                        this.materialToolStripMenuItem.Checked = true;
+                        this.animationclipToolStripMenuItem.Checked = true;
+                        this.avatarToolStripMenuItem.Checked = true;
+                        this.animatorcontrollerToolStripMenuItem.Checked = true;
+                        this.spriteatlasToolStripMenuItem.Checked = true;
+                        this.monoscriptToolStripMenuItem.Checked = true;
+                    }
+                    else
+                    {
+                        this.gameobjectToolStripMenuItem.Checked = false;
+                        this.transformToolStripMenuItem.Checked = false;
+                        this.recttransformToolStripMenuItem.Checked = false;
+                        this.texture2DToolStripMenuItem.Checked = false;
+                        this.shaderToolStripMenuItem.Checked = false;
+                        this.textAssetToolStripMenuItem.Checked = false;
+                        this.audioclipToolStripMenuItem.Checked = false;
+                        this.monobehaviourToolStripMenuItem.Checked = false;
+                        this.fontToolStripMenuItem.Checked = false;
+                        this.playersettingsToolStripMenuItem.Checked = false;
+                        this.meshToolStripMenuItem.Checked = false;
+                        this.assetbundleToolStripMenuItem.Checked = false;
+                        this.videoClipToolStripMenuItem.Checked = false;
+                        this.movietextureToolStripMenuItem.Checked = false;
+                        this.spriteToolStripMenuItem.Checked = false;
+                        this.materialToolStripMenuItem.Checked = false;
+                        this.animationclipToolStripMenuItem.Checked = false;
+                        this.avatarToolStripMenuItem.Checked = false;
+                        this.animatorcontrollerToolStripMenuItem.Checked = false;
+                        this.spriteatlasToolStripMenuItem.Checked = false;
+                        this.monoscriptToolStripMenuItem.Checked = false;
+                    }
+                    isCheckTypeAll = false;
+                    break;
+                case "GameObject":
+                case "Transform":
+                case "RectTransform":
+                case "Texture2D":
+                case "Shader":
+                case "TextAsset":
+                case "AudioClip":
+                case "MonoBehaviour":
+                case "Font":
+                case "PlayerSettings":
+                case "Mesh":
+                case "AssetBundle":
+                case "MovieTexture":
+                case "Sprite":
+                case "VideoClip":
+                case "Material":
+                case "AnimationClip":
+                case "Avatar":
+                case "AnimatorController":
+                case "SpriteAtlas":
+                case "MonoScript":
+                    if (typeItem.Checked)
+                    {
+                        if (!checkType.Contains(typeItem.Text))
+                            checkType.Add(typeItem.Text);
+                    }
+                    else
+                    {
+                        checkType.Remove(typeItem.Text);
+                    }
+                    break;
+            }
+
+            if (exportableAssets.Count > 0)
+                enableFiltering = true;
+
+            if (enableFiltering && !isCheckTypeAll)
+            {
+                assetListView.BeginUpdate();
+                assetListView.SelectedIndices.Clear();
+                if(allToolStripMenuItem.Checked)
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
+                }
+                else
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) &&
+                      checkType.Contains(ListAsset.TypeString));
+                }
+                assetListView.VirtualListSize = visibleAssets.Count;
+                assetListView.EndUpdate();
+            }
+
+
+        }
+
+        private void sceneTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            resetForm();
+            mainPath = Path.GetDirectoryName(filePaths[0]);
+
+            if (Directory.Exists(filePaths[0]))
+            {
+                mainPath = filePaths[0];
+                MergeSplitAssets(mainPath);
+
+                var files = Directory.GetFiles(mainPath, "*.*", SearchOption.AllDirectories).ToList();
+                var readFile = ProcessingSplitFiles(files);
+                foreach (var i in readFile)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i));
+                }
+            }
+            else
+            {
+                var readFile = ProcessingSplitFiles(filePaths.ToList());
+
+                foreach (var i in readFile)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i));
+                }
+            }
+
+            bool needBuildIndex = false;
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(unityFiles.Count);
+                //use a for loop because list size can change
+                for (int f = 0; f < unityFiles.Count; f++)
+                {
+                    var fileName = unityFiles[f];
+
+                    if (CheckBundleFile(fileName))
+                    {
+                        LoadBundleFile(fileName);
+                        needBuildIndex = true;
+                    }
+                    else
+                    {
+                        StatusStripUpdate("Loading " + Path.GetFileName(fileName));
+                        LoadAssetsFile(fileName);
+                    }
+
+                    ProgressBarPerformStep();
+                }
+
+                if (needBuildIndex)
+                {
+                    BuildSharedIndex();
+                }
+
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+                sharedFileIndex.Clear();
+                BuildAssetStrucutres();
+            });
+        }
+
+
+
+        private void sceneTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Link;
+            else e.Effect = DragDropEffects.None;
         }
     }
 }
