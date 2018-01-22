@@ -141,7 +141,9 @@ namespace Unity_Studio
                     assetsfileListHash.Clear();
                     sharedFileIndex.Clear();
                     BuildAssetStrucutres();
+                    setTypeToolStripMenuItem();
                 });
+                
             }
         }
 
@@ -176,7 +178,9 @@ namespace Unity_Studio
                     assetsfileListHash.Clear();
                     sharedFileIndex.Clear();
                     BuildAssetStrucutres();
+                    setTypeToolStripMenuItem();
                 });
+                
             }
         }
 
@@ -670,7 +674,7 @@ namespace Unity_Studio
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
-                if (allToolStripMenuItem.Checked)
+                if (((ToolStripMenuItem)this.showTypeToolStripMenuItem.DropDownItems.Find("allToolStripMenuItem", true).FirstOrDefault()).Checked)
                 {
                     visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
                 }
@@ -1724,7 +1728,9 @@ namespace Unity_Studio
                 assetsfileListHash.Clear();
                 sharedFileIndex.Clear();
                 BuildAssetStrucutres();
+                setTypeToolStripMenuItem();
             });
+           
         }
 
         private void timerOpenTK_Tick(object sender, EventArgs e)
@@ -1936,86 +1942,52 @@ namespace Unity_Studio
         }
 
 
+        private void setTypeToolStripMenuItem()
+        {
+            BeginInvoke(new Action(() =>
+            {
+                this.showTypeToolStripMenuItem.DropDownItems.Clear();
+                ToolStripMenuItem typeItemAll = new ToolStripMenuItem();
+                string typeName = "All";
+                typeItemAll.CheckOnClick = true;
+                typeItemAll.Name = $"allToolStripMenuItem";
+                typeItemAll.Size = new Size(152, 22);
+                typeItemAll.Text = typeName;
+                typeItemAll.CheckedChanged += typeToolStripMenuItem_CheckedChanged;
+                this.showTypeToolStripMenuItem.DropDownItems.Add(typeItemAll);
+                if (exportableAssets.Count > 0)
+                {
+                    foreach (string dataTypeName in exportableAssets.Select(x => x.TypeString).ToList().Distinct())
+                    {
+                        ToolStripMenuItem typeItem = new ToolStripMenuItem();
+                        typeItem.CheckOnClick = true;
+                        typeItem.Name = $"{dataTypeName.ToLower()}ToolStripMenuItem";
+                        typeItem.Size = new Size(152, 22);
+                        typeItem.Text = dataTypeName;
+                        typeItem.CheckedChanged += typeToolStripMenuItem_CheckedChanged;
+                        this.showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
+                    }
+                }
+            }));
+        }
+
         private void typeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             ToolStripMenuItem typeItem = (ToolStripMenuItem)sender;
-
-            
             switch (typeItem.Text)
             {
                 case "All":
                     isCheckTypeAll = true;
-                    if (typeItem.Checked)
+                    foreach(ToolStripMenuItem toolStripMenu in this.showTypeToolStripMenuItem.DropDownItems)
                     {
-                        this.gameobjectToolStripMenuItem.Checked = true;
-                        this.transformToolStripMenuItem.Checked = true;
-                        this.recttransformToolStripMenuItem.Checked = true;
-                        this.texture2DToolStripMenuItem.Checked = true;
-                        this.shaderToolStripMenuItem.Checked = true;
-                        this.textAssetToolStripMenuItem.Checked = true;
-                        this.audioclipToolStripMenuItem.Checked = true;
-                        this.monobehaviourToolStripMenuItem.Checked = true;
-                        this.fontToolStripMenuItem.Checked = true;
-                        this.playersettingsToolStripMenuItem.Checked = true;
-                        this.meshToolStripMenuItem.Checked = true;
-                        this.assetbundleToolStripMenuItem.Checked = true;
-                        this.videoClipToolStripMenuItem.Checked = true;
-                        this.movietextureToolStripMenuItem.Checked = true;
-                        this.spriteToolStripMenuItem.Checked = true;
-                        this.materialToolStripMenuItem.Checked = true;
-                        this.animationclipToolStripMenuItem.Checked = true;
-                        this.avatarToolStripMenuItem.Checked = true;
-                        this.animatorcontrollerToolStripMenuItem.Checked = true;
-                        this.spriteatlasToolStripMenuItem.Checked = true;
-                        this.monoscriptToolStripMenuItem.Checked = true;
-                    }
-                    else
-                    {
-                        this.gameobjectToolStripMenuItem.Checked = false;
-                        this.transformToolStripMenuItem.Checked = false;
-                        this.recttransformToolStripMenuItem.Checked = false;
-                        this.texture2DToolStripMenuItem.Checked = false;
-                        this.shaderToolStripMenuItem.Checked = false;
-                        this.textAssetToolStripMenuItem.Checked = false;
-                        this.audioclipToolStripMenuItem.Checked = false;
-                        this.monobehaviourToolStripMenuItem.Checked = false;
-                        this.fontToolStripMenuItem.Checked = false;
-                        this.playersettingsToolStripMenuItem.Checked = false;
-                        this.meshToolStripMenuItem.Checked = false;
-                        this.assetbundleToolStripMenuItem.Checked = false;
-                        this.videoClipToolStripMenuItem.Checked = false;
-                        this.movietextureToolStripMenuItem.Checked = false;
-                        this.spriteToolStripMenuItem.Checked = false;
-                        this.materialToolStripMenuItem.Checked = false;
-                        this.animationclipToolStripMenuItem.Checked = false;
-                        this.avatarToolStripMenuItem.Checked = false;
-                        this.animatorcontrollerToolStripMenuItem.Checked = false;
-                        this.spriteatlasToolStripMenuItem.Checked = false;
-                        this.monoscriptToolStripMenuItem.Checked = false;
+                        if(typeItem.Text != "All")
+                        {
+                            toolStripMenu.Checked = typeItem.Checked;
+                        }
                     }
                     isCheckTypeAll = false;
                     break;
-                case "GameObject":
-                case "Transform":
-                case "RectTransform":
-                case "Texture2D":
-                case "Shader":
-                case "TextAsset":
-                case "AudioClip":
-                case "MonoBehaviour":
-                case "Font":
-                case "PlayerSettings":
-                case "Mesh":
-                case "AssetBundle":
-                case "MovieTexture":
-                case "Sprite":
-                case "VideoClip":
-                case "Material":
-                case "AnimationClip":
-                case "Avatar":
-                case "AnimatorController":
-                case "SpriteAtlas":
-                case "MonoScript":
+                default:
                     if (typeItem.Checked)
                     {
                         if (!checkType.Contains(typeItem.Text))
@@ -2035,7 +2007,7 @@ namespace Unity_Studio
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
-                if(allToolStripMenuItem.Checked)
+                if(((ToolStripMenuItem)this.showTypeToolStripMenuItem.DropDownItems.Find("allToolStripMenuItem", true).FirstOrDefault()).Checked)
                 {
                     visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
                 }
@@ -2115,7 +2087,9 @@ namespace Unity_Studio
                 assetsfileListHash.Clear();
                 sharedFileIndex.Clear();
                 BuildAssetStrucutres();
+                setTypeToolStripMenuItem();
             });
+           
         }
 
 
