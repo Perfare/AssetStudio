@@ -146,6 +146,7 @@
     <Compile Include="Unity Classes\BuildSettings.cs" />
     <Compile Include="Unity Studio Classes\BundleFile.cs" />
     <Compile Include="Unity Studio Classes\ClassStruct.cs" />
+    <Compile Include="Unity Studio Classes\UnityEnum.cs" />
     <Compile Include="Unity Studio Classes\UnityStudio.cs" />
     <Compile Include="Unity Studio Classes\ClassIDReference.cs" />
     <Compile Include="Unity Studio Classes\EndianBinaryReader.cs" />
@@ -207,7 +208,9 @@
       <DependentUpon>UnityStudioForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -147,6 +147,7 @@
     <Compile Include="Unity Studio Classes\BundleFile.cs" />
     <Compile Include="Unity Studio Classes\ClassStruct.cs" />
     <Compile Include="Unity Studio Classes\EndianBinaryReader.cs" />
+    <Compile Include="Unity Studio Classes\UnityEnum.cs" />
     <Compile Include="Unity Studio Classes\UnityStudio.cs" />
     <Compile Include="Unity Studio Classes\ClassIDReference.cs" />
     <Compile Include="ExportOptions.cs">

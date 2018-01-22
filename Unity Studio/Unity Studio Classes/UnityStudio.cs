@@ -1621,49 +1621,40 @@ namespace Unity_Studio
             var m_AudioClip = new AudioClip(asset, true);
             if (m_AudioClip.m_AudioData == null)
                 return false;
-            var oldextension = asset.extension;
-            var exportFileExtension = asset.extension;
-            var convertfsb = (bool)Properties.Settings.Default["convertfsb"];
-            if (convertfsb && exportFileExtension == ".fsb")
+            var convertAudio = (bool)Properties.Settings.Default["convertAudio"];
+            if (convertAudio && m_AudioClip.IsFMODSupport)
             {
-                exportFileExtension = ".wav";
-            }
-            var exportFullName = exportPath + asset.Text + exportFileExtension;
-            if (ExportFileExists(exportFullName))
-                return false;
-            if (convertfsb && oldextension == ".fsb")
-            {
+                var exportFullName = exportPath + asset.Text + ".wav";
+                if (ExportFileExists(exportFullName))
+                    return false;
                 FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
-
                 var result = FMOD.Factory.System_Create(out var system);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 exinfo.cbsize = Marshal.SizeOf(exinfo);
                 exinfo.length = (uint)m_AudioClip.m_Size;
-
                 result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 result = sound.getSubSound(0, out var subsound);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 result = subsound.getFormat(out var type, out var format, out int NumChannels, out int BitsPerSample);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 result = subsound.getDefaults(out var frequency, out int priority);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 var SampleRate = (int)frequency;
-
                 result = subsound.getLength(out var length, FMOD.TIMEUNIT.PCMBYTES);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 result = subsound.@lock(0, length, out var ptr1, out var ptr2, out var len1, out var len2);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 byte[] buffer = new byte[len1 + 44];
                 //添加wav头
                 Encoding.UTF8.GetBytes("RIFF").CopyTo(buffer, 0);
@@ -1680,16 +1671,18 @@ namespace Unity_Studio
                 BitConverter.GetBytes(len1).CopyTo(buffer, 40);
                 Marshal.Copy(ptr1, buffer, 44, (int)len1);
                 File.WriteAllBytes(exportFullName, buffer);
-
                 result = subsound.unlock(ptr1, ptr2, len1, len2);
-                if (result != FMOD.RESULT.OK) { return false; }
-
+                if (result != FMOD.RESULT.OK)
+                    return false;
                 subsound.release();
                 sound.release();
                 system.release();
             }
             else
             {
+                var exportFullName = exportPath + asset.Text + asset.extension;
+                if (ExportFileExists(exportFullName))
+                    return false;
                 File.WriteAllBytes(exportFullName, m_AudioClip.m_AudioData);
             }
             return true;
