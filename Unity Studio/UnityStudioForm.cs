@@ -1974,6 +1974,7 @@ namespace Unity_Studio
         private void typeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             ToolStripMenuItem typeItem = (ToolStripMenuItem)sender;
+            listSearch.Focus();
             switch (typeItem.Text)
             {
                 case "All":
