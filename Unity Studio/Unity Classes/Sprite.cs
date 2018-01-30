@@ -33,14 +33,16 @@ namespace Unity_Studio
                 }
 
                 var m_PixelsToUnits = a_Stream.ReadSingle();
-                if (sourceFile.version[0] > 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] >= 5)) //5.5 and up
+                if (sourceFile.version[0] > 5 
+                    || (sourceFile.version[0] == 5 && sourceFile.version[1] > 4)
+                    || (sourceFile.version[0] == 5 && sourceFile.version[1] == 4 && sourceFile.version[2] >= 2)) //5.4.2 and up
                 {
                     //Vector2f m_Pivot
                     a_Stream.Position += 8;
                 }
 
                 var m_Extrude = a_Stream.ReadUInt32();
-                if (sourceFile.version[0] > 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] >= 1)) //5.1 and up
+                if (sourceFile.version[0] > 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3)) //5.3 and up TODO need more test
                 {
                     var m_IsPolygon = a_Stream.ReadBoolean();
                     a_Stream.AlignStream(4);
