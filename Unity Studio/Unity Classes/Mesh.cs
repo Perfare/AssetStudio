@@ -471,7 +471,10 @@ namespace Unity_Studio
                     a_Stream.AlignStream(4);
                     if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
                     {
-                        var m_IndexFormat = a_Stream.ReadInt32();
+						if(m_MeshCompression == 0)
+						{
+							var m_IndexFormat = a_Stream.ReadInt32();	
+						}
                     }
                     int m_IndexBuffer_size = a_Stream.ReadInt32();
 
