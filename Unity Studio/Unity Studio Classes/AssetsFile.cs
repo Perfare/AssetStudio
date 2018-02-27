@@ -26,7 +26,7 @@ namespace Unity_Studio
         public Dictionary<long, Transform> TransformList = new Dictionary<long, Transform>();
 
         public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
-        public List<UnityShared> sharedAssetsList = new List<UnityShared>() { new UnityShared() };
+        public List<UnityShared> sharedAssetsList = new List<UnityShared> { new UnityShared() };
 
         public SortedDictionary<int, ClassStruct> ClassStructures = new SortedDictionary<int, ClassStruct>();
 
@@ -36,7 +36,7 @@ namespace Unity_Studio
         public static string[] buildTypeSplit = { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
         #region cmmon string
-        private static Dictionary<int, string> baseStrings = new Dictionary<int, string>()
+        private static Dictionary<int, string> baseStrings = new Dictionary<int, string>
         {
             {0, "AABB"},
             {5, "AnimationClip"},
@@ -284,7 +284,7 @@ namespace Unity_Studio
                             readBase(cb, 1);
                         }
 
-                        var aClass = new ClassStruct() { ID = classID, Text = (baseType + " " + baseName), members = cb };
+                        var aClass = new ClassStruct { ID = classID, Text = (baseType + " " + baseName), members = cb };
                         aClass.SubItems.Add(classID.ToString());
                         ClassStructures.Add(classID, aClass);
                     }
@@ -392,11 +392,11 @@ namespace Unity_Studio
                 int sharedFileCount = a_Stream.ReadInt32();
                 for (int i = 0; i < sharedFileCount; i++)
                 {
-                    UnityShared shared = new UnityShared();
+                    var shared = new UnityShared();
                     shared.aName = a_Stream.ReadStringToNull();
                     a_Stream.Position += 20;
-                    string sharedFileName = a_Stream.ReadStringToNull(); //relative path
-                    shared.fileName = sharedFileName.Replace("/", "\\");
+                    var sharedFilePath = a_Stream.ReadStringToNull(); //relative path
+                    shared.fileName = Path.GetFileName(sharedFilePath);
                     sharedAssetsList.Add(shared);
                 }
                 valid = true;
@@ -417,7 +417,7 @@ namespace Unity_Studio
             int flag = a_Stream.ReadInt32();
             int childrenCount = a_Stream.ReadInt32();
 
-            cb.Add(new ClassMember()
+            cb.Add(new ClassMember
             {
                 Level = level - 1,
                 Type = varType,
@@ -506,7 +506,7 @@ namespace Unity_Studio
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
                     else
                     {
-                        classVar.Add(new ClassMember()
+                        classVar.Add(new ClassMember
                         {
                             Level = level - 1,
                             Type = varTypeStr,
@@ -519,7 +519,7 @@ namespace Unity_Studio
                 stringReader.Dispose();
                 a_Stream.Position += stringSize;
 
-                var aClass = new ClassStruct() { ID = classID, Text = className, members = classVar };
+                var aClass = new ClassStruct { ID = classID, Text = className, members = classVar };
                 aClass.SubItems.Add(classID.ToString());
                 ClassStructures[classID] = aClass;
             }

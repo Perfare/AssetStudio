@@ -72,7 +72,7 @@ namespace Unity_Studio
                 foreach (var sharedFile in assetsFile.sharedAssetsList)
                 {
                     string sharedFilePath = Path.GetDirectoryName(fileName) + "\\" + sharedFile.fileName;
-                    string sharedFileName = Path.GetFileName(sharedFile.fileName);
+                    string sharedFileName = sharedFile.fileName;
                     if (!unityFilesHash.Contains(sharedFileName))
                     {
                         if (!File.Exists(sharedFilePath))

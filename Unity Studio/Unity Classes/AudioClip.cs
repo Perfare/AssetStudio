@@ -93,8 +93,6 @@ namespace Unity_Studio
                 m_3D = m_Legacy3D;
 
                 m_Source = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                if (m_Source != "")
-                    m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
                 m_Offset = a_Stream.ReadInt64();
                 m_Size = a_Stream.ReadInt64();
                 m_CompressionFormat = (AudioCompressionFormat)a_Stream.ReadInt32();
@@ -102,30 +100,40 @@ namespace Unity_Studio
 
             if (readSwitch)
             {
-                if (string.IsNullOrEmpty(m_Source))
+                if (!string.IsNullOrEmpty(m_Source))
                 {
-                    if (m_Size > 0)
-                        m_AudioData = a_Stream.ReadBytes((int)m_Size);
-                }
-                else if (File.Exists(m_Source) ||
-                         File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
-                {
-                    BinaryReader reader = new BinaryReader(File.OpenRead(m_Source));
-                    reader.BaseStream.Position = m_Offset;
-                    m_AudioData = reader.ReadBytes((int)m_Size);
-                    reader.Close();
-                }
-                else
-                {
-                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out var estream))
+                    var resourceFileName = Path.GetFileName(m_Source);
+                    var resourceFilePath = Path.GetDirectoryName(sourceFile.filePath) + "\\" + resourceFileName;
+                    if (!File.Exists(resourceFilePath))
                     {
-                        estream.Position = m_Offset;
-                        m_AudioData = estream.ReadBytes((int)m_Size);
+                        var findFiles = Directory.GetFiles(Path.GetDirectoryName(sourceFile.filePath), resourceFileName, SearchOption.AllDirectories);
+                        if (findFiles.Length > 0) { resourceFilePath = findFiles[0]; }
+                    }
+                    if (File.Exists(resourceFilePath))
+                    {
+                        using (var reader = new BinaryReader(File.OpenRead(resourceFilePath)))
+                        {
+                            reader.BaseStream.Position = m_Offset;
+                            m_AudioData = reader.ReadBytes((int)m_Size);
+                        }
                     }
                     else
                     {
-                        MessageBox.Show($"can't find the resource file {Path.GetFileName(m_Source)}");
+                        if (UnityStudio.assetsfileandstream.TryGetValue(resourceFileName, out var reader))
+                        {
+                            reader.Position = m_Offset;
+                            m_AudioData = reader.ReadBytes((int)m_Size);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"can't find the resource file {resourceFileName}");
+                        }
                     }
+                }
+                else
+                {
+                    if (m_Size > 0)
+                        m_AudioData = a_Stream.ReadBytes((int)m_Size);
                 }
             }
             else

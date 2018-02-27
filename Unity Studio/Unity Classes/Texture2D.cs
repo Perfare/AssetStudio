@@ -166,25 +166,31 @@ namespace Unity_Studio
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), path.Replace("archive:/", ""));
-                    if (File.Exists(path) ||
-                    File.Exists(path = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(path))))
+                    var resourceFileName = Path.GetFileName(path);
+                    var resourceFilePath = Path.GetDirectoryName(sourceFile.filePath) + "\\" + resourceFileName;
+                    if (!File.Exists(resourceFilePath))
                     {
-                        BinaryReader reader = new BinaryReader(File.OpenRead(path));
-                        reader.BaseStream.Position = offset;
-                        image_data = reader.ReadBytes(image_data_size);
-                        reader.Close();
+                        var findFiles = Directory.GetFiles(Path.GetDirectoryName(sourceFile.filePath), resourceFileName, SearchOption.AllDirectories);
+                        if (findFiles.Length > 0) { resourceFilePath = findFiles[0]; }
+                    }
+                    if (File.Exists(resourceFilePath))
+                    {
+                        using (var reader = new BinaryReader(File.OpenRead(resourceFilePath)))
+                        {
+                            reader.BaseStream.Position = offset;
+                            image_data = reader.ReadBytes(image_data_size);
+                        }
                     }
                     else
                     {
-                        if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(path), out var estream))
+                        if (UnityStudio.assetsfileandstream.TryGetValue(resourceFileName, out var reader))
                         {
-                            estream.Position = offset;
-                            image_data = estream.ReadBytes(image_data_size);
+                            reader.Position = offset;
+                            image_data = reader.ReadBytes(image_data_size);
                         }
                         else
                         {
-                            MessageBox.Show($"can't find the resource file {Path.GetFileName(path)}");
+                            MessageBox.Show($"can't find the resource file {resourceFileName}");
                         }
                     }
                 }
