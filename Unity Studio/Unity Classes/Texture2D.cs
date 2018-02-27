@@ -86,11 +86,14 @@ namespace Unity_Studio
         //texgenpack
         private texgenpack_texturetype texturetype;
 
+        private int[] version;
+
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
             var a_Stream = preloadData.sourceFile.a_Stream;
             a_Stream.Position = preloadData.Offset;
+            version = sourceFile.version;
 
             if (sourceFile.platform == -2)
             {
@@ -100,7 +103,7 @@ namespace Unity_Studio
             }
 
             m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-            if (sourceFile.version[0] > 2017 || (sourceFile.version[0] == 2017 && sourceFile.version[1] >= 3))//2017.3 and up
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
             {
                 var m_ForcedFallbackFormat = a_Stream.ReadInt32();
                 var m_DownscaleFallback = a_Stream.ReadBoolean();
@@ -111,7 +114,7 @@ namespace Unity_Studio
             m_CompleteImageSize = a_Stream.ReadInt32();
             m_TextureFormat = (TextureFormat)a_Stream.ReadInt32();
 
-            if (sourceFile.version[0] < 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] < 2))
+            if (version[0] < 5 || (version[0] == 5 && version[1] < 2))
             { m_MipMap = a_Stream.ReadBoolean(); }
             else
             {
@@ -131,15 +134,15 @@ namespace Unity_Studio
             m_Aniso = a_Stream.ReadInt32();
             m_MipBias = a_Stream.ReadSingle();
             m_WrapMode = a_Stream.ReadInt32();
-            if (sourceFile.version[0] >= 2017)//2017.x and up
+            if (version[0] >= 2017)//2017.x and up
             {
                 int m_WrapV = a_Stream.ReadInt32();
                 int m_WrapW = a_Stream.ReadInt32();
             }
-            if (sourceFile.version[0] >= 3)
+            if (version[0] >= 3)
             {
                 m_LightmapFormat = a_Stream.ReadInt32();
-                if (sourceFile.version[0] >= 4 || sourceFile.version[1] >= 5) { m_ColorSpace = a_Stream.ReadInt32(); } //3.5.0 and up
+                if (version[0] >= 4 || version[1] >= 5) { m_ColorSpace = a_Stream.ReadInt32(); } //3.5.0 and up
             }
 
             image_data_size = a_Stream.ReadInt32();
@@ -151,7 +154,7 @@ namespace Unity_Studio
                 dwCaps += 0x400008;
             }
 
-            if (image_data_size == 0 && ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) || sourceFile.version[0] > 5))//5.3.0 and up
+            if (image_data_size == 0 && ((version[0] == 5 && version[1] >= 3) || version[0] > 5))//5.3.0 and up
             {
                 offset = a_Stream.ReadUInt32();
                 size = a_Stream.ReadUInt32();

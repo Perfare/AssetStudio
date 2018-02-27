@@ -18,7 +18,10 @@ namespace Unity_Studio
         private static extern bool Ponvert(byte[] buffer, IntPtr bmp, int nWidth, int nHeight, int len, int type, int bmpsize, bool fixAlpha);
 
         [DllImport("crunch.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DecompressCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr dxtdata, out int dxtsize);
+        private static extern bool DecompressCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr uncompressedData, out int uncompressedSize);
+
+        [DllImport("crunchunity.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DecompressUnityCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr uncompressedData, out int uncompressedSize);
 
         [DllImport("texgenpack.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
@@ -318,13 +321,25 @@ namespace Unity_Studio
 
         private void DecompressCRN()
         {
-            if (DecompressCRN(image_data, image_data_size, out IntPtr dxtdata, out int dxtsize))
+            IntPtr uncompressedData;
+            int uncompressedSize;
+            bool result;
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)) //2017.3 and up
             {
-                var dxtbytes = new byte[dxtsize];
-                Marshal.Copy(dxtdata, dxtbytes, 0, dxtsize);
-                Marshal.FreeHGlobal(dxtdata);
-                image_data = dxtbytes;
-                image_data_size = dxtsize;
+                result = DecompressUnityCRN(image_data, image_data_size, out uncompressedData, out uncompressedSize);
+            }
+            else
+            {
+                result = DecompressCRN(image_data, image_data_size, out uncompressedData, out uncompressedSize);
+            }
+
+            if (result)
+            {
+                var uncompressedBytes = new byte[uncompressedSize];
+                Marshal.Copy(uncompressedData, uncompressedBytes, 0, uncompressedSize);
+                Marshal.FreeHGlobal(uncompressedData);
+                image_data = uncompressedBytes;
+                image_data_size = uncompressedSize;
             }
         }
 
