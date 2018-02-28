@@ -331,7 +331,7 @@ namespace Unity_Studio
             //Stream = new EndianStream(File.OpenRead(sourceFile.filePath), sourceFile.endianType);
             //Stream.endian = sourceFile.endianType;
             var version = MeshPD.sourceFile.version;
-            a_Stream = MeshPD.sourceFile.a_Stream;
+            a_Stream = MeshPD.sourceFile.assetsFileReader;
             a_Stream.Position = MeshPD.Offset;
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;

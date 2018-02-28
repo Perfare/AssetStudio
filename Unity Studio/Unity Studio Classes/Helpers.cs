@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using static Unity_Studio.UnityStudio;
+
 
 namespace Unity_Studio
 {
     public class PPtr
     {
         //m_FileID 0 means current file
-        public int m_FileID = -1;
+        public int m_FileID;
         //m_PathID acts more like a hash in some games
         public long m_PathID;
     }
@@ -18,14 +20,28 @@ namespace Unity_Studio
     {
         public static PPtr ReadPPtr(this AssetsFile sourceFile)
         {
-            PPtr result = new PPtr();
-            var a_Stream = sourceFile.a_Stream;
+            var result = new PPtr();
+            var reader = sourceFile.assetsFileReader;
 
-            int FileID = a_Stream.ReadInt32();
+            int FileID = reader.ReadInt32();
             if (FileID >= 0 && FileID < sourceFile.sharedAssetsList.Count)
-            { result.m_FileID = sourceFile.sharedAssetsList[FileID].Index; }
+            {
+                var sharedFile = sourceFile.sharedAssetsList[FileID];
+                var index = sharedFile.Index;
+                if (index == -2)
+                {
+                    var name = sharedFile.fileName.ToUpper();
+                    if (!sharedFileIndex.TryGetValue(name, out index))
+                    {
+                        index = assetsfileList.FindIndex(aFile => aFile.upperFileName == name);
+                        sharedFileIndex.Add(name, index);
+                    }
+                    sharedFile.Index = index;
+                }
+                result.m_FileID = index;
+            }
 
-            result.m_PathID = sourceFile.fileGen < 14 ? a_Stream.ReadInt32() : a_Stream.ReadInt64();
+            result.m_PathID = sourceFile.fileGen < 14 ? reader.ReadInt32() : reader.ReadInt64();
 
             return result;
         }

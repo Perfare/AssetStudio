@@ -91,7 +91,7 @@ namespace Unity_Studio
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
             version = sourceFile.version;
 
@@ -171,7 +171,10 @@ namespace Unity_Studio
                     if (!File.Exists(resourceFilePath))
                     {
                         var findFiles = Directory.GetFiles(Path.GetDirectoryName(sourceFile.filePath), resourceFileName, SearchOption.AllDirectories);
-                        if (findFiles.Length > 0) { resourceFilePath = findFiles[0]; }
+                        if (findFiles.Length > 0)
+                        {
+                            resourceFilePath = findFiles[0];
+                        }
                     }
                     if (File.Exists(resourceFilePath))
                     {
@@ -183,7 +186,7 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        if (UnityStudio.assetsfileandstream.TryGetValue(resourceFileName, out var reader))
+                        if (UnityStudio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var reader))
                         {
                             reader.Position = offset;
                             image_data = reader.ReadBytes(image_data_size);

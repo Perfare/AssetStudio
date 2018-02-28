@@ -41,7 +41,7 @@ namespace Unity_Studio
     {
         public static string ViewStruct(this AssetPreloadData asset)
         {
-            var a_Stream = asset.sourceFile.a_Stream;
+            var a_Stream = asset.sourceFile.assetsFileReader;
             a_Stream.Position = asset.Offset;
             if (asset.sourceFile.ClassStructures.TryGetValue(asset.Type1, out var classStructure))
             {

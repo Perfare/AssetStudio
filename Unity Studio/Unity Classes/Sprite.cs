@@ -21,7 +21,7 @@ namespace Unity_Studio
         public Sprite(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.sourceFile.a_Stream;
+            var reader = preloadData.sourceFile.assetsFileReader;
             reader.Position = preloadData.Offset;
             var version = sourceFile.version;
 

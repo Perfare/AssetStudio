@@ -25,7 +25,7 @@ namespace Unity_Studio
             if (preloadData != null)
             {
                 var sourceFile = preloadData.sourceFile;
-                var a_Stream = preloadData.sourceFile.a_Stream;
+                var a_Stream = preloadData.sourceFile.assetsFileReader;
                 a_Stream.Position = preloadData.Offset;
 
                 uniqueID = preloadData.uniqueID;

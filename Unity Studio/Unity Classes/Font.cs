@@ -13,7 +13,7 @@ namespace Unity_Studio
         public unityFont(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
 
             if (sourceFile.platform == -2)
