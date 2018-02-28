@@ -109,7 +109,7 @@ namespace Unity_Studio
                     {
                         //SpriteVertex data
                         a_Stream.Position += 12; //Vector3f pos
-                        if (sourceFile.version[0] < 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] <= 1)) //4.1 and down
+                        if (sourceFile.version[0] < 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] <= 3)) //4.3 and down
                             a_Stream.Position += 8; //Vector2f uv
                     }
 
@@ -124,7 +124,7 @@ namespace Unity_Studio
                 //  Vector2f textureRectOffset
                 //  Vector2f atlasRectOffset - 5.6 and up
                 //  unsigned int settingsRaw
-                //  Vector4f uvTransform - 4.2 and up
+                //  Vector4f uvTransform - 4.5 and up
                 //  float downscaleMultiplier - 2017 and up
                 //vector m_PhysicsShape - 2017 and up
             }
