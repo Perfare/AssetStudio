@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -1909,28 +1910,18 @@ namespace Unity_Studio
             return selectFile.Distinct().ToArray();
         }
 
-        //TODO Tight方式的Sprite需要读取多边形信息进行绘图
         public static Bitmap GetImageFromSprite(AssetPreloadData asset)
         {
             if (spriteCache.TryGetValue(asset, out var bitmap))
                 return (Bitmap)bitmap.Clone();
             var m_Sprite = new Sprite(asset, true);
-            if (m_Sprite.m_SpriteAtlas != null && assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
+            if (assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
-                bool find = false;
-                int index = 0;
-                for (; index < m_SpriteAtlas.m_PackedSprites.Count; index++)
+                var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
+                if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
                 {
-                    if (assetsfileList.TryGetPD(m_SpriteAtlas.m_PackedSprites[index], out assetPreloadData) && assetPreloadData == asset)
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (find && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
-                {
-                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
                 }
             }
             else
@@ -1959,6 +1950,46 @@ namespace Unity_Studio
                     spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     spriteCache.Add(asset, spriteImage);
                     return (Bitmap)spriteImage.Clone();
+                }
+            }
+
+            return null;
+        }
+
+        private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
+        {
+            var texture2D = new Texture2D(texture2DAsset, true);
+            using (var originalImage = texture2D.ConvertToBitmap(false))
+            {
+                if (originalImage != null)
+                {
+                    var info = texture2DAsset.InfoText;
+                    var start = info.IndexOf("Format");
+                    info = info.Substring(start, info.Length - start);
+                    asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
+                    var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
+                    using (var brush = new TextureBrush(spriteImage))
+                    {
+                        using (var path = new GraphicsPath())
+                        {
+                            foreach (var p in sprite.m_PhysicsShape)
+                                path.AddPolygon(p);
+                            using (var matr = new Matrix())
+                            {
+                                matr.Translate(sprite.m_Rect.Width * sprite.m_Pivot.X, sprite.m_Rect.Height * sprite.m_Pivot.Y);
+                                matr.Scale(sprite.m_PixelsToUnits, sprite.m_PixelsToUnits);
+                                path.Flatten(matr);
+                                var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
+                                using (var graphic = Graphics.FromImage(bitmap))
+                                {
+                                    graphic.FillPath(brush, path);
+                                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                                    spriteCache.Add(asset, bitmap);
+                                    return (Bitmap)bitmap.Clone();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

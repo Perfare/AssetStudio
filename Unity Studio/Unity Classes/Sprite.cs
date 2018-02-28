@@ -9,54 +9,61 @@ namespace Unity_Studio
     class Sprite
     {
         public string m_Name;
+        public RectangleF m_Rect;
+        public float m_PixelsToUnits;
+        public PointF m_Pivot;
+        public Guid first;
         public PPtr texture;
         public PPtr m_SpriteAtlas;
         public RectangleF textureRect;
+        public PointF[][] m_PhysicsShape;
 
         public Sprite(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.sourceFile.a_Stream;
+            reader.Position = preloadData.Offset;
+            var version = sourceFile.version;
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
             if (readSwitch)
             {
                 //Rectf m_Rect
-                var m_Rect = new RectangleF(a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle());
+                m_Rect = new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 //Vector2f m_Offset
-                a_Stream.Position += 8;
-                if (sourceFile.version[0] > 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] >= 2)) //4.2 and up
+                reader.Position += 8;
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
                 {
                     //Vector4f m_Border
-                    a_Stream.Position += 16;
+                    reader.Position += 16;
                 }
 
-                var m_PixelsToUnits = a_Stream.ReadSingle();
-                if (sourceFile.version[0] > 5 
-                    || (sourceFile.version[0] == 5 && sourceFile.version[1] > 4)
-                    || (sourceFile.version[0] == 5 && sourceFile.version[1] == 4 && sourceFile.version[2] >= 2)) //5.4.2 and up
+                m_PixelsToUnits = reader.ReadSingle();
+                if (version[0] > 5
+                    || (version[0] == 5 && version[1] > 4)
+                    || (version[0] == 5 && version[1] == 4 && version[2] >= 2)) //5.4.2 and up
                 {
                     //Vector2f m_Pivot
-                    a_Stream.Position += 8;
+                    m_Pivot = new PointF(reader.ReadSingle(), reader.ReadSingle());
                 }
 
-                var m_Extrude = a_Stream.ReadUInt32();
-                if (sourceFile.version[0] > 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3)) //5.3 and up TODO need more test
+                var m_Extrude = reader.ReadUInt32();
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 3)) //5.3 and up TODO need more test
                 {
-                    var m_IsPolygon = a_Stream.ReadBoolean();
-                    a_Stream.AlignStream(4);
+                    var m_IsPolygon = reader.ReadBoolean();
+                    reader.AlignStream(4);
                 }
 
-                if (sourceFile.version[0] >= 2017) //2017 and up
+                if (version[0] >= 2017) //2017 and up
                 {
                     //pair m_RenderDataKey
-                    a_Stream.Position += 24;
+                    first = new Guid(reader.ReadBytes(16));
+                    var second = reader.ReadInt64();
                     //vector m_AtlasTags
-                    var size = a_Stream.ReadInt32();
+                    var size = reader.ReadInt32();
                     for (int i = 0; i < size; i++)
                     {
-                        var data = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                        var data = reader.ReadAlignedString(reader.ReadInt32());
                     }
 
                     //PPtr<SpriteAtlas> m_SpriteAtlas
@@ -67,66 +74,92 @@ namespace Unity_Studio
                 //  PPtr<Texture2D> texture
                 texture = sourceFile.ReadPPtr();
                 //  PPtr<Texture2D> alphaTexture
-                if (sourceFile.version[0] >= 5) //5.0 and up
+                if (version[0] >= 5) //5.0 and up
                 {
                     var alphaTexture = sourceFile.ReadPPtr();
                 }
 
-                if (sourceFile.version[0] > 5 || (sourceFile.version[0] == 5 && sourceFile.version[1] >= 6)) //5.6 and up
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
                 {
                     //  vector m_SubMeshes
-                    var size = a_Stream.ReadInt32();
+                    var size = reader.ReadInt32();
                     //      SubMesh data
-                    if (sourceFile.version[0] > 2017 || (sourceFile.version[0] == 2017 && sourceFile.version[1] >= 3)) //2017.3 and up
+                    if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)) //2017.3 and up
                     {
-                        a_Stream.Position += 48 * size;
+                        reader.Position += 48 * size;
                     }
                     else
                     {
-                        a_Stream.Position += 44 * size;
+                        reader.Position += 44 * size;
                     }
 
                     //  vector m_IndexBuffer
-                    size = a_Stream.ReadInt32();
-                    a_Stream.Position += size; //UInt8 data   
-                    a_Stream.AlignStream(4);
+                    size = reader.ReadInt32();
+                    reader.Position += size; //UInt8 data   
+                    reader.AlignStream(4);
                     //  VertexData m_VertexData
-                    var m_CurrentChannels = a_Stream.ReadInt32();
-                    var m_VertexCount = a_Stream.ReadUInt32();
+                    var m_CurrentChannels = reader.ReadInt32();
+                    var m_VertexCount = reader.ReadUInt32();
                     //      vector m_Channels
-                    size = a_Stream.ReadInt32();
-                    a_Stream.Position += size * 4; //ChannelInfo data
+                    size = reader.ReadInt32();
+                    reader.Position += size * 4; //ChannelInfo data
                     //      TypelessData m_DataSize
-                    size = a_Stream.ReadInt32();
-                    a_Stream.Position += size; //UInt8 data   
-                    a_Stream.AlignStream(4);
+                    size = reader.ReadInt32();
+                    reader.Position += size; //UInt8 data   
+                    reader.AlignStream(4);
                 }
                 else
                 {
                     //  vector vertices
-                    var size = a_Stream.ReadInt32();
+                    var size = reader.ReadInt32();
                     for (int i = 0; i < size; i++)
                     {
                         //SpriteVertex data
-                        a_Stream.Position += 12; //Vector3f pos
-                        if (sourceFile.version[0] < 4 || (sourceFile.version[0] == 4 && sourceFile.version[1] <= 1)) //4.1 and down
-                            a_Stream.Position += 8; //Vector2f uv
+                        reader.Position += 12; //Vector3f pos
+                        if (version[0] < 4 || (version[0] == 4 && version[1] <= 1)) //4.1 and down
+                            reader.Position += 8; //Vector2f uv
                     }
 
                     //  vector indices
-                    size = a_Stream.ReadInt32();
-                    a_Stream.Position += 2 * size; //UInt16 data
-                    a_Stream.AlignStream(4);
+                    size = reader.ReadInt32();
+                    reader.Position += 2 * size; //UInt16 data
+                    reader.AlignStream(4);
                 }
 
                 //  Rectf textureRect
-                textureRect = new RectangleF(a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle());
+                textureRect = new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 //  Vector2f textureRectOffset
+                reader.Position += 8;
                 //  Vector2f atlasRectOffset - 5.6 and up
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
+                {
+                    reader.Position += 8;
+                }
                 //  unsigned int settingsRaw
+                reader.Position += 4;
                 //  Vector4f uvTransform - 4.2 and up
-                //  float downscaleMultiplier - 2017 and up
-                //vector m_PhysicsShape - 2017 and up
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
+                {
+                    reader.Position += 16;
+                }
+                if (version[0] >= 2017) //2017 and up
+                {
+                    //  float downscaleMultiplier - 2017 and up
+                    reader.Position += 4;
+                    //vector m_PhysicsShape - 2017 and up
+                    var m_PhysicsShape_size = reader.ReadInt32();
+                    m_PhysicsShape = new PointF[m_PhysicsShape_size][];
+                    for (int i = 0; i < m_PhysicsShape_size; i++)
+                    {
+                        var data_size = reader.ReadInt32();
+                        //Vector2f
+                        m_PhysicsShape[i] = new PointF[data_size];
+                        for (int j = 0; j < data_size; j++)
+                        {
+                            m_PhysicsShape[i][j] = new PointF(reader.ReadSingle(), reader.ReadSingle());
+                        }
+                    }
+                }
             }
             else
             {
