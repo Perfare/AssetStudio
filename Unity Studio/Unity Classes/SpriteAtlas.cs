@@ -8,55 +8,56 @@ namespace Unity_Studio
 {
     class SpriteAtlas
     {
-        public List<PPtr> m_PackedSprites = new List<PPtr>();
         public List<PPtr> textures = new List<PPtr>();
         public List<RectangleF> textureRects = new List<RectangleF>();
+        public List<Guid> guids = new List<Guid>();
 
 
         public SpriteAtlas(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.sourceFile.assetsFileReader;
+            reader.Position = preloadData.Offset;
 
-            var m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
             //vector m_PackedSprites
-            var size = a_Stream.ReadInt32();
+            var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
                 //PPtr<Sprite> data
-                m_PackedSprites.Add(sourceFile.ReadPPtr());
+                sourceFile.ReadPPtr();
             }
             //vector m_PackedSpriteNamesToIndex
-            size = a_Stream.ReadInt32();
+            size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
-                var data = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                var data = reader.ReadAlignedString(reader.ReadInt32());
             }
             //map m_RenderDataMap
-            size = a_Stream.ReadInt32();
+            size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
                 //pair first
-                a_Stream.Position += 24;
+                guids.Add(new Guid(reader.ReadBytes(16)));
+                var second = reader.ReadInt64();
                 //SpriteAtlasData second
                 //  PPtr<Texture2D> texture
                 textures.Add(sourceFile.ReadPPtr());
                 // PPtr<Texture2D> alphaTexture
                 var alphaTexture = sourceFile.ReadPPtr();
                 //  Rectf textureRect
-                textureRects.Add(new RectangleF(a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle()));
+                textureRects.Add(new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
                 //  Vector2f textureRectOffset
-                a_Stream.Position += 8;
+                reader.Position += 8;
                 if (sourceFile.version[0] > 2017 || (sourceFile.version[0] == 2017 && sourceFile.version[1] >= 2))//2017.2 and up
                 {
                     //  Vector2f atlasRectOffset
-                    a_Stream.Position += 8;
+                    reader.Position += 8;
                 }
                 //  Vector4f uvTransform
                 //  float downscaleMultiplier
                 //  unsigned int settingsRaw
-                a_Stream.Position += 24;
+                reader.Position += 24;
             }
             //string m_Tag
             //bool m_IsVariant

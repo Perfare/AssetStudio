@@ -10,10 +10,11 @@ namespace Unity_Studio
 {
     public class AssetsFile
     {
-        public EndianBinaryReader a_Stream;
+        public EndianBinaryReader assetsFileReader;
         public string filePath;
         public string bundlePath;
         public string fileName;
+        public string upperFileName;
         public int fileGen;
         public bool valid;
         public string m_Version = "2.5.0f5";
@@ -144,52 +145,53 @@ namespace Unity_Studio
 
         public class UnityShared
         {
-            public int Index = -1; //actual index in main list
+            public int Index = -2; //-2 - Prepare, -1 - Missing
             public string aName = "";
             public string fileName = "";
         }
 
-        public AssetsFile(string fullName, EndianBinaryReader fileStream)
+        public AssetsFile(string fullName, EndianBinaryReader reader)
         {
-            a_Stream = fileStream;
+            assetsFileReader = reader;
             filePath = fullName;
             fileName = Path.GetFileName(fullName);
+            upperFileName = fileName.ToUpper();
             try
             {
-                int tableSize = a_Stream.ReadInt32();
-                int dataEnd = a_Stream.ReadInt32();
-                fileGen = a_Stream.ReadInt32();
-                uint dataOffset = a_Stream.ReadUInt32();
+                int tableSize = assetsFileReader.ReadInt32();
+                int dataEnd = assetsFileReader.ReadInt32();
+                fileGen = assetsFileReader.ReadInt32();
+                uint dataOffset = assetsFileReader.ReadUInt32();
                 sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
 
                 switch (fileGen)
                 {
                     case 6: //2.5.0 - 2.6.1
                         {
-                            a_Stream.Position = (dataEnd - tableSize);
-                            a_Stream.Position += 1;
+                            assetsFileReader.Position = (dataEnd - tableSize);
+                            assetsFileReader.Position += 1;
                             break;
                         }
                     case 7: //3.0.0 beta
                         {
-                            a_Stream.Position = (dataEnd - tableSize);
-                            a_Stream.Position += 1;
-                            m_Version = a_Stream.ReadStringToNull();
+                            assetsFileReader.Position = (dataEnd - tableSize);
+                            assetsFileReader.Position += 1;
+                            m_Version = assetsFileReader.ReadStringToNull();
                             break;
                         }
                     case 8: //3.0.0 - 3.4.2
                         {
-                            a_Stream.Position = (dataEnd - tableSize);
-                            a_Stream.Position += 1;
-                            m_Version = a_Stream.ReadStringToNull();
-                            platform = a_Stream.ReadInt32();
+                            assetsFileReader.Position = (dataEnd - tableSize);
+                            assetsFileReader.Position += 1;
+                            m_Version = assetsFileReader.ReadStringToNull();
+                            platform = assetsFileReader.ReadInt32();
                             break;
                         }
                     case 9: //3.5.0 - 4.6.x
                         {
-                            a_Stream.Position += 4; //azero
-                            m_Version = a_Stream.ReadStringToNull();
-                            platform = a_Stream.ReadInt32();
+                            assetsFileReader.Position += 4; //azero
+                            m_Version = assetsFileReader.ReadStringToNull();
+                            platform = assetsFileReader.ReadInt32();
                             break;
                         }
                     case 14: //5.0.0 beta and final
@@ -197,10 +199,10 @@ namespace Unity_Studio
                     case 16: //??.. no sure
                     case 17: //5.5.0 and up
                         {
-                            a_Stream.Position += 4; //azero
-                            m_Version = a_Stream.ReadStringToNull();
-                            platform = a_Stream.ReadInt32();
-                            baseDefinitions = a_Stream.ReadBoolean();
+                            assetsFileReader.Position += 4; //azero
+                            m_Version = assetsFileReader.ReadStringToNull();
+                            platform = assetsFileReader.ReadInt32();
+                            baseDefinitions = assetsFileReader.ReadBoolean();
                             break;
                         }
                     default:
@@ -215,7 +217,7 @@ namespace Unity_Studio
                     byte[] b32 = BitConverter.GetBytes(platform);
                     Array.Reverse(b32);
                     platform = BitConverter.ToInt32(b32, 0);
-                    a_Stream.endian = EndianType.LittleEndian;
+                    assetsFileReader.endian = EndianType.LittleEndian;
                 }
 
                 switch (platform)
@@ -267,16 +269,16 @@ namespace Unity_Studio
                         break;
                 }
 
-                int baseCount = a_Stream.ReadInt32();
+                int baseCount = assetsFileReader.ReadInt32();
                 for (int i = 0; i < baseCount; i++)
                 {
                     if (fileGen < 14)
                     {
-                        int classID = a_Stream.ReadInt32();
-                        string baseType = a_Stream.ReadStringToNull();
-                        string baseName = a_Stream.ReadStringToNull();
-                        a_Stream.Position += 20;
-                        int memberCount = a_Stream.ReadInt32();
+                        int classID = assetsFileReader.ReadInt32();
+                        string baseType = assetsFileReader.ReadStringToNull();
+                        string baseName = assetsFileReader.ReadStringToNull();
+                        assetsFileReader.Position += 20;
+                        int memberCount = assetsFileReader.ReadInt32();
 
                         var cb = new List<ClassMember>();
                         for (int m = 0; m < memberCount; m++)
@@ -296,10 +298,10 @@ namespace Unity_Studio
 
                 if (fileGen >= 7 && fileGen < 14)
                 {
-                    a_Stream.Position += 4; //azero
+                    assetsFileReader.Position += 4; //azero
                 }
 
-                int assetCount = a_Stream.ReadInt32();
+                int assetCount = assetsFileReader.ReadInt32();
 
                 #region asset preload table
                 string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
@@ -309,29 +311,29 @@ namespace Unity_Studio
                     //each table entry is aligned individually, not the whole table
                     if (fileGen >= 14)
                     {
-                        a_Stream.AlignStream(4);
+                        assetsFileReader.AlignStream(4);
                     }
 
                     AssetPreloadData asset = new AssetPreloadData();
-                    asset.m_PathID = fileGen < 14 ? a_Stream.ReadInt32() : a_Stream.ReadInt64();
-                    asset.Offset = a_Stream.ReadUInt32();
+                    asset.m_PathID = fileGen < 14 ? assetsFileReader.ReadInt32() : assetsFileReader.ReadInt64();
+                    asset.Offset = assetsFileReader.ReadUInt32();
                     asset.Offset += dataOffset;
-                    asset.Size = a_Stream.ReadInt32();
+                    asset.Size = assetsFileReader.ReadInt32();
                     if (fileGen > 15)
                     {
-                        int index = a_Stream.ReadInt32();
+                        int index = assetsFileReader.ReadInt32();
                         asset.Type1 = classIDs[index][0];
                         asset.Type2 = classIDs[index][1];
                     }
                     else
                     {
-                        asset.Type1 = a_Stream.ReadInt32();
-                        asset.Type2 = a_Stream.ReadUInt16();
-                        a_Stream.Position += 2;
+                        asset.Type1 = assetsFileReader.ReadInt32();
+                        asset.Type2 = assetsFileReader.ReadUInt16();
+                        assetsFileReader.Position += 2;
                     }
                     if (fileGen == 15)
                     {
-                        byte unknownByte = a_Stream.ReadByte();
+                        byte unknownByte = assetsFileReader.ReadByte();
                         //this is a single byte, not an int32
                         //the next entry is aligned after this
                         //but not the last!
@@ -356,12 +358,12 @@ namespace Unity_Studio
                     #region read BuildSettings to get version for unity 2.x files
                     if (asset.Type2 == 141 && fileGen == 6)
                     {
-                        long nextAsset = a_Stream.Position;
+                        long nextAsset = assetsFileReader.Position;
 
                         BuildSettings BSettings = new BuildSettings(asset);
                         m_Version = BSettings.m_Version;
 
-                        a_Stream.Position = nextAsset;
+                        assetsFileReader.Position = nextAsset;
                     }
                     #endregion
                 }
@@ -380,22 +382,22 @@ namespace Unity_Studio
                 if (fileGen >= 14)
                 {
                     //this looks like a list of assets that need to be preloaded in memory before anytihng else
-                    int someCount = a_Stream.ReadInt32();
+                    int someCount = assetsFileReader.ReadInt32();
                     for (int i = 0; i < someCount; i++)
                     {
-                        int num1 = a_Stream.ReadInt32();
-                        a_Stream.AlignStream(4);
-                        long m_PathID = a_Stream.ReadInt64();
+                        int num1 = assetsFileReader.ReadInt32();
+                        assetsFileReader.AlignStream(4);
+                        long m_PathID = assetsFileReader.ReadInt64();
                     }
                 }
 
-                int sharedFileCount = a_Stream.ReadInt32();
+                int sharedFileCount = assetsFileReader.ReadInt32();
                 for (int i = 0; i < sharedFileCount; i++)
                 {
                     var shared = new UnityShared();
-                    shared.aName = a_Stream.ReadStringToNull();
-                    a_Stream.Position += 20;
-                    var sharedFilePath = a_Stream.ReadStringToNull(); //relative path
+                    shared.aName = assetsFileReader.ReadStringToNull();
+                    assetsFileReader.Position += 20;
+                    var sharedFilePath = assetsFileReader.ReadStringToNull(); //relative path
                     shared.fileName = Path.GetFileName(sharedFilePath);
                     sharedAssetsList.Add(shared);
                 }
@@ -408,14 +410,14 @@ namespace Unity_Studio
 
         private void readBase(List<ClassMember> cb, int level)
         {
-            string varType = a_Stream.ReadStringToNull();
-            string varName = a_Stream.ReadStringToNull();
-            int size = a_Stream.ReadInt32();
-            int index = a_Stream.ReadInt32();
-            int isArray = a_Stream.ReadInt32();
-            int num0 = a_Stream.ReadInt32();
-            int flag = a_Stream.ReadInt32();
-            int childrenCount = a_Stream.ReadInt32();
+            string varType = assetsFileReader.ReadStringToNull();
+            string varName = assetsFileReader.ReadStringToNull();
+            int size = assetsFileReader.ReadInt32();
+            int index = assetsFileReader.ReadInt32();
+            int isArray = assetsFileReader.ReadInt32();
+            int num0 = assetsFileReader.ReadInt32();
+            int flag = assetsFileReader.ReadInt32();
+            int childrenCount = assetsFileReader.ReadInt32();
 
             cb.Add(new ClassMember
             {
@@ -430,12 +432,12 @@ namespace Unity_Studio
 
         private void readBase5()
         {
-            int classID = a_Stream.ReadInt32();
+            int classID = assetsFileReader.ReadInt32();
             if (fileGen > 15)//5.5.0 and up
             {
-                a_Stream.ReadByte();
+                assetsFileReader.ReadByte();
                 int type1;
-                if ((type1 = a_Stream.ReadInt16()) >= 0)
+                if ((type1 = assetsFileReader.ReadInt16()) >= 0)
                 {
                     type1 = -1 - type1;
                 }
@@ -446,35 +448,35 @@ namespace Unity_Studio
                 classIDs.Add(new[] { type1, classID });
                 if (classID == 114)
                 {
-                    a_Stream.Position += 16;
+                    assetsFileReader.Position += 16;
                 }
                 classID = type1;
             }
             else if (classID < 0)
             {
-                a_Stream.Position += 16;
+                assetsFileReader.Position += 16;
             }
-            a_Stream.Position += 16;
+            assetsFileReader.Position += 16;
 
             if (baseDefinitions)
             {
-                int varCount = a_Stream.ReadInt32();
-                int stringSize = a_Stream.ReadInt32();
+                int varCount = assetsFileReader.ReadInt32();
+                int stringSize = assetsFileReader.ReadInt32();
 
-                a_Stream.Position += varCount * 24;
-                var stringReader = new EndianBinaryReader(new MemoryStream(a_Stream.ReadBytes(stringSize)));
+                assetsFileReader.Position += varCount * 24;
+                var stringReader = new EndianBinaryReader(new MemoryStream(assetsFileReader.ReadBytes(stringSize)));
                 string className = "";
                 var classVar = new List<ClassMember>();
                 //build Class Structures
-                a_Stream.Position -= varCount * 24 + stringSize;
+                assetsFileReader.Position -= varCount * 24 + stringSize;
                 for (int i = 0; i < varCount; i++)
                 {
-                    ushort num0 = a_Stream.ReadUInt16();
-                    byte level = a_Stream.ReadByte();
-                    bool isArray = a_Stream.ReadBoolean();
+                    ushort num0 = assetsFileReader.ReadUInt16();
+                    byte level = assetsFileReader.ReadByte();
+                    bool isArray = assetsFileReader.ReadBoolean();
 
-                    ushort varTypeIndex = a_Stream.ReadUInt16();
-                    ushort test = a_Stream.ReadUInt16();
+                    ushort varTypeIndex = assetsFileReader.ReadUInt16();
+                    ushort test = assetsFileReader.ReadUInt16();
                     string varTypeStr;
                     if (test == 0) //varType is an offset in the string block
                     {
@@ -486,8 +488,8 @@ namespace Unity_Studio
                         varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString();
                     }
 
-                    ushort varNameIndex = a_Stream.ReadUInt16();
-                    test = a_Stream.ReadUInt16();
+                    ushort varNameIndex = assetsFileReader.ReadUInt16();
+                    test = assetsFileReader.ReadUInt16();
                     string varNameStr;
                     if (test == 0)
                     {
@@ -499,9 +501,9 @@ namespace Unity_Studio
                         varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString();
                     }
 
-                    int size = a_Stream.ReadInt32();
-                    int index = a_Stream.ReadInt32();
-                    int flag = a_Stream.ReadInt32();
+                    int size = assetsFileReader.ReadInt32();
+                    int index = assetsFileReader.ReadInt32();
+                    int flag = assetsFileReader.ReadInt32();
 
                     if (index == 0) { className = varTypeStr + " " + varNameStr; }
                     else
@@ -517,7 +519,7 @@ namespace Unity_Studio
                     }
                 }
                 stringReader.Dispose();
-                a_Stream.Position += stringSize;
+                assetsFileReader.Position += stringSize;
 
                 var aClass = new ClassStruct { ID = classID, Text = className, members = classVar };
                 aClass.SubItems.Add(classID.ToString());

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Unity_Studio
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
         public static HashSet<string> assetsfileListHash = new HashSet<string>(); //to improve the loading speed
         public static Dictionary<string, int> sharedFileIndex = new Dictionary<string, int>(); //to improve the loading speed
-        public static Dictionary<string, EndianBinaryReader> assetsfileandstream = new Dictionary<string, EndianBinaryReader>(); //use for read res files
+        public static Dictionary<string, EndianBinaryReader> resourceFileReaders = new Dictionary<string, EndianBinaryReader>(); //use for read res files
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
@@ -39,108 +40,114 @@ namespace Unity_Studio
         public static Action<string> StatusStripUpdate;
         public static Action<int> ProgressBarMaximumAdd;
 
-        public static void LoadAssetsFile(string fileName)
+        public static void LoadFile(string fullName)
         {
-            if (!assetsfileListHash.Contains(fileName))
+            if (CheckBundleFile(fullName, out var reader))
             {
-                AssetsFile assetsFile = new AssetsFile(fileName, new EndianBinaryReader(File.OpenRead(fileName)));
-                assetsfileList.Add(assetsFile);
-                assetsfileListHash.Add(fileName);
+                LoadBundleFile(fullName, reader);
+            }
+            else
+            {
+                LoadAssetsFile(fullName, reader);
+            }
+        }
 
-                #region for 2.6.x find mainData and get string version
-                if (assetsFile.fileGen == 6 && Path.GetFileName(fileName) != "mainData")
+        private static void LoadAssetsFile(string fullName, EndianBinaryReader reader)
+        {
+            var fileName = Path.GetFileName(fullName);
+            StatusStripUpdate("Loading " + fileName);
+            if (!assetsfileListHash.Contains(fileName.ToUpper()))
+            {
+                var assetsFile = new AssetsFile(fullName, reader);
+                if (assetsFile.valid)
                 {
-                    AssetsFile mainDataFile = assetsfileList.Find(aFile => aFile.filePath == Path.GetDirectoryName(fileName) + "\\mainData");
-                    if (mainDataFile != null)
-                    {
-                        assetsFile.m_Version = mainDataFile.m_Version;
-                        assetsFile.version = mainDataFile.version;
-                        assetsFile.buildType = mainDataFile.buildType;
-                    }
-                    else if (File.Exists(Path.GetDirectoryName(fileName) + "\\mainData"))
-                    {
-                        mainDataFile = new AssetsFile(Path.GetDirectoryName(fileName) + "\\mainData", new EndianBinaryReader(File.OpenRead(Path.GetDirectoryName(fileName) + "\\mainData")));
+                    assetsfileList.Add(assetsFile);
+                    assetsfileListHash.Add(assetsFile.upperFileName);
 
-                        assetsFile.m_Version = mainDataFile.m_Version;
-                        assetsFile.version = mainDataFile.version;
-                        assetsFile.buildType = mainDataFile.buildType;
+                    #region for 2.6.x find mainData and get string version
+                    if (assetsFile.fileGen == 6 && fileName != "mainData")
+                    {
+                        var mainDataFile = assetsfileList.Find(aFile => aFile.fileName == "mainData");
+                        if (mainDataFile != null)
+                        {
+                            assetsFile.m_Version = mainDataFile.m_Version;
+                            assetsFile.version = mainDataFile.version;
+                            assetsFile.buildType = mainDataFile.buildType;
+                        }
+                        else if (File.Exists(Path.GetDirectoryName(fullName) + "\\mainData"))
+                        {
+                            mainDataFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\mainData", new EndianBinaryReader(File.OpenRead(Path.GetDirectoryName(fullName) + "\\mainData")));
+                            assetsFile.m_Version = mainDataFile.m_Version;
+                            assetsFile.version = mainDataFile.version;
+                            assetsFile.buildType = mainDataFile.buildType;
+                        }
                     }
+                    #endregion
+
+                    int value = 0;
+                    foreach (var sharedFile in assetsFile.sharedAssetsList)
+                    {
+                        var sharedFilePath = Path.GetDirectoryName(fullName) + "\\" + sharedFile.fileName;
+                        var sharedFileName = sharedFile.fileName;
+
+                        if (!unityFilesHash.Contains(sharedFileName.ToUpper()))
+                        {
+                            if (!File.Exists(sharedFilePath))
+                            {
+                                var findFiles = Directory.GetFiles(Path.GetDirectoryName(fullName), sharedFileName, SearchOption.AllDirectories);
+                                if (findFiles.Length > 0)
+                                {
+                                    sharedFilePath = findFiles[0];
+                                }
+                            }
+
+                            if (File.Exists(sharedFilePath))
+                            {
+                                unityFiles.Add(sharedFilePath);
+                                unityFilesHash.Add(sharedFileName.ToUpper());
+                                value++;
+                            }
+                        }
+                    }
+                    if (value > 0)
+                        ProgressBarMaximumAdd(value);
                 }
-                #endregion
+            }
+        }
 
-                int value = 0;
-                foreach (var sharedFile in assetsFile.sharedAssetsList)
+        private static void LoadBundleFile(string fullName, EndianBinaryReader reader)
+        {
+            var fileName = Path.GetFileName(fullName);
+            StatusStripUpdate("Decompressing " + fileName);
+            var bundleFile = new BundleFile(reader);
+            foreach (var memFile in bundleFile.MemoryAssetsFileList)
+            {
+                if (!assetsfileListHash.Contains(memFile.fileName.ToUpper()))
                 {
-                    string sharedFilePath = Path.GetDirectoryName(fileName) + "\\" + sharedFile.fileName;
-                    string sharedFileName = sharedFile.fileName;
-                    if (!unityFilesHash.Contains(sharedFileName))
+                    StatusStripUpdate("Loading " + memFile.fileName);
+                    var assetsFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\" + memFile.fileName, new EndianBinaryReader(memFile.memStream));
+                    if (assetsFile.valid)
                     {
-                        if (!File.Exists(sharedFilePath))
+                        assetsFile.bundlePath = fullName;
+
+                        if (assetsFile.fileGen == 6) //2.6.x and earlier don't have a string version before the preload table
                         {
-                            var findFiles = Directory.GetFiles(Path.GetDirectoryName(fileName), sharedFileName, SearchOption.AllDirectories);
-                            if (findFiles.Length > 0) { sharedFilePath = findFiles[0]; }
+                            //make use of the bundle file version
+                            assetsFile.m_Version = bundleFile.versionEngine;
+                            assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
+                            assetsFile.buildType = bundleFile.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
                         }
 
-                        if (File.Exists(sharedFilePath))
-                        {
-                            //this would get screwed if the file somehow fails to load
-                            sharedFile.Index = unityFiles.Count;
-                            unityFiles.Add(sharedFilePath);
-                            unityFilesHash.Add(sharedFileName);
-                            value++;
-                        }
+                        assetsfileList.Add(assetsFile);
+                        assetsfileListHash.Add(assetsFile.upperFileName);
                     }
                     else
                     {
-                        if (!sharedFileIndex.TryGetValue(sharedFilePath, out var index))
-                        {
-                            index = unityFiles.IndexOf(sharedFilePath);
-                            sharedFileIndex.Add(sharedFilePath, index);
-                        }
-                        sharedFile.Index = index;
+                        resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.assetsFileReader);
                     }
                 }
-                if (value > 0)
-                    ProgressBarMaximumAdd(value);
             }
-        }
-
-        public static void LoadBundleFile(string bundleFileName)
-        {
-            StatusStripUpdate("Decompressing " + Path.GetFileName(bundleFileName) + "...");
-            BundleFile b_File = new BundleFile(bundleFileName);
-
-            foreach (var memFile in b_File.MemoryAssetsFileList) //filter unity files
-            {
-                StatusStripUpdate("Loading " + memFile.fileName);
-                //create dummy path to be used for asset extraction
-                memFile.fileName = Path.GetDirectoryName(bundleFileName) + "\\" + memFile.fileName;
-                AssetsFile assetsFile = new AssetsFile(memFile.fileName, new EndianBinaryReader(memFile.memStream));
-                if (assetsFile.valid)
-                {
-                    assetsFile.bundlePath = bundleFileName;
-                    if (assetsFile.fileGen == 6 && Path.GetFileName(bundleFileName) != "mainData") //2.6.x and earlier don't have a string version before the preload table
-                    {
-                        //make use of the bundle file version
-                        assetsFile.m_Version = b_File.versionEngine;
-                        assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
-                        assetsFile.buildType = b_File.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
-                    }
-                    assetsfileList.Add(assetsFile);
-                }
-                assetsfileandstream[assetsFile.fileName] = assetsFile.a_Stream;
-            }
-        }
-
-        public static void BuildSharedIndex()
-        {
-            foreach (var assetsFile in assetsfileList)
-            {
-                foreach (var sharedFile in assetsFile.sharedAssetsList)
-                {
-                    sharedFile.Index = assetsfileList.FindIndex(aFile => aFile.fileName.ToUpper() == sharedFile.fileName.ToUpper());
-                }
-            }
+            reader.Dispose();
         }
 
         public static void MergeSplitAssets(string dirPath)
@@ -167,16 +174,16 @@ namespace Unity_Studio
             }
         }
 
-        public static int extractBundleFile(string bundleFileName)
+        public static int ExtractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
-            if (CheckBundleFile(bundleFileName))
+            if (CheckBundleFile(bundleFileName, out var reader))
             {
                 StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
                 var extractPath = bundleFileName + "_unpacked\\";
                 Directory.CreateDirectory(extractPath);
-                var b_File = new BundleFile(bundleFileName);
-                foreach (var memFile in b_File.MemoryAssetsFileList)
+                var bundleFile = new BundleFile(reader);
+                foreach (var memFile in bundleFile.MemoryAssetsFileList)
                 {
                     var filePath = extractPath + memFile.fileName.Replace('/', '\\');
                     if (!Directory.Exists(Path.GetDirectoryName(filePath)))
@@ -195,6 +202,7 @@ namespace Unity_Studio
                     }
                 }
             }
+            reader.Dispose();
             return extractedCount;
         }
 
@@ -1852,8 +1860,8 @@ namespace Unity_Studio
             var exportFullName = exportPath + asset.Text + asset.extension;
             if (ExportFileExists(exportFullName))
                 return false;
-            asset.sourceFile.a_Stream.Position = asset.Offset;
-            var bytes = asset.sourceFile.a_Stream.ReadBytes(asset.Size);
+            asset.sourceFile.assetsFileReader.Position = asset.Offset;
+            var bytes = asset.sourceFile.assetsFileReader.ReadBytes(asset.Size);
             File.WriteAllBytes(exportFullName, bytes);
             return true;
         }
@@ -1874,21 +1882,20 @@ namespace Unity_Studio
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static bool CheckBundleFile(string fileName)
+        private static bool CheckBundleFile(string fileName, out EndianBinaryReader reader)
         {
-            using (var stream = new EndianBinaryReader(File.OpenRead(fileName)))
+            reader = new EndianBinaryReader(File.OpenRead(fileName));
+            var signature = reader.ReadStringToNull();
+            reader.Position = 0;
+            switch (signature)
             {
-                var signature = stream.ReadStringToNull();
-                switch (signature)
-                {
-                    case "UnityWeb":
-                    case "UnityRaw":
-                    case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
-                    case "UnityFS":
-                        return true;
-                    default:
-                        return false;
-                }
+                case "UnityWeb":
+                case "UnityRaw":
+                case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
+                case "UnityFS":
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -1909,28 +1916,18 @@ namespace Unity_Studio
             return selectFile.Distinct().ToArray();
         }
 
-        //TODO Tight方式的Sprite需要读取多边形信息进行绘图
         public static Bitmap GetImageFromSprite(AssetPreloadData asset)
         {
             if (spriteCache.TryGetValue(asset, out var bitmap))
                 return (Bitmap)bitmap.Clone();
             var m_Sprite = new Sprite(asset, true);
-            if (m_Sprite.m_SpriteAtlas != null && assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
+            if (assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
-                bool find = false;
-                int index = 0;
-                for (; index < m_SpriteAtlas.m_PackedSprites.Count; index++)
+                var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
+                if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
                 {
-                    if (assetsfileList.TryGetPD(m_SpriteAtlas.m_PackedSprites[index], out assetPreloadData) && assetPreloadData == asset)
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (find && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
-                {
-                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
                 }
             }
             else
@@ -1959,6 +1956,46 @@ namespace Unity_Studio
                     spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     spriteCache.Add(asset, spriteImage);
                     return (Bitmap)spriteImage.Clone();
+                }
+            }
+
+            return null;
+        }
+
+        private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
+        {
+            var texture2D = new Texture2D(texture2DAsset, true);
+            using (var originalImage = texture2D.ConvertToBitmap(false))
+            {
+                if (originalImage != null)
+                {
+                    var info = texture2DAsset.InfoText;
+                    var start = info.IndexOf("Format");
+                    info = info.Substring(start, info.Length - start);
+                    asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
+                    var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
+                    using (var brush = new TextureBrush(spriteImage))
+                    {
+                        using (var path = new GraphicsPath())
+                        {
+                            foreach (var p in sprite.m_PhysicsShape)
+                                path.AddPolygon(p);
+                            using (var matr = new Matrix())
+                            {
+                                matr.Translate(sprite.m_Rect.Width * sprite.m_Pivot.X, sprite.m_Rect.Height * sprite.m_Pivot.Y);
+                                matr.Scale(sprite.m_PixelsToUnits, sprite.m_PixelsToUnits);
+                                path.Transform(matr);
+                                var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
+                                using (var graphic = Graphics.FromImage(bitmap))
+                                {
+                                    graphic.FillPath(brush, path);
+                                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                                    spriteCache.Add(asset, bitmap);
+                                    return (Bitmap)bitmap.Clone();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

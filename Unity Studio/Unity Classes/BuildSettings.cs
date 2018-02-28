@@ -12,7 +12,7 @@ namespace Unity_Studio
         public BuildSettings(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
 
             int levels = a_Stream.ReadInt32();

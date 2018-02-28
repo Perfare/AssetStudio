@@ -12,7 +12,7 @@ namespace Unity_Studio
         public MonoBehaviour(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
 
             var m_GameObject = sourceFile.ReadPPtr();

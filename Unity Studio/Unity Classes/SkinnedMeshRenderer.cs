@@ -21,7 +21,7 @@ namespace Unity_Studio
         {
             var sourceFile = preloadData.sourceFile;
             var version = preloadData.sourceFile.version;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
 
             if (sourceFile.platform == -2)

@@ -27,7 +27,7 @@ namespace Unity_Studio
         public AssetBundle(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
+            var a_Stream = preloadData.sourceFile.assetsFileReader;
             a_Stream.Position = preloadData.Offset;
 
             var m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
