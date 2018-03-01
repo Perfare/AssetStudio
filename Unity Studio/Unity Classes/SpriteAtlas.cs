@@ -16,8 +16,7 @@ namespace Unity_Studio
         public SpriteAtlas(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.sourceFile.assetsFileReader;
-            reader.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             var m_Name = reader.ReadAlignedString(reader.ReadInt32());
             //vector m_PackedSprites

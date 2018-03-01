@@ -21,8 +21,7 @@ namespace Unity_Studio
         public Sprite(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.sourceFile.assetsFileReader;
-            reader.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
             var version = sourceFile.version;
 
             m_Name = reader.ReadAlignedString(reader.ReadInt32());
@@ -163,7 +162,6 @@ namespace Unity_Studio
             }
             else
             {
-                preloadData.extension = ".png";
                 preloadData.Text = m_Name;
             }
         }

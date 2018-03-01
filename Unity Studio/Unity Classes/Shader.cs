@@ -16,17 +16,16 @@ namespace Unity_Studio
         public Shader(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             if (sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
 
             if (readSwitch)
             {
@@ -43,23 +42,23 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        a_Stream.Position = preloadData.Offset;
+                        reader.Position = preloadData.Offset;
                         var sb = new StringBuilder();
                         var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
-                        ClassStructHelper.ReadClassStruct(sb, members, a_Stream);
+                        ClassStructHelper.ReadClassStruct(sb, members, reader);
                         m_Script = Encoding.UTF8.GetBytes(sb.ToString());
                         //m_Script = ReadSerializedShader(members, a_Stream);
                     }
                 }
                 else
                 {
-                    m_Script = a_Stream.ReadBytes(a_Stream.ReadInt32());
+                    m_Script = reader.ReadBytes(reader.ReadInt32());
                     if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) //5.3 - 5.4
                     {
-                        a_Stream.AlignStream(4);
-                        a_Stream.ReadAlignedString(a_Stream.ReadInt32());//m_PathName
-                        var decompressedSize = a_Stream.ReadUInt32();
-                        var m_SubProgramBlob = a_Stream.ReadBytes(a_Stream.ReadInt32());
+                        reader.AlignStream(4);
+                        reader.ReadAlignedString(reader.ReadInt32());//m_PathName
+                        var decompressedSize = reader.ReadUInt32();
+                        var m_SubProgramBlob = reader.ReadBytes(reader.ReadInt32());
                         var decompressedBytes = new byte[decompressedSize];
                         using (var mstream = new MemoryStream(m_SubProgramBlob))
                         {

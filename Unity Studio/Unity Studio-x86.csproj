@@ -146,9 +146,14 @@
     <Compile Include="Unity Classes\BuildSettings.cs" />
     <Compile Include="Unity Studio Classes\BundleFile.cs" />
     <Compile Include="Unity Studio Classes\ClassStruct.cs" />
+    <Compile Include="Unity Studio Classes\FBXExporter.cs" />
+    <Compile Include="Unity Studio Classes\SpriteHelper.cs" />
+    <Compile Include="Unity Studio Classes\StringExtensions.cs" />
     <Compile Include="Unity Studio Classes\EndianBinaryReader.cs" />
     <Compile Include="Unity Studio Classes\Texture2DConverter.cs" />
     <Compile Include="Unity Studio Classes\UnityEnum.cs" />
+    <Compile Include="Unity Studio Classes\UnityExporter.cs" />
+    <Compile Include="Unity Studio Classes\UnityImporter.cs" />
     <Compile Include="Unity Studio Classes\UnityStudio.cs" />
     <Compile Include="Unity Studio Classes\ClassIDReference.cs" />
     <Compile Include="ExportOptions.cs">
@@ -168,7 +173,7 @@
     <Compile Include="Unity Classes\Material.cs" />
     <Compile Include="Unity Classes\Mesh.cs" />
     <Compile Include="Unity Classes\GameObject.cs" />
-    <Compile Include="Unity Studio Classes\Helpers.cs" />
+    <Compile Include="Unity Studio Classes\PPtrHelpers.cs" />
     <Compile Include="Unity Classes\MonoBehaviour.cs" />
     <Compile Include="Unity Classes\PlayerSettings.cs" />
     <Compile Include="Unity Classes\RectTransform.cs" />

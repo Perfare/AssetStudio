@@ -13,19 +13,18 @@ namespace Unity_Studio
         public MovieTexture(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
             if (readSwitch)
             {
-                var m_Loop = a_Stream.ReadBoolean();
-                a_Stream.AlignStream(4);
+                var m_Loop = reader.ReadBoolean();
+                reader.AlignStream(4);
                 //PPtr<AudioClip>
                 sourceFile.ReadPPtr();
-                var size = a_Stream.ReadInt32();
-                m_MovieData = a_Stream.ReadBytes(size);
-                var m_ColorSpace = a_Stream.ReadInt32();
+                var size = reader.ReadInt32();
+                m_MovieData = reader.ReadBytes(size);
+                var m_ColorSpace = reader.ReadInt32();
             }
             else
             {

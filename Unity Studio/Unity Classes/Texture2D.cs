@@ -91,61 +91,60 @@ namespace Unity_Studio
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
             version = sourceFile.version;
 
             if (sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
             {
-                var m_ForcedFallbackFormat = a_Stream.ReadInt32();
-                var m_DownscaleFallback = a_Stream.ReadBoolean();
-                a_Stream.AlignStream(4);
+                var m_ForcedFallbackFormat = reader.ReadInt32();
+                var m_DownscaleFallback = reader.ReadBoolean();
+                reader.AlignStream(4);
             }
-            m_Width = a_Stream.ReadInt32();
-            m_Height = a_Stream.ReadInt32();
-            m_CompleteImageSize = a_Stream.ReadInt32();
-            m_TextureFormat = (TextureFormat)a_Stream.ReadInt32();
+            m_Width = reader.ReadInt32();
+            m_Height = reader.ReadInt32();
+            m_CompleteImageSize = reader.ReadInt32();
+            m_TextureFormat = (TextureFormat)reader.ReadInt32();
 
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2))
-            { m_MipMap = a_Stream.ReadBoolean(); }
+            { m_MipMap = reader.ReadBoolean(); }
             else
             {
                 dwFlags += 0x20000;
-                dwMipMapCount = a_Stream.ReadInt32();//is this with or without main image?
+                dwMipMapCount = reader.ReadInt32();//is this with or without main image?
                 dwCaps += 0x400008;
             }
 
-            m_IsReadable = a_Stream.ReadBoolean(); //2.6.0 and up
-            m_ReadAllowed = a_Stream.ReadBoolean(); //3.0.0 - 5.4
-            a_Stream.AlignStream(4);
+            m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
+            m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
+            reader.AlignStream(4);
 
-            m_ImageCount = a_Stream.ReadInt32();
-            m_TextureDimension = a_Stream.ReadInt32();
+            m_ImageCount = reader.ReadInt32();
+            m_TextureDimension = reader.ReadInt32();
             //m_TextureSettings
-            m_FilterMode = a_Stream.ReadInt32();
-            m_Aniso = a_Stream.ReadInt32();
-            m_MipBias = a_Stream.ReadSingle();
-            m_WrapMode = a_Stream.ReadInt32();
+            m_FilterMode = reader.ReadInt32();
+            m_Aniso = reader.ReadInt32();
+            m_MipBias = reader.ReadSingle();
+            m_WrapMode = reader.ReadInt32();
             if (version[0] >= 2017)//2017.x and up
             {
-                int m_WrapV = a_Stream.ReadInt32();
-                int m_WrapW = a_Stream.ReadInt32();
+                int m_WrapV = reader.ReadInt32();
+                int m_WrapW = reader.ReadInt32();
             }
             if (version[0] >= 3)
             {
-                m_LightmapFormat = a_Stream.ReadInt32();
-                if (version[0] >= 4 || version[1] >= 5) { m_ColorSpace = a_Stream.ReadInt32(); } //3.5.0 and up
+                m_LightmapFormat = reader.ReadInt32();
+                if (version[0] >= 4 || version[1] >= 5) { m_ColorSpace = reader.ReadInt32(); } //3.5.0 and up
             }
 
-            image_data_size = a_Stream.ReadInt32();
+            image_data_size = reader.ReadInt32();
 
             if (m_MipMap)
             {
@@ -156,10 +155,10 @@ namespace Unity_Studio
 
             if (image_data_size == 0 && ((version[0] == 5 && version[1] >= 3) || version[0] > 5))//5.3.0 and up
             {
-                offset = a_Stream.ReadUInt32();
-                size = a_Stream.ReadUInt32();
+                offset = reader.ReadUInt32();
+                size = reader.ReadUInt32();
                 image_data_size = (int)size;
-                path = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                path = reader.ReadAlignedString(reader.ReadInt32());
             }
 
             if (readSwitch)
@@ -178,18 +177,18 @@ namespace Unity_Studio
                     }
                     if (File.Exists(resourceFilePath))
                     {
-                        using (var reader = new BinaryReader(File.OpenRead(resourceFilePath)))
+                        using (var resourceReader = new BinaryReader(File.OpenRead(resourceFilePath)))
                         {
-                            reader.BaseStream.Position = offset;
-                            image_data = reader.ReadBytes(image_data_size);
+                            resourceReader.BaseStream.Position = offset;
+                            image_data = resourceReader.ReadBytes(image_data_size);
                         }
                     }
                     else
                     {
-                        if (UnityStudio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var reader))
+                        if (UnityStudio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var resourceReader))
                         {
-                            reader.Position = offset;
-                            image_data = reader.ReadBytes(image_data_size);
+                            resourceReader.Position = offset;
+                            image_data = resourceReader.ReadBytes(image_data_size);
                         }
                         else
                         {
@@ -199,7 +198,7 @@ namespace Unity_Studio
                 }
                 else
                 {
-                    image_data = a_Stream.ReadBytes(image_data_size);
+                    image_data = reader.ReadBytes(image_data_size);
                 }
 
                 switch (m_TextureFormat)
@@ -776,187 +775,4 @@ namespace Unity_Studio
             dwABitMask = -16777216;
         }
     }
-}
-
-public static class KTXHeader
-{
-    public static byte[] IDENTIFIER = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
-    public static byte[] ENDIANESS_LE = { 1, 2, 3, 4 };
-    public static byte[] ENDIANESS_BE = { 4, 3, 2, 1 };
-
-    // constants for glInternalFormat
-    public static int GL_ETC1_RGB8_OES = 0x8D64;
-
-    public static int GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
-    public static int GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG = 0x8C01;
-    public static int GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
-    public static int GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
-
-    public static int GL_ATC_RGB_AMD = 0x8C92;
-    public static int GL_ATC_RGBA_EXPLICIT_ALPHA_AMD = 0x8C93;
-    public static int GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
-
-    public static int GL_COMPRESSED_RGB8_ETC2 = 0x9274;
-    public static int GL_COMPRESSED_SRGB8_ETC2 = 0x9275;
-    public static int GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9276;
-    public static int GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 0x9277;
-    public static int GL_COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
-    public static int GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 0x9279;
-    public static int GL_COMPRESSED_R11_EAC = 0x9270;
-    public static int GL_COMPRESSED_SIGNED_R11_EAC = 0x9271;
-    public static int GL_COMPRESSED_RG11_EAC = 0x9272;
-    public static int GL_COMPRESSED_SIGNED_RG11_EAC = 0x9273;
-
-    public static int GL_COMPRESSED_RED_RGTC1 = 0x8DBB;
-    public static int GL_COMPRESSED_RG_RGTC2 = 0x8DBD;
-    public static int GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 0x8E8F;
-    public static int GL_COMPRESSED_RGBA_BPTC_UNORM = 0x8E8C;
-
-    public static int GL_R16F = 0x822D;
-    public static int GL_RG16F = 0x822F;
-    public static int GL_RGBA16F = 0x881A;
-    public static int GL_R32F = 0x822E;
-    public static int GL_RG32F = 0x8230;
-    public static int GL_RGBA32F = 0x8814;
-
-    // constants for glBaseInternalFormat
-    public static int GL_RED = 0x1903;
-    public static int GL_GREEN = 0x1904;
-    public static int GL_BLUE = 0x1905;
-    public static int GL_ALPHA = 0x1906;
-    public static int GL_RGB = 0x1907;
-    public static int GL_RGBA = 0x1908;
-    public static int GL_RG = 0x8227;
-}
-
-//from TextureConverter.h
-public enum QFORMAT
-{
-    // General formats
-    Q_FORMAT_RGBA_8UI = 1,
-    Q_FORMAT_RGBA_8I,
-    Q_FORMAT_RGB5_A1UI,
-    Q_FORMAT_RGBA_4444,
-    Q_FORMAT_RGBA_16UI,
-    Q_FORMAT_RGBA_16I,
-    Q_FORMAT_RGBA_32UI,
-    Q_FORMAT_RGBA_32I,
-
-    Q_FORMAT_PALETTE_8_RGBA_8888,
-    Q_FORMAT_PALETTE_8_RGBA_5551,
-    Q_FORMAT_PALETTE_8_RGBA_4444,
-    Q_FORMAT_PALETTE_4_RGBA_8888,
-    Q_FORMAT_PALETTE_4_RGBA_5551,
-    Q_FORMAT_PALETTE_4_RGBA_4444,
-    Q_FORMAT_PALETTE_1_RGBA_8888,
-    Q_FORMAT_PALETTE_8_RGB_888,
-    Q_FORMAT_PALETTE_8_RGB_565,
-    Q_FORMAT_PALETTE_4_RGB_888,
-    Q_FORMAT_PALETTE_4_RGB_565,
-
-    Q_FORMAT_R2_GBA10UI,
-    Q_FORMAT_RGB10_A2UI,
-    Q_FORMAT_RGB10_A2I,
-    Q_FORMAT_RGBA_F,
-    Q_FORMAT_RGBA_HF,
-
-    Q_FORMAT_RGB9_E5,   // Last five bits are exponent bits (Read following section in GLES3 spec: "3.8.17 Shared Exponent Texture Color Conversion")
-    Q_FORMAT_RGB_8UI,
-    Q_FORMAT_RGB_8I,
-    Q_FORMAT_RGB_565,
-    Q_FORMAT_RGB_16UI,
-    Q_FORMAT_RGB_16I,
-    Q_FORMAT_RGB_32UI,
-    Q_FORMAT_RGB_32I,
-
-    Q_FORMAT_RGB_F,
-    Q_FORMAT_RGB_HF,
-    Q_FORMAT_RGB_11_11_10_F,
-
-    Q_FORMAT_RG_F,
-    Q_FORMAT_RG_HF,
-    Q_FORMAT_RG_32UI,
-    Q_FORMAT_RG_32I,
-    Q_FORMAT_RG_16I,
-    Q_FORMAT_RG_16UI,
-    Q_FORMAT_RG_8I,
-    Q_FORMAT_RG_8UI,
-    Q_FORMAT_RG_S88,
-
-    Q_FORMAT_R_32UI,
-    Q_FORMAT_R_32I,
-    Q_FORMAT_R_F,
-    Q_FORMAT_R_16F,
-    Q_FORMAT_R_16I,
-    Q_FORMAT_R_16UI,
-    Q_FORMAT_R_8I,
-    Q_FORMAT_R_8UI,
-
-    Q_FORMAT_LUMINANCE_ALPHA_88,
-    Q_FORMAT_LUMINANCE_8,
-    Q_FORMAT_ALPHA_8,
-
-    Q_FORMAT_LUMINANCE_ALPHA_F,
-    Q_FORMAT_LUMINANCE_F,
-    Q_FORMAT_ALPHA_F,
-    Q_FORMAT_LUMINANCE_ALPHA_HF,
-    Q_FORMAT_LUMINANCE_HF,
-    Q_FORMAT_ALPHA_HF,
-    Q_FORMAT_DEPTH_16,
-    Q_FORMAT_DEPTH_24,
-    Q_FORMAT_DEPTH_24_STENCIL_8,
-    Q_FORMAT_DEPTH_32,
-
-    Q_FORMAT_BGR_565,
-    Q_FORMAT_BGRA_8888,
-    Q_FORMAT_BGRA_5551,
-    Q_FORMAT_BGRX_8888,
-    Q_FORMAT_BGRA_4444,
-    // Compressed formats
-    Q_FORMAT_ATITC_RGBA,
-    Q_FORMAT_ATC_RGBA_EXPLICIT_ALPHA = Q_FORMAT_ATITC_RGBA,
-    Q_FORMAT_ATITC_RGB,
-    Q_FORMAT_ATC_RGB = Q_FORMAT_ATITC_RGB,
-    Q_FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
-    Q_FORMAT_ETC1_RGB8,
-    Q_FORMAT_3DC_X,
-    Q_FORMAT_3DC_XY,
-
-    Q_FORMAT_ETC2_RGB8,
-    Q_FORMAT_ETC2_RGBA8,
-    Q_FORMAT_ETC2_RGB8_PUNCHTHROUGH_ALPHA1,
-    Q_FORMAT_ETC2_SRGB8,
-    Q_FORMAT_ETC2_SRGB8_ALPHA8,
-    Q_FORMAT_ETC2_SRGB8_PUNCHTHROUGH_ALPHA1,
-    Q_FORMAT_EAC_R_SIGNED,
-    Q_FORMAT_EAC_R_UNSIGNED,
-    Q_FORMAT_EAC_RG_SIGNED,
-    Q_FORMAT_EAC_RG_UNSIGNED,
-
-    Q_FORMAT_S3TC_DXT1_RGB,
-    Q_FORMAT_S3TC_DXT1_RGBA,
-    Q_FORMAT_S3TC_DXT3_RGBA,
-    Q_FORMAT_S3TC_DXT5_RGBA,
-
-    // YUV formats
-    Q_FORMAT_AYUV_32,
-    Q_FORMAT_I444_24,
-    Q_FORMAT_YUYV_16,
-    Q_FORMAT_UYVY_16,
-    Q_FORMAT_I420_12,
-    Q_FORMAT_YV12_12,
-    Q_FORMAT_NV21_12,
-    Q_FORMAT_NV12_12,
-
-    // ASTC Format
-    Q_FORMAT_ASTC_8,
-    Q_FORMAT_ASTC_16,
-};
-
-public enum texgenpack_texturetype
-{
-    RGTC1,
-    RGTC2,
-    BPTC_FLOAT,
-    BPTC
 }

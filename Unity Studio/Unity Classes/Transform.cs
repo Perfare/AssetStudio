@@ -17,21 +17,20 @@ namespace Unity_Studio
         public Transform(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             if (sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
             m_GameObject = sourceFile.ReadPPtr();
-            m_LocalRotation = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-            m_LocalPosition = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-            m_LocalScale = new[] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-            int m_ChildrenCount = a_Stream.ReadInt32();
+            m_LocalRotation = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
+            m_LocalPosition = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
+            m_LocalScale = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
+            int m_ChildrenCount = reader.ReadInt32();
             for (int j = 0; j < m_ChildrenCount; j++)
             {
                 m_Children.Add(sourceFile.ReadPPtr());

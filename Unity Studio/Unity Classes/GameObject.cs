@@ -25,19 +25,18 @@ namespace Unity_Studio
             if (preloadData != null)
             {
                 var sourceFile = preloadData.sourceFile;
-                var a_Stream = preloadData.sourceFile.assetsFileReader;
-                a_Stream.Position = preloadData.Offset;
+                var reader = preloadData.Reader;
 
                 uniqueID = preloadData.uniqueID;
 
                 if (sourceFile.platform == -2)
                 {
-                    uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                    uint m_ObjectHideFlags = reader.ReadUInt32();
                     PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                     PPtr m_PrefabInternal = sourceFile.ReadPPtr();
                 }
 
-                int m_Component_size = a_Stream.ReadInt32();
+                int m_Component_size = reader.ReadInt32();
                 for (int j = 0; j < m_Component_size; j++)
                 {
                     if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
@@ -46,16 +45,16 @@ namespace Unity_Studio
                     }
                     else
                     {
-                        int first = a_Stream.ReadInt32();
+                        int first = reader.ReadInt32();
                         m_Components.Add(sourceFile.ReadPPtr());
                     }
                 }
 
-                m_Layer = a_Stream.ReadInt32();
-                m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                m_Layer = reader.ReadInt32();
+                m_Name = reader.ReadAlignedString(reader.ReadInt32());
                 if (m_Name == "") { m_Name = "GameObject #" + uniqueID; }
-                m_Tag = a_Stream.ReadUInt16();
-                m_IsActive = a_Stream.ReadBoolean();
+                m_Tag = reader.ReadUInt16();
+                m_IsActive = reader.ReadBoolean();
 
                 Text = m_Name;
                 preloadData.Text = m_Name;

@@ -14,6 +14,10 @@ using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using static Unity_Studio.UnityStudio;
+using static Unity_Studio.FBXExporter;
+using static Unity_Studio.UnityImporter;
+using static Unity_Studio.UnityExporter;
+using static Unity_Studio.SpriteHelper;
 
 namespace Unity_Studio
 {
@@ -821,7 +825,7 @@ namespace Unity_Studio
                 #region Font
                 case 128: //Font
                     {
-                        unityFont m_Font = new unityFont(asset, true);
+                        UnityFont m_Font = new UnityFont(asset, true);
                         if (m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);

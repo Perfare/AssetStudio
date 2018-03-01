@@ -41,18 +41,17 @@ namespace Unity_Studio
     {
         public static string ViewStruct(this AssetPreloadData asset)
         {
-            var a_Stream = asset.sourceFile.assetsFileReader;
-            a_Stream.Position = asset.Offset;
+            var reader = asset.Reader;
             if (asset.sourceFile.ClassStructures.TryGetValue(asset.Type1, out var classStructure))
             {
                 var sb = new StringBuilder();
-                ReadClassStruct(sb, classStructure.members, a_Stream);
+                ReadClassStruct(sb, classStructure.members, reader);
                 return sb.ToString();
             }
             return null;
         }
 
-        public static void ReadClassStruct(StringBuilder sb, List<ClassMember> members, EndianBinaryReader a_Stream)
+        public static void ReadClassStruct(StringBuilder sb, List<ClassMember> members, EndianBinaryReader reader)
         {
             for (int i = 0; i < members.Count; i++)
             {
@@ -64,97 +63,96 @@ namespace Unity_Studio
                 var align = (member.Flag & 0x4000) != 0;
                 var append = true;
                 if (member.alignBefore)
-                    a_Stream.AlignStream(4);
-                if (varTypeStr == "SInt8")//sbyte
+                    reader.AlignStream(4);
+                switch (varTypeStr)
                 {
-                    value = a_Stream.ReadSByte();
-                }
-                else if (varTypeStr == "UInt8")//byte
-                {
-                    value = a_Stream.ReadByte();
-                }
-                else if (varTypeStr == "short" || varTypeStr == "SInt16")//Int16
-                {
-                    value = a_Stream.ReadInt16();
-                }
-                else if (varTypeStr == "UInt16" || varTypeStr == "unsigned short")//UInt16
-                {
-                    value = a_Stream.ReadUInt16();
-                }
-                else if (varTypeStr == "int" || varTypeStr == "SInt32")//Int32
-                {
-                    value = a_Stream.ReadInt32();
-                }
-                else if (varTypeStr == "UInt32" || varTypeStr == "unsigned int" || varTypeStr == "Type*")//UInt32
-                {
-                    value = a_Stream.ReadUInt32();
-                }
-                else if (varTypeStr == "long long" || varTypeStr == "SInt64")//Int64
-                {
-                    value = a_Stream.ReadInt64();
-                }
-                else if (varTypeStr == "UInt64" || varTypeStr == "unsigned long long")//UInt64
-                {
-                    value = a_Stream.ReadUInt64();
-                }
-                else if (varTypeStr == "float")//float
-                {
-                    value = a_Stream.ReadSingle();
-                }
-                else if (varTypeStr == "double")//double
-                {
-                    value = a_Stream.ReadDouble();
-                }
-                else if (varTypeStr == "bool")//bool
-                {
-                    value = a_Stream.ReadBoolean();
-                }
-                else if (varTypeStr == "string")//string
-                {
-                    append = false;
-                    var str = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                    sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, str);
-                    i += 3;//skip
-                }
-                else if (varTypeStr == "Array")//Array
-                {
-                    append = false;
-                    if ((members[i - 1].Flag & 0x4000) != 0)
-                        align = true;
-                    sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
-                    var size = a_Stream.ReadInt32();
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), "int", "size", size);
-                    var array = ReadArray(members, level, i);
-                    for (int j = 0; j < size; j++)
-                    {
-                        sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 1)), j);
-                        ReadClassStruct(sb, array, a_Stream);
-                    }
-                    i += array.Count + 1;//skip
-                }
-                else if (varTypeStr == "TypelessData")
-                {
-                    append = false;
-                    var size = a_Stream.ReadInt32();
-                    a_Stream.ReadBytes(size);
-                    i += 2;
-                    sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
-                    sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), "int", "size", size);
-                }
-                else
-                {
-                    append = false;
-                    if (align)
-                    {
-                        align = false;
-                        SetAlignBefore(members, level, i + 1);
-                    }
-                    sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                    case "SInt8":
+                        value = reader.ReadSByte();
+                        break;
+                    case "UInt8":
+                        value = reader.ReadByte();
+                        break;
+                    case "short":
+                    case "SInt16":
+                        value = reader.ReadInt16();
+                        break;
+                    case "UInt16":
+                    case "unsigned short":
+                        value = reader.ReadUInt16();
+                        break;
+                    case "int":
+                    case "SInt32":
+                        value = reader.ReadInt32();
+                        break;
+                    case "UInt32":
+                    case "unsigned int":
+                    case "Type*":
+                        value = reader.ReadUInt32();
+                        break;
+                    case "long long":
+                    case "SInt64":
+                        value = reader.ReadInt64();
+                        break;
+                    case "UInt64":
+                    case "unsigned long long":
+                        value = reader.ReadUInt64();
+                        break;
+                    case "float":
+                        value = reader.ReadSingle();
+                        break;
+                    case "double":
+                        value = reader.ReadDouble();
+                        break;
+                    case "bool":
+                        value = reader.ReadBoolean();
+                        break;
+                    case "string":
+                        append = false;
+                        var str = reader.ReadAlignedString(reader.ReadInt32());
+                        sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, str);
+                        i += 3;//skip
+                        break;
+                    case "Array":
+                        {
+                            append = false;
+                            if ((members[i - 1].Flag & 0x4000) != 0)
+                                align = true;
+                            sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                            var size = reader.ReadInt32();
+                            sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), "int", "size", size);
+                            var array = ReadArray(members, level, i);
+                            for (int j = 0; j < size; j++)
+                            {
+                                sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 1)), j);
+                                ReadClassStruct(sb, array, reader);
+                            }
+                            i += array.Count + 1;//skip
+                            break;
+                        }
+                    case "TypelessData":
+                        {
+                            append = false;
+                            var size = reader.ReadInt32();
+                            reader.ReadBytes(size);
+                            i += 2;
+                            sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                            sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), "int", "size", size);
+                            break;
+                        }
+                    default:
+                        append = false;
+                        if (align)
+                        {
+                            align = false;
+                            SetAlignBefore(members, level, i + 1);
+                        }
+                        sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                        break;
                 }
                 if (append)
                     sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
                 if (align)
-                    a_Stream.AlignStream(4);
+                    reader.AlignStream(4);
             }
         }
 

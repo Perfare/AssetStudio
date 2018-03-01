@@ -102,7 +102,7 @@ namespace Unity_Studio
 {
     public class Mesh
     {
-        private EndianBinaryReader a_Stream;
+        private EndianBinaryReader reader;
         public string m_Name;
         public List<SubMesh> m_SubMeshes = new List<SubMesh>();
         public List<uint> m_Indices = new List<uint>(); //use a list because I don't always know the facecount for triangle strips
@@ -169,7 +169,7 @@ namespace Unity_Studio
         public float bytesToFloat(byte[] inputBytes)
         {
             float result = 0;
-            if (a_Stream.endian == EndianType.BigEndian) { Array.Reverse(inputBytes); }
+            if (reader.endian == EndianType.BigEndian) { Array.Reverse(inputBytes); }
 
             switch (inputBytes.Length)
             {
@@ -331,69 +331,69 @@ namespace Unity_Studio
             //Stream = new EndianStream(File.OpenRead(sourceFile.filePath), sourceFile.endianType);
             //Stream.endian = sourceFile.endianType;
             var version = MeshPD.sourceFile.version;
-            a_Stream = MeshPD.sourceFile.assetsFileReader;
-            a_Stream.Position = MeshPD.Offset;
+            reader = MeshPD.Reader;
+
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;
 
             if (MeshPD.sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = MeshPD.sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = MeshPD.sourceFile.ReadPPtr();
             }
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
 
             if (readSwitch)
             {
 
                 if (version[0] < 3 || (version[0] == 3 && version[1] < 5))
                 {
-                    m_Use16BitIndices = a_Stream.ReadBoolean();
-                    a_Stream.Position += 3;
+                    m_Use16BitIndices = reader.ReadBoolean();
+                    reader.Position += 3;
                 }
 
                 #region Index Buffer for 2.5.1 and earlier
                 if (version[0] == 2 && version[1] <= 5)
                 {
-                    int m_IndexBuffer_size = a_Stream.ReadInt32();
+                    int m_IndexBuffer_size = reader.ReadInt32();
 
                     if (m_Use16BitIndices)
                     {
                         m_IndexBuffer = new uint[m_IndexBuffer_size / 2];
-                        for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = a_Stream.ReadUInt16(); }
-                        a_Stream.AlignStream(4);
+                        for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = reader.ReadUInt16(); }
+                        reader.AlignStream(4);
                     }
                     else
                     {
                         m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
-                        for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = a_Stream.ReadUInt32(); }
+                        for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = reader.ReadUInt32(); }
                     }
                 }
                 #endregion
 
                 #region subMeshes
-                int m_SubMeshes_size = a_Stream.ReadInt32();
+                int m_SubMeshes_size = reader.ReadInt32();
                 for (int s = 0; s < m_SubMeshes_size; s++)
                 {
                     m_SubMeshes.Add(new SubMesh());
-                    m_SubMeshes[s].firstByte = a_Stream.ReadUInt32();
-                    m_SubMeshes[s].indexCount = a_Stream.ReadUInt32(); //what is this in case of triangle strips?
-                    m_SubMeshes[s].topology = a_Stream.ReadInt32(); //isTriStrip
+                    m_SubMeshes[s].firstByte = reader.ReadUInt32();
+                    m_SubMeshes[s].indexCount = reader.ReadUInt32(); //what is this in case of triangle strips?
+                    m_SubMeshes[s].topology = reader.ReadInt32(); //isTriStrip
                     if (version[0] < 4)
                     {
-                        m_SubMeshes[s].triangleCount = a_Stream.ReadUInt32();
+                        m_SubMeshes[s].triangleCount = reader.ReadUInt32();
                     }
                     if (version[0] >= 3)
                     {
                         if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
                         {
-                            var baseVertex = a_Stream.ReadUInt32();
+                            var baseVertex = reader.ReadUInt32();
                         }
-                        m_SubMeshes[s].firstVertex = a_Stream.ReadUInt32();
-                        m_SubMeshes[s].vertexCount = a_Stream.ReadUInt32();
-                        a_Stream.Position += 24; //Axis-Aligned Bounding Box
+                        m_SubMeshes[s].firstVertex = reader.ReadUInt32();
+                        m_SubMeshes[s].vertexCount = reader.ReadUInt32();
+                        reader.Position += 24; //Axis-Aligned Bounding Box
                     }
                 }
                 #endregion
@@ -402,93 +402,93 @@ namespace Unity_Studio
                 if (version[0] == 4 && ((version[1] == 1 && MeshPD.sourceFile.buildType[0] != "a") ||
                                         (version[1] > 1 && version[1] <= 2)))
                 {
-                    int m_Shapes_size = a_Stream.ReadInt32();
+                    int m_Shapes_size = reader.ReadInt32();
                     if (m_Shapes_size > 0)
                     {
                         //bool stop = true;
                     }
                     for (int s = 0; s < m_Shapes_size; s++) //untested
                     {
-                        string shape_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                        a_Stream.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
+                        string shape_name = reader.ReadAlignedString(reader.ReadInt32());
+                        reader.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
                     }
 
-                    int m_ShapeVertices_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
+                    int m_ShapeVertices_size = reader.ReadInt32();
+                    reader.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
                 }
                 #endregion
                 #region BlendShapeData and BindPose for 4.3.0 and later
                 else if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
                 {
-                    int m_ShapeVertices_size = a_Stream.ReadInt32();
+                    int m_ShapeVertices_size = reader.ReadInt32();
                     if (m_ShapeVertices_size > 0)
                     {
                         //bool stop = true;
                     }
-                    a_Stream.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
+                    reader.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
 
-                    int shapes_size = a_Stream.ReadInt32();
-                    a_Stream.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
+                    int shapes_size = reader.ReadInt32();
+                    reader.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
 
-                    int channels_size = a_Stream.ReadInt32();
+                    int channels_size = reader.ReadInt32();
                     for (int c = 0; c < channels_size; c++)
                     {
-                        string channel_name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                        a_Stream.Position += 12; //uint nameHash; int frameIndex, frameCount
+                        string channel_name = reader.ReadAlignedString(reader.ReadInt32());
+                        reader.Position += 12; //uint nameHash; int frameIndex, frameCount
                     }
 
-                    int fullWeights_size = a_Stream.ReadInt32();
-                    a_Stream.Position += fullWeights_size * 4; //floats
+                    int fullWeights_size = reader.ReadInt32();
+                    reader.Position += fullWeights_size * 4; //floats
 
-                    m_BindPose = new float[a_Stream.ReadInt32()][,];
+                    m_BindPose = new float[reader.ReadInt32()][,];
                     for (int i = 0; i < m_BindPose.Length; i++)
                     {
                         m_BindPose[i] = new[,] {
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
                     }
 
-                    int m_BoneNameHashes_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_BoneNameHashes_size * 4; //uints
+                    int m_BoneNameHashes_size = reader.ReadInt32();
+                    reader.Position += m_BoneNameHashes_size * 4; //uints
 
-                    uint m_RootBoneNameHash = a_Stream.ReadUInt32();
+                    uint m_RootBoneNameHash = reader.ReadUInt32();
                 }
                 #endregion
 
                 #region Index Buffer for 2.6.0 and later
                 if (version[0] >= 3 || (version[0] == 2 && version[1] >= 6))
                 {
-                    m_MeshCompression = a_Stream.ReadByte();
+                    m_MeshCompression = reader.ReadByte();
                     if (version[0] >= 4)
                     {
-                        if (version[0] < 5) { uint m_StreamCompression = a_Stream.ReadByte(); }
-                        bool m_IsReadable = a_Stream.ReadBoolean();
-                        bool m_KeepVertices = a_Stream.ReadBoolean();
-                        bool m_KeepIndices = a_Stream.ReadBoolean();
+                        if (version[0] < 5) { uint m_StreamCompression = reader.ReadByte(); }
+                        bool m_IsReadable = reader.ReadBoolean();
+                        bool m_KeepVertices = reader.ReadBoolean();
+                        bool m_KeepIndices = reader.ReadBoolean();
                     }
-                    a_Stream.AlignStream(4);
+                    reader.AlignStream(4);
                     if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
                     {
-						if(m_MeshCompression == 0)
-						{
-							var m_IndexFormat = a_Stream.ReadInt32();	
-						}
+                        if (m_MeshCompression == 0)
+                        {
+                            var m_IndexFormat = reader.ReadInt32();
+                        }
                     }
-                    int m_IndexBuffer_size = a_Stream.ReadInt32();
+                    int m_IndexBuffer_size = reader.ReadInt32();
 
                     if (m_Use16BitIndices)
                     {
                         m_IndexBuffer = new uint[m_IndexBuffer_size / 2];
-                        for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = a_Stream.ReadUInt16(); }
-                        a_Stream.AlignStream(4);
+                        for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = reader.ReadUInt16(); }
+                        reader.AlignStream(4);
                     }
                     else
                     {
                         m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
-                        for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = a_Stream.ReadUInt32(); }
-                        a_Stream.AlignStream(4);//untested
+                        for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = reader.ReadUInt32(); }
+                        reader.AlignStream(4);//untested
                     }
                 }
                 #endregion
@@ -496,17 +496,17 @@ namespace Unity_Studio
                 #region Vertex Buffer for 3.4.2 and earlier
                 if (version[0] < 3 || (version[0] == 3 && version[1] < 5))
                 {
-                    m_VertexCount = a_Stream.ReadInt32();
+                    m_VertexCount = reader.ReadInt32();
                     m_Vertices = new float[m_VertexCount * 3];
-                    for (int v = 0; v < m_VertexCount * 3; v++) { m_Vertices[v] = a_Stream.ReadSingle(); }
+                    for (int v = 0; v < m_VertexCount * 3; v++) { m_Vertices[v] = reader.ReadSingle(); }
 
-                    m_Skin = new List<BoneInfluence>[a_Stream.ReadInt32()];
+                    m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
                     //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
                     for (int s = 0; s < m_Skin.Length; s++)
                     {
                         m_Skin[s] = new List<BoneInfluence>();
-                        for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = a_Stream.ReadSingle() }); }
-                        for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = a_Stream.ReadInt32(); }
+                        for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = reader.ReadSingle() }); }
+                        for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = reader.ReadInt32(); }
 
                         /*m_Skin[s] = new Dictionary<int, float>();
 						float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
@@ -517,44 +517,44 @@ namespace Unity_Studio
 						}*/
                     }
 
-                    m_BindPose = new float[a_Stream.ReadInt32()][,];
+                    m_BindPose = new float[reader.ReadInt32()][,];
                     for (int i = 0; i < m_BindPose.Length; i++)
                     {
                         m_BindPose[i] = new[,] {
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
                     }
 
-                    int m_UV1_size = a_Stream.ReadInt32();
+                    int m_UV1_size = reader.ReadInt32();
                     m_UV1 = new float[m_UV1_size * 2];
-                    for (int v = 0; v < m_UV1_size * 2; v++) { m_UV1[v] = a_Stream.ReadSingle(); }
+                    for (int v = 0; v < m_UV1_size * 2; v++) { m_UV1[v] = reader.ReadSingle(); }
 
-                    int m_UV2_size = a_Stream.ReadInt32();
+                    int m_UV2_size = reader.ReadInt32();
                     m_UV2 = new float[m_UV2_size * 2];
-                    for (int v = 0; v < m_UV2_size * 2; v++) { m_UV2[v] = a_Stream.ReadSingle(); }
+                    for (int v = 0; v < m_UV2_size * 2; v++) { m_UV2[v] = reader.ReadSingle(); }
 
                     if (version[0] == 2 && version[1] <= 5)
                     {
-                        int m_TangentSpace_size = a_Stream.ReadInt32();
+                        int m_TangentSpace_size = reader.ReadInt32();
                         m_Normals = new float[m_TangentSpace_size * 3];
                         for (int v = 0; v < m_TangentSpace_size; v++)
                         {
-                            m_Normals[v * 3] = a_Stream.ReadSingle();
-                            m_Normals[v * 3 + 1] = a_Stream.ReadSingle();
-                            m_Normals[v * 3 + 2] = a_Stream.ReadSingle();
-                            a_Stream.Position += 16; //Vector3f tangent & float handedness 
+                            m_Normals[v * 3] = reader.ReadSingle();
+                            m_Normals[v * 3 + 1] = reader.ReadSingle();
+                            m_Normals[v * 3 + 2] = reader.ReadSingle();
+                            reader.Position += 16; //Vector3f tangent & float handedness 
                         }
                     }
                     else //2.6.0 and later
                     {
-                        int m_Tangents_size = a_Stream.ReadInt32();
-                        a_Stream.Position += m_Tangents_size * 16; //Vector4f
+                        int m_Tangents_size = reader.ReadInt32();
+                        reader.Position += m_Tangents_size * 16; //Vector4f
 
-                        int m_Normals_size = a_Stream.ReadInt32();
+                        int m_Normals_size = reader.ReadInt32();
                         m_Normals = new float[m_Normals_size * 3];
-                        for (int v = 0; v < m_Normals_size * 3; v++) { m_Normals[v] = a_Stream.ReadSingle(); }
+                        for (int v = 0; v < m_Normals_size * 3; v++) { m_Normals[v] = reader.ReadSingle(); }
                     }
                 }
                 #endregion
@@ -562,13 +562,13 @@ namespace Unity_Studio
                 else
                 {
                     #region read vertex stream
-                    m_Skin = new List<BoneInfluence>[a_Stream.ReadInt32()];
+                    m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
                     //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
                     for (int s = 0; s < m_Skin.Length; s++)
                     {
                         m_Skin[s] = new List<BoneInfluence>();
-                        for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = a_Stream.ReadSingle() }); }
-                        for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = a_Stream.ReadInt32(); }
+                        for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = reader.ReadSingle() }); }
+                        for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = reader.ReadInt32(); }
 
                         /*m_Skin[s] = new Dictionary<int, float>();
 						float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
@@ -582,19 +582,19 @@ namespace Unity_Studio
 
                     if (version[0] == 3 || (version[0] == 4 && version[1] <= 2))
                     {
-                        m_BindPose = new float[a_Stream.ReadInt32()][,];
+                        m_BindPose = new float[reader.ReadInt32()][,];
                         for (int i = 0; i < m_BindPose.Length; i++)
                         {
                             m_BindPose[i] = new[,] {
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() },
-                        { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() } };
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
+                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
                         }
                     }
 
-                    BitArray m_CurrentChannels = new BitArray(new int[1] { a_Stream.ReadInt32() });
-                    m_VertexCount = a_Stream.ReadInt32();
+                    BitArray m_CurrentChannels = new BitArray(new int[1] { reader.ReadInt32() });
+                    m_VertexCount = reader.ReadInt32();
                     //int singleStreamStride = 0;//used tor unity 5
                     int streamCount = 0;
 
@@ -603,7 +603,7 @@ namespace Unity_Studio
                     {
                         if (m_MeshCompression != 0 && version[2] == 0) //special case not just on platform 9
                         {
-                            a_Stream.Position += 12;
+                            reader.Position += 12;
                         }
                         else
                         {
@@ -611,10 +611,10 @@ namespace Unity_Studio
                             for (int s = 0; s < 4; s++)
                             {
                                 m_Streams[s] = new StreamInfo();
-                                m_Streams[s].channelMask = new BitArray(new int[1] { a_Stream.ReadInt32() });
-                                m_Streams[s].offset = a_Stream.ReadInt32();
-                                m_Streams[s].stride = a_Stream.ReadInt32();
-                                m_Streams[s].align = a_Stream.ReadUInt32();
+                                m_Streams[s].channelMask = new BitArray(new int[1] { reader.ReadInt32() });
+                                m_Streams[s].offset = reader.ReadInt32();
+                                m_Streams[s].stride = reader.ReadInt32();
+                                m_Streams[s].align = reader.ReadUInt32();
                             }
                         }
                     }
@@ -622,14 +622,14 @@ namespace Unity_Studio
                     #region channels and streams for 4.0.0 and later
                     else
                     {
-                        m_Channels = new ChannelInfo[a_Stream.ReadInt32()];
+                        m_Channels = new ChannelInfo[reader.ReadInt32()];
                         for (int c = 0; c < m_Channels.Length; c++)
                         {
                             m_Channels[c] = new ChannelInfo();
-                            m_Channels[c].stream = a_Stream.ReadByte();
-                            m_Channels[c].offset = a_Stream.ReadByte();
-                            m_Channels[c].format = a_Stream.ReadByte();
-                            m_Channels[c].dimension = a_Stream.ReadByte();
+                            m_Channels[c].stream = reader.ReadByte();
+                            m_Channels[c].offset = reader.ReadByte();
+                            m_Channels[c].format = reader.ReadByte();
+                            m_Channels[c].dimension = reader.ReadByte();
 
                             //calculate stride for Unity 5
                             //singleStreamStride += m_Channels[c].dimension * (4 / (int)Math.Pow(2, m_Channels[c].format));
@@ -639,23 +639,23 @@ namespace Unity_Studio
 
                         if (version[0] < 5)
                         {
-                            m_Streams = new StreamInfo[a_Stream.ReadInt32()];
+                            m_Streams = new StreamInfo[reader.ReadInt32()];
                             for (int s = 0; s < m_Streams.Length; s++)
                             {
                                 m_Streams[s] = new StreamInfo();
-                                m_Streams[s].channelMask = new BitArray(new int[1] { a_Stream.ReadInt32() });
-                                m_Streams[s].offset = a_Stream.ReadInt32();
-                                m_Streams[s].stride = a_Stream.ReadByte();
-                                m_Streams[s].dividerOp = a_Stream.ReadByte();
-                                m_Streams[s].frequency = a_Stream.ReadUInt16();
+                                m_Streams[s].channelMask = new BitArray(new int[1] { reader.ReadInt32() });
+                                m_Streams[s].offset = reader.ReadInt32();
+                                m_Streams[s].stride = reader.ReadByte();
+                                m_Streams[s].dividerOp = reader.ReadByte();
+                                m_Streams[s].frequency = reader.ReadUInt16();
                             }
                         }
                     }
                     #endregion
 
                     //actual Vertex Buffer
-                    byte[] m_DataSize = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_DataSize, 0, m_DataSize.Length);
+                    byte[] m_DataSize = new byte[reader.ReadInt32()];
+                    reader.Read(m_DataSize, 0, m_DataSize.Length);
 
                     if (version[0] >= 5) //create streams
                     {
@@ -856,14 +856,14 @@ namespace Unity_Studio
 
                     #region m_Vertices
                     PackedBitVector m_Vertices_Packed = new PackedBitVector();
-                    m_Vertices_Packed.m_NumItems = a_Stream.ReadInt32();
-                    m_Vertices_Packed.m_Range = a_Stream.ReadSingle();
-                    m_Vertices_Packed.m_Start = a_Stream.ReadSingle();
-                    m_Vertices_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_Vertices_Packed.m_Data, 0, m_Vertices_Packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_Vertices_Packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_Vertices_Packed.m_NumItems = reader.ReadInt32();
+                    m_Vertices_Packed.m_Range = reader.ReadSingle();
+                    m_Vertices_Packed.m_Start = reader.ReadSingle();
+                    m_Vertices_Packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_Vertices_Packed.m_Data, 0, m_Vertices_Packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_Vertices_Packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_Vertices_Packed.m_NumItems > 0)
                     {
@@ -881,14 +881,14 @@ namespace Unity_Studio
 
                     #region m_UV
                     PackedBitVector m_UV_Packed = new PackedBitVector(); //contains all channels
-                    m_UV_Packed.m_NumItems = a_Stream.ReadInt32();
-                    m_UV_Packed.m_Range = a_Stream.ReadSingle();
-                    m_UV_Packed.m_Start = a_Stream.ReadSingle();
-                    m_UV_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_UV_Packed.m_Data, 0, m_UV_Packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_UV_Packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_UV_Packed.m_NumItems = reader.ReadInt32();
+                    m_UV_Packed.m_Range = reader.ReadSingle();
+                    m_UV_Packed.m_Start = reader.ReadSingle();
+                    m_UV_Packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_UV_Packed.m_Data, 0, m_UV_Packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_UV_Packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_UV_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportUVs"])
                     {
@@ -936,14 +936,14 @@ namespace Unity_Studio
                     if (version[0] < 5)
                     {
                         PackedBitVector m_BindPoses_Packed = new PackedBitVector();
-                        m_BindPoses_Packed.m_NumItems = a_Stream.ReadInt32();
-                        m_BindPoses_Packed.m_Range = a_Stream.ReadSingle();
-                        m_BindPoses_Packed.m_Start = a_Stream.ReadSingle();
-                        m_BindPoses_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                        a_Stream.Read(m_BindPoses_Packed.m_Data, 0, m_BindPoses_Packed.m_Data.Length);
-                        a_Stream.AlignStream(4);
-                        m_BindPoses_Packed.m_BitSize = a_Stream.ReadByte();
-                        a_Stream.Position += 3; //4 byte alignment
+                        m_BindPoses_Packed.m_NumItems = reader.ReadInt32();
+                        m_BindPoses_Packed.m_Range = reader.ReadSingle();
+                        m_BindPoses_Packed.m_Start = reader.ReadSingle();
+                        m_BindPoses_Packed.m_Data = new byte[reader.ReadInt32()];
+                        reader.Read(m_BindPoses_Packed.m_Data, 0, m_BindPoses_Packed.m_Data.Length);
+                        reader.AlignStream(4);
+                        m_BindPoses_Packed.m_BitSize = reader.ReadByte();
+                        reader.Position += 3; //4 byte alignment
 
                         if (m_BindPoses_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportDeformers"])
                         {
@@ -969,41 +969,41 @@ namespace Unity_Studio
                     #endregion
 
                     PackedBitVector m_Normals_Packed = new PackedBitVector();
-                    m_Normals_Packed.m_NumItems = a_Stream.ReadInt32();
-                    m_Normals_Packed.m_Range = a_Stream.ReadSingle();
-                    m_Normals_Packed.m_Start = a_Stream.ReadSingle();
-                    m_Normals_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_Normals_Packed.m_Data, 0, m_Normals_Packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_Normals_Packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_Normals_Packed.m_NumItems = reader.ReadInt32();
+                    m_Normals_Packed.m_Range = reader.ReadSingle();
+                    m_Normals_Packed.m_Start = reader.ReadSingle();
+                    m_Normals_Packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_Normals_Packed.m_Data, 0, m_Normals_Packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_Normals_Packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     PackedBitVector m_Tangents_Packed = new PackedBitVector();
-                    m_Tangents_Packed.m_NumItems = a_Stream.ReadInt32();
-                    m_Tangents_Packed.m_Range = a_Stream.ReadSingle();
-                    m_Tangents_Packed.m_Start = a_Stream.ReadSingle();
-                    m_Tangents_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_Tangents_Packed.m_Data, 0, m_Tangents_Packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_Tangents_Packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_Tangents_Packed.m_NumItems = reader.ReadInt32();
+                    m_Tangents_Packed.m_Range = reader.ReadSingle();
+                    m_Tangents_Packed.m_Start = reader.ReadSingle();
+                    m_Tangents_Packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_Tangents_Packed.m_Data, 0, m_Tangents_Packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_Tangents_Packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     PackedBitVector m_Weights = new PackedBitVector();
-                    m_Weights.m_NumItems = a_Stream.ReadInt32();
-                    m_Weights.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_Weights.m_Data, 0, m_Weights.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_Weights.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_Weights.m_NumItems = reader.ReadInt32();
+                    m_Weights.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_Weights.m_Data, 0, m_Weights.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_Weights.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     #region m_Normals
                     PackedBitVector m_NormalSigns_packed = new PackedBitVector();
-                    m_NormalSigns_packed.m_NumItems = a_Stream.ReadInt32();
-                    m_NormalSigns_packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_NormalSigns_packed.m_Data, 0, m_NormalSigns_packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_NormalSigns_packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_NormalSigns_packed.m_NumItems = reader.ReadInt32();
+                    m_NormalSigns_packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_NormalSigns_packed.m_Data, 0, m_NormalSigns_packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_NormalSigns_packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_Normals_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportNormals"])
                     {
@@ -1024,12 +1024,12 @@ namespace Unity_Studio
 
                     #region m_Tangents
                     PackedBitVector m_TangentSigns_packed = new PackedBitVector();
-                    m_TangentSigns_packed.m_NumItems = a_Stream.ReadInt32();
-                    m_TangentSigns_packed.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_TangentSigns_packed.m_Data, 0, m_TangentSigns_packed.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_TangentSigns_packed.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_TangentSigns_packed.m_NumItems = reader.ReadInt32();
+                    m_TangentSigns_packed.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_TangentSigns_packed.m_Data, 0, m_TangentSigns_packed.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_TangentSigns_packed.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_Tangents_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportTangents"])
                     {
@@ -1052,14 +1052,14 @@ namespace Unity_Studio
                     if (version[0] >= 5)
                     {
                         PackedBitVector m_FloatColors = new PackedBitVector();
-                        m_FloatColors.m_NumItems = a_Stream.ReadInt32();
-                        m_FloatColors.m_Range = a_Stream.ReadSingle();
-                        m_FloatColors.m_Start = a_Stream.ReadSingle();
-                        m_FloatColors.m_Data = new byte[a_Stream.ReadInt32()];
-                        a_Stream.Read(m_FloatColors.m_Data, 0, m_FloatColors.m_Data.Length);
-                        a_Stream.AlignStream(4);
-                        m_FloatColors.m_BitSize = a_Stream.ReadByte();
-                        a_Stream.Position += 3; //4 byte alignment
+                        m_FloatColors.m_NumItems = reader.ReadInt32();
+                        m_FloatColors.m_Range = reader.ReadSingle();
+                        m_FloatColors.m_Start = reader.ReadSingle();
+                        m_FloatColors.m_Data = new byte[reader.ReadInt32()];
+                        reader.Read(m_FloatColors.m_Data, 0, m_FloatColors.m_Data.Length);
+                        reader.AlignStream(4);
+                        m_FloatColors.m_BitSize = reader.ReadByte();
+                        reader.Position += 3; //4 byte alignment
 
                         if (m_FloatColors.m_NumItems > 0 && (bool)Properties.Settings.Default["exportColors"])
                         {
@@ -1079,12 +1079,12 @@ namespace Unity_Studio
 
                     #region m_Skin
                     PackedBitVector m_BoneIndices = new PackedBitVector();
-                    m_BoneIndices.m_NumItems = a_Stream.ReadInt32();
-                    m_BoneIndices.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_BoneIndices.m_Data, 0, m_BoneIndices.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_BoneIndices.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_BoneIndices.m_NumItems = reader.ReadInt32();
+                    m_BoneIndices.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_BoneIndices.m_Data, 0, m_BoneIndices.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_BoneIndices.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_BoneIndices.m_NumItems > 0 && (bool)Properties.Settings.Default["exportDeformers"])
                     {
@@ -1166,12 +1166,12 @@ namespace Unity_Studio
                     #endregion
 
                     PackedBitVector m_Triangles = new PackedBitVector();
-                    m_Triangles.m_NumItems = a_Stream.ReadInt32();
-                    m_Triangles.m_Data = new byte[a_Stream.ReadInt32()];
-                    a_Stream.Read(m_Triangles.m_Data, 0, m_Triangles.m_Data.Length);
-                    a_Stream.AlignStream(4);
-                    m_Triangles.m_BitSize = a_Stream.ReadByte();
-                    a_Stream.Position += 3; //4 byte alignment
+                    m_Triangles.m_NumItems = reader.ReadInt32();
+                    m_Triangles.m_Data = new byte[reader.ReadInt32()];
+                    reader.Read(m_Triangles.m_Data, 0, m_Triangles.m_Data.Length);
+                    reader.AlignStream(4);
+                    m_Triangles.m_BitSize = reader.ReadByte();
+                    reader.Position += 3; //4 byte alignment
 
                     if (m_Triangles.m_NumItems > 0) { m_IndexBuffer = UnpackBitVector(m_Triangles); }
                 }
@@ -1180,14 +1180,14 @@ namespace Unity_Studio
                 #region Colors & Collision triangles for 3.4.2 and earlier
                 if (version[0] <= 2 || (version[0] == 3 && version[1] <= 4)) //
                 {
-                    a_Stream.Position += 24; //Axis-Aligned Bounding Box
-                    int m_Colors_size = a_Stream.ReadInt32();
+                    reader.Position += 24; //Axis-Aligned Bounding Box
+                    int m_Colors_size = reader.ReadInt32();
                     m_Colors = new float[m_Colors_size * 4];
-                    for (int v = 0; v < m_Colors_size * 4; v++) { m_Colors[v] = (float)(a_Stream.ReadByte()) / 0xFF; }
+                    for (int v = 0; v < m_Colors_size * 4; v++) { m_Colors[v] = (float)(reader.ReadByte()) / 0xFF; }
 
-                    int m_CollisionTriangles_size = a_Stream.ReadInt32();
-                    a_Stream.Position += m_CollisionTriangles_size * 4; //UInt32 indices
-                    int m_CollisionVertexCount = a_Stream.ReadInt32();
+                    int m_CollisionTriangles_size = reader.ReadInt32();
+                    reader.Position += m_CollisionTriangles_size * 4; //UInt32 indices
+                    int m_CollisionVertexCount = reader.ReadInt32();
                 }
                 #endregion
                 #region Compressed colors & Local AABB for 3.5.0 to 4.x.x
@@ -1196,12 +1196,12 @@ namespace Unity_Studio
                     if (version[0] < 5)
                     {
                         PackedBitVector m_Colors_Packed = new PackedBitVector();
-                        m_Colors_Packed.m_NumItems = a_Stream.ReadInt32();
-                        m_Colors_Packed.m_Data = new byte[a_Stream.ReadInt32()];
-                        a_Stream.Read(m_Colors_Packed.m_Data, 0, m_Colors_Packed.m_Data.Length);
-                        a_Stream.AlignStream(4);
-                        m_Colors_Packed.m_BitSize = a_Stream.ReadByte();
-                        a_Stream.Position += 3; //4 byte alignment
+                        m_Colors_Packed.m_NumItems = reader.ReadInt32();
+                        m_Colors_Packed.m_Data = new byte[reader.ReadInt32()];
+                        reader.Read(m_Colors_Packed.m_Data, 0, m_Colors_Packed.m_Data.Length);
+                        reader.AlignStream(4);
+                        m_Colors_Packed.m_BitSize = reader.ReadByte();
+                        reader.Position += 3; //4 byte alignment
 
                         if (m_Colors_Packed.m_NumItems > 0)
                         {
@@ -1227,13 +1227,13 @@ namespace Unity_Studio
                             }
                         }
                     }
-                    else { uint m_UVInfo = a_Stream.ReadUInt32(); }
+                    else { uint m_UVInfo = reader.ReadUInt32(); }
 
-                    a_Stream.Position += 24; //Axis-Aligned Bounding Box
+                    reader.Position += 24; //Axis-Aligned Bounding Box
                 }
                 #endregion
 
-                int m_MeshUsageFlags = a_Stream.ReadInt32();
+                int m_MeshUsageFlags = reader.ReadInt32();
 
                 if (version[0] >= 5)
                 {

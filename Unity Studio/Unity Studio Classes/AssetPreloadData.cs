@@ -21,5 +21,15 @@ namespace Unity_Studio
 
         public AssetsFile sourceFile;
         public string uniqueID;
+
+        public EndianBinaryReader Reader
+        {
+            get
+            {
+                var reader = sourceFile.assetsFileReader;
+                reader.Position = Offset;
+                return reader;
+            }
+        }
     }
 }

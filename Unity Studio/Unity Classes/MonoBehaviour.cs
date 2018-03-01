@@ -12,14 +12,13 @@ namespace Unity_Studio
         public MonoBehaviour(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             var m_GameObject = sourceFile.ReadPPtr();
-            var m_Enabled = a_Stream.ReadByte();
-            a_Stream.AlignStream(4);
+            var m_Enabled = reader.ReadByte();
+            reader.AlignStream(4);
             var m_Script = sourceFile.ReadPPtr();
-            var m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
             if (readSwitch)
             {
                 if ((serializedText = preloadData.ViewStruct()) == null)

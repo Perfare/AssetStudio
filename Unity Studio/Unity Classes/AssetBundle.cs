@@ -27,23 +27,22 @@ namespace Unity_Studio
         public AssetBundle(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.assetsFileReader;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
-            var m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-            var size = a_Stream.ReadInt32();
+            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
                 sourceFile.ReadPPtr();
             }
-            size = a_Stream.ReadInt32();
+            size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
                 var temp = new ContainerData();
-                temp.first = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+                temp.first = reader.ReadAlignedString(reader.ReadInt32());
                 temp.second = new AssetInfo();
-                temp.second.preloadIndex = a_Stream.ReadInt32();
-                temp.second.preloadSize = a_Stream.ReadInt32();
+                temp.second.preloadIndex = reader.ReadInt32();
+                temp.second.preloadSize = reader.ReadInt32();
                 temp.second.asset = sourceFile.ReadPPtr();
                 m_Container.Add(temp);
             }

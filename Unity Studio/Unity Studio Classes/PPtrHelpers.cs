@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using static Unity_Studio.UnityStudio;
-
 
 namespace Unity_Studio
 {
@@ -87,80 +85,6 @@ namespace Unity_Studio
             }
 
             return false;
-        }
-
-        public static void ParseGameObject(this List<AssetsFile> assetsfileList, GameObject m_GameObject)
-        {
-            foreach (var m_Component in m_GameObject.m_Components)
-            {
-                if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
-                {
-                    AssetsFile sourceFile = assetsfileList[m_Component.m_FileID];
-                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
-                    {
-                        switch (asset.Type2)
-                        {
-                            case 4: //Transform
-                                {
-                                    m_GameObject.m_Transform = m_Component;
-                                    break;
-                                }
-                            case 23: //MeshRenderer
-                                {
-                                    m_GameObject.m_MeshRenderer = m_Component;
-                                    break;
-                                }
-                            case 33: //MeshFilter
-                                {
-                                    m_GameObject.m_MeshFilter = m_Component;
-                                    break;
-                                }
-                            case 137: //SkinnedMeshRenderer
-                                {
-                                    m_GameObject.m_SkinnedMeshRenderer = m_Component;
-                                    break;
-                                }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    class TexEnv
-    {
-        public string name;
-        public PPtr m_Texture;
-        public float[] m_Scale;
-        public float[] m_Offset;
-    }
-
-    class strFloatPair
-    {
-        public string first;
-        public float second;
-    }
-
-    class strColorPair
-    {
-        public string first;
-        public float[] second;
-    }
-
-    public static class StringExtensions
-    {
-        /// <summary>
-        /// Compares the string against a given pattern.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="pattern">The pattern to match, where "*" means any sequence of characters, and "?" means any single character.</param>
-        /// <returns><c>true</c> if the string matches the given pattern; otherwise <c>false</c>.</returns>
-        public static bool Like(this string str, string pattern)
-        {
-            return new Regex(
-                "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
-                RegexOptions.IgnoreCase | RegexOptions.Singleline
-            ).IsMatch(str);
         }
     }
 }
