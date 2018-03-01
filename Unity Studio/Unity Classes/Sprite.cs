@@ -32,7 +32,7 @@ namespace Unity_Studio
                 m_Rect = new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 //Vector2f m_Offset
                 reader.Position += 8;
-                if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
                 {
                     //Vector4f m_Border
                     reader.Position += 16;
@@ -116,7 +116,7 @@ namespace Unity_Studio
                     {
                         //SpriteVertex data
                         reader.Position += 12; //Vector3f pos
-                        if (version[0] < 4 || (version[0] == 4 && version[1] <= 1)) //4.1 and down
+                        if (version[0] < 4 || (version[0] == 4 && version[1] <= 3)) //4.3 and down
                             reader.Position += 8; //Vector2f uv
                     }
 
@@ -137,8 +137,8 @@ namespace Unity_Studio
                 }
                 //  unsigned int settingsRaw
                 reader.Position += 4;
-                //  Vector4f uvTransform - 4.2 and up
-                if (version[0] > 4 || (version[0] == 4 && version[1] >= 2)) //4.2 and up
+                //  Vector4f uvTransform - 4.5 and up
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
                 {
                     reader.Position += 16;
                 }
