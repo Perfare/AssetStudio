@@ -162,7 +162,7 @@ namespace Unity_Studio
                 int dataEnd = assetsFileReader.ReadInt32();
                 fileGen = assetsFileReader.ReadInt32();
                 uint dataOffset = assetsFileReader.ReadUInt32();
-                sharedAssetsList[0].fileName = Path.GetFileName(fullName); //reference itself because sharedFileIDs start from 1
+                sharedAssetsList[0].fileName = fileName; //reference itself because sharedFileIDs start from 1
 
                 switch (fileGen)
                 {

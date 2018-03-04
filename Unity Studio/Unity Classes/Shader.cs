@@ -60,11 +60,9 @@ namespace Unity_Studio
                         var decompressedSize = reader.ReadUInt32();
                         var m_SubProgramBlob = reader.ReadBytes(reader.ReadInt32());
                         var decompressedBytes = new byte[decompressedSize];
-                        using (var mstream = new MemoryStream(m_SubProgramBlob))
+                        using (var decoder = new Lz4DecoderStream(new MemoryStream(m_SubProgramBlob)))
                         {
-                            var decoder = new Lz4DecoderStream(mstream);
                             decoder.Read(decompressedBytes, 0, (int)decompressedSize);
-                            decoder.Dispose();
                         }
                         m_Script = m_Script.Concat(decompressedBytes.ToArray()).ToArray();
                     }

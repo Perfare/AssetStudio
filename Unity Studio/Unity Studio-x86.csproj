@@ -169,7 +169,7 @@
     <Compile Include="GOHierarchy.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Unity Studio Classes\Lz4DecoderStream.cs" />
+    <Compile Include="Lz4DecoderStream.cs" />
     <Compile Include="Unity Classes\Material.cs" />
     <Compile Include="Unity Classes\Mesh.cs" />
     <Compile Include="Unity Classes\GameObject.cs" />
@@ -187,6 +187,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unity Studio Classes\AssetsFile.cs" />
+	<Compile Include="Unity Studio Classes\WebFile.cs" />
     <Compile Include="UnityStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>

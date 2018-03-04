@@ -16,13 +16,17 @@ namespace Unity_Studio
 
         public static void LoadFile(string fullName)
         {
-            if (CheckBundleFile(fullName, out var reader))
+            switch (CheckFileType(fullName, out var reader))
             {
-                LoadBundleFile(fullName, reader);
-            }
-            else
-            {
-                LoadAssetsFile(fullName, reader);
+                case FileType.AssetsFile:
+                    LoadAssetsFile(fullName, reader);
+                    break;
+                case FileType.BundleFile:
+                    LoadBundleFile(fullName, reader);
+                    break;
+                case FileType.WebFile:
+                    LoadWebFile(fullName, reader);
+                    break;
             }
         }
 
@@ -94,12 +98,12 @@ namespace Unity_Studio
             var fileName = Path.GetFileName(fullName);
             StatusStripUpdate("Decompressing " + fileName);
             var bundleFile = new BundleFile(reader);
-            foreach (var memFile in bundleFile.MemoryAssetsFileList)
+            foreach (var file in bundleFile.fileList)
             {
-                if (!assetsfileListHash.Contains(memFile.fileName.ToUpper()))
+                if (!assetsfileListHash.Contains(file.fileName.ToUpper()))
                 {
-                    StatusStripUpdate("Loading " + memFile.fileName);
-                    var assetsFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\" + memFile.fileName, new EndianBinaryReader(memFile.memStream));
+                    StatusStripUpdate("Loading " + file.fileName);
+                    var assetsFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\" + file.fileName, new EndianBinaryReader(file.stream));
                     if (assetsFile.valid)
                     {
                         assetsFile.bundlePath = fullName;
@@ -122,6 +126,30 @@ namespace Unity_Studio
                 }
             }
             reader.Dispose();
+        }
+
+        private static void LoadWebFile(string fullName, EndianBinaryReader reader)
+        {
+            var fileName = Path.GetFileName(fullName);
+            StatusStripUpdate("Loading " + fileName);
+            var bundleFile = new WebFile(reader);
+            reader.Dispose();
+            foreach (var file in bundleFile.fileList)
+            {
+                var dummyName = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
+                switch (CheckFileType(file.stream, out reader))
+                {
+                    case FileType.AssetsFile:
+                        LoadAssetsFile(dummyName, reader);
+                        break;
+                    case FileType.BundleFile:
+                        LoadBundleFile(dummyName, reader);
+                        break;
+                    case FileType.WebFile:
+                        LoadWebFile(dummyName, reader);
+                        break;
+                }
+            }
         }
 
         public static void MergeSplitAssets(string dirPath)

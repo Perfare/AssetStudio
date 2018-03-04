@@ -31,9 +31,20 @@ namespace Lz4
             inBufEnd = DecBufLen;
         }
 
-        public override void Close()
+        protected override void Dispose(bool disposing)
         {
-            input = null;
+            try
+            {
+                if (disposing && input != null)
+                {
+                    input.Close();
+                }
+                input = null;
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
         }
 
         private long inputLength;
@@ -500,15 +511,12 @@ namespace Lz4
         {
         }
 
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         public override long Seek(long offset, SeekOrigin origin)

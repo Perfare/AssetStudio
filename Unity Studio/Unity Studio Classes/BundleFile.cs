@@ -5,19 +5,18 @@ using SevenZip.Compression.LZMA;
 
 namespace Unity_Studio
 {
+    public class MemoryFile
+    {
+        public string fileName;
+        public MemoryStream stream;
+    }
+
     public class BundleFile
     {
         public int format;
         public string versionPlayer;
         public string versionEngine;
-        public List<MemoryAssetsFile> MemoryAssetsFileList = new List<MemoryAssetsFile>();
-
-        public class MemoryAssetsFile
-        {
-            public string fileName;
-            public MemoryStream memStream;
-        }
-
+        public List<MemoryFile> fileList = new List<MemoryFile>();
 
         public BundleFile(EndianBinaryReader bundleReader)
         {
@@ -92,16 +91,16 @@ namespace Unity_Studio
             int fileCount = reader.ReadInt32();
             for (int i = 0; i < fileCount; i++)
             {
-                var memFile = new MemoryAssetsFile();
-                memFile.fileName = reader.ReadStringToNull();
+                var file = new MemoryFile();
+                file.fileName = reader.ReadStringToNull();
                 int fileOffset = reader.ReadInt32();
                 fileOffset += offset;
                 int fileSize = reader.ReadInt32();
                 long nextFile = reader.Position;
                 reader.Position = fileOffset;
                 var buffer = reader.ReadBytes(fileSize);
-                memFile.memStream = new MemoryStream(buffer);
-                MemoryAssetsFileList.Add(memFile);
+                file.stream = new MemoryStream(buffer);
+                fileList.Add(file);
                 reader.Position = nextFile;
             }
         }
@@ -143,11 +142,9 @@ namespace Unity_Studio
                 case 3://LZ4HC
                     {
                         byte[] uncompressedBytes = new byte[uncompressedSize];
-                        using (var mstream = new MemoryStream(blocksInfoBytes))
+                        using (var decoder = new Lz4DecoderStream(new MemoryStream(blocksInfoBytes)))
                         {
-                            var decoder = new Lz4DecoderStream(mstream);
                             decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                            decoder.Dispose();
                         }
                         blocksInfoStream = new MemoryStream(uncompressedBytes);
                         break;
@@ -188,11 +185,9 @@ namespace Unity_Studio
                         case 3://LZ4HC
                             {
                                 var uncompressedBytes = new byte[uncompressedSize];
-                                using (var mstream = new MemoryStream(compressedBytes))
+                                using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
                                 {
-                                    var decoder = new Lz4DecoderStream(mstream);
                                     decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                    decoder.Dispose();
                                 }
                                 assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
                                 break;
@@ -205,15 +200,15 @@ namespace Unity_Studio
                     var entryinfo_count = blocksInfo.ReadInt32();
                     for (int i = 0; i < entryinfo_count; i++)
                     {
-                        var memFile = new MemoryAssetsFile();
+                        var file = new MemoryFile();
                         var entryinfo_offset = blocksInfo.ReadInt64();
                         var entryinfo_size = blocksInfo.ReadInt64();
                         flag = blocksInfo.ReadInt32();
-                        memFile.fileName = blocksInfo.ReadStringToNull();
+                        file.fileName = Path.GetFileName(blocksInfo.ReadStringToNull());
                         assetsDataReader.Position = entryinfo_offset;
                         var buffer = assetsDataReader.ReadBytes((int)entryinfo_size);
-                        memFile.memStream = new MemoryStream(buffer);
-                        MemoryAssetsFileList.Add(memFile);
+                        file.stream = new MemoryStream(buffer);
+                        fileList.Add(file);
                     }
                 }
             }

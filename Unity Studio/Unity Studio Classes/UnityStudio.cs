@@ -29,17 +29,23 @@ namespace Unity_Studio
         public static Action<string> StatusStripUpdate;
         public static Action<int> ProgressBarMaximumAdd;
 
+        public enum FileType
+        {
+            AssetsFile,
+            BundleFile,
+            WebFile
+        }
 
         public static int ExtractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
-            if (CheckBundleFile(bundleFileName, out var reader))
+            if (CheckFileType(bundleFileName, out var reader) == FileType.BundleFile)
             {
                 StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
                 var extractPath = bundleFileName + "_unpacked\\";
                 Directory.CreateDirectory(extractPath);
                 var bundleFile = new BundleFile(reader);
-                foreach (var memFile in bundleFile.MemoryAssetsFileList)
+                foreach (var memFile in bundleFile.fileList)
                 {
                     var filePath = extractPath + memFile.fileName.Replace('/', '\\');
                     if (!Directory.Exists(Path.GetDirectoryName(filePath)))
@@ -52,8 +58,8 @@ namespace Unity_Studio
                         extractedCount += 1;
                         using (var file = File.Create(filePath))
                         {
-                            memFile.memStream.WriteTo(file);
-                            memFile.memStream.Close();
+                            memFile.stream.WriteTo(file);
+                            memFile.stream.Close();
                         }
                     }
                 }
@@ -355,9 +361,20 @@ namespace Unity_Studio
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static bool CheckBundleFile(string fileName, out EndianBinaryReader reader)
+        public static FileType CheckFileType(MemoryStream stream, out EndianBinaryReader reader)
+        {
+            reader = new EndianBinaryReader(stream);
+            return CheckFileType(reader);
+        }
+
+        public static FileType CheckFileType(string fileName, out EndianBinaryReader reader)
         {
             reader = new EndianBinaryReader(File.OpenRead(fileName));
+            return CheckFileType(reader);
+        }
+
+        public static FileType CheckFileType(EndianBinaryReader reader)
+        {
             var signature = reader.ReadStringToNull();
             reader.Position = 0;
             switch (signature)
@@ -366,9 +383,20 @@ namespace Unity_Studio
                 case "UnityRaw":
                 case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
                 case "UnityFS":
-                    return true;
+                    return FileType.BundleFile;
+                case "UnityWebData1.0":
+                    return FileType.WebFile;
                 default:
-                    return false;
+                    {
+                        var magic = reader.ReadBytes(2);
+                        reader.Position = 0;
+                        if (WebFile.gzipMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
+
+                        return FileType.AssetsFile;
+                    }
             }
         }
 
