@@ -55,6 +55,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BrotliSharpLib, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\BrotliSharpLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>library\OpenTK.dll</HintPath>
@@ -187,7 +192,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unity Studio Classes\AssetsFile.cs" />
-	<Compile Include="Unity Studio Classes\WebFile.cs" />
+    <Compile Include="Unity Studio Classes\WebFile.cs" />
     <Compile Include="UnityStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>

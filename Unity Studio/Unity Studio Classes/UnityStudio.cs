@@ -394,7 +394,13 @@ namespace Unity_Studio
                         {
                             return FileType.WebFile;
                         }
-
+                        reader.Position = 0x20;
+                        magic = reader.ReadBytes(6);
+                        reader.Position = 0;
+                        if (WebFile.brotliMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
                         return FileType.AssetsFile;
                     }
             }
