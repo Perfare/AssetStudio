@@ -220,54 +220,7 @@ namespace Unity_Studio
                     assetsFileReader.endian = EndianType.LittleEndian;
                 }
 
-                switch (platform)
-                {
-                    case -2:
-                        platformStr = "Unity Package";
-                        break;
-                    case 4:
-                        platformStr = "OSX";
-                        break;
-                    case 5:
-                        platformStr = "PC";
-                        break;
-                    case 6:
-                        platformStr = "Web";
-                        break;
-                    case 7:
-                        platformStr = "Web streamed";
-                        break;
-                    case 9:
-                        platformStr = "iOS";
-                        break;
-                    case 10:
-                        platformStr = "PS3";
-                        break;
-                    case 11:
-                        platformStr = "Xbox 360";
-                        break;
-                    case 13:
-                        platformStr = "Android";
-                        break;
-                    case 16:
-                        platformStr = "Google NaCl";
-                        break;
-                    case 19:
-                        platformStr = "CollabPreview";
-                        break;
-                    case 21:
-                        platformStr = "WP8";
-                        break;
-                    case 25:
-                        platformStr = "Linux";
-                        break;
-                    case 29:
-                        platformStr = "Wii U";
-                        break;
-                    default:
-                        platformStr = "Unknown Platform";
-                        break;
-                }
+                platformStr = Enum.TryParse(platform.ToString(), out BuildTarget buildTarget) ? buildTarget.ToString() : "Unknown Platform";
 
                 int baseCount = assetsFileReader.ReadInt32();
                 for (int i = 0; i < baseCount; i++)
