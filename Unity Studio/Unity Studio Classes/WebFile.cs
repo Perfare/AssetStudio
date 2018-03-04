@@ -40,6 +40,7 @@ namespace Unity_Studio
             }
             else
             {
+                reader.endian = EndianType.LittleEndian;
                 ReadUnityWebData(reader);
             }
         }
