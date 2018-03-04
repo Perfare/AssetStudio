@@ -149,6 +149,7 @@ namespace Unity_Studio
                         LoadWebFile(dummyName, reader);
                         break;
                 }
+                resourceFileReaders.Add(file.fileName.ToUpper(), reader);
             }
         }
 

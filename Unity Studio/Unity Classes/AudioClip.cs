@@ -231,7 +231,7 @@ namespace Unity_Studio
                             break;
                         case AudioCompressionFormat.AAC:
                             preloadData.extension = ".m4a";
-                            preloadData.InfoText += "Acc";
+                            preloadData.InfoText += "AAC";
                             break;
                         case AudioCompressionFormat.GCADPCM:
                             preloadData.extension = ".fsb";
