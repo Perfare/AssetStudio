@@ -96,4 +96,40 @@ namespace Unity_Studio
         GCADPCM,
         ATRAC9
     }
+
+    public enum BuildTarget
+    {
+        StandaloneOSX = 2,
+        StandaloneOSXIntel = 4,
+        StandaloneWindows,
+        WebPlayer,
+        WebPlayerStreamed,
+        iOS = 9,
+        PS3,
+        XBOX360,
+        Android = 13,
+        StandaloneLinux = 17,
+        StandaloneWindows64 = 19,
+        WebGL,
+        WSAPlayer,
+        StandaloneLinux64 = 24,
+        StandaloneLinuxUniversal,
+        WP8Player,
+        StandaloneOSXIntel64,
+        BlackBerry,
+        Tizen,
+        PSP2,
+        PS4,
+        PSM,
+        XboxOne,
+        SamsungTV,
+        N3DS,
+        WiiU,
+        tvOS,
+        Switch,
+        iPhone = -1,
+        BB10 = -1,
+        MetroPlayer = -1,
+        NoTarget = -2
+    }
 }

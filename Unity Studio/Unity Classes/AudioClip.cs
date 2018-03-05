@@ -38,94 +38,104 @@ namespace Unity_Studio
         public AudioClip(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             if (sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
+            m_Name = reader.ReadAlignedString(reader.ReadInt32());
             version5 = sourceFile.version[0] >= 5;
             if (sourceFile.version[0] < 5)
             {
 
-                m_Format = a_Stream.ReadInt32(); //channels?
-                m_Type = (AudioType)a_Stream.ReadInt32();
-                m_3D = a_Stream.ReadBoolean();
-                m_UseHardware = a_Stream.ReadBoolean();
-                a_Stream.Position += 2; //4 byte alignment
+                m_Format = reader.ReadInt32(); //channels?
+                m_Type = (AudioType)reader.ReadInt32();
+                m_3D = reader.ReadBoolean();
+                m_UseHardware = reader.ReadBoolean();
+                reader.Position += 2; //4 byte alignment
 
                 if (sourceFile.version[0] >= 4 || (sourceFile.version[0] == 3 && sourceFile.version[1] >= 2)) //3.2.0 to 5
                 {
-                    int m_Stream = a_Stream.ReadInt32();
-                    m_Size = a_Stream.ReadInt32();
+                    int m_Stream = reader.ReadInt32();
+                    m_Size = reader.ReadInt32();
                     var tsize = m_Size % 4 != 0 ? m_Size + 4 - m_Size % 4 : m_Size;
                     //TODO: Need more test
-                    if (preloadData.Size + preloadData.Offset - a_Stream.Position != tsize)
+                    if (preloadData.Size + preloadData.Offset - reader.Position != tsize)
                     {
-                        m_Offset = a_Stream.ReadInt32();
+                        m_Offset = reader.ReadInt32();
                         m_Source = sourceFile.filePath + ".resS";
                     }
                 }
                 else
                 {
-                    m_Size = a_Stream.ReadInt32();
+                    m_Size = reader.ReadInt32();
                 }
             }
             else
             {
-                m_LoadType = a_Stream.ReadInt32(); //Decompress on load, Compressed in memory, Streaming
-                m_Channels = a_Stream.ReadInt32();
-                m_Frequency = a_Stream.ReadInt32();
-                m_BitsPerSample = a_Stream.ReadInt32();
-                m_Length = a_Stream.ReadSingle();
-                m_IsTrackerFormat = a_Stream.ReadBoolean();
-                a_Stream.Position += 3;
-                m_SubsoundIndex = a_Stream.ReadInt32();
-                m_PreloadAudioData = a_Stream.ReadBoolean();
-                m_LoadInBackground = a_Stream.ReadBoolean();
-                m_Legacy3D = a_Stream.ReadBoolean();
-                a_Stream.Position += 1;
+                m_LoadType = reader.ReadInt32(); //Decompress on load, Compressed in memory, Streaming
+                m_Channels = reader.ReadInt32();
+                m_Frequency = reader.ReadInt32();
+                m_BitsPerSample = reader.ReadInt32();
+                m_Length = reader.ReadSingle();
+                m_IsTrackerFormat = reader.ReadBoolean();
+                reader.Position += 3;
+                m_SubsoundIndex = reader.ReadInt32();
+                m_PreloadAudioData = reader.ReadBoolean();
+                m_LoadInBackground = reader.ReadBoolean();
+                m_Legacy3D = reader.ReadBoolean();
+                reader.Position += 1;
                 m_3D = m_Legacy3D;
 
-                m_Source = a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                if (m_Source != "")
-                    m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), m_Source.Replace("archive:/", ""));
-                m_Offset = a_Stream.ReadInt64();
-                m_Size = a_Stream.ReadInt64();
-                m_CompressionFormat = (AudioCompressionFormat)a_Stream.ReadInt32();
+                m_Source = reader.ReadAlignedString(reader.ReadInt32());
+                m_Offset = reader.ReadInt64();
+                m_Size = reader.ReadInt64();
+                m_CompressionFormat = (AudioCompressionFormat)reader.ReadInt32();
             }
 
             if (readSwitch)
             {
-                if (string.IsNullOrEmpty(m_Source))
+                if (!string.IsNullOrEmpty(m_Source))
                 {
-                    if (m_Size > 0)
-                        m_AudioData = a_Stream.ReadBytes((int)m_Size);
-                }
-                else if (File.Exists(m_Source) ||
-                         File.Exists(m_Source = Path.Combine(Path.GetDirectoryName(sourceFile.filePath), Path.GetFileName(m_Source))))
-                {
-                    BinaryReader reader = new BinaryReader(File.OpenRead(m_Source));
-                    reader.BaseStream.Position = m_Offset;
-                    m_AudioData = reader.ReadBytes((int)m_Size);
-                    reader.Close();
-                }
-                else
-                {
-                    if (UnityStudio.assetsfileandstream.TryGetValue(Path.GetFileName(m_Source), out var estream))
+                    var resourceFileName = Path.GetFileName(m_Source);
+                    var resourceFilePath = Path.GetDirectoryName(sourceFile.filePath) + "\\" + resourceFileName;
+                    if (!File.Exists(resourceFilePath))
                     {
-                        estream.Position = m_Offset;
-                        m_AudioData = estream.ReadBytes((int)m_Size);
+                        var findFiles = Directory.GetFiles(Path.GetDirectoryName(sourceFile.filePath), resourceFileName, SearchOption.AllDirectories);
+                        if (findFiles.Length > 0)
+                        {
+                            resourceFilePath = findFiles[0];
+                        }
+                    }
+                    if (File.Exists(resourceFilePath))
+                    {
+                        using (var resourceReader = new BinaryReader(File.OpenRead(resourceFilePath)))
+                        {
+                            resourceReader.BaseStream.Position = m_Offset;
+                            m_AudioData = resourceReader.ReadBytes((int)m_Size);
+                        }
                     }
                     else
                     {
-                        MessageBox.Show($"can't find the resource file {Path.GetFileName(m_Source)}");
+                        if (UnityStudio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var resourceReader))
+                        {
+                            resourceReader.Position = m_Offset;
+                            m_AudioData = resourceReader.ReadBytes((int)m_Size);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"can't find the resource file {resourceFileName}");
+                        }
                     }
+                }
+                else
+                {
+                    if (m_Size > 0)
+                        m_AudioData = reader.ReadBytes((int)m_Size);
                 }
             }
             else
@@ -221,7 +231,7 @@ namespace Unity_Studio
                             break;
                         case AudioCompressionFormat.AAC:
                             preloadData.extension = ".m4a";
-                            preloadData.InfoText += "Acc";
+                            preloadData.InfoText += "AAC";
                             break;
                         case AudioCompressionFormat.GCADPCM:
                             preloadData.extension = ".fsb";

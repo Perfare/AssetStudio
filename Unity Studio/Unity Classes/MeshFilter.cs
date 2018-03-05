@@ -14,12 +14,11 @@ namespace Unity_Studio
         public MeshFilter(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var a_Stream = preloadData.sourceFile.a_Stream;
-            a_Stream.Position = preloadData.Offset;
+            var reader = preloadData.Reader;
 
             if (sourceFile.platform == -2)
             {
-                uint m_ObjectHideFlags = a_Stream.ReadUInt32();
+                uint m_ObjectHideFlags = reader.ReadUInt32();
                 PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
