@@ -77,6 +77,10 @@ namespace Unity_Studio
 
         private AssetPreloadData selectasset;
 
+        //list search
+        private List<string> checkType = new List<string>();
+        private bool isCheckTypeAll = false;
+
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -107,6 +111,7 @@ namespace Unity_Studio
                     unityFilesHash.Clear();
                     assetsfileListHash.Clear();
                     BuildAssetStrucutres();
+                    setTypeToolStripMenuItem();
                 });
             }
         }
@@ -139,7 +144,9 @@ namespace Unity_Studio
                     unityFilesHash.Clear();
                     assetsfileListHash.Clear();
                     BuildAssetStrucutres();
+                    setTypeToolStripMenuItem();
                 });
+                
             }
         }
 
@@ -633,7 +640,15 @@ namespace Unity_Studio
             {
                 assetListView.BeginUpdate();
                 assetListView.SelectedIndices.Clear();
-                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
+                if (((ToolStripMenuItem)this.showTypeToolStripMenuItem.DropDownItems.Find("allToolStripMenuItem", true).FirstOrDefault()).Checked)
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
+                }
+                else
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) &&
+                      checkType.Contains(ListAsset.TypeString));
+                }
                 assetListView.VirtualListSize = visibleAssets.Count;
                 assetListView.EndUpdate();
             }
@@ -1635,7 +1650,8 @@ namespace Unity_Studio
             }
         }
 
-        public UnityStudioForm()
+
+        public UnityStudioForm(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
@@ -1652,6 +1668,40 @@ namespace Unity_Studio
             UnityStudio.ProgressBarPerformStep = ProgressBarPerformStep;
             UnityStudio.StatusStripUpdate = StatusStripUpdate;
             UnityStudio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
+
+            if (args.Length > 0) { LoadFileInit(args); }
+        }
+
+        public void LoadFileInit(string[] args)
+        {
+
+           
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                mainPath = Path.GetDirectoryName(args[0]);
+                MergeSplitAssets(mainPath);
+                var readFile = ProcessingSplitFiles(args.ToList());
+                foreach (var i in readFile)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i).ToUpper());
+                }
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(unityFiles.Count);
+                //use a for loop because list size can change
+                for (int f = 0; f < unityFiles.Count; f++)
+                {
+                    LoadFile(unityFiles[f]);
+                    ProgressBarPerformStep();
+                }
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+                BuildAssetStrucutres();
+                setTypeToolStripMenuItem();
+
+   
+            });
+           
         }
 
         private void timerOpenTK_Tick(object sender, EventArgs e)
@@ -1862,6 +1912,149 @@ namespace Unity_Studio
                 viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
                 glControl1.Invalidate();
             }
+        }
+
+
+        private void setTypeToolStripMenuItem()
+        {
+            BeginInvoke(new Action(() =>
+            {
+                this.showTypeToolStripMenuItem.DropDownItems.Clear();
+                ToolStripMenuItem typeItemAll = new ToolStripMenuItem();
+                string typeName = "All";
+                typeItemAll.CheckOnClick = true;
+                typeItemAll.Name = $"allToolStripMenuItem";
+                typeItemAll.Size = new Size(152, 22);
+                typeItemAll.Text = typeName;
+                typeItemAll.CheckedChanged += typeToolStripMenuItem_CheckedChanged;
+                this.showTypeToolStripMenuItem.DropDownItems.Add(typeItemAll);
+                if (exportableAssets.Count > 0)
+                {
+                    foreach (string dataTypeName in exportableAssets.Select(x => x.TypeString).ToList().Distinct())
+                    {
+                        ToolStripMenuItem typeItem = new ToolStripMenuItem();
+                        typeItem.CheckOnClick = true;
+                        typeItem.Name = $"{dataTypeName.ToLower()}ToolStripMenuItem";
+                        typeItem.Size = new Size(152, 22);
+                        typeItem.Text = dataTypeName;
+                        typeItem.CheckedChanged += typeToolStripMenuItem_CheckedChanged;
+                        this.showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
+                    }
+                }
+            }));
+        }
+
+        private void typeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            ToolStripMenuItem typeItem = (ToolStripMenuItem)sender;
+            listSearch.Focus();
+            switch (typeItem.Text)
+            {
+                case "All":
+                    isCheckTypeAll = true;
+                    foreach(ToolStripMenuItem toolStripMenu in this.showTypeToolStripMenuItem.DropDownItems)
+                    {
+                        if(typeItem.Text != "All")
+                        {
+                            toolStripMenu.Checked = typeItem.Checked;
+                        }
+                    }
+                    isCheckTypeAll = false;
+                    break;
+                default:
+                    if (typeItem.Checked)
+                    {
+                        if (!checkType.Contains(typeItem.Text))
+                            checkType.Add(typeItem.Text);
+                    }
+                    else
+                    {
+                        checkType.Remove(typeItem.Text);
+                    }
+                    break;
+            }
+
+            if (exportableAssets.Count > 0)
+                enableFiltering = true;
+
+            if (enableFiltering && !isCheckTypeAll)
+            {
+                assetListView.BeginUpdate();
+                assetListView.SelectedIndices.Clear();
+                if(((ToolStripMenuItem)this.showTypeToolStripMenuItem.DropDownItems.Find("allToolStripMenuItem", true).FirstOrDefault()).Checked)
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase));
+                }
+                else
+                {
+                    visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.StartsWith(listSearch.Text, System.StringComparison.CurrentCultureIgnoreCase) &&
+                      checkType.Contains(ListAsset.TypeString));
+                }
+                assetListView.VirtualListSize = visibleAssets.Count;
+                assetListView.EndUpdate();
+            }
+
+
+        }
+
+        private void sceneTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            resetForm();
+            mainPath = Path.GetDirectoryName(filePaths[0]);
+
+            if (Directory.Exists(filePaths[0]))
+            {
+                mainPath = filePaths[0];
+                MergeSplitAssets(mainPath);
+
+                var files = Directory.GetFiles(mainPath, "*.*", SearchOption.AllDirectories).ToList();
+                var readFile = ProcessingSplitFiles(files);
+                foreach (var i in readFile)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i).ToUpper());
+                }
+            }
+            else
+            {
+                var readFile = ProcessingSplitFiles(filePaths.ToList());
+
+                foreach (var i in readFile)
+                {
+                    unityFiles.Add(i);
+                    unityFilesHash.Add(Path.GetFileName(i).ToUpper());
+                }
+            }
+
+            bool needBuildIndex = false;
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(unityFiles.Count);
+                //use a for loop because list size can change
+                for (int f = 0; f < unityFiles.Count; f++)
+                {
+                    LoadFile(unityFiles[f]);
+                    ProgressBarPerformStep();
+                }
+                unityFilesHash.Clear();
+                assetsfileListHash.Clear();
+                BuildAssetStrucutres();
+                setTypeToolStripMenuItem();
+            
+            });
+           
+        }
+
+
+
+        private void sceneTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Link;
+            else e.Effect = DragDropEffects.None;
         }
     }
 }
