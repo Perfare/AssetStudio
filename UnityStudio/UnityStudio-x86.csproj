@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F5E07FB2-95E4-417F-943F-D439D9A03BBA}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UnityStudio</RootNamespace>
+    <AssemblyName>UnityStudio</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\unity.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BrotliSharpLib, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\BrotliSharpLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\OpenTK.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\OpenTK.GLControl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Half, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\System.Half.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="7zip\Common\CommandLineParser.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Common\CRC.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Common\InBuffer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Common\OutBuffer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZMA\LzmaBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZMA\LzmaDecoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZMA\LzmaEncoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZ\IMatchFinder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZ\LzBinTree.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZ\LzInWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\LZ\LzOutWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBit.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\Compress\RangeCoder\RangeCoderBitTree.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\ICoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="7zip\SevenZipHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="OpenFolderDialog.cs" />
+    <Compile Include="Classes\AssetBundle.cs" />
+    <Compile Include="Classes\MovieTexture.cs" />
+    <Compile Include="Classes\Sprite.cs" />
+    <Compile Include="Classes\SpriteAtlas.cs" />
+    <Compile Include="Classes\VideoClip.cs" />
+    <Compile Include="StudioClasses\AssetPreloadData.cs" />
+    <Compile Include="Classes\AudioClip.cs" />
+    <Compile Include="Classes\BuildSettings.cs" />
+    <Compile Include="StudioClasses\BundleFile.cs" />
+    <Compile Include="StudioClasses\ClassStruct.cs" />
+    <Compile Include="StudioClasses\FBXExporter.cs" />
+    <Compile Include="StudioClasses\ShaderResource.Designer.cs">
+      <DependentUpon>ShaderResource.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="StudioClasses\SpriteHelper.cs" />
+    <Compile Include="StudioClasses\StringExtensions.cs" />
+    <Compile Include="StudioClasses\EndianBinaryReader.cs" />
+    <Compile Include="StudioClasses\Texture2DConverter.cs" />
+    <Compile Include="StudioClasses\Enums.cs" />
+    <Compile Include="StudioClasses\Exporter.cs" />
+    <Compile Include="StudioClasses\Importer.cs" />
+    <Compile Include="StudioClasses\Studio.cs" />
+    <Compile Include="StudioClasses\ClassIDReference.cs" />
+    <Compile Include="ExportOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExportOptions.Designer.cs">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FMOD Studio API\fmod.cs" />
+    <Compile Include="FMOD Studio API\fmod_dsp.cs" />
+    <Compile Include="FMOD Studio API\fmod_errors.cs" />
+    <Compile Include="Classes\Font.cs" />
+    <Compile Include="GOHierarchy.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Lz4DecoderStream.cs" />
+    <Compile Include="Classes\Material.cs" />
+    <Compile Include="Classes\Mesh.cs" />
+    <Compile Include="Classes\GameObject.cs" />
+    <Compile Include="StudioClasses\PPtrHelpers.cs" />
+    <Compile Include="Classes\MonoBehaviour.cs" />
+    <Compile Include="Classes\PlayerSettings.cs" />
+    <Compile Include="Classes\RectTransform.cs" />
+    <Compile Include="Classes\MeshRenderer.cs" />
+    <Compile Include="Classes\Shader.cs" />
+    <Compile Include="Classes\SkinnedMeshRenderer.cs" />
+    <Compile Include="Classes\MeshFilter.cs" />
+    <Compile Include="Classes\TextAsset.cs" />
+    <Compile Include="Classes\Texture2D.cs" />
+    <Compile Include="Classes\Transform.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StudioClasses\AssetsFile.cs" />
+    <Compile Include="StudioClasses\WebFile.cs" />
+    <Compile Include="UnityStudioForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UnityStudioForm.Designer.cs">
+      <DependentUpon>UnityStudioForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ExportOptions.resx">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="StudioClasses\ShaderResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ShaderResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UnityStudioForm.resx">
+      <DependentUpon>UnityStudioForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\unity.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\preview.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /y "$(ProjectDir)library" "$(TargetDir)"
+xcopy /y "$(ProjectDir)library\$(PlatformName)" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

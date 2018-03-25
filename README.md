@@ -1,13 +1,15 @@
 # UnityStudio
 Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/amw5n3607g45n2v0?svg=true)](https://ci.appveyor.com/project/Perfare/unitystudio/branch/master/artifacts)
 
-Unity Studio is a tool for exploring, extracting and exporting assets from Unity games and apps. It has been tested with Unity builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with Unity builds from 2.5 up to the 2017.3 version.
+**None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by, Unity Technologies or its affiliates.**
+
+UnityStudio is a tool for exploring, extracting and exporting assets from Unity games and apps. It has been tested with Unity builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with Unity builds from 2.5 up to the 2017.4 version.
 
 ## Features
 
-* Support Unity3D Asset types:  
+* Support asset types:  
   * **Texture2D** : support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX  
-  * **Sprite** : png  
+  * **Sprite** : bmp, png or jpeg  
   * **AudioClip** : mp3, ogg, wav, m4a, fsb. support convert FSB file to WAV(PCM)  
   * **Font** : ttf, otf  
   * **Mesh** : obj  
@@ -37,7 +39,7 @@ Unity Studio is a tool for exploring, extracting and exporting assets from Unity
 | Scene Hierarchy search box    | Search nodes using * and ? wildcards. Press Enter to loop through results or Ctrl+Enter to select all matching nodes
 | Asset List filter box         | Enter a keyword to filter the list of available assets; wildcards are added automatically
 | Diagnostics                   | press Ctrl+Alt+D to bring up a hidden menu and a new list
-| Bulid class structures        | Create human-readable structures for each type of Unity asset
+| Bulid class structures        | Create human-readable structures for each type of asset
 
 Other interface elements have tooltips or are self-explanatory.
 
