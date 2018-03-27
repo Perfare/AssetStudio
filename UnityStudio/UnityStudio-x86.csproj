@@ -147,6 +147,7 @@
     <Compile Include="StudioClasses\BundleFile.cs" />
     <Compile Include="StudioClasses\ClassStruct.cs" />
     <Compile Include="StudioClasses\FBXExporter.cs" />
+    <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">
       <DependentUpon>ShaderResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -155,8 +156,7 @@
     <Compile Include="StudioClasses\SpriteHelper.cs" />
     <Compile Include="StudioClasses\StringExtensions.cs" />
     <Compile Include="StudioClasses\EndianBinaryReader.cs" />
-    <Compile Include="StudioClasses\Texture2DConverter.cs" />
-    <Compile Include="StudioClasses\Enums.cs" />
+    <Compile Include="Classes\Texture2D.Converter.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />
     <Compile Include="StudioClasses\Studio.cs" />

@@ -12,7 +12,7 @@ namespace UnityStudio
     {
         public EndianBinaryReader assetsFileReader;
         public string filePath;
-        public string bundlePath;
+        public string parentPath;
         public string fileName;
         public string upperFileName;
         public int fileGen;
@@ -220,7 +220,7 @@ namespace UnityStudio
                     assetsFileReader.endian = EndianType.LittleEndian;
                 }
 
-                platformStr = Enum.TryParse(platform.ToString(), out BuildTarget buildTarget) ? buildTarget.ToString() : "Unknown Platform";
+                platformStr = Enum.IsDefined(typeof(BuildTarget), platform) ? ((BuildTarget)platform).ToString() : "Unknown Platform";
 
                 int baseCount = assetsFileReader.ReadInt32();
                 for (int i = 0; i < baseCount; i++)
@@ -292,13 +292,15 @@ namespace UnityStudio
                         //but not the last!
                     }
 
-                    if (ClassIDReference.Names.TryGetValue(asset.Type2, out var typeString))
+                    if (Enum.IsDefined(typeof(ClassIDReference), asset.Type2))
                     {
-                        asset.TypeString = typeString;
+                        asset.Type = (ClassIDReference)asset.Type2;
+                        asset.TypeString = asset.Type.ToString();
                     }
                     else
                     {
-                        asset.TypeString = "Unknown Type " + asset.Type2;
+                        asset.Type = ClassIDReference.UnknownType;
+                        asset.TypeString = "UnknownType " + asset.Type2;
                     }
 
                     asset.uniqueID = i.ToString(assetIDfmt);
@@ -309,7 +311,7 @@ namespace UnityStudio
                     preloadTable.Add(asset.m_PathID, asset);
 
                     #region read BuildSettings to get version for unity 2.x files
-                    if (asset.Type2 == 141 && fileGen == 6)
+                    if (asset.Type == ClassIDReference.BuildSettings && fileGen == 6)
                     {
                         long nextAsset = assetsFileReader.Position;
 

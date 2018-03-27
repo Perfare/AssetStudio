@@ -226,7 +226,7 @@ namespace UnityStudio
                                 {
                                     foreach (var asset in exportableAssets)
                                     {
-                                        if (asset.Type2 == 28 && asset.Text == texName)
+                                        if (asset.Type == ClassIDReference.Texture2D && asset.Text == texName)
                                         {
                                             TexturePD = asset;
                                             break;
@@ -237,7 +237,7 @@ namespace UnityStudio
                         }
                         #endregion
 
-                        if (TexturePD != null && TexturePD.Type2 == 28)
+                        if (TexturePD != null && TexturePD.Type == ClassIDReference.Texture2D)
                         {
                             Textures.Add(TexturePD);
 

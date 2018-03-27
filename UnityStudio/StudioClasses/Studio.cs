@@ -88,117 +88,99 @@ namespace UnityStudio
                     {
                         asset.uniqueID = fileID + asset.uniqueID;
                         var exportable = false;
-                        switch (asset.Type2)
+                        switch (asset.Type)
                         {
-                            case 1: //GameObject
+                            case ClassIDReference.GameObject:
                                 {
                                     GameObject m_GameObject = new GameObject(asset);
                                     assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
                                     //totalTreeNodes++;
                                     break;
                                 }
-                            case 4: //Transform
+                            case ClassIDReference.Transform:
                                 {
                                     Transform m_Transform = new Transform(asset);
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
                                     break;
                                 }
-                            case 224: //RectTransform
+                            case ClassIDReference.RectTransform:
                                 {
                                     RectTransform m_Rect = new RectTransform(asset);
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
                                     break;
                                 }
-                            case 28: //Texture2D
+                            case ClassIDReference.Texture2D:
                                 {
                                     Texture2D m_Texture2D = new Texture2D(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 48: //Shader
+                            case ClassIDReference.Shader:
                                 {
                                     Shader m_Shader = new Shader(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 49: //TextAsset
+                            case ClassIDReference.TextAsset:
                                 {
                                     TextAsset m_TextAsset = new TextAsset(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 83: //AudioClip
+                            case ClassIDReference.AudioClip:
                                 {
                                     AudioClip m_AudioClip = new AudioClip(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 114: //MonoBehaviour
+                            case ClassIDReference.MonoBehaviour:
                                 {
                                     var m_MonoBehaviour = new MonoBehaviour(asset, false);
                                     if (asset.Type1 != asset.Type2 && assetsFile.ClassStructures.ContainsKey(asset.Type1))
                                         exportable = true;
                                     break;
                                 }
-                            case 128: //Font
+                            case ClassIDReference.Font:
                                 {
                                     UnityFont m_Font = new UnityFont(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 129: //PlayerSettings
+                            case ClassIDReference.PlayerSettings:
                                 {
                                     var plSet = new PlayerSettings(asset);
                                     productName = plSet.productName;
                                     break;
                                 }
-                            case 43: //Mesh
+                            case ClassIDReference.Mesh:
                                 {
                                     Mesh m_Mesh = new Mesh(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 142: //AssetBundle
+                            case ClassIDReference.AssetBundle:
                                 {
                                     ab = new AssetBundle(asset);
                                     break;
                                 }
-                            case 329: //VideoClip
+                            case ClassIDReference.VideoClip:
                                 {
                                     var m_VideoClip = new VideoClip(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 152: //MovieTexture
+                            case ClassIDReference.MovieTexture:
                                 {
                                     var m_MovieTexture = new MovieTexture(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                            case 213: //Sprite
+                            case ClassIDReference.Sprite:
                                 {
                                     var m_Sprite = new Sprite(asset, false);
                                     exportable = true;
                                     break;
                                 }
-                                /*case 21: //Material                            
-                                case 74: //AnimationClip
-                                case 90: //Avatar
-                                case 91: //AnimatorController
-                                case 115: //MonoScript
-                                case 687078895: //SpriteAtlas
-                                    {
-                                        if (asset.Offset + 4 > asset.sourceFile.a_Stream.BaseStream.Length)
-                                            break;
-                                        asset.sourceFile.a_Stream.Position = asset.Offset;
-                                        var len = asset.sourceFile.a_Stream.ReadInt32();
-                                        if (len > 0 && len < asset.Size - 4)
-                                        {
-                                            var bytes = asset.sourceFile.a_Stream.ReadBytes(len);
-                                            asset.Text = Encoding.UTF8.GetString(bytes);
-                                        }
-                                        break;
-                                    }*/
                         }
                         if (!exportable && displayAll)
                         {
@@ -267,24 +249,24 @@ namespace UnityStudio
                                 var sourceFile = assetsfileList[m_Component.m_FileID];
                                 if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
                                 {
-                                    switch (asset.Type2)
+                                    switch (asset.Type)
                                     {
-                                        case 4: //Transform
+                                        case ClassIDReference.Transform:
                                             {
                                                 m_GameObject.m_Transform = m_Component;
                                                 break;
                                             }
-                                        case 23: //MeshRenderer
+                                        case ClassIDReference.MeshRenderer:
                                             {
                                                 m_GameObject.m_MeshRenderer = m_Component;
                                                 break;
                                             }
-                                        case 33: //MeshFilter
+                                        case ClassIDReference.MeshFilter:
                                             {
                                                 m_GameObject.m_MeshFilter = m_Component;
                                                 break;
                                             }
-                                        case 137: //SkinnedMeshRenderer
+                                        case ClassIDReference.SkinnedMeshRenderer:
                                             {
                                                 m_GameObject.m_SkinnedMeshRenderer = m_Component;
                                                 break;

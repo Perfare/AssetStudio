@@ -11,6 +11,7 @@ namespace UnityStudio
         public long m_PathID;
         public uint Offset;
         public int Size;
+        public ClassIDReference Type;
         public int Type1;
         public int Type2;
 

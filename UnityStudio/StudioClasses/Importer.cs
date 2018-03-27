@@ -30,7 +30,7 @@ namespace UnityStudio
             }
         }
 
-        private static void LoadAssetsFile(string fullName, EndianBinaryReader reader)
+        private static void LoadAssetsFile(string fullName, EndianBinaryReader reader, string parentPath = null)
         {
             var fileName = Path.GetFileName(fullName);
             StatusStripUpdate("Loading " + fileName);
@@ -39,6 +39,7 @@ namespace UnityStudio
                 var assetsFile = new AssetsFile(fullName, reader);
                 if (assetsFile.valid)
                 {
+                    assetsFile.parentPath = parentPath;
                     assetsfileList.Add(assetsFile);
                     assetsfileListHash.Add(assetsFile.upperFileName);
 
@@ -90,14 +91,17 @@ namespace UnityStudio
                     if (value > 0)
                         ProgressBarMaximumAdd(value);
                 }
+                else
+                    reader.Dispose();
             }
         }
 
-        private static void LoadBundleFile(string fullName, EndianBinaryReader reader)
+        private static void LoadBundleFile(string fullName, EndianBinaryReader reader, string parentPath = null)
         {
             var fileName = Path.GetFileName(fullName);
             StatusStripUpdate("Decompressing " + fileName);
             var bundleFile = new BundleFile(reader);
+            reader.Dispose();
             foreach (var file in bundleFile.fileList)
             {
                 if (!assetsfileListHash.Contains(file.fileName.ToUpper()))
@@ -106,7 +110,7 @@ namespace UnityStudio
                     var assetsFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\" + file.fileName, new EndianBinaryReader(file.stream));
                     if (assetsFile.valid)
                     {
-                        assetsFile.bundlePath = fullName;
+                        assetsFile.parentPath = parentPath ?? fullName;
 
                         if (assetsFile.fileGen == 6) //2.6.x and earlier don't have a string version before the preload table
                         {
@@ -125,25 +129,24 @@ namespace UnityStudio
                     }
                 }
             }
-            reader.Dispose();
         }
 
         private static void LoadWebFile(string fullName, EndianBinaryReader reader)
         {
             var fileName = Path.GetFileName(fullName);
             StatusStripUpdate("Loading " + fileName);
-            var bundleFile = new WebFile(reader);
+            var webFile = new WebFile(reader);
             reader.Dispose();
-            foreach (var file in bundleFile.fileList)
+            foreach (var file in webFile.fileList)
             {
                 var dummyName = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
                 switch (CheckFileType(file.stream, out reader))
                 {
                     case FileType.AssetsFile:
-                        LoadAssetsFile(dummyName, reader);
+                        LoadAssetsFile(dummyName, reader, fullName);
                         break;
                     case FileType.BundleFile:
-                        LoadBundleFile(dummyName, reader);
+                        LoadBundleFile(dummyName, reader, fullName);
                         break;
                     case FileType.WebFile:
                         LoadWebFile(dummyName, reader);

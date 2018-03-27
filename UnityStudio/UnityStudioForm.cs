@@ -388,10 +388,10 @@ namespace UnityStudio
         {
             if (lastLoadedAsset != null)
             {
-                switch (lastLoadedAsset.Type2)
+                switch (lastLoadedAsset.Type)
                 {
-                    case 28:
-                    case 213:
+                    case ClassIDReference.Texture2D:
+                    case ClassIDReference.Sprite:
                         {
                             if (enablePreview.Checked && imageTexture != null)
                             {
@@ -404,15 +404,15 @@ namespace UnityStudio
                             }
                         }
                         break;
-                    case 48:
-                    case 49:
-                    case 114:
+                    case ClassIDReference.Shader:
+                    case ClassIDReference.TextAsset:
+                    case ClassIDReference.MonoBehaviour:
                         textPreviewBox.Visible = !textPreviewBox.Visible;
                         break;
-                    case 128:
+                    case ClassIDReference.Font:
                         fontPreviewBox.Visible = !fontPreviewBox.Visible;
                         break;
-                    case 83:
+                    case ClassIDReference.AudioClip:
                         {
                             FMODpanel.Visible = !FMODpanel.Visible;
 
@@ -728,10 +728,9 @@ namespace UnityStudio
 
         private void PreviewAsset(AssetPreloadData asset)
         {
-            switch (asset.Type2)
+            switch (asset.Type)
             {
-                #region Texture2D
-                case 28: //Texture2D
+                case ClassIDReference.Texture2D:
                     {
                         imageTexture?.Dispose();
                         var m_Texture2D = new Texture2D(asset, true);
@@ -750,9 +749,7 @@ namespace UnityStudio
                         }
                         break;
                     }
-                #endregion
-                #region AudioClip
-                case 83: //AudioClip
+                case ClassIDReference.AudioClip:
                     {
                         AudioClip m_AudioClip = new AudioClip(asset, true);
                         if (m_AudioClip.m_AudioData == null)
@@ -786,9 +783,7 @@ namespace UnityStudio
                         FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
                         break;
                     }
-                #endregion
-                #region Shader
-                case 48:
+                case ClassIDReference.Shader:
                     {
                         Shader m_TextAsset = new Shader(asset, true);
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
@@ -798,9 +793,7 @@ namespace UnityStudio
                         textPreviewBox.Visible = true;
                         break;
                     }
-                #endregion
-                #region TextAsset
-                case 49:
+                case ClassIDReference.TextAsset:
                     {
                         TextAsset m_TextAsset = new TextAsset(asset, true);
 
@@ -811,9 +804,7 @@ namespace UnityStudio
 
                         break;
                     }
-                #endregion
-                #region MonoBehaviour
-                case 114:
+                case ClassIDReference.MonoBehaviour:
                     {
                         MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
                         textPreviewBox.Text = m_MonoBehaviour.serializedText;
@@ -821,9 +812,7 @@ namespace UnityStudio
 
                         break;
                     }
-                #endregion
-                #region Font
-                case 128: //Font
+                case ClassIDReference.Font:
                     {
                         UnityFont m_Font = new UnityFont(asset, true);
                         if (m_Font.m_FontData != null)
@@ -875,9 +864,7 @@ namespace UnityStudio
                         StatusStripUpdate("Unsupported font for preview. Try to export.");
                         break;
                     }
-                #endregion
-                #region Mesh
-                case 43: //Mesh
+                case ClassIDReference.Mesh:
                     {
                         var m_Mesh = new Mesh(asset, true);
                         if (m_Mesh.m_VertexCount > 0)
@@ -1018,17 +1005,13 @@ namespace UnityStudio
                                         + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
                     }
                     break;
-                #endregion
-                #region VideoClip and MovieTexture
-                case 329: //VideoClip
-                case 152: //MovieTexture
+                case ClassIDReference.VideoClip:
+                case ClassIDReference.MovieTexture:
                     {
                         StatusStripUpdate("Only supported export.");
                         break;
                     }
-                #endregion
-                #region Sprite
-                case 213: //Sprite
+                case ClassIDReference.Sprite:
                     {
                         imageTexture?.Dispose();
                         imageTexture = GetImageFromSprite(asset);
@@ -1046,7 +1029,6 @@ namespace UnityStudio
                         }
                         break;
                     }
-                #endregion
                 default:
                     {
                         var str = asset.ViewStruct();
@@ -1479,63 +1461,63 @@ namespace UnityStudio
                         if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
                         else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
                         StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
-                        switch (asset.Type2)
+                        switch (asset.Type)
                         {
-                            case 28: //Texture2D
+                            case ClassIDReference.Texture2D:
                                 if (ExportTexture2D(asset, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 83: //AudioClip
+                            case ClassIDReference.AudioClip:
                                 if (ExportAudioClip(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 48: //Shader
+                            case ClassIDReference.Shader:
                                 if (ExportShader(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 49: //TextAsset
+                            case ClassIDReference.TextAsset:
                                 if (ExportTextAsset(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 114: //MonoBehaviour
+                            case ClassIDReference.MonoBehaviour:
                                 if (ExportMonoBehaviour(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 128: //Font
+                            case ClassIDReference.Font:
                                 if (ExportFont(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 43: //Mesh
+                            case ClassIDReference.Mesh:
                                 if (ExportMesh(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 329: //VideoClip
+                            case ClassIDReference.VideoClip:
                                 if (ExportVideoClip(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 152: //MovieTexture
+                            case ClassIDReference.MovieTexture:
                                 if (ExportMovieTexture(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case 213: //Sprite
+                            case ClassIDReference.Sprite:
                                 if (ExportSprite(asset, exportpath))
                                 {
                                     exportedCount++;
@@ -1807,9 +1789,17 @@ namespace UnityStudio
             Text = "UnityStudio";
 
             unityFiles.Clear();
+            foreach (var assetsFile in assetsfileList)
+            {
+                assetsFile.assetsFileReader.Dispose();
+            }
             assetsfileList.Clear();
             exportableAssets.Clear();
             visibleAssets.Clear();
+            foreach (var resourceFileReader in resourceFileReaders)
+            {
+                resourceFileReader.Value.Dispose();
+            }
             resourceFileReaders.Clear();
             sharedFileIndex.Clear();
             productName = "";
@@ -1841,7 +1831,7 @@ namespace UnityStudio
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var args = $"/select, {selectasset.sourceFile.bundlePath ?? selectasset.sourceFile.filePath}";
+            var args = $"/select, {selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
         }
