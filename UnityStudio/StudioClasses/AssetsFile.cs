@@ -34,7 +34,6 @@ namespace UnityStudio
         private bool baseDefinitions;
         private List<int[]> classIDs = new List<int[]>();//use for 5.5.0
 
-        public static string[] buildTypeSplit = { ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
         #region cmmon string
         private static Dictionary<int, string> baseStrings = new Dictionary<int, string>
@@ -324,9 +323,8 @@ namespace UnityStudio
                 }
                 #endregion
 
-                buildType = m_Version.Split(buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
-                var strver = from Match m in Regex.Matches(m_Version, @"[0-9]") select m.Value;
-                version = Array.ConvertAll(strver.ToArray(), int.Parse);
+                buildType = Regex.Replace(m_Version, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                version = Regex.Matches(m_Version, @"\d").Cast<Match>().Select(m => int.Parse(m.Value)).ToArray();
                 if (version[0] == 2 && version[1] == 0 && version[2] == 1 && version[3] == 7)//2017.x
                 {
                     var nversion = new int[version.Length - 3];

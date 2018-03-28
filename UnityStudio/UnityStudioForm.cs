@@ -1435,7 +1435,7 @@ namespace UnityStudio
                         break;
                     case "exportSelectedAssetsMenuItem":
                         toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
-                        foreach (var i in assetListView.SelectedIndices.OfType<int>())
+                        foreach (int i in assetListView.SelectedIndices)
                         {
                             toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
                         }

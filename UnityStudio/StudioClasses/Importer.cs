@@ -116,8 +116,8 @@ namespace UnityStudio
                         {
                             //make use of the bundle file version
                             assetsFile.m_Version = bundleFile.versionEngine;
-                            assetsFile.version = Array.ConvertAll((from Match m in Regex.Matches(assetsFile.m_Version, @"[0-9]") select m.Value).ToArray(), int.Parse);
-                            assetsFile.buildType = bundleFile.versionEngine.Split(AssetsFile.buildTypeSplit, StringSplitOptions.RemoveEmptyEntries);
+                            assetsFile.version = Regex.Matches(bundleFile.versionEngine, @"\d").Cast<Match>().Select(m => int.Parse(m.Value)).ToArray();
+                            assetsFile.buildType = Regex.Replace(bundleFile.versionEngine, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                         }
 
                         assetsfileList.Add(assetsFile);
