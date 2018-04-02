@@ -1,9 +1,9 @@
-# UnityStudio
-Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/amw5n3607g45n2v0?svg=true)](https://ci.appveyor.com/project/Perfare/unitystudio/branch/master/artifacts)
+# AssetStudio
+Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/amw5n3607g45n2v0?svg=true)](https://ci.appveyor.com/project/Perfare/assetstudio/branch/master/artifacts)
 
 **None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by, Unity Technologies or its affiliates.**
 
-UnityStudio is a tool for exploring, extracting and exporting assets from Unity games and apps. It has been tested with Unity builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with Unity builds from 2.5 up to the 2017.4 version.
+AssetStudio is a tool for exploring, extracting and exporting assets and assetBundles. It has been tested with builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with assets from 2.5 up to the 2017.4 version.
 
 ## Features
 
