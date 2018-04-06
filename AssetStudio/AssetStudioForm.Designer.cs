@@ -103,6 +103,8 @@
             this.treeTip = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.animatorWithAnimationClipToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -317,7 +319,9 @@
             this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportAllAssetsMenuItem,
             this.exportSelectedAssetsMenuItem,
-            this.exportFilteredAssetsMenuItem});
+            this.exportFilteredAssetsMenuItem,
+            this.toolStripSeparator1,
+            this.animatorWithAnimationClipToolStripMenuItem});
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
             this.exportToolStripMenuItem.Size = new System.Drawing.Size(58, 21);
             this.exportToolStripMenuItem.Text = "Export";
@@ -837,6 +841,18 @@
             this.showOriginalFileToolStripMenuItem.Text = "show original file";
             this.showOriginalFileToolStripMenuItem.Click += new System.EventHandler(this.showOriginalFileToolStripMenuItem_Click);
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(162, 6);
+            // 
+            // animatorWithAnimationClipToolStripMenuItem
+            // 
+            this.animatorWithAnimationClipToolStripMenuItem.Name = "animatorWithAnimationClipToolStripMenuItem";
+            this.animatorWithAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.animatorWithAnimationClipToolStripMenuItem.Text = "Export Animator with AnimationClip";
+            this.animatorWithAnimationClipToolStripMenuItem.Click += new System.EventHandler(this.ExportAnimatorwithAnimationClip_Click);
+            // 
             // AssetStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -956,6 +972,8 @@
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem showOriginalFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem animatorWithAnimationClipToolStripMenuItem;
     }
 }
 

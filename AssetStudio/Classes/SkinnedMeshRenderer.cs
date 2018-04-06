@@ -5,17 +5,11 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public class SkinnedMeshRenderer
+    public class SkinnedMeshRenderer : MeshRenderer
     {
-        public PPtr m_GameObject;
-        public bool m_Enabled;
-        public byte m_CastShadows;
-        public bool m_ReceiveShadows;
-        public ushort m_LightmapIndex;
-        public ushort m_LightmapIndexDynamic;
-        public PPtr[] m_Materials;
         public PPtr m_Mesh;
         public PPtr[] m_Bones;
+        public List<float> m_BlendShapeWeights;
 
         public SkinnedMeshRenderer(AssetPreloadData preloadData)
         {
@@ -126,13 +120,17 @@ namespace AssetStudio
             }
             else
             {
-                if (version[0] > 4 || (version[0] == 4 && version[1] >= 3))
+                if (version[0] > 4 || (version[0] == 4 && version[1] >= 3))//4.3 and up
                 {
-                    int m_BlendShapeWeights = reader.ReadInt32();
-                    reader.Position += m_BlendShapeWeights * 4; //floats
+                    int numBSWeights = reader.ReadInt32();
+                    m_BlendShapeWeights = new List<float>(numBSWeights);
+                    for (int i = 0; i < numBSWeights; i++)
+                    {
+                        m_BlendShapeWeights.Add(reader.ReadSingle());
+                    }
                 }
 
-                if (version[0] > 4 || (version[0] >= 3 && version[1] >= 5))
+                /*if (version[0] > 4 || (version[0] >= 3 && version[1] >= 5))
                 {
                     PPtr m_RootBone = sourceFile.ReadPPtr();
                 }
@@ -143,7 +141,7 @@ namespace AssetStudio
                     float[] m_Center = { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
                     float[] m_Extent = { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
                     bool m_DirtyAABB = reader.ReadBoolean();
-                }
+                }*/
             }
         }
     }

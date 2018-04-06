@@ -205,6 +205,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioClasses\AssetsFile.cs" />
+    <Compile Include="StudioClasses\ModelConverter.cs" />
     <Compile Include="StudioClasses\WebFile.cs" />
     <Compile Include="AssetStudioForm.cs">
       <SubType>Form</SubType>
@@ -263,6 +264,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\preview.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AssetStudioFBX\AssetStudioFBX.vcxproj">
+      <Project>{4f8ef5ef-732b-49cf-9eb3-b23e19ae6267}</Project>
+      <Name>AssetStudioFBX</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssetStudioUtility\AssetStudioUtility.csproj">
+      <Project>{9131c403-7fe8-444d-9af5-5fe5df76ff24}</Project>
+      <Name>AssetStudioUtility</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

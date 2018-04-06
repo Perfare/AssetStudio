@@ -8,6 +8,7 @@ namespace AssetStudio
 {
     public class GameObject : TreeNode
     {
+        public AssetPreloadData asset;
         public List<PPtr> m_Components = new List<PPtr>();
         public PPtr m_Transform;
         public PPtr m_MeshRenderer;
@@ -24,6 +25,7 @@ namespace AssetStudio
         {
             if (preloadData != null)
             {
+                asset = preloadData;
                 var sourceFile = preloadData.sourceFile;
                 var reader = preloadData.InitReader();
 

@@ -181,6 +181,19 @@ namespace AssetStudio
                                     exportable = true;
                                     break;
                                 }
+                            case ClassIDReference.Animator:
+                                {
+                                    exportable = true;
+                                    break;
+                                }
+                            case ClassIDReference.AnimationClip:
+                                {
+                                    exportable = true;
+                                    var reader = asset.sourceFile.assetsFileReader;
+                                    reader.Position = asset.Offset;
+                                    asset.Text = reader.ReadAlignedString();
+                                    break;
+                                }
                         }
                         if (!exportable && displayAll)
                         {
@@ -269,6 +282,11 @@ namespace AssetStudio
                                         case ClassIDReference.SkinnedMeshRenderer:
                                             {
                                                 m_GameObject.m_SkinnedMeshRenderer = m_Component;
+                                                break;
+                                            }
+                                        case ClassIDReference.Animator:
+                                            {
+                                                asset.Text = m_GameObject.asset.Text;//TODO
                                                 break;
                                             }
                                     }

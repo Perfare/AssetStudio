@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class MeshRenderer
+    public class MeshRenderer
     {
         public PPtr m_GameObject;
         public bool m_Enabled;
@@ -14,6 +14,8 @@ namespace AssetStudio
         public ushort m_LightmapIndex;
         public ushort m_LightmapIndexDynamic;
         public PPtr[] m_Materials;
+
+        protected MeshRenderer() { }
 
         public MeshRenderer(AssetPreloadData preloadData)
         {

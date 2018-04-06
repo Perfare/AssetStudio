@@ -54,12 +54,26 @@
             this.topng = new System.Windows.Forms.RadioButton();
             this.tobmp = new System.Windows.Forms.RadioButton();
             this.converttexture = new System.Windows.Forms.CheckBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.compatibility = new System.Windows.Forms.CheckBox();
+            this.flatInbetween = new System.Windows.Forms.CheckBox();
+            this.boneSize = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
+            this.skins = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.filterPrecision = new System.Windows.Forms.NumericUpDown();
+            this.allBones = new System.Windows.Forms.CheckBox();
+            this.allFrames = new System.Windows.Forms.CheckBox();
+            this.EulerFilter = new System.Windows.Forms.CheckBox();
             this.includeBox.SuspendLayout();
             this.geometryBox.SuspendLayout();
             this.advancedBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.boneSize)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).BeginInit();
             this.SuspendLayout();
             // 
             // includeBox
@@ -204,7 +218,7 @@
             this.advancedBox.Controls.Add(this.upAxis);
             this.advancedBox.Controls.Add(this.scaleFactor);
             this.advancedBox.Controls.Add(this.scaleLabel);
-            this.advancedBox.Location = new System.Drawing.Point(12, 284);
+            this.advancedBox.Location = new System.Drawing.Point(12, 285);
             this.advancedBox.Name = "advancedBox";
             this.advancedBox.Size = new System.Drawing.Size(249, 78);
             this.advancedBox.TabIndex = 5;
@@ -260,7 +274,7 @@
             // 
             // fbxOKbutton
             // 
-            this.fbxOKbutton.Location = new System.Drawing.Point(332, 364);
+            this.fbxOKbutton.Location = new System.Drawing.Point(339, 369);
             this.fbxOKbutton.Name = "fbxOKbutton";
             this.fbxOKbutton.Size = new System.Drawing.Size(75, 21);
             this.fbxOKbutton.TabIndex = 6;
@@ -271,7 +285,7 @@
             // fbxCancel
             // 
             this.fbxCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.fbxCancel.Location = new System.Drawing.Point(420, 364);
+            this.fbxCancel.Location = new System.Drawing.Point(420, 369);
             this.fbxCancel.Name = "fbxCancel";
             this.fbxCancel.Size = new System.Drawing.Size(75, 21);
             this.fbxCancel.TabIndex = 7;
@@ -282,7 +296,7 @@
             // showExpOpt
             // 
             this.showExpOpt.AutoSize = true;
-            this.showExpOpt.Location = new System.Drawing.Point(12, 367);
+            this.showExpOpt.Location = new System.Drawing.Point(12, 372);
             this.showExpOpt.Name = "showExpOpt";
             this.showExpOpt.Size = new System.Drawing.Size(222, 16);
             this.showExpOpt.TabIndex = 8;
@@ -296,7 +310,7 @@
             this.groupBox1.Controls.Add(this.converttexture);
             this.groupBox1.Location = new System.Drawing.Point(267, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(228, 349);
+            this.groupBox1.Size = new System.Drawing.Size(228, 140);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Convert";
@@ -306,7 +320,7 @@
             this.convertAudio.AutoSize = true;
             this.convertAudio.Checked = true;
             this.convertAudio.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.convertAudio.Location = new System.Drawing.Point(8, 81);
+            this.convertAudio.Location = new System.Drawing.Point(6, 78);
             this.convertAudio.Name = "convertAudio";
             this.convertAudio.Size = new System.Drawing.Size(198, 28);
             this.convertAudio.TabIndex = 6;
@@ -360,12 +374,143 @@
             this.converttexture.AutoSize = true;
             this.converttexture.Checked = true;
             this.converttexture.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.converttexture.Location = new System.Drawing.Point(8, 20);
+            this.converttexture.Location = new System.Drawing.Point(6, 20);
             this.converttexture.Name = "converttexture";
             this.converttexture.Size = new System.Drawing.Size(192, 16);
             this.converttexture.TabIndex = 1;
             this.converttexture.Text = "Convert Texture (If support)";
             this.converttexture.UseVisualStyleBackColor = true;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.compatibility);
+            this.groupBox2.Controls.Add(this.flatInbetween);
+            this.groupBox2.Controls.Add(this.boneSize);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.skins);
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.filterPrecision);
+            this.groupBox2.Controls.Add(this.allBones);
+            this.groupBox2.Controls.Add(this.allFrames);
+            this.groupBox2.Controls.Add(this.EulerFilter);
+            this.groupBox2.Location = new System.Drawing.Point(267, 158);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(228, 205);
+            this.groupBox2.TabIndex = 11;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Animator";
+            // 
+            // compatibility
+            // 
+            this.compatibility.AutoSize = true;
+            this.compatibility.Location = new System.Drawing.Point(6, 177);
+            this.compatibility.Name = "compatibility";
+            this.compatibility.Size = new System.Drawing.Size(102, 16);
+            this.compatibility.TabIndex = 13;
+            this.compatibility.Text = "compatibility";
+            this.compatibility.UseVisualStyleBackColor = true;
+            // 
+            // flatInbetween
+            // 
+            this.flatInbetween.AutoSize = true;
+            this.flatInbetween.Location = new System.Drawing.Point(6, 155);
+            this.flatInbetween.Name = "flatInbetween";
+            this.flatInbetween.Size = new System.Drawing.Size(102, 16);
+            this.flatInbetween.TabIndex = 12;
+            this.flatInbetween.Text = "flatInbetween";
+            this.flatInbetween.UseVisualStyleBackColor = true;
+            // 
+            // boneSize
+            // 
+            this.boneSize.Location = new System.Drawing.Point(65, 128);
+            this.boneSize.Name = "boneSize";
+            this.boneSize.Size = new System.Drawing.Size(46, 21);
+            this.boneSize.TabIndex = 11;
+            this.boneSize.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 130);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "boneSize";
+            // 
+            // skins
+            // 
+            this.skins.AutoSize = true;
+            this.skins.Checked = true;
+            this.skins.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.skins.Location = new System.Drawing.Point(6, 105);
+            this.skins.Name = "skins";
+            this.skins.Size = new System.Drawing.Size(54, 16);
+            this.skins.TabIndex = 8;
+            this.skins.Text = "skins";
+            this.skins.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(26, 39);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(95, 12);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "filterPrecision";
+            // 
+            // filterPrecision
+            // 
+            this.filterPrecision.DecimalPlaces = 2;
+            this.filterPrecision.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.filterPrecision.Location = new System.Drawing.Point(127, 37);
+            this.filterPrecision.Name = "filterPrecision";
+            this.filterPrecision.Size = new System.Drawing.Size(51, 21);
+            this.filterPrecision.TabIndex = 6;
+            this.filterPrecision.Value = new decimal(new int[] {
+            25,
+            0,
+            0,
+            131072});
+            // 
+            // allBones
+            // 
+            this.allBones.AutoSize = true;
+            this.allBones.Checked = true;
+            this.allBones.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.allBones.Location = new System.Drawing.Point(6, 83);
+            this.allBones.Name = "allBones";
+            this.allBones.Size = new System.Drawing.Size(72, 16);
+            this.allBones.TabIndex = 5;
+            this.allBones.Text = "allBones";
+            this.allBones.UseVisualStyleBackColor = true;
+            // 
+            // allFrames
+            // 
+            this.allFrames.AutoSize = true;
+            this.allFrames.Location = new System.Drawing.Point(6, 61);
+            this.allFrames.Name = "allFrames";
+            this.allFrames.Size = new System.Drawing.Size(78, 16);
+            this.allFrames.TabIndex = 4;
+            this.allFrames.Text = "allFrames";
+            this.allFrames.UseVisualStyleBackColor = true;
+            // 
+            // EulerFilter
+            // 
+            this.EulerFilter.AutoSize = true;
+            this.EulerFilter.Location = new System.Drawing.Point(6, 20);
+            this.EulerFilter.Name = "EulerFilter";
+            this.EulerFilter.Size = new System.Drawing.Size(90, 16);
+            this.EulerFilter.TabIndex = 3;
+            this.EulerFilter.Text = "EulerFilter";
+            this.EulerFilter.UseVisualStyleBackColor = true;
             // 
             // ExportOptions
             // 
@@ -373,7 +518,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.fbxCancel;
-            this.ClientSize = new System.Drawing.Size(513, 392);
+            this.ClientSize = new System.Drawing.Size(508, 398);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.showExpOpt);
             this.Controls.Add(this.fbxCancel);
@@ -399,6 +545,10 @@
             this.groupBox1.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.boneSize)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -432,5 +582,16 @@
         private System.Windows.Forms.RadioButton tobmp;
         private System.Windows.Forms.CheckBox convertAudio;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox compatibility;
+        private System.Windows.Forms.CheckBox flatInbetween;
+        private System.Windows.Forms.NumericUpDown boneSize;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.CheckBox skins;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown filterPrecision;
+        private System.Windows.Forms.CheckBox allBones;
+        private System.Windows.Forms.CheckBox allFrames;
+        private System.Windows.Forms.CheckBox EulerFilter;
     }
 }

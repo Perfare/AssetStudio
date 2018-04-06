@@ -36,6 +36,14 @@ namespace AssetStudio
                     break;
                 }
             }
+            EulerFilter.Checked = (bool)Properties.Settings.Default["EulerFilter"];
+            filterPrecision.Value = (decimal)Properties.Settings.Default["filterPrecision"];
+            allFrames.Checked = (bool)Properties.Settings.Default["allFrames"];
+            allBones.Checked = (bool)Properties.Settings.Default["allBones"];
+            skins.Checked = (bool)Properties.Settings.Default["skins"];
+            boneSize.Value = (decimal)Properties.Settings.Default["boneSize"];
+            flatInbetween.Checked = (bool)Properties.Settings.Default["flatInbetween"];
+            compatibility.Checked = (bool)Properties.Settings.Default["compatibility"];
         }
 
         private void exportOpnions_CheckedChanged(object sender, EventArgs e)
@@ -63,6 +71,14 @@ namespace AssetStudio
                     break;
                 }
             }
+            Properties.Settings.Default["EulerFilter"] = EulerFilter.Checked;
+            Properties.Settings.Default["filterPrecision"] = filterPrecision.Value;
+            Properties.Settings.Default["allFrames"] = allFrames.Checked;
+            Properties.Settings.Default["allBones"] = allBones.Checked;
+            Properties.Settings.Default["skins"] = skins.Checked;
+            Properties.Settings.Default["boneSize"] = boneSize.Value;
+            Properties.Settings.Default["flatInbetween"] = flatInbetween.Checked;
+            Properties.Settings.Default["compatibility"] = compatibility.Checked;
             Properties.Settings.Default.Save();
             DialogResult = DialogResult.OK;
             Close();

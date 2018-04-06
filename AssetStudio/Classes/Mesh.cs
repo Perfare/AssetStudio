@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Collections;
+using SharpDX;
 
 /*Notes about handedness
 Converting from left-handed to right-handed and vice versa requires either:
@@ -122,6 +123,8 @@ namespace AssetStudio
         public float[] m_UV3;
         public float[] m_UV4;
         public float[] m_Tangents;
+        public uint[] m_BoneNameHashes;
+        public BlendShapeData m_Shapes;
 
         public class SubMesh
         {
@@ -166,6 +169,100 @@ namespace AssetStudio
             public byte m_BitSize;
         }
 
+        public class BlendShapeData
+        {
+            public class BlendShapeVertex
+            {
+                public Vector3 vertex { get; set; }
+                public Vector3 normal { get; set; }
+                public Vector3 tangent { get; set; }
+                public uint index { get; set; }
+
+                public BlendShapeVertex() { }
+
+                public BlendShapeVertex(EndianBinaryReader reader)
+                {
+                    vertex = reader.ReadVector3();
+                    normal = reader.ReadVector3();
+                    tangent = reader.ReadVector3();
+                    index = reader.ReadUInt32();
+                }
+            }
+
+            public class MeshBlendShape
+            {
+                public uint firstVertex { get; set; }
+                public uint vertexCount { get; set; }
+                public bool hasNormals { get; set; }
+                public bool hasTangents { get; set; }
+
+                public MeshBlendShape() { }
+
+                public MeshBlendShape(EndianBinaryReader reader)
+                {
+                    firstVertex = reader.ReadUInt32();
+                    vertexCount = reader.ReadUInt32();
+                    hasNormals = reader.ReadBoolean();
+                    hasTangents = reader.ReadBoolean();
+                    reader.ReadBytes(2);
+                }
+            }
+
+            public class MeshBlendShapeChannel
+            {
+                public string name { get; set; }
+                public uint nameHash { get; set; }
+                public int frameIndex { get; set; }
+                public int frameCount { get; set; }
+
+                public MeshBlendShapeChannel() { }
+
+                public MeshBlendShapeChannel(EndianBinaryReader reader)
+                {
+                    name = reader.ReadStringToNull();
+                    nameHash = reader.ReadUInt32();
+                    frameIndex = reader.ReadInt32();
+                    frameCount = reader.ReadInt32();
+                }
+            }
+
+            public List<BlendShapeVertex> vertices { get; set; }
+            public List<MeshBlendShape> shapes { get; set; }
+            public List<MeshBlendShapeChannel> channels { get; set; }
+            public List<float> fullWeights { get; set; }
+
+            public BlendShapeData(EndianBinaryReader reader)
+            {
+                int numVerts = reader.ReadInt32();
+                vertices = new List<BlendShapeVertex>(numVerts);
+                for (int i = 0; i < numVerts; i++)
+                {
+                    vertices.Add(new BlendShapeVertex(reader));
+                }
+
+                int numShapes = reader.ReadInt32();
+                shapes = new List<MeshBlendShape>(numShapes);
+                for (int i = 0; i < numShapes; i++)
+                {
+                    shapes.Add(new MeshBlendShape(reader));
+                }
+
+                int numChannels = reader.ReadInt32();
+                channels = new List<MeshBlendShapeChannel>(numChannels);
+                for (int i = 0; i < numChannels; i++)
+                {
+                    channels.Add(new MeshBlendShapeChannel(reader));
+                }
+
+                int numWeights = reader.ReadInt32();
+                fullWeights = new List<float>(numWeights);
+                for (int i = 0; i < numWeights; i++)
+                {
+                    fullWeights.Add(reader.ReadSingle());
+                }
+            }
+        }
+
         public float bytesToFloat(byte[] inputBytes)
         {
             float result = 0;
@@ -177,7 +274,7 @@ namespace AssetStudio
                     result = inputBytes[0] / 255.0f;
                     break;
                 case 2:
-                    result = Half.ToHalf(inputBytes, 0);
+                    result = System.Half.ToHalf(inputBytes, 0);
                     break;
                 case 4:
                     result = BitConverter.ToSingle(inputBytes, 0);
@@ -420,25 +517,7 @@ namespace AssetStudio
                 #region BlendShapeData and BindPose for 4.3.0 and later
                 else if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
                 {
-                    int m_ShapeVertices_size = reader.ReadInt32();
-                    if (m_ShapeVertices_size > 0)
-                    {
-                        //bool stop = true;
-                    }
-                    reader.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
-
-                    int shapes_size = reader.ReadInt32();
-                    reader.Position += shapes_size * 12; //uint firstVertex, vertexCount; bool hasNormals, hasTangents
-
-                    int channels_size = reader.ReadInt32();
-                    for (int c = 0; c < channels_size; c++)
-                    {
-                        string channel_name = reader.ReadAlignedString();
-                        reader.Position += 12; //uint nameHash; int frameIndex, frameCount
-                    }
-
-                    int fullWeights_size = reader.ReadInt32();
-                    reader.Position += fullWeights_size * 4; //floats
+                    m_Shapes = new BlendShapeData(reader);//TODO 4.3 down
 
                     m_BindPose = new float[reader.ReadInt32()][,];
                     for (int i = 0; i < m_BindPose.Length; i++)
@@ -451,7 +530,11 @@ namespace AssetStudio
                     }
 
                     int m_BoneNameHashes_size = reader.ReadInt32();
-                    reader.Position += m_BoneNameHashes_size * 4; //uints
+                    m_BoneNameHashes = new uint[m_BoneNameHashes_size];
+                    for (int i = 0; i < m_BoneNameHashes_size; i++)
+                    {
+                        m_BoneNameHashes[i] = reader.ReadUInt32();
+                    }
 
                     uint m_RootBoneNameHash = reader.ReadUInt32();
                 }

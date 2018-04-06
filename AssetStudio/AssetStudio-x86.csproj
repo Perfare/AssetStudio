@@ -167,6 +167,7 @@
     <Compile Include="StudioClasses\ClassStruct.cs" />
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
+    <Compile Include="StudioClasses\ModelConverter.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">
       <DependentUpon>ShaderResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -263,6 +264,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\preview.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AssetStudioFBX\AssetStudioFBX-x86.vcxproj">
+      <Project>{276de52e-3ffe-4c3d-9076-62bcb7a5b991}</Project>
+      <Name>AssetStudioFBX-x86</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssetStudioUtility\AssetStudioUtility.csproj">
+      <Project>{9131c403-7fe8-444d-9af5-5fe5df76ff24}</Project>
+      <Name>AssetStudioUtility</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

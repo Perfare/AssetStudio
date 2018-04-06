@@ -1025,8 +1025,18 @@ namespace AssetStudio
                         }
                         else
                         {
-                            StatusStripUpdate("Unsupported sprite for preview");
+                            StatusStripUpdate("Unsupported sprite for preview.");
                         }
+                        break;
+                    }
+                case ClassIDReference.Animator:
+                    {
+                        StatusStripUpdate("Can be exported as a FBX file.");
+                        break;
+                    }
+                case ClassIDReference.AnimationClip:
+                    {
+                        StatusStripUpdate("Select AnimationClip with selecting Animator to export");
                         break;
                     }
                 default:
@@ -1523,6 +1533,12 @@ namespace AssetStudio
                                     exportedCount++;
                                 }
                                 break;
+                            case ClassIDReference.Animator:
+                                if (ExportAnimator(asset, exportpath))
+                                {
+                                    exportedCount++;
+                                }
+                                break;
                             default:
                                 if (ExportRawFile(asset, exportpath))
                                 {
@@ -1851,6 +1867,42 @@ namespace AssetStudio
             {
                 viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
                 glControl1.Invalidate();
+            }
+        }
+
+        private void ExportAnimatorwithAnimationClip_Click(object sender, EventArgs e)
+        {
+            AssetPreloadData animator = null;
+            List<AssetPreloadData> animationList = new List<AssetPreloadData>();
+            for (int i = 0; i < assetListView.SelectedIndices.Count; i++)
+            {
+                var index = assetListView.SelectedIndices[i];
+                var asset = (AssetPreloadData)assetListView.Items[index];
+                if (asset.Type2 == 95) //Animator
+                {
+                    animator = asset;
+                }
+                else if (asset.Type2 == 74) //AnimationClip
+                {
+                    animationList.Add(asset);
+                }
+            }
+
+            if (animator != null)
+            {
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    var savePath = saveFolderDialog1.Folder;
+                    string exportpath = savePath + "\\Animator\\";
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(1);
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        StatusStripUpdate(ExportAnimator(animator, animationList, exportpath) ? "Successfully exported" : "Nothing exported.");
+                        ProgressBarPerformStep();
+                    });
+                }
             }
         }
     }

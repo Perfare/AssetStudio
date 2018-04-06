@@ -238,5 +238,101 @@ namespace AssetStudio.Properties {
                 this["displayOriginalName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EulerFilter {
+            get {
+                return ((bool)(this["EulerFilter"]));
+            }
+            set {
+                this["EulerFilter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        public decimal filterPrecision {
+            get {
+                return ((decimal)(this["filterPrecision"]));
+            }
+            set {
+                this["filterPrecision"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool allFrames {
+            get {
+                return ((bool)(this["allFrames"]));
+            }
+            set {
+                this["allFrames"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool allBones {
+            get {
+                return ((bool)(this["allBones"]));
+            }
+            set {
+                this["allBones"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool skins {
+            get {
+                return ((bool)(this["skins"]));
+            }
+            set {
+                this["skins"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public decimal boneSize {
+            get {
+                return ((decimal)(this["boneSize"]));
+            }
+            set {
+                this["boneSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool flatInbetween {
+            get {
+                return ((bool)(this["flatInbetween"]));
+            }
+            set {
+                this["flatInbetween"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool compatibility {
+            get {
+                return ((bool)(this["compatibility"]));
+            }
+            set {
+                this["compatibility"] = value;
+            }
+        }
     }
 }
