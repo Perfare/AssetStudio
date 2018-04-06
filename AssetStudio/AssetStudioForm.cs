@@ -965,7 +965,7 @@ namespace AssetStudio
                             }
                             #endregion
                             #region Colors
-                            if (m_Mesh.m_Colors == null)
+                            if (m_Mesh.m_Colors == null || m_Mesh.m_Colors.Length == 0)
                             {
                                 colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
