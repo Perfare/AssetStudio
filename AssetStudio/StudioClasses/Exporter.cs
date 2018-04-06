@@ -302,7 +302,7 @@ namespace AssetStudio
             var exportFullName = exportPath + asset.Text + asset.extension;
             if (ExportFileExists(exportFullName))
                 return false;
-            var bytes = asset.Reader.ReadBytes(asset.Size);
+            var bytes = asset.InitReader().ReadBytes(asset.Size);
             File.WriteAllBytes(exportFullName, bytes);
             return true;
         }

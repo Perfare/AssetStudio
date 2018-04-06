@@ -21,7 +21,7 @@ namespace AssetStudio
         {
             var sourceFile = preloadData.sourceFile;
             var version = preloadData.sourceFile.version;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {

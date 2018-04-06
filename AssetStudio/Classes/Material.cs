@@ -38,7 +38,7 @@ namespace AssetStudio
         public Material(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {
@@ -47,7 +47,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
             m_Shader = sourceFile.ReadPPtr();
 
             if (sourceFile.version[0] == 4 && (sourceFile.version[1] >= 2 || (sourceFile.version[1] == 1 && sourceFile.buildType[0] != "a")))
@@ -55,12 +55,12 @@ namespace AssetStudio
                 m_ShaderKeywords = new string[reader.ReadInt32()];
                 for (int i = 0; i < m_ShaderKeywords.Length; i++)
                 {
-                    m_ShaderKeywords[i] = reader.ReadAlignedString(reader.ReadInt32());
+                    m_ShaderKeywords[i] = reader.ReadAlignedString();
                 }
             }
             else if (sourceFile.version[0] >= 5)//5.0 and up
             {
-                m_ShaderKeywords = new[] { reader.ReadAlignedString(reader.ReadInt32()) };
+                m_ShaderKeywords = new[] { reader.ReadAlignedString() };
                 uint m_LightmapFlags = reader.ReadUInt32();
                 if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 6 || sourceFile.version[0] > 5)//5.6.0 and up
                 {
@@ -77,7 +77,7 @@ namespace AssetStudio
                 string[][] stringTagMap = new string[reader.ReadInt32()][];
                 for (int i = 0; i < stringTagMap.Length; i++)
                 {
-                    stringTagMap[i] = new[] { reader.ReadAlignedString(reader.ReadInt32()), reader.ReadAlignedString(reader.ReadInt32()) };
+                    stringTagMap[i] = new[] { reader.ReadAlignedString(), reader.ReadAlignedString() };
                 }
             }
             //disabledShaderPasses
@@ -86,7 +86,7 @@ namespace AssetStudio
                 var size = reader.ReadInt32();
                 for (int i = 0; i < size; i++)
                 {
-                    reader.ReadAlignedString(reader.ReadInt32());
+                    reader.ReadAlignedString();
                 }
             }
             //m_SavedProperties
@@ -95,7 +95,7 @@ namespace AssetStudio
             {
                 TexEnv m_TexEnv = new TexEnv()
                 {
-                    name = reader.ReadAlignedString(reader.ReadInt32()),
+                    name = reader.ReadAlignedString(),
                     m_Texture = sourceFile.ReadPPtr(),
                     m_Scale = new[] { reader.ReadSingle(), reader.ReadSingle() },
                     m_Offset = new[] { reader.ReadSingle(), reader.ReadSingle() }
@@ -108,7 +108,7 @@ namespace AssetStudio
             {
                 strFloatPair m_Float = new strFloatPair()
                 {
-                    first = reader.ReadAlignedString(reader.ReadInt32()),
+                    first = reader.ReadAlignedString(),
                     second = reader.ReadSingle()
                 };
                 m_Floats[i] = m_Float;
@@ -119,7 +119,7 @@ namespace AssetStudio
             {
                 strColorPair m_Color = new strColorPair()
                 {
-                    first = reader.ReadAlignedString(reader.ReadInt32()),
+                    first = reader.ReadAlignedString(),
                     second = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() }
                 };
                 m_Colors[i] = m_Color;

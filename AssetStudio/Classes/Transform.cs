@@ -17,7 +17,7 @@ namespace AssetStudio
         public Transform(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {

@@ -91,7 +91,7 @@ namespace AssetStudio
         public Texture2D(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
             version = sourceFile.version;
 
             if (sourceFile.platform == -2)
@@ -101,7 +101,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
             {
                 var m_ForcedFallbackFormat = reader.ReadInt32();
@@ -158,7 +158,7 @@ namespace AssetStudio
                 offset = reader.ReadUInt32();
                 size = reader.ReadUInt32();
                 image_data_size = (int)size;
-                path = reader.ReadAlignedString(reader.ReadInt32());
+                path = reader.ReadAlignedString();
             }
 
             if (readSwitch)

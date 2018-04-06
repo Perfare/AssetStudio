@@ -58,24 +58,28 @@
   <ItemGroup>
     <Reference Include="BrotliSharpLib, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>library\BrotliSharpLib.dll</HintPath>
+      <HintPath>Library\BrotliSharpLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>library\OpenTK.dll</HintPath>
+      <HintPath>Library\OpenTK.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>library\OpenTK.GLControl.dll</HintPath>
+      <HintPath>Library\OpenTK.GLControl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>Library\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Half, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>library\System.Half.dll</HintPath>
+      <HintPath>Library\System.Half.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Web.Extensions" />
@@ -136,7 +140,15 @@
     <Compile Include="7zip\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\Animation.cs" />
+    <Compile Include="Classes\AnimationClip.cs" />
+    <Compile Include="Classes\Animator.cs" />
+    <Compile Include="Classes\AnimatorController.cs" />
+    <Compile Include="Classes\AnimatorOverrideController.cs" />
+    <Compile Include="Classes\Avatar.cs" />
     <Compile Include="OpenFolderDialog.cs" />
+    <Compile Include="StudioClasses\BinaryReaderExtensions.cs" />
+    <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ClassIDReference.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">

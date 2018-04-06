@@ -13,7 +13,7 @@ namespace AssetStudio
         public UFont(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {
@@ -22,7 +22,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
 
             if (readSwitch)
             {
@@ -166,7 +166,7 @@ namespace AssetStudio
                     int m_FontNames = reader.ReadInt32();
                     for (int i = 0; i < m_FontNames; i++)
                     {
-                        string m_FontName = reader.ReadAlignedString(reader.ReadInt32());
+                        string m_FontName = reader.ReadAlignedString();
                     }
 
                     if (sourceFile.version[0] >= 4)

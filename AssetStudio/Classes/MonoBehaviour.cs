@@ -12,13 +12,13 @@ namespace AssetStudio
         public MonoBehaviour(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             var m_GameObject = sourceFile.ReadPPtr();
             var m_Enabled = reader.ReadByte();
             reader.AlignStream(4);
             var m_Script = sourceFile.ReadPPtr();
-            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            var m_Name = reader.ReadAlignedString();
             if (readSwitch)
             {
                 if ((serializedText = preloadData.ViewStruct()) == null)

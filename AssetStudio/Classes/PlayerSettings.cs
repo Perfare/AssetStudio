@@ -13,7 +13,7 @@ namespace AssetStudio
         public PlayerSettings(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
 
             if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 4) || sourceFile.version[0] > 5)//5.4.0 nad up
@@ -26,7 +26,7 @@ namespace AssetStudio
             }
             if (sourceFile.version[0] >= 3)
             {
-                if (sourceFile.version[0] == 3 && sourceFile.version[1] < 2) { string AndroidLicensePublicKey = reader.ReadAlignedString(reader.ReadInt32()); }
+                if (sourceFile.version[0] == 3 && sourceFile.version[1] < 2) { string AndroidLicensePublicKey = reader.ReadAlignedString(); }
                 else { bool AndroidProfiler = reader.ReadBoolean(); reader.AlignStream(4); }
 
                 int defaultScreenOrientation = reader.ReadInt32();
@@ -49,8 +49,8 @@ namespace AssetStudio
                 else { int accelerometerFrequency = reader.ReadInt32(); }//3.5.0 and up
             }
             //fail in version 5 beta
-            companyName = reader.ReadAlignedString(reader.ReadInt32());
-            productName = reader.ReadAlignedString(reader.ReadInt32());
+            companyName = reader.ReadAlignedString();
+            productName = reader.ReadAlignedString();
         }
     }
 }

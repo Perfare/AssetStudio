@@ -38,7 +38,7 @@ namespace AssetStudio
         public AudioClip(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {
@@ -47,7 +47,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
             version5 = sourceFile.version[0] >= 5;
             if (sourceFile.version[0] < 5)
             {
@@ -91,7 +91,7 @@ namespace AssetStudio
                 reader.Position += 1;
                 m_3D = m_Legacy3D;
 
-                m_Source = reader.ReadAlignedString(reader.ReadInt32());
+                m_Source = reader.ReadAlignedString();
                 m_Offset = reader.ReadInt64();
                 m_Size = reader.ReadInt64();
                 m_CompressionFormat = (AudioCompressionFormat)reader.ReadInt32();

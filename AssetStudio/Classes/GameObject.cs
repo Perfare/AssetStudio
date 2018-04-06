@@ -25,7 +25,7 @@ namespace AssetStudio
             if (preloadData != null)
             {
                 var sourceFile = preloadData.sourceFile;
-                var reader = preloadData.Reader;
+                var reader = preloadData.InitReader();
 
                 uniqueID = preloadData.uniqueID;
 
@@ -51,7 +51,7 @@ namespace AssetStudio
                 }
 
                 m_Layer = reader.ReadInt32();
-                m_Name = reader.ReadAlignedString(reader.ReadInt32());
+                m_Name = reader.ReadAlignedString();
                 if (m_Name == "") { m_Name = "GameObject #" + uniqueID; }
                 m_Tag = reader.ReadUInt16();
                 m_IsActive = reader.ReadBoolean();

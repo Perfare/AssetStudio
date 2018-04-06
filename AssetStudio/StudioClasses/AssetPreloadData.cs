@@ -23,14 +23,11 @@ namespace AssetStudio
         public AssetsFile sourceFile;
         public string uniqueID;
 
-        public EndianBinaryReader Reader
+        public EndianBinaryReader InitReader()
         {
-            get
-            {
-                var reader = sourceFile.assetsFileReader;
-                reader.Position = Offset;
-                return reader;
-            }
+            var reader = sourceFile.assetsFileReader;
+            reader.Position = Offset;
+            return reader;
         }
     }
 }

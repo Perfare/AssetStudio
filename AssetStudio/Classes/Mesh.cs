@@ -331,7 +331,7 @@ namespace AssetStudio
             //Stream = new EndianStream(File.OpenRead(sourceFile.filePath), sourceFile.endianType);
             //Stream.endian = sourceFile.endianType;
             var version = MeshPD.sourceFile.version;
-            reader = MeshPD.Reader;
+            reader = MeshPD.InitReader();
 
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;
@@ -343,7 +343,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = MeshPD.sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
 
             if (readSwitch)
             {
@@ -409,7 +409,7 @@ namespace AssetStudio
                     }
                     for (int s = 0; s < m_Shapes_size; s++) //untested
                     {
-                        string shape_name = reader.ReadAlignedString(reader.ReadInt32());
+                        string shape_name = reader.ReadAlignedString();
                         reader.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
                     }
 
@@ -433,7 +433,7 @@ namespace AssetStudio
                     int channels_size = reader.ReadInt32();
                     for (int c = 0; c < channels_size; c++)
                     {
-                        string channel_name = reader.ReadAlignedString(reader.ReadInt32());
+                        string channel_name = reader.ReadAlignedString();
                         reader.Position += 12; //uint nameHash; int frameIndex, frameCount
                     }
 

@@ -15,10 +15,10 @@ namespace AssetStudio
         public VideoClip(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
-            var m_OriginalPath = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
+            var m_OriginalPath = reader.ReadAlignedString();
             var m_ProxyWidth = reader.ReadUInt32();
             var m_ProxyHeight = reader.ReadUInt32();
             var Width = reader.ReadUInt32();
@@ -42,10 +42,10 @@ namespace AssetStudio
             size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
-                reader.ReadAlignedString(reader.ReadInt32());
+                reader.ReadAlignedString();
             }
             //StreamedResource m_ExternalResources
-            var m_Source = reader.ReadAlignedString(reader.ReadInt32());
+            var m_Source = reader.ReadAlignedString();
             var m_Offset = reader.ReadUInt64();
             var m_Size = reader.ReadUInt64();
             var m_HasSplitAlpha = reader.ReadBoolean();

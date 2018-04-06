@@ -12,15 +12,15 @@ namespace AssetStudio
         public BuildSettings(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             int levels = reader.ReadInt32();
-            for (int l = 0; l < levels; l++) { string level = reader.ReadAlignedString(reader.ReadInt32()); }
+            for (int l = 0; l < levels; l++) { string level = reader.ReadAlignedString(); }
 
             if (sourceFile.version[0] == 5)
             {
                 int preloadedPlugins = reader.ReadInt32();
-                for (int l = 0; l < preloadedPlugins; l++) { string preloadedPlugin = reader.ReadAlignedString(reader.ReadInt32()); }
+                for (int l = 0; l < preloadedPlugins; l++) { string preloadedPlugin = reader.ReadAlignedString(); }
             }
 
             reader.Position += 4; //bool flags
@@ -31,7 +31,7 @@ namespace AssetStudio
                                                 (sourceFile.version[1] == 2 && sourceFile.buildType[0] != "a"))))
                                                 { reader.Position += 4; } //bool flags
 
-            m_Version = reader.ReadAlignedString(reader.ReadInt32());
+            m_Version = reader.ReadAlignedString();
         }
     }
 }

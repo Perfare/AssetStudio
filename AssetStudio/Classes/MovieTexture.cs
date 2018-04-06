@@ -13,9 +13,9 @@ namespace AssetStudio
         public MovieTexture(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
             if (readSwitch)
             {
                 var m_Loop = reader.ReadBoolean();

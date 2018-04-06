@@ -27,9 +27,9 @@ namespace AssetStudio
         public AssetBundle(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
-            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            var m_Name = reader.ReadAlignedString();
             var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
@@ -39,7 +39,7 @@ namespace AssetStudio
             for (int i = 0; i < size; i++)
             {
                 var temp = new ContainerData();
-                temp.first = reader.ReadAlignedString(reader.ReadInt32());
+                temp.first = reader.ReadAlignedString();
                 temp.second = new AssetInfo();
                 temp.second.preloadIndex = reader.ReadInt32();
                 temp.second.preloadSize = reader.ReadInt32();

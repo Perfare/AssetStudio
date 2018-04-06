@@ -417,66 +417,69 @@ namespace AssetStudio
                 int stringSize = assetsFileReader.ReadInt32();
 
                 assetsFileReader.Position += varCount * 24;
-                var stringReader = new EndianBinaryReader(new MemoryStream(assetsFileReader.ReadBytes(stringSize)));
-                string className = "";
-                var classVar = new List<ClassMember>();
-                //build Class Structures
-                assetsFileReader.Position -= varCount * 24 + stringSize;
-                for (int i = 0; i < varCount; i++)
+                using (var stringReader = new BinaryReader(new MemoryStream(assetsFileReader.ReadBytes(stringSize))))
                 {
-                    ushort num0 = assetsFileReader.ReadUInt16();
-                    byte level = assetsFileReader.ReadByte();
-                    bool isArray = assetsFileReader.ReadBoolean();
+                    string className = "";
+                    var classVar = new List<ClassMember>();
+                    //build Class Structures
+                    assetsFileReader.Position -= varCount * 24 + stringSize;
+                    for (int i = 0; i < varCount; i++)
+                    {
+                        ushort num0 = assetsFileReader.ReadUInt16();
+                        byte level = assetsFileReader.ReadByte();
+                        bool isArray = assetsFileReader.ReadBoolean();
 
-                    ushort varTypeIndex = assetsFileReader.ReadUInt16();
-                    ushort test = assetsFileReader.ReadUInt16();
-                    string varTypeStr;
-                    if (test == 0) //varType is an offset in the string block
-                    {
-                        stringReader.Position = varTypeIndex;
-                        varTypeStr = stringReader.ReadStringToNull();
-                    }
-                    else //varType is an index in an internal strig array
-                    {
-                        varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString();
-                    }
-
-                    ushort varNameIndex = assetsFileReader.ReadUInt16();
-                    test = assetsFileReader.ReadUInt16();
-                    string varNameStr;
-                    if (test == 0)
-                    {
-                        stringReader.Position = varNameIndex;
-                        varNameStr = stringReader.ReadStringToNull();
-                    }
-                    else
-                    {
-                        varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString();
-                    }
-
-                    int size = assetsFileReader.ReadInt32();
-                    int index = assetsFileReader.ReadInt32();
-                    int flag = assetsFileReader.ReadInt32();
-
-                    if (index == 0) { className = varTypeStr + " " + varNameStr; }
-                    else
-                    {
-                        classVar.Add(new ClassMember
+                        ushort varTypeIndex = assetsFileReader.ReadUInt16();
+                        ushort test = assetsFileReader.ReadUInt16();
+                        string varTypeStr;
+                        if (test == 0) //varType is an offset in the string block
                         {
-                            Level = level - 1,
-                            Type = varTypeStr,
-                            Name = varNameStr,
-                            Size = size,
-                            Flag = flag
-                        });
-                    }
-                }
-                stringReader.Dispose();
-                assetsFileReader.Position += stringSize;
+                            stringReader.BaseStream.Position = varTypeIndex;
+                            varTypeStr = stringReader.ReadStringToNull();
+                        }
+                        else //varType is an index in an internal strig array
+                        {
+                            varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString();
+                        }
 
-                var aClass = new ClassStruct { ID = classID, Text = className, members = classVar };
-                aClass.SubItems.Add(classID.ToString());
-                ClassStructures[classID] = aClass;
+                        ushort varNameIndex = assetsFileReader.ReadUInt16();
+                        test = assetsFileReader.ReadUInt16();
+                        string varNameStr;
+                        if (test == 0)
+                        {
+                            stringReader.BaseStream.Position = varNameIndex;
+                            varNameStr = stringReader.ReadStringToNull();
+                        }
+                        else
+                        {
+                            varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString();
+                        }
+
+                        int size = assetsFileReader.ReadInt32();
+                        int index = assetsFileReader.ReadInt32();
+                        int flag = assetsFileReader.ReadInt32();
+
+                        if (index == 0)
+                        {
+                            className = varTypeStr + " " + varNameStr;
+                        }
+                        else
+                        {
+                            classVar.Add(new ClassMember
+                            {
+                                Level = level - 1,
+                                Type = varTypeStr,
+                                Name = varNameStr,
+                                Size = size,
+                                Flag = flag
+                            });
+                        }
+                    }
+                    assetsFileReader.Position += stringSize;
+                    var aClass = new ClassStruct { ID = classID, Text = className, members = classVar };
+                    aClass.SubItems.Add(classID.ToString());
+                    ClassStructures[classID] = aClass;
+                }
             }
         }
     }

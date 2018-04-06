@@ -41,7 +41,7 @@ namespace AssetStudio
     {
         public static string ViewStruct(this AssetPreloadData asset)
         {
-            var reader = asset.Reader;
+            var reader = asset.InitReader();
             if (asset.sourceFile.ClassStructures.TryGetValue(asset.Type1, out var classStructure))
             {
                 var sb = new StringBuilder();
@@ -108,7 +108,7 @@ namespace AssetStudio
                         break;
                     case "string":
                         append = false;
-                        var str = reader.ReadAlignedString(reader.ReadInt32());
+                        var str = reader.ReadAlignedString();
                         sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, str);
                         i += 3;//skip
                         break;

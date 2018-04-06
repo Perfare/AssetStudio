@@ -16,7 +16,7 @@ namespace AssetStudio
         public Shader(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
             if (sourceFile.platform == -2)
             {
@@ -25,7 +25,7 @@ namespace AssetStudio
                 PPtr m_PrefabInternal = sourceFile.ReadPPtr();
             }
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
 
             if (readSwitch)
             {
@@ -56,7 +56,7 @@ namespace AssetStudio
                     if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) //5.3 - 5.4
                     {
                         reader.AlignStream(4);
-                        reader.ReadAlignedString(reader.ReadInt32());//m_PathName
+                        reader.ReadAlignedString();//m_PathName
                         var decompressedSize = reader.ReadUInt32();
                         var m_SubProgramBlob = reader.ReadBytes(reader.ReadInt32());
                         var decompressedBytes = new byte[decompressedSize];

@@ -16,9 +16,9 @@ namespace AssetStudio
         public SpriteAtlas(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
 
-            var m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            var m_Name = reader.ReadAlignedString();
             //vector m_PackedSprites
             var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
@@ -30,7 +30,7 @@ namespace AssetStudio
             size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
-                var data = reader.ReadAlignedString(reader.ReadInt32());
+                var data = reader.ReadAlignedString();
             }
             //map m_RenderDataMap
             size = reader.ReadInt32();

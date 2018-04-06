@@ -21,10 +21,10 @@ namespace AssetStudio
         public Sprite(AssetPreloadData preloadData, bool readSwitch)
         {
             var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.Reader;
+            var reader = preloadData.InitReader();
             var version = sourceFile.version;
 
-            m_Name = reader.ReadAlignedString(reader.ReadInt32());
+            m_Name = reader.ReadAlignedString();
             if (readSwitch)
             {
                 //Rectf m_Rect
@@ -62,7 +62,7 @@ namespace AssetStudio
                     var size = reader.ReadInt32();
                     for (int i = 0; i < size; i++)
                     {
-                        var data = reader.ReadAlignedString(reader.ReadInt32());
+                        var data = reader.ReadAlignedString();
                     }
 
                     //PPtr<SpriteAtlas> m_SpriteAtlas

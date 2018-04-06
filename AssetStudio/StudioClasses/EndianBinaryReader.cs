@@ -115,38 +115,5 @@ namespace AssetStudio
             }
             return base.ReadDouble();
         }
-
-        public string ReadASCII(int length)
-        {
-            return Encoding.ASCII.GetString(ReadBytes(length));
-        }
-
-        public void AlignStream(int alignment)
-        {
-            var pos = BaseStream.Position;
-            var mod = pos % alignment;
-            if (mod != 0) { BaseStream.Position += alignment - mod; }
-        }
-
-        public string ReadAlignedString(int length)
-        {
-            if (length > 0 && length < (BaseStream.Length - BaseStream.Position))
-            {
-                var stringData = ReadBytes(length);
-                var result = Encoding.UTF8.GetString(stringData);
-                AlignStream(4);
-                return result;
-            }
-            return "";
-        }
-
-        public string ReadStringToNull()
-        {
-            var bytes = new List<byte>();
-            byte b;
-            while (BaseStream.Position != BaseStream.Length && (b = ReadByte()) != 0)
-                bytes.Add(b);
-            return Encoding.UTF8.GetString(bytes.ToArray());
-        }
     }
 }
