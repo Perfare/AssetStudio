@@ -3,7 +3,7 @@ Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/rnu7l
 
 **None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by, Unity Technologies or its affiliates.**
 
-AssetStudio is a tool for exploring, extracting and exporting assets and assetBundles. It has been tested with builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with assets from 2.5 up to the 2017.4 version.
+AssetStudio is a tool for exploring, extracting and exporting assets and assetbundles. It has been tested with builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with assets from 2.5 up to the 2017.4 version.
 
 ## Features
 
@@ -23,8 +23,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetBu
 * Diagnostics mode with useful tools for research
 
 ## Usage
-
-### Requirements:
+### Requirements
 
 - [.NET Framework 4.0](https://www.microsoft.com/en-us/download/details.aspx?id=17718)
 - [Microsoft Visual C++ 2013 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
@@ -44,4 +43,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetBu
 Other interface elements have tooltips or are self-explanatory.
 
 ## Build
-Program uses some C# 7 syntax, need Visual Studio 2017  
+
+* The project uses some C# 7 syntax, need Visual Studio 2017
+* **AssetStudioFBX** uses FBX SDK 2015.1, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
+* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudio/Library/x86/` and `x64` directory to the new version
