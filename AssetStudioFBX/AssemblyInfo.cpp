@@ -1,4 +1,4 @@
-using namespace System;
+ï»¿using namespace System;
 using namespace System::Reflection;
 using namespace System::Runtime::CompilerServices;
 using namespace System::Runtime::InteropServices;
@@ -9,7 +9,7 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyConfigurationAttribute(L"")];
 [assembly:AssemblyCompanyAttribute(L"")];
 [assembly:AssemblyProductAttribute(L"AssetStudioFBX")];
-[assembly:AssemblyCopyrightAttribute(L"°æÈ¨ËùÓÐ(c)  2018")];
+[assembly:AssemblyCopyrightAttribute(L"Copyright Â©  2018")];
 [assembly:AssemblyTrademarkAttribute(L"")];
 [assembly:AssemblyCultureAttribute(L"")];
 

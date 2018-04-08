@@ -91,8 +91,9 @@ namespace AssetStudio
         }
     }
 
-    public interface ImportedAnimation
+    public abstract class ImportedAnimation
     {
+        public string Name { get; set; }
     }
 
     public abstract class ImportedAnimationTrackContainer<TrackType> : ImportedAnimation where TrackType : ImportedAnimationTrack
@@ -107,23 +108,17 @@ namespace AssetStudio
 
     public class ImportedKeyframedAnimation : ImportedAnimationTrackContainer<ImportedAnimationKeyframedTrack>
     {
-        public string Name { get; set; }
+
     }
 
     public class ImportedSampledAnimation : ImportedAnimationTrackContainer<ImportedAnimationSampledTrack>
     {
-        public string Name { get; set; }
         public float SampleRate { get; set; }
     }
 
     public abstract class ImportedAnimationTrack
     {
         public string Name { get; set; }
-    }
-
-    public class ImportedAnimationKeyframedTrack : ImportedAnimationTrack
-    {
-        public Dictionary<float, ImportedAnimationKeyframe> Keyframes { get; set; } = new Dictionary<float, ImportedAnimationKeyframe>();
     }
 
     public class ImportedKeyframe<T>
@@ -142,11 +137,11 @@ namespace AssetStudio
         }
     }
 
-    public class ImportedAnimationKeyframe
+    public class ImportedAnimationKeyframedTrack : ImportedAnimationTrack
     {
-        public ImportedKeyframe<Vector3> Scaling { get; set; }
-        public ImportedKeyframe<Quaternion> Rotation { get; set; }
-        public ImportedKeyframe<Vector3> Translation { get; set; }
+        public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
+        public List<ImportedKeyframe<Quaternion>> Rotations = new List<ImportedKeyframe<Quaternion>>();
+        public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
     }
 
     public class ImportedAnimationSampledTrack : ImportedAnimationTrack

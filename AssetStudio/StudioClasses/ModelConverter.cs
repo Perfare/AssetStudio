@@ -46,6 +46,7 @@ namespace AssetStudio
 
         private void InitWithAnimator(Animator m_Animator)
         {
+            //In fact, doesn't need this.
             if (assetsfileList.TryGetPD(m_Animator.m_Avatar, out var m_Avatar))
                 avatar = new Avatar(m_Avatar);
 
@@ -306,31 +307,35 @@ namespace AssetStudio
             {
                 //Bone
                 iMesh.BoneList = new List<ImportedBone>(sMesh.m_Bones.Length);
-                /*if (meshR.m_Bones.Length >= 256)
+                /*if (sMesh.m_Bones.Length >= 256)
                 {
                     throw new Exception("Too many bones (" + mesh.m_BindPose.Length + ")");
                 }*/
                 for (int i = 0; i < sMesh.m_Bones.Length; i++)
                 {
                     var bone = new ImportedBone();
-                    var boneHash = mesh.m_BoneNameHashes[i];
-                    bone.Name = GetNameFromBonePathHashes(boneHash);
-                    if (string.IsNullOrEmpty(bone.Name))
+                    if (assetsfileList.TryGetTransform(sMesh.m_Bones[i], out var m_Transform))
                     {
-                        bone.Name = avatar?.FindBoneName(boneHash);
-                    }
-                    if (string.IsNullOrEmpty(bone.Name))
-                    {
-                        if (assetsfileList.TryGetTransform(sMesh.m_Bones[i], out var m_Transform))
+                        if (assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out var m_GameObject))
                         {
-                            assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out var m_GameObject);
                             bone.Name = m_GameObject.m_Name;
                         }
-                        else
+                    }
+                    //No first use m_BoneNameHashes, because it may be wrong
+                    if (string.IsNullOrEmpty(bone.Name))
+                    {
+                        var boneHash = mesh.m_BoneNameHashes[i];
+                        bone.Name = GetNameFromBonePathHashes(boneHash);
+                        if (string.IsNullOrEmpty(bone.Name))
                         {
-                            throw new NotSupportedException();
+                            bone.Name = avatar?.FindBoneName(boneHash);
+                        }
+                        if (string.IsNullOrEmpty(bone.Name))
+                        {
+                            throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
                         }
                     }
+
                     var om = new Matrix();
                     for (int x = 0; x < 4; x++)
                     {
@@ -577,16 +582,11 @@ namespace AssetStudio
                         }
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
-                            if (!track.Keyframes.TryGetValue(m_Curve.time, out var keyFrames))
-                            {
-                                keyFrames = new ImportedAnimationKeyframe();
-                                track.Keyframes.Add(m_Curve.time, keyFrames);
-                            }
-                            keyFrames.Rotation = new ImportedKeyframe<Quaternion>(
+                            track.Rotations.Add(new ImportedKeyframe<Quaternion>(
                                 m_Curve.time,
                                 new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W),
                                 new Quaternion(m_Curve.inSlope.X, -m_Curve.inSlope.Y, -m_Curve.inSlope.Z, m_Curve.inSlope.W),
-                                new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W));
+                                new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W)));
                         }
                     }
                     foreach (var m_PositionCurve in clip.m_PositionCurves)
@@ -602,16 +602,11 @@ namespace AssetStudio
                         }
                         foreach (var m_Curve in m_PositionCurve.curve.m_Curve)
                         {
-                            if (!track.Keyframes.TryGetValue(m_Curve.time, out var keyFrames))
-                            {
-                                keyFrames = new ImportedAnimationKeyframe();
-                                track.Keyframes.Add(m_Curve.time, keyFrames);
-                            }
-                            keyFrames.Translation = new ImportedKeyframe<Vector3>(
+                            track.Translations.Add(new ImportedKeyframe<Vector3>(
                                 m_Curve.time,
                                 new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z),
                                 new Vector3(-m_Curve.inSlope.X, m_Curve.inSlope.Y, m_Curve.inSlope.Z),
-                                new Vector3(-m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z));
+                                new Vector3(-m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z)));
                         }
                     }
                     foreach (var m_ScaleCurve in clip.m_ScaleCurves)
@@ -627,16 +622,11 @@ namespace AssetStudio
                         }
                         foreach (var m_Curve in m_ScaleCurve.curve.m_Curve)
                         {
-                            if (!track.Keyframes.TryGetValue(m_Curve.time, out var keyFrames))
-                            {
-                                keyFrames = new ImportedAnimationKeyframe();
-                                track.Keyframes.Add(m_Curve.time, keyFrames);
-                            }
-                            keyFrames.Scaling = new ImportedKeyframe<Vector3>(
+                            track.Scalings.Add(new ImportedKeyframe<Vector3>(
                                 m_Curve.time,
                                 new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z),
                                 new Vector3(m_Curve.inSlope.X, m_Curve.inSlope.Y, m_Curve.inSlope.Z),
-                                new Vector3(m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z));
+                                new Vector3(m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z)));
                         }
                     }
                 }

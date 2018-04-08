@@ -683,56 +683,43 @@ namespace AssetStudio
 
 		for (int i = 0; i < importedAnimationList->Count; i++)
 		{
-			bool keyframed = dynamic_cast<ImportedKeyframedAnimation^>(importedAnimationList[i]) != nullptr;
+			auto importedAnimation = importedAnimationList[i];
+			FbxString kTakeName;
+			if (importedAnimation->Name)
+			{
+				WITH_MARSHALLED_STRING
+				(
+					pClipName,
+					importedAnimation->Name,
+					kTakeName = FbxString(pClipName);
+				);
+			}
+			else
+			{
+				kTakeName = FbxString("Take") + FbxString(i);
+			}
+			bool keyframed = dynamic_cast<ImportedKeyframedAnimation^>(importedAnimation) != nullptr;
 			if (keyframed)
 			{
-				ImportedKeyframedAnimation^ parser = (ImportedKeyframedAnimation^)importedAnimationList[i];
-				FbxString kTakeName;
-				if (parser->Name)
-				{
-					WITH_MARSHALLED_STRING
-					(
-						pClipName,
-						parser->Name,
-						kTakeName = FbxString(pClipName);
-					);
-				}
-				else
-				{
-					kTakeName = FbxString("Take") + FbxString(i);
-				}
+				ImportedKeyframedAnimation^ parser = (ImportedKeyframedAnimation^)importedAnimation;
 				ExportKeyframedAnimation(parser, kTakeName, lFilter, filterPrecision, scale, rotate, translate, pNotFound);
 			}
 			else
 			{
-				ImportedSampledAnimation^ parser = (ImportedSampledAnimation^)importedAnimationList[i];
-				FbxString kTakeName;
-				if (parser->Name)
-				{
-					WITH_MARSHALLED_STRING
-					(
-						pClipName,
-						parser->Name,
-						kTakeName = FbxString(pClipName);
-					);
-				}
-				else
-				{
-					kTakeName = FbxString("Take") + FbxString(i);
-				}
+				ImportedSampledAnimation^ parser = (ImportedSampledAnimation^)importedAnimation;
 				ExportSampledAnimation(parser, kTakeName, lFilter, filterPrecision, flatInbetween, scale, rotate, translate, pNotFound);
 			}
 		}
 
-		if (pNotFound->Count > 0)
+		/*if (pNotFound->Count > 0)
 		{
 			String^ pNotFoundString = gcnew String("Warning: Animations weren't exported for the following missing frames or morphs: ");
 			for (int i = 0; i < pNotFound->Count; i++)
 			{
 				pNotFoundString += pNotFound[i] + ", ";
 			}
-			//Report::ReportLog(pNotFoundString->Substring(0, pNotFoundString->Length - 2));
-		}
+			Report::ReportLog(pNotFoundString->Substring(0, pNotFoundString->Length - 2));
+		}*/
 	}
 
 	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision,
@@ -797,31 +784,32 @@ namespace AssetStudio
 					lCurveTY->KeyModifyBegin();
 					lCurveTZ->KeyModifyBegin();
 
-					for each (auto keyframes in keyframeList->Keyframes)
+					for each (auto Scaling in keyframeList->Scalings)
 					{
-						lTime.SetSecondDouble(keyframes.Key);
+						lTime.SetSecondDouble(Scaling->time);
 
-						if (keyframes.Value->Scaling != nullptr)
-						{
-							lCurveSX->KeySet(lCurveSX->KeyAdd(lTime), lTime, keyframes.Value->Scaling->value.X);
-							lCurveSY->KeySet(lCurveSY->KeyAdd(lTime), lTime, keyframes.Value->Scaling->value.Y);
-							lCurveSZ->KeySet(lCurveSZ->KeyAdd(lTime), lTime, keyframes.Value->Scaling->value.Z);
-						}
-						if (keyframes.Value->Rotation != nullptr)
-						{
-							Vector3 rotation = Fbx::QuaternionToEuler(keyframes.Value->Rotation->value);
-							Vector3 inSlope = Fbx::QuaternionToEuler(keyframes.Value->Rotation->inSlope);
-							Vector3 outSlope = Fbx::QuaternionToEuler(keyframes.Value->Rotation->outSlope);
-							lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, rotation.X);
-							lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, rotation.Y);
-							lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, rotation.Z);
-						}
-						if (keyframes.Value->Translation != nullptr)
-						{
-							lCurveTX->KeySet(lCurveTX->KeyAdd(lTime), lTime, keyframes.Value->Translation->value.X);
-							lCurveTY->KeySet(lCurveTY->KeyAdd(lTime), lTime, keyframes.Value->Translation->value.Y);
-							lCurveTZ->KeySet(lCurveTZ->KeyAdd(lTime), lTime, keyframes.Value->Translation->value.Z);
-						}
+						lCurveSX->KeySet(lCurveSX->KeyAdd(lTime), lTime, Scaling->value.X);
+						lCurveSY->KeySet(lCurveSY->KeyAdd(lTime), lTime, Scaling->value.Y);
+						lCurveSZ->KeySet(lCurveSZ->KeyAdd(lTime), lTime, Scaling->value.Z);
+					}
+					for each (auto Rotation in keyframeList->Rotations)
+					{
+						lTime.SetSecondDouble(Rotation->time);
+
+						Vector3 rotation = Fbx::QuaternionToEuler(Rotation->value);
+						Vector3 inSlope = Fbx::QuaternionToEuler(Rotation->inSlope);
+						Vector3 outSlope = Fbx::QuaternionToEuler(Rotation->outSlope);
+						lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, rotation.X);
+						lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, rotation.Y);
+						lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, rotation.Z);
+					}
+					for each (auto Translation in keyframeList->Translations)
+					{
+						lTime.SetSecondDouble(Translation->time);
+
+						lCurveTX->KeySet(lCurveTX->KeyAdd(lTime), lTime, Translation->value.X);
+						lCurveTY->KeySet(lCurveTY->KeyAdd(lTime), lTime, Translation->value.Y);
+						lCurveTZ->KeySet(lCurveTZ->KeyAdd(lTime), lTime, Translation->value.Z);
 					}
 
 					lCurveSX->KeyModifyEnd();
