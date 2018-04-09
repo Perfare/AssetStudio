@@ -16,7 +16,6 @@ using OpenTK.Graphics.OpenGL;
 using static AssetStudio.Studio;
 using static AssetStudio.FBXExporter;
 using static AssetStudio.Importer;
-using static AssetStudio.Exporter;
 using static AssetStudio.SpriteHelper;
 
 namespace AssetStudio
@@ -75,7 +74,7 @@ namespace AssetStudio
 
         private PrivateFontCollection pfc = new PrivateFontCollection();
 
-        private AssetPreloadData selectasset;
+        private List<AssetPreloadData> selectedAssets = new List<AssetPreloadData>();
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -145,48 +144,31 @@ namespace AssetStudio
 
         private void extractBundleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openBundleDialog = new OpenFileDialog();
-            openBundleDialog.Filter = "Bundle files|*.*";
-            openBundleDialog.FilterIndex = 1;
-            openBundleDialog.RestoreDirectory = true;
-            openBundleDialog.Multiselect = true;
+            var openBundleDialog = new OpenFileDialog
+            {
+                Filter = "Bundle files|*.*",
+                FilterIndex = 1,
+                RestoreDirectory = true,
+                Multiselect = true
+            };
 
             if (openBundleDialog.ShowDialog() == DialogResult.OK)
             {
                 progressBar1.Value = 0;
                 progressBar1.Maximum = openBundleDialog.FileNames.Length;
-                int extractedCount = 0;
-                ThreadPool.QueueUserWorkItem(delegate
-                {
-                    foreach (var fileName in openBundleDialog.FileNames)
-                    {
-                        extractedCount += ExtractBundleFile(fileName);
-                        ProgressBarPerformStep();
-                    }
-                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
-                });
+                ExtractBundle(openBundleDialog.FileNames);
             }
         }
 
         private void extractFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int extractedCount = 0;
             var openFolderDialog1 = new OpenFolderDialog();
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                string startPath = openFolderDialog1.Folder;
-                var bundleFiles = Directory.GetFiles(startPath, "*.*", SearchOption.AllDirectories).ToList();
+                var bundleFiles = Directory.GetFiles(openFolderDialog1.Folder, "*.*", SearchOption.AllDirectories);
                 progressBar1.Value = 0;
-                progressBar1.Maximum = bundleFiles.Count;
-                ThreadPool.QueueUserWorkItem(delegate
-                {
-                    foreach (var fileName in bundleFiles)
-                    {
-                        extractedCount += ExtractBundleFile(fileName);
-                        ProgressBarPerformStep();
-                    }
-                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
-                });
+                progressBar1.Maximum = bundleFiles.Length;
+                ExtractBundle(bundleFiles);
             }
         }
 
@@ -484,11 +466,11 @@ namespace AssetStudio
             {
                 case 0:
                     treeSearch.Select();
-                    _3DToolStripMenuItem.Visible = true;
+                    modelToolStripMenuItem.Visible = true;
                     exportToolStripMenuItem.Visible = false;
                     break;
                 case 1:
-                    _3DToolStripMenuItem.Visible = false;
+                    modelToolStripMenuItem.Visible = false;
                     exportToolStripMenuItem.Visible = true;
                     resizeAssetListColumns(); //required because the ListView is not visible on app launch
                     classPreviewPanel.Visible = false;
@@ -496,7 +478,7 @@ namespace AssetStudio
                     listSearch.Select();
                     break;
                 case 2:
-                    _3DToolStripMenuItem.Visible = false;
+                    modelToolStripMenuItem.Visible = false;
                     exportToolStripMenuItem.Visible = false;
                     previewPanel.Visible = false;
                     classPreviewPanel.Visible = true;
@@ -1322,7 +1304,7 @@ namespace AssetStudio
             return false;
         }
 
-        private void all3DObjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void exportallobjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
@@ -1342,7 +1324,7 @@ namespace AssetStudio
                                 progressBar1.Value = 0;
                                 progressBar1.Maximum = sceneTreeView.Nodes.Count;
                                 //防止主界面假死
-                                ThreadPool.QueueUserWorkItem(delegate
+                                ThreadPool.QueueUserWorkItem(state =>
                                 {
                                     Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
                                     sceneTreeView.Invoke(new Action(() =>
@@ -1379,7 +1361,10 @@ namespace AssetStudio
                                     }
                                     //取消挂起
                                     sceneTreeView.Invoke(new Action(() => sceneTreeView.EndUpdate()));
-                                    if (openAfterExport.Checked) { Process.Start(savePath); }
+                                    if (openAfterExport.Checked)
+                                    {
+                                        Process.Start(savePath);
+                                    }
                                 });
                                 break;
                             }
@@ -1387,19 +1372,19 @@ namespace AssetStudio
                 }
 
             }
-            else { StatusStripUpdate("No Objects available for export"); }
+            else
+            {
+                StatusStripUpdate("No Objects available for export");
+            }
         }
 
-        private void Export3DObjects_Click(object sender, EventArgs e)
+        private void ExportObjects_Click(object sender, EventArgs e)
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                bool exportSwitch = ((ToolStripItem)sender).Name == "exportAll3DMenuItem";
+                var exportSwitch = ((ToolStripItem)sender).Name == "exportallobjectsMenuItem";
 
-
-                var timestamp = DateTime.Now;
-                saveFileDialog1.FileName = productName + timestamp.ToString("_yy_MM_dd__HH_mm_ss");
-                //extension will be added by the file save dialog
+                saveFileDialog1.FileName = productName + DateTime.Now.ToString("_yy_MM_dd__HH_mm_ss");
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
@@ -1407,165 +1392,57 @@ namespace AssetStudio
                     {
                         case true:
                             ExportOptions exportOpt = new ExportOptions();
-                            if (exportOpt.ShowDialog() == DialogResult.OK) { goto case false; }
+                            if (exportOpt.ShowDialog() == DialogResult.OK)
+                            {
+                                goto case false;
+                            }
                             break;
                         case false:
-                            switch (saveFileDialog1.FilterIndex)
-                            {
-                                case 1:
-                                    WriteFBX(saveFileDialog1.FileName, exportSwitch);
-                                    break;
-                                case 2:
-                                    break;
-                            }
+                            WriteFBX(saveFileDialog1.FileName, exportSwitch);
 
-                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName)) { try { Process.Start(saveFileDialog1.FileName); } catch { } }
+                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
+                            {
+                                Process.Start(Path.GetDirectoryName(saveFileDialog1.FileName));
+                            }
                             break;
                     }
                 }
 
             }
-            else { StatusStripUpdate("No Objects available for export"); }
+            else
+            {
+                StatusStripUpdate("No Objects available for export");
+            }
         }
 
         private void ExportAssets_Click(object sender, EventArgs e)
         {
-            var saveFolderDialog1 = new OpenFolderDialog();
-            if (exportableAssets.Count > 0 && saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            if (exportableAssets.Count > 0)
             {
-                timer.Stop();
-                List<AssetPreloadData> toExportAssets = null;
-                switch (((ToolStripItem)sender).Name)
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    case "exportAllAssetsMenuItem":
-                        toExportAssets = exportableAssets;
-                        break;
-                    case "exportFilteredAssetsMenuItem":
-                        toExportAssets = visibleAssets;
-                        break;
-                    case "exportSelectedAssetsMenuItem":
-                        toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
-                        foreach (int i in assetListView.SelectedIndices)
-                        {
-                            toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
-                        }
-                        break;
+                    timer.Stop();
+
+                    List<AssetPreloadData> toExportAssets = null;
+                    switch (((ToolStripItem)sender).Name)
+                    {
+                        case "exportAllAssetsMenuItem":
+                            toExportAssets = exportableAssets;
+                            break;
+                        case "exportFilteredAssetsMenuItem":
+                            toExportAssets = visibleAssets;
+                            break;
+                        case "exportSelectedAssetsMenuItem":
+                            toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
+                            foreach (int i in assetListView.SelectedIndices)
+                            {
+                                toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
+                            }
+                            break;
+                    }
+                    ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked);
                 }
-                int assetGroupSelectedIndex = assetGroupOptions.SelectedIndex;
-
-                ThreadPool.QueueUserWorkItem(delegate
-                {
-                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-                    var savePath = saveFolderDialog1.Folder;
-
-                    int toExport = toExportAssets.Count;
-                    int exportedCount = 0;
-
-                    SetProgressBarValue(0);
-                    SetProgressBarMaximum(toExport);
-                    //looping assetsFiles will optimize HDD access
-                    //but will also have a small performance impact when exporting only a couple of selected assets
-                    foreach (var asset in toExportAssets)
-                    {
-                        string exportpath = savePath + "\\";
-                        if (assetGroupSelectedIndex == 1) { exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\"; }
-                        else if (assetGroupSelectedIndex == 0) { exportpath = savePath + "\\" + asset.TypeString + "\\"; }
-                        StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
-                        switch (asset.Type)
-                        {
-                            case ClassIDReference.Texture2D:
-                                if (ExportTexture2D(asset, exportpath, true))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.AudioClip:
-                                if (ExportAudioClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.Shader:
-                                if (ExportShader(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.TextAsset:
-                                if (ExportTextAsset(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.MonoBehaviour:
-                                if (ExportMonoBehaviour(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.Font:
-                                if (ExportFont(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.Mesh:
-                                if (ExportMesh(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.VideoClip:
-                                if (ExportVideoClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.MovieTexture:
-                                if (ExportMovieTexture(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.Sprite:
-                                if (ExportSprite(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDReference.Animator:
-                                if (ExportAnimator(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            default:
-                                if (ExportRawFile(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-
-                        }
-                        ProgressBarPerformStep();
-                    }
-                    string statusText;
-                    switch (exportedCount)
-                    {
-                        case 0:
-                            statusText = "Nothing exported.";
-                            break;
-                        default:
-                            statusText = $"Finished exporting {exportedCount} assets.";
-                            break;
-                    }
-
-                    if (toExport > exportedCount) { statusText += $" {toExport - exportedCount} assets skipped (not extractable or files already exist)"; }
-
-                    StatusStripUpdate(statusText);
-
-                    if (openAfterExport.Checked && exportedCount > 0) { Process.Start(savePath); }
-                });
             }
             else
             {
@@ -1800,6 +1677,14 @@ namespace AssetStudio
             glControl1.SwapBuffers();
         }
 
+        private void glControl1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (glControl1.Visible)
+            {
+                viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
+                glControl1.Invalidate();
+            }
+        }
         private void resetForm()
         {
             Text = "AssetStudio";
@@ -1845,46 +1730,74 @@ namespace AssetStudio
             FMODreset();
         }
 
+        private void assetListView_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right && assetListView.SelectedIndices.Count > 0)
+            {
+                showOriginalFileToolStripMenuItem.Visible = false;
+                exportAnimatorwithAnimationClipMenuItem.Visible = false;
+                exportObjectswithAnimationClipMenuItem.Visible = false;
+
+                if (assetListView.SelectedIndices.Count == 1)
+                {
+                    selectedAssets.Clear();
+                    selectedAssets.Add((AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]]);
+                    showOriginalFileToolStripMenuItem.Visible = true;
+                }
+                else if (assetListView.SelectedIndices.Count >= 1)
+                {
+                    selectedAssets.Clear();
+                    foreach (int index in assetListView.SelectedIndices)
+                    {
+                        selectedAssets.Add((AssetPreloadData)assetListView.Items[index]);
+                    }
+
+                    if (selectedAssets.Any(x => x.Type == ClassIDReference.Animator) && selectedAssets.Any(x => x.Type == ClassIDReference.AnimationClip))
+                    {
+                        exportAnimatorwithAnimationClipMenuItem.Visible = true;
+
+                    }
+                    /*else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
+                    {
+                        exportObjectswithAnimationClipMenuItem.Visible = true;
+                    }*/
+                }
+
+                contextMenuStrip1.Show(assetListView, e.X, e.Y);
+            }
+        }
+
+        private void exportSelectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var saveFolderDialog1 = new OpenFolderDialog();
+            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            {
+                timer.Stop();
+                ExportAssets(saveFolderDialog1.Folder, selectedAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked);
+            }
+        }
+
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
             var args = $"/select, {selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
         }
 
-        private void assetListView_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-            {
-                selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
-                contextMenuStrip1.Show(assetListView, e.X, e.Y);
-            }
-        }
-
-        private void glControl1_MouseWheel(object sender, MouseEventArgs e)
-        {
-            if (glControl1.Visible)
-            {
-                viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
-                glControl1.Invalidate();
-            }
-        }
-
-        private void ExportAnimatorwithAnimationClip_Click(object sender, EventArgs e)
+        private void exportAnimatorwithAnimationClipMenuItem_Click(object sender, EventArgs e)
         {
             AssetPreloadData animator = null;
             List<AssetPreloadData> animationList = new List<AssetPreloadData>();
-            for (int i = 0; i < assetListView.SelectedIndices.Count; i++)
+            foreach (var assetPreloadData in selectedAssets)
             {
-                var index = assetListView.SelectedIndices[i];
-                var asset = (AssetPreloadData)assetListView.Items[index];
-                if (asset.Type2 == 95) //Animator
+                if (assetPreloadData.Type == ClassIDReference.Animator)
                 {
-                    animator = asset;
+                    animator = assetPreloadData;
                 }
-                else if (asset.Type2 == 74) //AnimationClip
+                else if (assetPreloadData.Type == ClassIDReference.AnimationClip)
                 {
-                    animationList.Add(asset);
+                    animationList.Add(assetPreloadData);
                 }
             }
 
@@ -1893,17 +1806,17 @@ namespace AssetStudio
                 var saveFolderDialog1 = new OpenFolderDialog();
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    var savePath = saveFolderDialog1.Folder;
-                    string exportpath = savePath + "\\Animator\\";
-                    SetProgressBarValue(0);
-                    SetProgressBarMaximum(1);
-                    ThreadPool.QueueUserWorkItem(state =>
-                    {
-                        StatusStripUpdate(ExportAnimator(animator, animationList, exportpath) ? "Successfully exported" : "Nothing exported.");
-                        ProgressBarPerformStep();
-                    });
+                    var exportpath = saveFolderDialog1.Folder + "\\Animator\\";
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = 1;
+                    ExportAnimatorWithAnimationClip(animator, animationList, exportpath);
                 }
             }
+        }
+
+        private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
+        {
+            //TODO
         }
     }
 }

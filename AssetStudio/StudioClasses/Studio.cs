@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web.Script.Serialization;
+using System.Windows.Forms;
+using static AssetStudio.Exporter;
 
 namespace AssetStudio
 {
@@ -29,22 +34,32 @@ namespace AssetStudio
         public static Action<string> StatusStripUpdate;
         public static Action<int> ProgressBarMaximumAdd;
 
-        public enum FileType
+
+        public static void ExtractBundle(string[] bundleFileName)
         {
-            AssetsFile,
-            BundleFile,
-            WebFile
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                int extractedCount = 0;
+                foreach (var fileName in bundleFileName)
+                {
+                    extractedCount += ExtractBundleFile(fileName);
+                    ProgressBarPerformStep();
+                }
+                StatusStripUpdate($"Finished extracting {extractedCount} files.");
+            });
         }
 
-        public static int ExtractBundleFile(string bundleFileName)
+        private static int ExtractBundleFile(string bundleFileName)
         {
             int extractedCount = 0;
-            if (CheckFileType(bundleFileName, out var reader) == FileType.BundleFile)
+            var extractPath = bundleFileName + "_unpacked\\";
+            Directory.CreateDirectory(extractPath);
+            var reader = new EndianBinaryReader(File.OpenRead(bundleFileName));
+            var bundleFile = new BundleFile(reader);
+            reader.Dispose();
+            if (bundleFile.fileList.Count > 0)
             {
                 StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-                var extractPath = bundleFileName + "_unpacked\\";
-                Directory.CreateDirectory(extractPath);
-                var bundleFile = new BundleFile(reader);
                 foreach (var memFile in bundleFile.fileList)
                 {
                     var filePath = extractPath + memFile.fileName.Replace('/', '\\');
@@ -54,17 +69,12 @@ namespace AssetStudio
                     }
                     if (!File.Exists(filePath))
                     {
-                        StatusStripUpdate($"Extracting {Path.GetFileName(memFile.fileName)}");
+                        File.WriteAllBytes(filePath, memFile.stream.ToArray());
+                        memFile.stream.Dispose();
                         extractedCount += 1;
-                        using (var file = File.Create(filePath))
-                        {
-                            memFile.stream.WriteTo(file);
-                            memFile.stream.Close();
-                        }
                     }
                 }
             }
-            reader.Dispose();
             return extractedCount;
         }
 
@@ -361,51 +371,6 @@ namespace AssetStudio
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static FileType CheckFileType(MemoryStream stream, out EndianBinaryReader reader)
-        {
-            reader = new EndianBinaryReader(stream);
-            return CheckFileType(reader);
-        }
-
-        public static FileType CheckFileType(string fileName, out EndianBinaryReader reader)
-        {
-            reader = new EndianBinaryReader(File.OpenRead(fileName));
-            return CheckFileType(reader);
-        }
-
-        public static FileType CheckFileType(EndianBinaryReader reader)
-        {
-            var signature = reader.ReadStringToNull();
-            reader.Position = 0;
-            switch (signature)
-            {
-                case "UnityWeb":
-                case "UnityRaw":
-                case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
-                case "UnityFS":
-                    return FileType.BundleFile;
-                case "UnityWebData1.0":
-                    return FileType.WebFile;
-                default:
-                    {
-                        var magic = reader.ReadBytes(2);
-                        reader.Position = 0;
-                        if (WebFile.gzipMagic.SequenceEqual(magic))
-                        {
-                            return FileType.WebFile;
-                        }
-                        reader.Position = 0x20;
-                        magic = reader.ReadBytes(6);
-                        reader.Position = 0;
-                        if (WebFile.brotliMagic.SequenceEqual(magic))
-                        {
-                            return FileType.WebFile;
-                        }
-                        return FileType.AssetsFile;
-                    }
-            }
-        }
-
         public static string[] ProcessingSplitFiles(List<string> selectFile)
         {
             var splitFiles = selectFile.Where(x => x.Contains(".split"))
@@ -421,6 +386,142 @@ namespace AssetStudio
                 }
             }
             return selectFile.Distinct().ToArray();
+        }
+
+        public static void ExportAssets(string savePath, List<AssetPreloadData> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+                int toExport = toExportAssets.Count;
+                int exportedCount = 0;
+
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(toExport);
+                foreach (var asset in toExportAssets)
+                {
+                    var exportpath = savePath + "\\";
+                    if (assetGroupSelectedIndex == 1)
+                    {
+                        exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\";
+                    }
+                    else if (assetGroupSelectedIndex == 0)
+                    {
+                        exportpath = savePath + "\\" + asset.TypeString + "\\";
+                    }
+                    StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
+                    switch (asset.Type)
+                    {
+                        case ClassIDReference.Texture2D:
+                            if (ExportTexture2D(asset, exportpath, true))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.AudioClip:
+                            if (ExportAudioClip(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.Shader:
+                            if (ExportShader(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.TextAsset:
+                            if (ExportTextAsset(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.MonoBehaviour:
+                            if (ExportMonoBehaviour(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.Font:
+                            if (ExportFont(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.Mesh:
+                            if (ExportMesh(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.VideoClip:
+                            if (ExportVideoClip(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.MovieTexture:
+                            if (ExportMovieTexture(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.Sprite:
+                            if (ExportSprite(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        case ClassIDReference.Animator:
+                            if (ExportAnimator(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+                        default:
+                            if (ExportRawFile(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            break;
+
+                    }
+                    ProgressBarPerformStep();
+                }
+
+                var statusText = exportedCount == 0 ? "Nothing exported." : $"Finished exporting {exportedCount} assets.";
+
+                if (toExport > exportedCount)
+                {
+                    statusText += $" {toExport - exportedCount} assets skipped (not extractable or files already exist)";
+                }
+
+                StatusStripUpdate(statusText);
+
+                if (openAfterExport && exportedCount > 0)
+                {
+                    Process.Start(savePath);
+                }
+            });
+        }
+
+        public static void ExportAnimatorWithAnimationClip(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                var result = false;
+                try
+                {
+                    result = ExportAnimator(animator, animationList, exportPath);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                }
+                StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
+                ProgressBarPerformStep();
+            });
         }
     }
 }

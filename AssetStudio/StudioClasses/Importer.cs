@@ -14,6 +14,58 @@ namespace AssetStudio
         public static HashSet<string> importFilesHash = new HashSet<string>(); //to improve the loading speed
         public static HashSet<string> assetsfileListHash = new HashSet<string>(); //to improve the loading speed
 
+        private enum FileType
+        {
+            AssetsFile,
+            BundleFile,
+            WebFile
+        }
+
+        private static FileType CheckFileType(MemoryStream stream, out EndianBinaryReader reader)
+        {
+            reader = new EndianBinaryReader(stream);
+            return CheckFileType(reader);
+        }
+
+        private static FileType CheckFileType(string fileName, out EndianBinaryReader reader)
+        {
+            reader = new EndianBinaryReader(File.OpenRead(fileName));
+            return CheckFileType(reader);
+        }
+
+        private static FileType CheckFileType(EndianBinaryReader reader)
+        {
+            var signature = reader.ReadStringToNull();
+            reader.Position = 0;
+            switch (signature)
+            {
+                case "UnityWeb":
+                case "UnityRaw":
+                case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
+                case "UnityFS":
+                    return FileType.BundleFile;
+                case "UnityWebData1.0":
+                    return FileType.WebFile;
+                default:
+                {
+                    var magic = reader.ReadBytes(2);
+                    reader.Position = 0;
+                    if (WebFile.gzipMagic.SequenceEqual(magic))
+                    {
+                        return FileType.WebFile;
+                    }
+                    reader.Position = 0x20;
+                    magic = reader.ReadBytes(6);
+                    reader.Position = 0;
+                    if (WebFile.brotliMagic.SequenceEqual(magic))
+                    {
+                        return FileType.WebFile;
+                    }
+                    return FileType.AssetsFile;
+                }
+            }
+        }
+
         public static void LoadFile(string fullName)
         {
             switch (CheckFileType(fullName, out var reader))

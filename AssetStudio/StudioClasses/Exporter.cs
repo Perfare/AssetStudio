@@ -334,7 +334,7 @@ namespace AssetStudio
             return true;
         }
 
-        public static bool ExportAnimator(AssetPreloadData animator, List<AssetPreloadData> animations, string exportPath)
+        public static bool ExportAnimator(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
         {
             var EulerFilter = (bool)Properties.Settings.Default["EulerFilter"];
             var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
@@ -345,7 +345,7 @@ namespace AssetStudio
             var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
             var compatibility = (bool)Properties.Settings.Default["compatibility"];
             var m_Animator = new Animator(animator);
-            var convert = new ModelConverter(m_Animator, animations);
+            var convert = new ModelConverter(m_Animator, animationList);
             exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
             Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, ".fbx", allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
             return true;
