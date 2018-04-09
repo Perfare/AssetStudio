@@ -796,12 +796,9 @@ namespace AssetStudio
 					{
 						lTime.SetSecondDouble(Rotation->time);
 
-						Vector3 rotation = Fbx::QuaternionToEuler(Rotation->value);
-						Vector3 inSlope = Fbx::QuaternionToEuler(Rotation->inSlope);
-						Vector3 outSlope = Fbx::QuaternionToEuler(Rotation->outSlope);
-						lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, rotation.X);
-						lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, rotation.Y);
-						lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, rotation.Z);
+						lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, Rotation->value.X);
+						lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, Rotation->value.Y);
+						lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, Rotation->value.Z);
 					}
 					for each (auto Translation in keyframeList->Translations)
 					{

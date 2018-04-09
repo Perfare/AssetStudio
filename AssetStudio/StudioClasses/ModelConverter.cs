@@ -580,13 +580,21 @@ namespace AssetStudio
                             track.Name = boneName;
                             iAnim.TrackList.Add(track);
                         }
+                        Vector3 prevKey = new Vector3();
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
-                            track.Rotations.Add(new ImportedKeyframe<Quaternion>(
+                            var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
+                            var inSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.inSlope.X, -m_Curve.inSlope.Y, -m_Curve.inSlope.Z, m_Curve.inSlope.W));
+                            var outSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W));
+
+                            ReplaceOutOfBound(ref prevKey, ref value);
+                            prevKey = value;
+
+                            track.Rotations.Add(new ImportedKeyframe<Vector3>(
                                 m_Curve.time,
-                                new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W),
-                                new Quaternion(m_Curve.inSlope.X, -m_Curve.inSlope.Y, -m_Curve.inSlope.Z, m_Curve.inSlope.W),
-                                new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W)));
+                                value,
+                                inSlope,
+                                outSlope));
                         }
                     }
                     foreach (var m_PositionCurve in clip.m_PositionCurves)
@@ -861,6 +869,44 @@ namespace AssetStudio
                 if (assetsfileList.TryGetTransform(pptr, out var child))
                     CreateBonePathHash(child);
             }
+        }
+
+        private void ReplaceOutOfBound(ref Vector3 prevKey, ref Vector3 curKey)
+        {
+            curKey.X = ReplaceOutOfBound(prevKey.X, curKey.X);
+            curKey.Y = ReplaceOutOfBound(prevKey.Y, curKey.Y);
+            curKey.Z = ReplaceOutOfBound(prevKey.Z, curKey.Z);
+        }
+
+        private float ReplaceOutOfBound(float prevValue, float curValue)
+        {
+            double prev = prevValue;
+            double cur = curValue;
+
+            double prevAbs = Math.Abs(prev);
+            double prevSign = Math.Sign(prev);
+
+            double prevShift = 180.0 + prevAbs;
+            double count = Math.Floor(prevShift / 360.0) * prevSign;
+            double prevRemain = 180.0 + (prev - count * 360.0);
+
+            double curShift = 180.0 + cur;
+
+            if (prevRemain - curShift > 180)
+            {
+                count++;
+            }
+            else if (prevRemain - curShift < -180)
+            {
+                count--;
+            }
+
+            double newValue = count * 360.0 + cur;
+            if (newValue != cur)
+            {
+
+            }
+            return (float)newValue;
         }
     }
 }
