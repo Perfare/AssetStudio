@@ -27,6 +27,11 @@ namespace AssetStudio
         private HashSet<AssetPreloadData> animationClipHashSet = new HashSet<AssetPreloadData>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
 
+        public ModelConverter(GameObject m_GameObject)
+        {
+            InitWithGameObject(m_GameObject);
+        }
+
         public ModelConverter(Animator m_Animator)
         {
             InitWithAnimator(m_Animator);
@@ -44,6 +49,16 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
+        public ModelConverter(GameObject m_GameObject, List<AssetPreloadData> animationList)
+        {
+            InitWithGameObject(m_GameObject);
+            foreach (var assetPreloadData in animationList)
+            {
+                animationClipHashSet.Add(assetPreloadData);
+            }
+            ConvertAnimations();
+        }
+
         private void InitWithAnimator(Animator m_Animator)
         {
             //In fact, doesn't need this.
@@ -51,6 +66,12 @@ namespace AssetStudio
                 avatar = new Avatar(m_Avatar);
 
             assetsfileList.TryGetGameObject(m_Animator.m_GameObject, out var m_GameObject);
+            InitWithGameObject(m_GameObject);
+        }
+
+
+        private void InitWithGameObject(GameObject m_GameObject)
+        {
             assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform);
             var rootTransform = m_Transform;
             while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))//Get Root Transform

@@ -523,5 +523,12 @@ namespace AssetStudio
                 ProgressBarPerformStep();
             });
         }
+
+        public static void ExportObjectsWithAnimationClip(GameObject gameObject, List<AssetPreloadData> animationList, string exportPath)
+        {
+            var result = ExportGameObject(gameObject, animationList, exportPath);
+            StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
+            ProgressBarPerformStep();
+        }
     }
 }

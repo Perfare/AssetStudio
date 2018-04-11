@@ -319,22 +319,28 @@ namespace AssetStudio
 
         public static bool ExportAnimator(AssetPreloadData animator, string exportPath)
         {
-            var EulerFilter = (bool)Properties.Settings.Default["EulerFilter"];
-            var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
-            var allFrames = (bool)Properties.Settings.Default["allFrames"];
-            var allBones = (bool)Properties.Settings.Default["allBones"];
-            var skins = (bool)Properties.Settings.Default["skins"];
-            var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
-            var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
-            var compatibility = (bool)Properties.Settings.Default["compatibility"];
             var m_Animator = new Animator(animator);
             var convert = new ModelConverter(m_Animator);
             exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
-            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, ".fbx", allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
-            return true;
+            return ModelConverter(convert, exportPath);
         }
 
         public static bool ExportAnimator(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
+        {
+            var m_Animator = new Animator(animator);
+            var convert = new ModelConverter(m_Animator, animationList);
+            exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
+            return ModelConverter(convert, exportPath);
+        }
+
+        public static bool ExportGameObject(GameObject gameObject, List<AssetPreloadData> animationList, string exportPath)
+        {
+            var convert = new ModelConverter(gameObject, animationList);
+            exportPath = exportPath + Studio.FixFileName(gameObject.Text) + ".fbx";
+            return ModelConverter(convert, exportPath);
+        }
+
+        private static bool ModelConverter(ModelConverter convert, string exportPath)
         {
             var EulerFilter = (bool)Properties.Settings.Default["EulerFilter"];
             var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
@@ -344,9 +350,6 @@ namespace AssetStudio
             var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
             var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
             var compatibility = (bool)Properties.Settings.Default["compatibility"];
-            var m_Animator = new Animator(animator);
-            var convert = new ModelConverter(m_Animator, animationList);
-            exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
             Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, ".fbx", allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
             return true;
         }

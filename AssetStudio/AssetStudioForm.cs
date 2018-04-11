@@ -1757,10 +1757,10 @@ namespace AssetStudio
                         exportAnimatorwithAnimationClipMenuItem.Visible = true;
 
                     }
-                    /*else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
+                    else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
                     {
                         exportObjectswithAnimationClipMenuItem.Visible = true;
-                    }*/
+                    }
                 }
 
                 contextMenuStrip1.Show(assetListView, e.X, e.Y);
@@ -1779,7 +1779,7 @@ namespace AssetStudio
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
+            var selectasset = selectedAssets[0];
             var args = $"/select, {selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
@@ -1806,17 +1806,37 @@ namespace AssetStudio
                 var saveFolderDialog1 = new OpenFolderDialog();
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    var exportpath = saveFolderDialog1.Folder + "\\Animator\\";
+                    var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
                     progressBar1.Value = 0;
                     progressBar1.Maximum = 1;
-                    ExportAnimatorWithAnimationClip(animator, animationList, exportpath);
+                    ExportAnimatorWithAnimationClip(animator, animationList, exportPath);
                 }
             }
         }
 
         private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
         {
-            //TODO
+            var saveFolderDialog1 = new OpenFolderDialog();
+            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            {
+                var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
+                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath));
+            }
+        }
+
+        private void ForeachTreeNodes(TreeNodeCollection nodes, string exportPath)
+        {
+            foreach (TreeNode i in nodes)
+            {
+                if (i.Checked)
+                {
+                    ExportObjectsWithAnimationClip((GameObject)i, selectedAssets, exportPath);
+                }
+                else
+                {
+                    ForeachTreeNodes(i.Nodes, exportPath);
+                }
+            }
         }
     }
 }
