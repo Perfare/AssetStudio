@@ -528,7 +528,6 @@ namespace AssetStudio
         {
             var result = ExportGameObject(gameObject, animationList, exportPath);
             StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
-            ProgressBarPerformStep();
         }
     }
 }
