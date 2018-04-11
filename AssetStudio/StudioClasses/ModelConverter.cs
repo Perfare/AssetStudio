@@ -568,7 +568,7 @@ namespace AssetStudio
 
             using (var memStream = new MemoryStream())
             {
-                var bitmap = tex2D.ConvertToBitmap(true);
+                var bitmap = new Texture2DConverter(tex2D).ConvertToBitmap(true);
                 if (bitmap != null)
                 {
                     bitmap.Save(memStream, ImageFormat.Png);

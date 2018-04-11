@@ -40,7 +40,7 @@ namespace AssetStudio
 
         private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect)
         {
-            var texture2D = new Texture2D(texture2DAsset, true);
+            var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
             {
                 if (originalImage != null)
@@ -61,7 +61,7 @@ namespace AssetStudio
 
         private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
         {
-            var texture2D = new Texture2D(texture2DAsset, true);
+            var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
             {
                 if (originalImage != null)

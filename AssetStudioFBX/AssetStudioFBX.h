@@ -41,11 +41,7 @@ namespace AssetStudio {
 
 		private:
 			HashSet<String^>^ frameNames;
-			HashSet<String^>^ meshNames;
-			bool EulerFilter;
-			float filterPrecision;
 			bool exportSkins;
-			bool embedMedia;
 			float boneSize;
 
 			IImported^ imported;
@@ -72,37 +68,9 @@ namespace AssetStudio {
 			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList, bool normals);
 			FbxFileTexture* ExportTexture(ImportedTexture^ matTex, FbxMesh* pMesh);
 			void ExportAnimations(bool EulerFilter, float filterValue, bool flatInbetween);
-			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision,
-				FbxPropertyT<FbxDouble3>& scale, FbxPropertyT<FbxDouble4>& rotate, FbxPropertyT<FbxDouble3>& translate, List<String^>^ pNotFound);
-			void ExportSampledAnimation(ImportedSampledAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween,
-				FbxPropertyT<FbxDouble3>& scale, FbxPropertyT<FbxDouble4>& rotate, FbxPropertyT<FbxDouble3>& translate, List<String^>^ pNotFound);
+			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, List<String^>^ pNotFound);
+			void ExportSampledAnimation(ImportedSampledAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween, List<String^>^ pNotFound);
 			void ExportMorphs(IImported^ imported, bool morphMask, bool flatInbetween);
-		};
-
-	private:
-		ref class InterpolationHelper
-		{
-		private:
-			FbxScene * pScene;
-			FbxAnimLayer* pAnimLayer;
-			FbxAnimEvaluator* pAnimEvaluator;
-
-			FbxAnimCurveDef::EInterpolationType interpolationMethod;
-			FbxAnimCurveFilterUnroll* lFilter;
-			float filterPrecision;
-
-			FbxPropertyT<FbxDouble3>* scale, *translate;
-			FbxPropertyT<FbxDouble4>* rotate;
-			FbxAnimCurve* pScaleCurveX, *pScaleCurveY, *pScaleCurveZ,
-				*pRotateCurveX, *pRotateCurveY, *pRotateCurveZ, *pRotateCurveW,
-				*pTranslateCurveX, *pTranslateCurveY, *pTranslateCurveZ;
-
-			array<FbxAnimCurve*>^ allCurves;
-
-		public:
-			static const char* pScaleName = "Scale";
-			static const char* pRotateName = "Rotate";
-			static const char* pTranslateName = "Translate";
 		};
 
 		static char* StringToCharArray(String^ s);

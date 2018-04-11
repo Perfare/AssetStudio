@@ -21,14 +21,6 @@ namespace AssetStudio
 		}
 		if (pTextures != NULL)
 		{
-			if (embedMedia)
-			{
-				for (int i = 0; i < pTextures->GetCount(); i++)
-				{
-					FbxFileTexture* tex = pTextures->GetAt(i);
-					File::Delete(gcnew String(tex->GetFileName()));
-				}
-			}
 			delete pTextures;
 		}
 		if (pExporter != NULL)

@@ -13,7 +13,7 @@ namespace AssetStudio
     {
         public static bool ExportTexture2D(AssetPreloadData asset, string exportPathName, bool flip)
         {
-            var m_Texture2D = new Texture2D(asset, true);
+            var m_Texture2D = new Texture2DConverter(new Texture2D(asset, true));
             if (m_Texture2D.image_data == null)
                 return false;
             var convert = (bool)Properties.Settings.Default["convertTexture"];
@@ -41,15 +41,14 @@ namespace AssetStudio
                 bitmap.Dispose();
                 return true;
             }
-            if (!convert)
+            else
             {
-                var exportFullName = exportPathName + asset.Text + asset.extension;
+                var exportFullName = exportPathName + asset.Text + m_Texture2D.GetExtensionName();
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_Texture2D.ConvertToContainer());
                 return true;
             }
-            return false;
         }
 
         public static bool ExportAudioClip(AssetPreloadData asset, string exportPath)

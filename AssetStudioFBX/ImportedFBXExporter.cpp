@@ -675,10 +675,6 @@ namespace AssetStudio
 
 		List<String^>^ pNotFound = gcnew List<String^>();
 
-		FbxPropertyT<FbxDouble3> scale = FbxProperty::Create(pScene, FbxDouble3DT, InterpolationHelper::pScaleName);
-		FbxPropertyT<FbxDouble4> rotate = FbxProperty::Create(pScene, FbxDouble4DT, InterpolationHelper::pRotateName);
-		FbxPropertyT<FbxDouble3> translate = FbxProperty::Create(pScene, FbxDouble3DT, InterpolationHelper::pTranslateName);
-
 		FbxAnimCurveFilterUnroll* lFilter = EulerFilter ? new FbxAnimCurveFilterUnroll() : NULL;
 
 		for (int i = 0; i < importedAnimationList->Count; i++)
@@ -702,12 +698,12 @@ namespace AssetStudio
 			if (keyframed)
 			{
 				ImportedKeyframedAnimation^ parser = (ImportedKeyframedAnimation^)importedAnimation;
-				ExportKeyframedAnimation(parser, kTakeName, lFilter, filterPrecision, scale, rotate, translate, pNotFound);
+				ExportKeyframedAnimation(parser, kTakeName, lFilter, filterPrecision, pNotFound);
 			}
 			else
 			{
 				ImportedSampledAnimation^ parser = (ImportedSampledAnimation^)importedAnimation;
-				ExportSampledAnimation(parser, kTakeName, lFilter, filterPrecision, flatInbetween, scale, rotate, translate, pNotFound);
+				ExportSampledAnimation(parser, kTakeName, lFilter, filterPrecision, flatInbetween, pNotFound);
 			}
 		}
 
@@ -722,8 +718,7 @@ namespace AssetStudio
 		}*/
 	}
 
-	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision,
-		FbxPropertyT<FbxDouble3>& scale, FbxPropertyT<FbxDouble4>& rotate, FbxPropertyT<FbxDouble3>& translate, List<String^>^ pNotFound)
+	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, List<String^>^ pNotFound)
 	{
 		List<ImportedAnimationKeyframedTrack^>^ pAnimationList = parser->TrackList;
 
@@ -834,8 +829,7 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::ExportSampledAnimation(ImportedSampledAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween,
-		FbxPropertyT<FbxDouble3>& scale, FbxPropertyT<FbxDouble4>& rotate, FbxPropertyT<FbxDouble3>& translate, List<String^>^ pNotFound)
+	void Fbx::Exporter::ExportSampledAnimation(ImportedSampledAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween, List<String^>^ pNotFound)
 	{
 		List<ImportedAnimationSampledTrack^>^ pAnimationList = parser->TrackList;
 

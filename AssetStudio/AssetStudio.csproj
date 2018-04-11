@@ -169,7 +169,6 @@
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\SpriteHelper.cs" />
     <Compile Include="StudioClasses\StringExtensions.cs" />
-    <Compile Include="Classes\Texture2D.Converter.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />
     <Compile Include="StudioClasses\Studio.cs" />
@@ -206,6 +205,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioClasses\AssetsFile.cs" />
     <Compile Include="StudioClasses\ModelConverter.cs" />
+    <Compile Include="StudioClasses\Texture2DConverter.cs" />
     <Compile Include="StudioClasses\WebFile.cs" />
     <Compile Include="AssetStudioForm.cs">
       <SubType>Form</SubType>

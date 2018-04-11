@@ -715,7 +715,7 @@ namespace AssetStudio
                 case ClassIDReference.Texture2D:
                     {
                         imageTexture?.Dispose();
-                        var m_Texture2D = new Texture2D(asset, true);
+                        var m_Texture2D = new Texture2DConverter(new Texture2D(asset, true));
                         imageTexture = m_Texture2D.ConvertToBitmap(true);
                         if (imageTexture != null)
                         {
