@@ -510,13 +510,14 @@ namespace AssetStudio
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
-                var result = false;
+                bool result;
                 try
                 {
                     result = ExportAnimator(animator, animationList, exportPath);
                 }
                 catch (Exception ex)
                 {
+                    result = false;
                     MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
                 }
                 StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
@@ -526,7 +527,16 @@ namespace AssetStudio
 
         public static void ExportObjectsWithAnimationClip(GameObject gameObject, List<AssetPreloadData> animationList, string exportPath)
         {
-            var result = ExportGameObject(gameObject, animationList, exportPath);
+            bool result;
+            try
+            {
+                result = ExportGameObject(gameObject, animationList, exportPath);
+            }
+            catch (Exception ex)
+            {
+                result = false;
+                MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+            }
             StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
         }
     }

@@ -1744,7 +1744,7 @@ namespace AssetStudio
                     selectedAssets.Add((AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]]);
                     showOriginalFileToolStripMenuItem.Visible = true;
                 }
-                else if (assetListView.SelectedIndices.Count >= 1)
+                if (assetListView.SelectedIndices.Count >= 1)
                 {
                     selectedAssets.Clear();
                     foreach (int index in assetListView.SelectedIndices)
@@ -1755,7 +1755,6 @@ namespace AssetStudio
                     if (selectedAssets.Any(x => x.Type == ClassIDReference.Animator) && selectedAssets.Any(x => x.Type == ClassIDReference.AnimationClip))
                     {
                         exportAnimatorwithAnimationClipMenuItem.Visible = true;
-
                     }
                     else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
                     {
@@ -1819,7 +1818,7 @@ namespace AssetStudio
             var saveFolderDialog1 = new OpenFolderDialog();
             if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
+                var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
                 ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath));
             }
         }

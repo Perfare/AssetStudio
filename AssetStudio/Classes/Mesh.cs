@@ -178,8 +178,6 @@ namespace AssetStudio
                 public Vector3 tangent { get; set; }
                 public uint index { get; set; }
 
-                public BlendShapeVertex() { }
-
                 public BlendShapeVertex(EndianBinaryReader reader)
                 {
                     vertex = reader.ReadVector3();
@@ -196,15 +194,13 @@ namespace AssetStudio
                 public bool hasNormals { get; set; }
                 public bool hasTangents { get; set; }
 
-                public MeshBlendShape() { }
-
                 public MeshBlendShape(EndianBinaryReader reader)
                 {
                     firstVertex = reader.ReadUInt32();
                     vertexCount = reader.ReadUInt32();
                     hasNormals = reader.ReadBoolean();
                     hasTangents = reader.ReadBoolean();
-                    reader.ReadBytes(2);
+                    reader.AlignStream(4);
                 }
             }
 
@@ -215,11 +211,9 @@ namespace AssetStudio
                 public int frameIndex { get; set; }
                 public int frameCount { get; set; }
 
-                public MeshBlendShapeChannel() { }
-
                 public MeshBlendShapeChannel(EndianBinaryReader reader)
                 {
-                    name = reader.ReadStringToNull();
+                    name = reader.ReadAlignedString();
                     nameHash = reader.ReadUInt32();
                     frameIndex = reader.ReadInt32();
                     frameCount = reader.ReadInt32();
