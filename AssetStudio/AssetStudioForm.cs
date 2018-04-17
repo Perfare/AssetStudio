@@ -218,9 +218,56 @@ namespace AssetStudio
                     }
                     classesListView.EndUpdate();
                 }
+
+                var types = exportableAssets.Select(x => x.Type).Distinct().ToArray();
+                foreach (var type in types)
+                {
+                    var typeItem = new ToolStripMenuItem
+                    {
+                        CheckOnClick = true,
+                        Name = type.ToString(),
+                        Size = new Size(180, 22),
+                        Text = type.ToString()
+                    };
+                    typeItem.Click += typeToolStripMenuItem_Click;
+                    showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
+                }
+                allToolStripMenuItem.Checked = true;
+                showTypeToolStripMenuItem.Visible = true;
                 StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
             }));
+        }
+
+        private void typeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var typeItem = (ToolStripMenuItem)sender;
+            var show = new List<ClassIDReference>();
+            if (typeItem != allToolStripMenuItem)
+            {
+                allToolStripMenuItem.Checked = false;
+                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
+                {
+                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
+                    if (item.Checked)
+                    {
+                        show.Add((ClassIDReference)Enum.Parse(typeof(ClassIDReference), item.Text));
+                    }
+                }
+            }
+            else if (allToolStripMenuItem.Checked)
+            {
+                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
+                {
+                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
+                    item.Checked = false;
+                }
+            }
+            assetListView.BeginUpdate();
+            assetListView.SelectedIndices.Clear();
+            visibleAssets = allToolStripMenuItem.Checked ? exportableAssets : exportableAssets.FindAll(x => show.Contains(x.Type));
+            assetListView.VirtualListSize = visibleAssets.Count;
+            assetListView.EndUpdate();
         }
 
         private void AssetStudioForm_KeyDown(object sender, KeyEventArgs e)
@@ -1365,7 +1412,7 @@ namespace AssetStudio
                         progressBar1.PerformStep();
                         toolStripStatusLabel1.Text = "Nothing exported.";
                         return;
-                    } 
+                    }
                     FBXExporter.WriteFBX(saveFileDialog1.FileName, gameObjects);
                     progressBar1.PerformStep();
                     if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
@@ -1650,6 +1697,7 @@ namespace AssetStudio
                 glControl1.Invalidate();
             }
         }
+
         private void resetForm()
         {
             Text = "AssetStudio";
@@ -1692,6 +1740,13 @@ namespace AssetStudio
             reverseSort = false;
             enableFiltering = false;
             listSearch.Text = " Filter ";
+
+            var count = showTypeToolStripMenuItem.DropDownItems.Count;
+            for (var i = 1; i < count; i++)
+            {
+                showTypeToolStripMenuItem.DropDownItems.RemoveAt(1);
+            }
+
             FMODreset();
         }
 
