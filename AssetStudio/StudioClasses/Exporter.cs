@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using static AssetStudio.SpriteHelper;
 
 namespace AssetStudio
 {
@@ -13,9 +12,10 @@ namespace AssetStudio
     {
         public static bool ExportTexture2D(AssetPreloadData asset, string exportPathName, bool flip)
         {
-            var m_Texture2D = new Texture2DConverter(new Texture2D(asset, true));
-            if (m_Texture2D.image_data == null)
+            var texture2D = new Texture2D(asset, true);
+            if (texture2D.image_data == null || texture2D.image_data.Length == 0)
                 return false;
+            var m_Texture2D = new Texture2DConverter(texture2D);
             var convert = (bool)Properties.Settings.Default["convertTexture"];
             var bitmap = m_Texture2D.ConvertToBitmap(flip);
             if (convert && bitmap != null)
@@ -287,7 +287,7 @@ namespace AssetStudio
             var exportFullName = exportPath + asset.Text + "." + type.ToLower();
             if (ExportFileExists(exportFullName))
                 return false;
-            var bitmap = GetImageFromSprite(asset);
+            var bitmap = SpriteHelper.GetImageFromSprite(asset);
             if (bitmap != null)
             {
                 bitmap.Save(exportFullName, format);
@@ -349,7 +349,7 @@ namespace AssetStudio
             var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
             var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
             var compatibility = (bool)Properties.Settings.Default["compatibility"];
-            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, ".fbx", allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
+            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
             return true;
         }
     }

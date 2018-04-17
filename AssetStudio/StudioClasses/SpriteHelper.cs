@@ -11,12 +11,8 @@ namespace AssetStudio
 {
     static class SpriteHelper
     {
-        private static Dictionary<AssetPreloadData, Bitmap> spriteCache = new Dictionary<AssetPreloadData, Bitmap>();
-
         public static Bitmap GetImageFromSprite(AssetPreloadData asset)
         {
-            if (spriteCache.TryGetValue(asset, out var bitmap))
-                return (Bitmap)bitmap.Clone();
             var m_Sprite = new Sprite(asset, true);
             if (assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
             {
@@ -51,8 +47,7 @@ namespace AssetStudio
                     asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
                     var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
                     spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    spriteCache.Add(asset, spriteImage);
-                    return (Bitmap)spriteImage.Clone();
+                    return spriteImage;
                 }
             }
 
@@ -87,8 +82,7 @@ namespace AssetStudio
                                 {
                                     graphic.FillPath(brush, path);
                                     bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                                    spriteCache.Add(asset, bitmap);
-                                    return (Bitmap)bitmap.Clone();
+                                    return bitmap;
                                 }
                             }
                         }

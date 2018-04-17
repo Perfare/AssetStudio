@@ -14,9 +14,7 @@ using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using static AssetStudio.Studio;
-using static AssetStudio.FBXExporter;
 using static AssetStudio.Importer;
-using static AssetStudio.SpriteHelper;
 
 namespace AssetStudio
 {
@@ -996,7 +994,7 @@ namespace AssetStudio
                 case ClassIDReference.Sprite:
                     {
                         imageTexture?.Dispose();
-                        imageTexture = GetImageFromSprite(asset);
+                        imageTexture = SpriteHelper.GetImageFromSprite(asset);
                         if (imageTexture != null)
                         {
                             previewPanel.BackgroundImage = imageTexture;
@@ -1311,64 +1309,18 @@ namespace AssetStudio
                 var saveFolderDialog1 = new OpenFolderDialog();
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    var savePath = saveFolderDialog1.Folder;
-                    savePath = savePath + "\\";
-                    switch ((bool)Properties.Settings.Default["showExpOpt"])
+                    var savePath = saveFolderDialog1.Folder + "\\";
+
+                    if ((bool)Properties.Settings.Default["showExpOpt"])
                     {
-                        case true:
-                            ExportOptions exportOpt = new ExportOptions();
-                            if (exportOpt.ShowDialog() == DialogResult.OK) { goto case false; }
-                            break;
-                        case false:
-                            {
-                                progressBar1.Value = 0;
-                                progressBar1.Maximum = sceneTreeView.Nodes.Count;
-                                //防止主界面假死
-                                ThreadPool.QueueUserWorkItem(state =>
-                                {
-                                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-                                    sceneTreeView.Invoke(new Action(() =>
-                                    {
-                                        //挂起控件防止更新
-                                        sceneTreeView.BeginUpdate();
-                                        //先取消所有Node的选中
-                                        foreach (TreeNode i in sceneTreeView.Nodes)
-                                        {
-                                            i.Checked = false;
-                                        }
-                                    }));
-                                    //遍历根节点
-                                    foreach (TreeNode i in sceneTreeView.Nodes)
-                                    {
-                                        if (i.Nodes.Count > 0)
-                                        {
-                                            //遍历一级子节点
-                                            foreach (TreeNode j in i.Nodes)
-                                            {
-                                                //加上时间，因为可能有重名的object
-                                                var filename = j.Text + DateTime.Now.ToString("_mm_ss_ffff");
-                                                //选中它和它的子节点
-                                                sceneTreeView.Invoke(new Action(() => j.Checked = true));
-                                                //处理非法文件名
-                                                filename = FixFileName(filename);
-                                                //导出FBX
-                                                WriteFBX(savePath + filename + ".fbx", false);
-                                                //取消选中
-                                                sceneTreeView.Invoke(new Action(() => j.Checked = false));
-                                            }
-                                        }
-                                        ProgressBarPerformStep();
-                                    }
-                                    //取消挂起
-                                    sceneTreeView.Invoke(new Action(() => sceneTreeView.EndUpdate()));
-                                    if (openAfterExport.Checked)
-                                    {
-                                        Process.Start(savePath);
-                                    }
-                                });
-                                break;
-                            }
+                        var exportOpt = new ExportOptions();
+                        exportOpt.ShowDialog();
                     }
+
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = sceneTreeView.Nodes.Count;
+
+                    ThreadPool.QueueUserWorkItem(state => ExportSplitObjects(savePath, sceneTreeView.Nodes));
                 }
 
             }
@@ -1382,36 +1334,49 @@ namespace AssetStudio
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                var exportSwitch = ((ToolStripItem)sender).Name == "exportallobjectsMenuItem";
+                var exportAll = ((ToolStripItem)sender).Name == "exportallobjectsMenuItem";
 
                 saveFileDialog1.FileName = productName + DateTime.Now.ToString("_yy_MM_dd__HH_mm_ss");
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    switch ((bool)Properties.Settings.Default["showExpOpt"])
+                    if ((bool)Properties.Settings.Default["showExpOpt"])
                     {
-                        case true:
-                            ExportOptions exportOpt = new ExportOptions();
-                            if (exportOpt.ShowDialog() == DialogResult.OK)
-                            {
-                                goto case false;
-                            }
-                            break;
-                        case false:
-                            WriteFBX(saveFileDialog1.FileName, exportSwitch);
+                        var exportOpt = new ExportOptions();
+                        exportOpt.ShowDialog();
+                    }
 
-                            if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
+                    var gameObjects = new List<GameObject>();
+                    foreach (var assetsFile in assetsfileList)
+                    {
+                        foreach (var m_GameObject in assetsFile.GameObjectList.Values)
+                        {
+                            if (m_GameObject.Checked || exportAll)
                             {
-                                Process.Start(Path.GetDirectoryName(saveFileDialog1.FileName));
+                                gameObjects.Add(m_GameObject);
                             }
-                            break;
+                        }
+                    }
+
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = 1;
+                    if (gameObjects.Count == 0)
+                    {
+                        progressBar1.PerformStep();
+                        toolStripStatusLabel1.Text = "Nothing exported.";
+                        return;
+                    } 
+                    FBXExporter.WriteFBX(saveFileDialog1.FileName, gameObjects);
+                    progressBar1.PerformStep();
+                    if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
+                    {
+                        Process.Start(Path.GetDirectoryName(saveFileDialog1.FileName));
                     }
                 }
-
             }
             else
             {
-                StatusStripUpdate("No Objects available for export");
+                toolStripStatusLabel1.Text = "No Objects available for export";
             }
         }
 
@@ -1726,7 +1691,7 @@ namespace AssetStudio
             secondSortColumn = 0;
             reverseSort = false;
             enableFiltering = false;
-
+            listSearch.Text = " Filter ";
             FMODreset();
         }
 

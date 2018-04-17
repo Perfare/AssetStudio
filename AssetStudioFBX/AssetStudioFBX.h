@@ -36,8 +36,8 @@ namespace AssetStudio {
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, String^ exportFormat, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, bool compatibility);
-			static void ExportMorph(String^ path, IImported^ imported, String^ exportFormat, bool morphMask, bool flatInbetween, bool skins, float boneSize, bool compatibility);
+			static void Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, bool compatibility);
+			static void ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, bool compatibility);
 
 		private:
 			HashSet<String^>^ frameNames;
@@ -56,11 +56,10 @@ namespace AssetStudio {
 			FbxArray<FbxNode*>* pMeshNodes;
 
 			~Exporter();
-			!Exporter();
 			void Fbx::Exporter::LinkTexture(ImportedMaterial^ mat, int attIndex, FbxFileTexture* pTexture, FbxProperty& prop);
 			void SetJointsNode(FbxNode* pNode, HashSet<String^>^ boneNames, bool allBones);
 
-			Exporter(String^ path, IImported^ imported, String^ exportFormat, bool allFrames, bool allBones, bool skins, float boneSize, bool compatibility, bool normals);
+			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, bool compatibility, bool normals);
 			HashSet<String^>^ SearchHierarchy();
 			void SearchHierarchy(ImportedFrame^ frame, HashSet<String^>^ exportFrames);
 			void SetJointsFromImportedMeshes(bool allBones);

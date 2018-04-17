@@ -684,6 +684,8 @@ namespace AssetStudio
             else
             {
                 m_AnimationType = reader.ReadInt32();
+                if (m_AnimationType == 1)
+                    m_Legacy = true;
             }
             m_Compressed = reader.ReadBoolean();
             m_UseHighQualityCurve = reader.ReadBoolean();

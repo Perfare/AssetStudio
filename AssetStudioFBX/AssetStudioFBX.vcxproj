@@ -78,7 +78,6 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="AssetStudioFBX.cpp" />
     <ClCompile Include="AssetStudioFBXExporter.cpp" />
-    <ClCompile Include="ImportedFBXExporter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssetStudioFBX.h" />

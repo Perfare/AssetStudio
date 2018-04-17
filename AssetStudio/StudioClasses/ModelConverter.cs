@@ -9,10 +9,6 @@ using static AssetStudio.Studio;
 
 namespace AssetStudio
 {
-    /* TODO Handle all things in one loop
-     * Init with GameObject
-     * Other optimization
-     */
     class ModelConverter : IImported
     {
         public List<ImportedFrame> FrameList { get; protected set; } = new List<ImportedFrame>();
@@ -81,7 +77,6 @@ namespace AssetStudio
 
             CreateBonePathHash(rootTransform);
             ConvertFrames(rootTransform, null);
-            CollectMorphInfo(rootTransform);
             ConvertMeshRenderer(m_Transform);
         }
 
@@ -92,21 +87,21 @@ namespace AssetStudio
             {
                 if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
                 {
-                    switch (assetPreloadData.Type2)
+                    switch (assetPreloadData.Type)
                     {
-                        case 23: //MeshRenderer
+                        case ClassIDReference.MeshRenderer:
                             {
                                 var m_Renderer = new MeshRenderer(assetPreloadData);
                                 ConvertMeshRenderer(m_Renderer);
                                 break;
                             }
-                        case 137: //SkinnedMeshRenderer
+                        case ClassIDReference.SkinnedMeshRenderer:
                             {
                                 var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
                                 ConvertMeshRenderer(m_SkinnedMeshRenderer);
                                 break;
                             }
-                        case 111: //Animation
+                        case ClassIDReference.Animation:
                             {
                                 var m_Animation = new Animation(assetPreloadData);
                                 foreach (var animation in m_Animation.m_Animations)
@@ -132,7 +127,7 @@ namespace AssetStudio
         {
             if (assetsfileList.TryGetPD(m_Animator.m_Controller, out var assetPreloadData))
             {
-                if (assetPreloadData.Type2 == 221)//AnimatorOverrideController
+                if (assetPreloadData.Type == ClassIDReference.AnimatorOverrideController)
                 {
                     var m_AnimatorOverrideController = new AnimatorOverrideController(assetPreloadData);
                     if (assetsfileList.TryGetPD(m_AnimatorOverrideController.m_Controller, out assetPreloadData))
@@ -154,7 +149,7 @@ namespace AssetStudio
                         }
                     }*/
                 }
-                else if (assetPreloadData.Type2 == 91)//AnimatorController
+                else if (assetPreloadData.Type == ClassIDReference.AnimatorController)
                 {
                     var m_AnimatorController = new AnimatorController(assetPreloadData);
                     foreach (var m_AnimationClip in m_AnimatorController.m_AnimationClips)
@@ -195,30 +190,6 @@ namespace AssetStudio
                     ConvertFrames(child, frame);
             }
         }
-
-        private void CollectMorphInfo(Transform m_Transform)
-        {
-            assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out var m_GameObject);
-            if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out var assetPreloadData))
-            {
-                var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
-                if (assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out var MeshPD))
-                {
-                    var mesh = new Mesh(MeshPD, true);
-                    foreach (var channel in mesh.m_Shapes.channels)
-                    {
-                        morphChannelInfo.Add(channel.nameHash, channel.name);
-                    }
-                }
-            }
-
-            foreach (var pptr in m_Transform.m_Children)
-            {
-                if (assetsfileList.TryGetTransform(pptr, out var child))
-                    CollectMorphInfo(child);
-            }
-        }
-
 
         private void ConvertMeshRenderer(MeshRenderer meshR)
         {
@@ -375,6 +346,10 @@ namespace AssetStudio
                 }
 
                 //Morphs
+                foreach (var channel in mesh.m_Shapes.channels)
+                {
+                    morphChannelInfo.Add(channel.nameHash, channel.name);
+                }
                 if (mesh.m_Shapes.shapes.Count > 0)
                 {
                     ImportedMorph morph = null;
@@ -446,7 +421,7 @@ namespace AssetStudio
                 {
                     if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
                     {
-                        if (assetPreloadData.Type2 == 33) //MeshFilter
+                        if (assetPreloadData.Type == ClassIDReference.MeshFilter)
                         {
                             var m_MeshFilter = new MeshFilter(assetPreloadData);
                             if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
@@ -529,7 +504,7 @@ namespace AssetStudio
                 foreach (var texEnv in mat.m_TexEnvs)
                 {
                     Texture2D tex2D = null;
-                    if (assetsfileList.TryGetPD(texEnv.m_Texture, out var TexturePD) && TexturePD.Type2 == 28)//TODO other Texture
+                    if (assetsfileList.TryGetPD(texEnv.m_Texture, out var TexturePD) && TexturePD.Type == ClassIDReference.Texture2D)//TODO other Texture
                     {
                         tex2D = new Texture2D(TexturePD, true);
                     }

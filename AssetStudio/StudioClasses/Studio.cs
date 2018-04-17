@@ -506,6 +506,52 @@ namespace AssetStudio
             });
         }
 
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                //遍历一级子节点
+                foreach (TreeNode j in node.Nodes)
+                {
+                    //收集所有子节点
+                    var gameObjects = new List<GameObject>();
+                    CollectNode(j, gameObjects);
+                    //跳过一些不需要导出的object
+                    if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
+                        continue;
+                    //处理非法文件名
+                    var filename = FixFileName(j.Text);
+                    //每个文件单独文件夹
+                    var saveName = $"{savePath}{filename}\\{filename}.fbx";
+                    //重名文件处理
+                    for (int i = 1; ; i++)
+                    {
+                        if (File.Exists(saveName))
+                        {
+                            saveName = $"{savePath}{filename} ({i})\\{filename}.fbx";
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    Directory.CreateDirectory(Path.GetDirectoryName(saveName));
+                    //导出FBX
+                    FBXExporter.WriteFBX(saveName, gameObjects);
+                }
+                ProgressBarPerformStep();
+            }
+        }
+
+        private static void CollectNode(TreeNode node, List<GameObject> gameObjects)
+        {
+            gameObjects.Add((GameObject)node);
+            foreach (TreeNode i in node.Nodes)
+            {
+                CollectNode(i, gameObjects);
+            }
+        }
+
         public static void ExportAnimatorWithAnimationClip(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
         {
             ThreadPool.QueueUserWorkItem(state =>

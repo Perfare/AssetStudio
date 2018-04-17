@@ -10,7 +10,7 @@ namespace AssetStudio
 {
     static class FBXExporter
     {
-        public static void WriteFBX(string FBXfile, bool allNodes)
+        public static void WriteFBX(string FBXfile, List<GameObject> gameObjects)
         {
             var timestamp = DateTime.Now;
 
@@ -47,105 +47,99 @@ namespace AssetStudio
                 */
 
                 #region loop nodes and collect objects for export
-                foreach (var assetsFile in assetsfileList)
+                foreach (var m_GameObject in gameObjects)
                 {
-                    foreach (var m_GameObject in assetsFile.GameObjectList.Values)
+                    GameObjects.Add(m_GameObject);
+
+                    if (assetsfileList.TryGetPD(m_GameObject.m_MeshFilter, out var MeshFilterPD))
                     {
-                        if (m_GameObject.Checked || allNodes)
+                        //MeshFilters are not unique!
+                        //MeshFilters.Add(MeshFilterPD);
+                        MeshFilter m_MeshFilter = new MeshFilter(MeshFilterPD);
+                        if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
                         {
-                            GameObjects.Add(m_GameObject);
+                            Meshes.Add(MeshPD);
 
-                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshFilter, out var MeshFilterPD))
-                            {
-                                //MeshFilters are not unique!
-                                //MeshFilters.Add(MeshFilterPD);
-                                MeshFilter m_MeshFilter = new MeshFilter(MeshFilterPD);
-                                if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
-                                {
-                                    Meshes.Add(MeshPD);
-
-                                    //write connections here and Mesh objects separately without having to backtrack through their MEshFilter to het the GameObject ID
-                                    //also note that MeshFilters are not unique, they cannot be used for instancing geometry
-                                    cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
-                                    cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
-                                }
-                            }
-
-                            #region get Renderer
-                            if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out var RendererPD))
-                            {
-                                MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
-
-                                foreach (var MaterialPPtr in m_Renderer.m_Materials)
-                                {
-                                    if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
-                                    {
-                                        Materials.Add(MaterialPD);
-                                        cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                        cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
-                                    }
-                                }
-                            }
-
-                            #endregion
-
-                            #region get SkinnedMeshRenderer
-                            if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out var SkinnedMeshPD))
-                            {
-                                Skins.Add(SkinnedMeshPD);
-
-                                SkinnedMeshRenderer m_SkinnedMeshRenderer = new SkinnedMeshRenderer(SkinnedMeshPD);
-
-                                foreach (var MaterialPPtr in m_SkinnedMeshRenderer.m_Materials)
-                                {
-                                    if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
-                                    {
-                                        Materials.Add(MaterialPD);
-                                        cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                        cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
-                                    }
-                                }
-
-                                if ((bool)Properties.Settings.Default["exportDeformers"])
-                                {
-                                    DeformerCount += m_SkinnedMeshRenderer.m_Bones.Length;
-
-                                    //collect skeleton dummies to make sure they are exported
-                                    foreach (var bonePPtr in m_SkinnedMeshRenderer.m_Bones)
-                                    {
-                                        if (assetsfileList.TryGetTransform(bonePPtr, out var b_Transform))
-                                        {
-                                            if (assetsfileList.TryGetGameObject(b_Transform.m_GameObject, out var m_Bone))
-                                            {
-                                                LimbNodes.Add(m_Bone);
-                                                //also collect the root bone
-                                                if (m_Bone.Parent.Level > 0) { LimbNodes.Add((GameObject)m_Bone.Parent); }
-                                                //should I collect siblings?
-                                            }
-
-                                            #region collect children because m_SkinnedMeshRenderer.m_Bones doesn't contain terminations
-                                            foreach (var ChildPPtr in b_Transform.m_Children)
-                                            {
-                                                if (assetsfileList.TryGetTransform(ChildPPtr, out var ChildTR))
-                                                {
-                                                    if (assetsfileList.TryGetGameObject(ChildTR.m_GameObject, out var m_Child))
-                                                    {
-                                                        //check that the Model doesn't contain a Mesh, although this won't ensure it's part of the skeleton
-                                                        if (m_Child.m_MeshFilter == null && m_Child.m_SkinnedMeshRenderer == null)
-                                                        {
-                                                            LimbNodes.Add(m_Child);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            #endregion
-                                        }
-                                    }
-                                }
-                            }
-                            #endregion
+                            //write connections here and Mesh objects separately without having to backtrack through their MEshFilter to het the GameObject ID
+                            //also note that MeshFilters are not unique, they cannot be used for instancing geometry
+                            cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
+                            cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
                         }
                     }
+
+                    #region get Renderer
+                    if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out var RendererPD))
+                    {
+                        MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
+
+                        foreach (var MaterialPPtr in m_Renderer.m_Materials)
+                        {
+                            if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
+                            {
+                                Materials.Add(MaterialPD);
+                                cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
+                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                    #region get SkinnedMeshRenderer
+                    if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out var SkinnedMeshPD))
+                    {
+                        Skins.Add(SkinnedMeshPD);
+
+                        SkinnedMeshRenderer m_SkinnedMeshRenderer = new SkinnedMeshRenderer(SkinnedMeshPD);
+
+                        foreach (var MaterialPPtr in m_SkinnedMeshRenderer.m_Materials)
+                        {
+                            if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
+                            {
+                                Materials.Add(MaterialPD);
+                                cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
+                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                            }
+                        }
+
+                        if ((bool)Properties.Settings.Default["exportDeformers"])
+                        {
+                            DeformerCount += m_SkinnedMeshRenderer.m_Bones.Length;
+
+                            //collect skeleton dummies to make sure they are exported
+                            foreach (var bonePPtr in m_SkinnedMeshRenderer.m_Bones)
+                            {
+                                if (assetsfileList.TryGetTransform(bonePPtr, out var b_Transform))
+                                {
+                                    if (assetsfileList.TryGetGameObject(b_Transform.m_GameObject, out var m_Bone))
+                                    {
+                                        LimbNodes.Add(m_Bone);
+                                        //also collect the root bone
+                                        if (m_Bone.Parent.Level > 0) { LimbNodes.Add((GameObject)m_Bone.Parent); }
+                                        //should I collect siblings?
+                                    }
+
+                                    #region collect children because m_SkinnedMeshRenderer.m_Bones doesn't contain terminations
+                                    foreach (var ChildPPtr in b_Transform.m_Children)
+                                    {
+                                        if (assetsfileList.TryGetTransform(ChildPPtr, out var ChildTR))
+                                        {
+                                            if (assetsfileList.TryGetGameObject(ChildTR.m_GameObject, out var m_Child))
+                                            {
+                                                //check that the Model doesn't contain a Mesh, although this won't ensure it's part of the skeleton
+                                                if (m_Child.m_MeshFilter == null && m_Child.m_SkinnedMeshRenderer == null)
+                                                {
+                                                    LimbNodes.Add(m_Child);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    #endregion
+                                }
+                            }
+                        }
+                    }
+                    #endregion
                 }
 
                 //if ((bool)Properties.Settings.Default["convertDummies"]) { GameObjects.Except(LimbNodes); }

@@ -14,9 +14,6 @@
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ImportedFBXExporter.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="AssetStudioFBX.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
