@@ -205,9 +205,8 @@ namespace AssetStudio
                                     break;
                                 }
                         }
-                        if (!exportable && displayAll)
+                        if (displayAll)
                         {
-                            asset.extension = ".dat";
                             exportable = true;
                         }
                         if (exportable)
@@ -556,34 +555,49 @@ namespace AssetStudio
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
-                bool result;
+                StatusStripUpdate($"Exporting {animator.Text}");
                 try
                 {
-                    result = ExportAnimator(animator, animationList, exportPath);
+                    ExportAnimator(animator, exportPath, animationList);
+                    StatusStripUpdate($"Finished exporting {animator.Text}");
                 }
                 catch (Exception ex)
                 {
-                    result = false;
                     MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                    StatusStripUpdate("Error in export");
                 }
-                StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
                 ProgressBarPerformStep();
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(GameObject gameObject, List<AssetPreloadData> animationList, string exportPath)
+        public static void ExportObjectsWithAnimationClip(GameObject gameObject, string exportPath, List<AssetPreloadData> animationList = null)
         {
-            bool result;
+            StatusStripUpdate($"Exporting {gameObject.Text}");
             try
             {
-                result = ExportGameObject(gameObject, animationList, exportPath);
+                ExportGameObject(gameObject, exportPath, animationList);
+                StatusStripUpdate($"Finished exporting {gameObject.Text}");
             }
             catch (Exception ex)
             {
-                result = false;
                 MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                StatusStripUpdate("Error in export");
             }
-            StatusStripUpdate(result ? "Successfully exported" : "Nothing exported.");
+        }
+
+        public static void ForeachTreeNodes(TreeNodeCollection nodes, string exportPath, Action<GameObject> action)
+        {
+            foreach (TreeNode i in nodes)
+            {
+                if (i.Checked)
+                {
+                    action((GameObject)i);
+                }
+                else
+                {
+                    ForeachTreeNodes(i.Nodes, exportPath, action);
+                }
+            }
         }
     }
 }

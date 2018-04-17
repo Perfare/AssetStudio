@@ -24,7 +24,6 @@ namespace AssetStudio
             convertDummies.Enabled = (bool)Properties.Settings.Default["exportDeformers"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             upAxis.SelectedIndex = (int)Properties.Settings.Default["upAxis"];
-            showExpOpt.Checked = (bool)Properties.Settings.Default["showExpOpt"];
             converttexture.Checked = (bool)Properties.Settings.Default["convertTexture"];
             convertAudio.Checked = (bool)Properties.Settings.Default["convertAudio"];
             var str = (string)Properties.Settings.Default["convertType"];

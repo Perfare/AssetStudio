@@ -298,7 +298,7 @@ namespace AssetStudio
 
         public static bool ExportRawFile(AssetPreloadData asset, string exportPath)
         {
-            var exportFullName = exportPath + asset.Text + asset.extension;
+            var exportFullName = exportPath + asset.Text + ".dat";
             if (ExportFileExists(exportFullName))
                 return false;
             var bytes = asset.InitReader().ReadBytes(asset.Size);
@@ -316,25 +316,17 @@ namespace AssetStudio
             return false;
         }
 
-        public static bool ExportAnimator(AssetPreloadData animator, string exportPath)
+        public static bool ExportAnimator(AssetPreloadData animator, string exportPath, List<AssetPreloadData> animationList = null)
         {
             var m_Animator = new Animator(animator);
-            var convert = new ModelConverter(m_Animator);
+            var convert = animationList != null ? new ModelConverter(m_Animator, animationList) : new ModelConverter(m_Animator);
             exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
             return ModelConverter(convert, exportPath);
         }
 
-        public static bool ExportAnimator(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
+        public static bool ExportGameObject(GameObject gameObject, string exportPath, List<AssetPreloadData> animationList = null)
         {
-            var m_Animator = new Animator(animator);
-            var convert = new ModelConverter(m_Animator, animationList);
-            exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
-            return ModelConverter(convert, exportPath);
-        }
-
-        public static bool ExportGameObject(GameObject gameObject, List<AssetPreloadData> animationList, string exportPath)
-        {
-            var convert = new ModelConverter(gameObject, animationList);
+            var convert = animationList != null ? new ModelConverter(gameObject, animationList) : new ModelConverter(gameObject);
             exportPath = exportPath + Studio.FixFileName(gameObject.Text) + ".fbx";
             return ModelConverter(convert, exportPath);
         }

@@ -28,11 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.includeBox = new System.Windows.Forms.GroupBox();
+            this.FbxBox = new System.Windows.Forms.GroupBox();
             this.convertDummies = new System.Windows.Forms.CheckBox();
-            this.embedBox = new System.Windows.Forms.CheckBox();
-            this.lightsBox = new System.Windows.Forms.CheckBox();
-            this.camerasBox = new System.Windows.Forms.CheckBox();
             this.exportDeformers = new System.Windows.Forms.CheckBox();
             this.geometryBox = new System.Windows.Forms.GroupBox();
             this.exportColors = new System.Windows.Forms.CheckBox();
@@ -46,7 +43,6 @@
             this.scaleLabel = new System.Windows.Forms.Label();
             this.fbxOKbutton = new System.Windows.Forms.Button();
             this.fbxCancel = new System.Windows.Forms.Button();
-            this.showExpOpt = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.convertAudio = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -65,7 +61,7 @@
             this.allBones = new System.Windows.Forms.CheckBox();
             this.allFrames = new System.Windows.Forms.CheckBox();
             this.EulerFilter = new System.Windows.Forms.CheckBox();
-            this.includeBox.SuspendLayout();
+            this.FbxBox.SuspendLayout();
             this.geometryBox.SuspendLayout();
             this.advancedBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).BeginInit();
@@ -76,26 +72,24 @@
             ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).BeginInit();
             this.SuspendLayout();
             // 
-            // includeBox
+            // FbxBox
             // 
-            this.includeBox.AutoSize = true;
-            this.includeBox.Controls.Add(this.convertDummies);
-            this.includeBox.Controls.Add(this.embedBox);
-            this.includeBox.Controls.Add(this.lightsBox);
-            this.includeBox.Controls.Add(this.camerasBox);
-            this.includeBox.Controls.Add(this.exportDeformers);
-            this.includeBox.Controls.Add(this.geometryBox);
-            this.includeBox.Location = new System.Drawing.Point(12, 12);
-            this.includeBox.Name = "includeBox";
-            this.includeBox.Size = new System.Drawing.Size(249, 267);
-            this.includeBox.TabIndex = 0;
-            this.includeBox.TabStop = false;
-            this.includeBox.Text = "Include";
+            this.FbxBox.AutoSize = true;
+            this.FbxBox.Controls.Add(this.convertDummies);
+            this.FbxBox.Controls.Add(this.exportDeformers);
+            this.FbxBox.Controls.Add(this.geometryBox);
+            this.FbxBox.Controls.Add(this.advancedBox);
+            this.FbxBox.Location = new System.Drawing.Point(12, 12);
+            this.FbxBox.Name = "FbxBox";
+            this.FbxBox.Size = new System.Drawing.Size(247, 317);
+            this.FbxBox.TabIndex = 0;
+            this.FbxBox.TabStop = false;
+            this.FbxBox.Text = "Fbx Ascii";
             // 
             // convertDummies
             // 
             this.convertDummies.AutoSize = true;
-            this.convertDummies.Location = new System.Drawing.Point(14, 164);
+            this.convertDummies.Location = new System.Drawing.Point(6, 170);
             this.convertDummies.Name = "convertDummies";
             this.convertDummies.Size = new System.Drawing.Size(228, 16);
             this.convertDummies.TabIndex = 5;
@@ -103,43 +97,10 @@
             this.convertDummies.UseVisualStyleBackColor = true;
             this.convertDummies.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
             // 
-            // embedBox
-            // 
-            this.embedBox.AutoSize = true;
-            this.embedBox.Enabled = false;
-            this.embedBox.Location = new System.Drawing.Point(14, 230);
-            this.embedBox.Name = "embedBox";
-            this.embedBox.Size = new System.Drawing.Size(90, 16);
-            this.embedBox.TabIndex = 4;
-            this.embedBox.Text = "Embed Media";
-            this.embedBox.UseVisualStyleBackColor = true;
-            // 
-            // lightsBox
-            // 
-            this.lightsBox.AutoSize = true;
-            this.lightsBox.Enabled = false;
-            this.lightsBox.Location = new System.Drawing.Point(14, 208);
-            this.lightsBox.Name = "lightsBox";
-            this.lightsBox.Size = new System.Drawing.Size(60, 16);
-            this.lightsBox.TabIndex = 3;
-            this.lightsBox.Text = "Lights";
-            this.lightsBox.UseVisualStyleBackColor = true;
-            // 
-            // camerasBox
-            // 
-            this.camerasBox.AutoSize = true;
-            this.camerasBox.Enabled = false;
-            this.camerasBox.Location = new System.Drawing.Point(14, 186);
-            this.camerasBox.Name = "camerasBox";
-            this.camerasBox.Size = new System.Drawing.Size(66, 16);
-            this.camerasBox.TabIndex = 2;
-            this.camerasBox.Text = "Cameras";
-            this.camerasBox.UseVisualStyleBackColor = true;
-            // 
             // exportDeformers
             // 
             this.exportDeformers.AutoSize = true;
-            this.exportDeformers.Location = new System.Drawing.Point(14, 142);
+            this.exportDeformers.Location = new System.Drawing.Point(6, 148);
             this.exportDeformers.Name = "exportDeformers";
             this.exportDeformers.Size = new System.Drawing.Size(108, 16);
             this.exportDeformers.TabIndex = 1;
@@ -154,7 +115,7 @@
             this.geometryBox.Controls.Add(this.exportUVs);
             this.geometryBox.Controls.Add(this.exportTangents);
             this.geometryBox.Controls.Add(this.exportNormals);
-            this.geometryBox.Location = new System.Drawing.Point(7, 18);
+            this.geometryBox.Location = new System.Drawing.Point(6, 20);
             this.geometryBox.Name = "geometryBox";
             this.geometryBox.Size = new System.Drawing.Size(235, 122);
             this.geometryBox.TabIndex = 0;
@@ -218,9 +179,9 @@
             this.advancedBox.Controls.Add(this.upAxis);
             this.advancedBox.Controls.Add(this.scaleFactor);
             this.advancedBox.Controls.Add(this.scaleLabel);
-            this.advancedBox.Location = new System.Drawing.Point(12, 285);
+            this.advancedBox.Location = new System.Drawing.Point(6, 192);
             this.advancedBox.Name = "advancedBox";
-            this.advancedBox.Size = new System.Drawing.Size(249, 78);
+            this.advancedBox.Size = new System.Drawing.Size(235, 78);
             this.advancedBox.TabIndex = 5;
             this.advancedBox.TabStop = false;
             this.advancedBox.Text = "Advanced Options";
@@ -274,7 +235,7 @@
             // 
             // fbxOKbutton
             // 
-            this.fbxOKbutton.Location = new System.Drawing.Point(339, 369);
+            this.fbxOKbutton.Location = new System.Drawing.Point(325, 335);
             this.fbxOKbutton.Name = "fbxOKbutton";
             this.fbxOKbutton.Size = new System.Drawing.Size(75, 21);
             this.fbxOKbutton.TabIndex = 6;
@@ -285,23 +246,13 @@
             // fbxCancel
             // 
             this.fbxCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.fbxCancel.Location = new System.Drawing.Point(420, 369);
+            this.fbxCancel.Location = new System.Drawing.Point(406, 335);
             this.fbxCancel.Name = "fbxCancel";
             this.fbxCancel.Size = new System.Drawing.Size(75, 21);
             this.fbxCancel.TabIndex = 7;
             this.fbxCancel.Text = "Cancel";
             this.fbxCancel.UseVisualStyleBackColor = true;
             this.fbxCancel.Click += new System.EventHandler(this.fbxCancel_Click);
-            // 
-            // showExpOpt
-            // 
-            this.showExpOpt.AutoSize = true;
-            this.showExpOpt.Location = new System.Drawing.Point(12, 372);
-            this.showExpOpt.Name = "showExpOpt";
-            this.showExpOpt.Size = new System.Drawing.Size(222, 16);
-            this.showExpOpt.TabIndex = 8;
-            this.showExpOpt.Text = "Show this dialog for every export";
-            this.showExpOpt.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -310,7 +261,7 @@
             this.groupBox1.Controls.Add(this.converttexture);
             this.groupBox1.Location = new System.Drawing.Point(267, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(228, 140);
+            this.groupBox1.Size = new System.Drawing.Size(214, 106);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Convert";
@@ -322,9 +273,9 @@
             this.convertAudio.CheckState = System.Windows.Forms.CheckState.Checked;
             this.convertAudio.Location = new System.Drawing.Point(6, 78);
             this.convertAudio.Name = "convertAudio";
-            this.convertAudio.Size = new System.Drawing.Size(198, 28);
+            this.convertAudio.Size = new System.Drawing.Size(198, 16);
             this.convertAudio.TabIndex = 6;
-            this.convertAudio.Text = "Convert AudioClip to WAV(PCM)\r\n(If support)";
+            this.convertAudio.Text = "Convert AudioClip to WAV(PCM)";
             this.convertAudio.UseVisualStyleBackColor = true;
             // 
             // panel1
@@ -376,9 +327,9 @@
             this.converttexture.CheckState = System.Windows.Forms.CheckState.Checked;
             this.converttexture.Location = new System.Drawing.Point(6, 20);
             this.converttexture.Name = "converttexture";
-            this.converttexture.Size = new System.Drawing.Size(192, 16);
+            this.converttexture.Size = new System.Drawing.Size(114, 16);
             this.converttexture.TabIndex = 1;
-            this.converttexture.Text = "Convert Texture (If support)";
+            this.converttexture.Text = "Convert Texture";
             this.converttexture.UseVisualStyleBackColor = true;
             // 
             // groupBox2
@@ -393,12 +344,12 @@
             this.groupBox2.Controls.Add(this.allBones);
             this.groupBox2.Controls.Add(this.allFrames);
             this.groupBox2.Controls.Add(this.EulerFilter);
-            this.groupBox2.Location = new System.Drawing.Point(267, 158);
+            this.groupBox2.Location = new System.Drawing.Point(267, 124);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(228, 205);
+            this.groupBox2.Size = new System.Drawing.Size(214, 205);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Animator";
+            this.groupBox2.Text = "Fbx Binary";
             // 
             // compatibility
             // 
@@ -518,14 +469,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.fbxCancel;
-            this.ClientSize = new System.Drawing.Size(508, 398);
+            this.ClientSize = new System.Drawing.Size(495, 369);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.showExpOpt);
             this.Controls.Add(this.fbxCancel);
             this.Controls.Add(this.fbxOKbutton);
-            this.Controls.Add(this.advancedBox);
-            this.Controls.Add(this.includeBox);
+            this.Controls.Add(this.FbxBox);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ExportOptions";
@@ -534,8 +483,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Export options";
             this.TopMost = true;
-            this.includeBox.ResumeLayout(false);
-            this.includeBox.PerformLayout();
+            this.FbxBox.ResumeLayout(false);
+            this.FbxBox.PerformLayout();
             this.geometryBox.ResumeLayout(false);
             this.geometryBox.PerformLayout();
             this.advancedBox.ResumeLayout(false);
@@ -556,13 +505,10 @@
 
         #endregion
 
-        private System.Windows.Forms.GroupBox includeBox;
+        private System.Windows.Forms.GroupBox FbxBox;
         private System.Windows.Forms.GroupBox advancedBox;
         private System.Windows.Forms.NumericUpDown scaleFactor;
         private System.Windows.Forms.Label scaleLabel;
-        private System.Windows.Forms.CheckBox embedBox;
-        private System.Windows.Forms.CheckBox lightsBox;
-        private System.Windows.Forms.CheckBox camerasBox;
         private System.Windows.Forms.CheckBox exportDeformers;
         private System.Windows.Forms.GroupBox geometryBox;
         private System.Windows.Forms.CheckBox exportColors;
@@ -573,7 +519,6 @@
         private System.Windows.Forms.ComboBox upAxis;
         private System.Windows.Forms.Button fbxOKbutton;
         private System.Windows.Forms.Button fbxCancel;
-        private System.Windows.Forms.CheckBox showExpOpt;
         private System.Windows.Forms.CheckBox convertDummies;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox converttexture;

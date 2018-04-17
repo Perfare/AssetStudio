@@ -72,8 +72,6 @@ namespace AssetStudio
 
         private PrivateFontCollection pfc = new PrivateFontCollection();
 
-        private List<AssetPreloadData> selectedAssets = new List<AssetPreloadData>();
-
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -511,20 +509,14 @@ namespace AssetStudio
             {
                 case 0:
                     treeSearch.Select();
-                    modelToolStripMenuItem.Visible = true;
-                    exportToolStripMenuItem.Visible = false;
                     break;
                 case 1:
-                    modelToolStripMenuItem.Visible = false;
-                    exportToolStripMenuItem.Visible = true;
                     resizeAssetListColumns(); //required because the ListView is not visible on app launch
                     classPreviewPanel.Visible = false;
                     previewPanel.Visible = true;
                     listSearch.Select();
                     break;
                 case 2:
-                    modelToolStripMenuItem.Visible = false;
-                    exportToolStripMenuItem.Visible = false;
                     previewPanel.Visible = false;
                     classPreviewPanel.Visible = true;
                     break;
@@ -1058,12 +1050,12 @@ namespace AssetStudio
                     }
                 case ClassIDReference.Animator:
                     {
-                        StatusStripUpdate("Can be exported as a FBX file.");
+                        StatusStripUpdate("Can be exported to FBX file.");
                         break;
                     }
                 case ClassIDReference.AnimationClip:
                     {
-                        StatusStripUpdate("Select AnimationClip with selecting Animator to export");
+                        StatusStripUpdate("Can be exported with Animator or objects");
                         break;
                     }
                 default:
@@ -1357,13 +1349,6 @@ namespace AssetStudio
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var savePath = saveFolderDialog1.Folder + "\\";
-
-                    if ((bool)Properties.Settings.Default["showExpOpt"])
-                    {
-                        var exportOpt = new ExportOptions();
-                        exportOpt.ShowDialog();
-                    }
-
                     progressBar1.Value = 0;
                     progressBar1.Maximum = sceneTreeView.Nodes.Count;
 
@@ -1387,12 +1372,6 @@ namespace AssetStudio
 
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    if ((bool)Properties.Settings.Default["showExpOpt"])
-                    {
-                        var exportOpt = new ExportOptions();
-                        exportOpt.ShowDialog();
-                    }
-
                     var gameObjects = new List<GameObject>();
                     foreach (var assetsFile in assetsfileList)
                     {
@@ -1755,30 +1734,23 @@ namespace AssetStudio
             if (e.Button == MouseButtons.Right && assetListView.SelectedIndices.Count > 0)
             {
                 showOriginalFileToolStripMenuItem.Visible = false;
-                exportAnimatorwithAnimationClipMenuItem.Visible = false;
-                exportObjectswithAnimationClipMenuItem.Visible = false;
+                exportAnimatorwithselectedAnimationClipMenuItem.Visible = false;
+                exportobjectswithselectedAnimationClipMenuItem.Visible = false;
 
                 if (assetListView.SelectedIndices.Count == 1)
                 {
-                    selectedAssets.Clear();
-                    selectedAssets.Add((AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]]);
                     showOriginalFileToolStripMenuItem.Visible = true;
                 }
                 if (assetListView.SelectedIndices.Count >= 1)
                 {
-                    selectedAssets.Clear();
-                    foreach (int index in assetListView.SelectedIndices)
-                    {
-                        selectedAssets.Add((AssetPreloadData)assetListView.Items[index]);
-                    }
-
+                    var selectedAssets = GetSelectedAssets();
                     if (selectedAssets.Any(x => x.Type == ClassIDReference.Animator) && selectedAssets.Any(x => x.Type == ClassIDReference.AnimationClip))
                     {
-                        exportAnimatorwithAnimationClipMenuItem.Visible = true;
+                        exportAnimatorwithselectedAnimationClipMenuItem.Visible = true;
                     }
                     else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
                     {
-                        exportObjectswithAnimationClipMenuItem.Visible = true;
+                        exportobjectswithselectedAnimationClipMenuItem.Visible = true;
                     }
                 }
 
@@ -1792,13 +1764,13 @@ namespace AssetStudio
             if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 timer.Stop();
-                ExportAssets(saveFolderDialog1.Folder, selectedAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked);
+                ExportAssets(saveFolderDialog1.Folder, GetSelectedAssets(), assetGroupOptions.SelectedIndex, openAfterExport.Checked);
             }
         }
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var selectasset = selectedAssets[0];
+            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
             var args = $"/select, {selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
@@ -1808,6 +1780,7 @@ namespace AssetStudio
         {
             AssetPreloadData animator = null;
             List<AssetPreloadData> animationList = new List<AssetPreloadData>();
+            var selectedAssets = GetSelectedAssets();
             foreach (var assetPreloadData in selectedAssets)
             {
                 if (assetPreloadData.Type == ClassIDReference.Animator)
@@ -1833,29 +1806,36 @@ namespace AssetStudio
             }
         }
 
-        private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
+        private void exportSelectedObjectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var saveFolderDialog1 = new OpenFolderDialog();
             if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath));
+                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath, o => { ExportObjectsWithAnimationClip(o, exportPath); }));
             }
         }
 
-        private void ForeachTreeNodes(TreeNodeCollection nodes, string exportPath)
+        private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
         {
-            foreach (TreeNode i in nodes)
+            var selectedAssets = GetSelectedAssets();
+            var saveFolderDialog1 = new OpenFolderDialog();
+            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                if (i.Checked)
-                {
-                    ExportObjectsWithAnimationClip((GameObject)i, selectedAssets, exportPath);
-                }
-                else
-                {
-                    ForeachTreeNodes(i.Nodes, exportPath);
-                }
+                var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
+                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath, o => { ExportObjectsWithAnimationClip(o, exportPath, selectedAssets); }));
             }
+        }
+
+        private List<AssetPreloadData> GetSelectedAssets()
+        {
+            var selectedAssets = new List<AssetPreloadData>();
+            foreach (int index in assetListView.SelectedIndices)
+            {
+                selectedAssets.Add((AssetPreloadData)assetListView.Items[index]);
+            }
+
+            return selectedAssets;
         }
     }
 }
