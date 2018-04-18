@@ -583,21 +583,12 @@ namespace AssetStudio
                             track.Name = boneName;
                             iAnim.TrackList.Add(track);
                         }
-                        Vector3 prevKey = new Vector3();
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
                             var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
                             var inSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.inSlope.X, -m_Curve.inSlope.Y, -m_Curve.inSlope.Z, m_Curve.inSlope.W));
                             var outSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W));
-
-                            ReplaceOutOfBound(ref prevKey, ref value);
-                            prevKey = value;
-
-                            track.Rotations.Add(new ImportedKeyframe<Vector3>(
-                                m_Curve.time,
-                                value,
-                                inSlope,
-                                outSlope));
+                            track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, value, inSlope, outSlope));
                         }
                     }
                     foreach (var m_PositionCurve in clip.m_PositionCurves)
@@ -638,6 +629,21 @@ namespace AssetStudio
                                 new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z),
                                 new Vector3(m_Curve.inSlope.X, m_Curve.inSlope.Y, m_Curve.inSlope.Z),
                                 new Vector3(m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z)));
+                        }
+                    }
+
+                    if ((bool)Properties.Settings.Default["FixRotation"])
+                    {
+                        foreach (var track in iAnim.TrackList)
+                        {
+                            var prevKey = new Vector3();
+                            foreach (var rotation in track.Rotations)
+                            {
+                                var value = rotation.value;
+                                ReplaceOutOfBound(ref prevKey, ref value);
+                                prevKey = value;
+                                rotation.value = value;
+                            }
                         }
                     }
                 }
@@ -724,16 +730,16 @@ namespace AssetStudio
                                     case 2:
                                         if (track.Rotations == null)
                                         {
-                                            track.Rotations = new Quaternion?[numFrames];
+                                            track.Rotations = new Vector3?[numFrames];
                                         }
 
-                                        track.Rotations[frameIdx] = new Quaternion
+                                        track.Rotations[frameIdx] = Fbx.QuaternionToEuler(new Quaternion
                                         (
                                             data[curveIdx++ - dataOffset],
                                             -data[curveIdx++ - dataOffset],
                                             -data[curveIdx++ - dataOffset],
                                             data[curveIdx++ - dataOffset]
-                                        );
+                                        ));
                                         break;
                                     case 3:
                                         if (track.Scalings == null)
@@ -751,17 +757,14 @@ namespace AssetStudio
                                     case 4:
                                         if (track.Rotations == null)
                                         {
-                                            track.Rotations = new Quaternion?[numFrames];
+                                            track.Rotations = new Vector3?[numFrames];
                                         }
 
-                                        track.Rotations[frameIdx] = Fbx.EulerToQuaternion
+                                        track.Rotations[frameIdx] = new Vector3
                                         (
-                                            new Vector3
-                                            (
-                                                data[curveIdx++ - dataOffset],
-                                                -data[curveIdx++ - dataOffset],
-                                                -data[curveIdx++ - dataOffset]
-                                            )
+                                            data[curveIdx++ - dataOffset],
+                                            -data[curveIdx++ - dataOffset],
+                                            -data[curveIdx++ - dataOffset]
                                         );
                                         break;
                                     default:
@@ -779,6 +782,26 @@ namespace AssetStudio
                                 //errors.Append("   ").Append(boneName).Append(" a=").Append(binding.attribute).Append(" ci=").Append(curveIdx).Append("/#=").Append(numCurves).Append(" of=").Append(dataOffset).Append(" f=").Append(frameIdx).Append("/#=").Append(numFrames).Append("\n");
                                 //TODO Display error
                                 break;
+                            }
+                        }
+                    }
+
+                    if ((bool)Properties.Settings.Default["FixRotation"])
+                    {
+                        foreach (var track in iAnim.TrackList)
+                        {
+                            if (track.Rotations == null)
+                                continue;
+                            var prevKey = new Vector3();
+                            for (var i = 0; i < track.Rotations.Length; i++)
+                            {
+                                var rotation = track.Rotations[i];
+                                if (rotation == null)
+                                    continue;
+                                var value = new Vector3(rotation.Value.X, rotation.Value.Y, rotation.Value.Z);
+                                ReplaceOutOfBound(ref prevKey, ref value);
+                                prevKey = value;
+                                track.Rotations[i] = value;
                             }
                         }
                     }
@@ -905,10 +928,6 @@ namespace AssetStudio
             }
 
             double newValue = count * 360.0 + cur;
-            if (newValue != cur)
-            {
-
-            }
             return (float)newValue;
         }
     }

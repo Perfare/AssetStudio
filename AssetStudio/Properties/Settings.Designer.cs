@@ -322,5 +322,17 @@ namespace AssetStudio.Properties {
                 this["compatibility"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FixRotation {
+            get {
+                return ((bool)(this["FixRotation"]));
+            }
+            set {
+                this["FixRotation"] = value;
+            }
+        }
     }
 }

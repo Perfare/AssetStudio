@@ -986,10 +986,9 @@ namespace AssetStudio
 
 							lTime.SetSecondDouble(fps * k);
 
-							Vector3 rotation = Fbx::QuaternionToEuler(sampleList->Rotations[k].Value);
-							lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, rotation.X);
-							lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, rotation.Y);
-							lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, rotation.Z);
+							lCurveRX->KeySet(lCurveRX->KeyAdd(lTime), lTime, sampleList->Rotations[k].Value.X);
+							lCurveRY->KeySet(lCurveRY->KeyAdd(lTime), lTime, sampleList->Rotations[k].Value.Y);
+							lCurveRZ->KeySet(lCurveRZ->KeyAdd(lTime), lTime, sampleList->Rotations[k].Value.Z);
 						}
 						lCurveRX->KeyModifyEnd();
 						lCurveRY->KeyModifyEnd();

@@ -147,7 +147,7 @@ namespace AssetStudio
     public class ImportedAnimationSampledTrack : ImportedAnimationTrack
     {
         public Vector3?[] Scalings;
-        public Quaternion?[] Rotations;
+        public Vector3?[] Rotations;
         public Vector3?[] Translations;
         public float?[] Curve;
     }
