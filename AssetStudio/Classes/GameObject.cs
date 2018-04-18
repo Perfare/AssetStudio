@@ -10,16 +10,18 @@ namespace AssetStudio
     {
         public AssetPreloadData asset;
         public List<PPtr> m_Components = new List<PPtr>();
-        public PPtr m_Transform;
-        public PPtr m_MeshRenderer;
-        public PPtr m_MeshFilter;
-        public PPtr m_SkinnedMeshRenderer;
         public int m_Layer;
         public string m_Name;
         public ushort m_Tag;
         public bool m_IsActive;
 
         public string uniqueID = "0";//this way file and folder TreeNodes will be treated as FBX scene
+
+        public PPtr m_Transform;
+        public PPtr m_MeshRenderer;
+        public PPtr m_MeshFilter;
+        public PPtr m_SkinnedMeshRenderer;
+        public PPtr m_Animator;
 
         public GameObject(AssetPreloadData preloadData)
         {

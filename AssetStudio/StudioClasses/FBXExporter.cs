@@ -149,7 +149,6 @@ namespace AssetStudio
                 #endregion
 
                 #region write Materials, collect Texture objects
-                //StatusStripUpdate("Writing Materials");
                 foreach (var MaterialPD in Materials)
                 {
                     Material m_Material = new Material(MaterialPD);
@@ -381,7 +380,6 @@ namespace AssetStudio
                 #endregion
 
                 #region write Model nodes and connections
-                //StatusStripUpdate("Writing Nodes and hierarchy");
                 foreach (var m_GameObject in GameObjects)
                 {
                     if (m_GameObject.m_MeshFilter == null && m_GameObject.m_SkinnedMeshRenderer == null)
@@ -451,7 +449,6 @@ namespace AssetStudio
                 #endregion
 
                 #region write non-skinnned Geometry
-                //StatusStripUpdate("Writing Geometry");
                 foreach (var MeshPD in Meshes)
                 {
                     Mesh m_Mesh = new Mesh(MeshPD, true);
@@ -681,8 +678,6 @@ namespace AssetStudio
                 cb.Append("\n}");//Connections end
                 FBXwriter.Write(cb);
                 cb.Clear();
-
-                StatusStripUpdate("Finished exporting " + Path.GetFileName(FBXfile));
             }
         }
 
@@ -690,8 +685,6 @@ namespace AssetStudio
         {
             if (m_Mesh.m_VertexCount > 0)//general failsafe
             {
-                //StatusStripUpdate("Writing Geometry: " + m_Mesh.m_Name);
-
                 ob.AppendFormat("\n\tGeometry: 3{0}, \"Geometry::\", \"Mesh\" {{", MeshID);
                 ob.Append("\n\t\tProperties70:  {");
                 var randomColor = RandomColorGenerator(m_Mesh.m_Name);

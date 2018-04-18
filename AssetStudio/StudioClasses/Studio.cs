@@ -85,12 +85,13 @@ namespace AssetStudio
             {
                 SetProgressBarValue(0);
                 SetProgressBarMaximum(assetsfileList.Sum(x => x.preloadTable.Values.Count));
+                StatusStripUpdate("Building asset list...");
+
                 string fileIDfmt = "D" + assetsfileList.Count.ToString().Length;
 
                 for (var i = 0; i < assetsfileList.Count; i++)
                 {
                     var assetsFile = assetsfileList[i];
-                    StatusStripUpdate("Building asset list from " + Path.GetFileName(assetsFile.filePath));
 
                     string fileID = i.ToString(fileIDfmt);
                     AssetBundle ab = null;
@@ -254,9 +255,10 @@ namespace AssetStudio
                 SetProgressBarMaximum(1);
                 SetProgressBarValue(1);
                 SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count) + 1);
+                StatusStripUpdate("Building tree structure...");
+
                 foreach (var assetsFile in assetsfileList)
                 {
-                    StatusStripUpdate("Building tree structure from " + Path.GetFileName(assetsFile.filePath));
                     GameObject fileNode = new GameObject(null);
                     fileNode.Text = Path.GetFileName(assetsFile.filePath);
                     fileNode.m_Name = "RootNode";
@@ -295,7 +297,8 @@ namespace AssetStudio
                                             }
                                         case ClassIDReference.Animator:
                                             {
-                                                asset.Text = m_GameObject.asset.Text;//TODO
+                                                m_GameObject.m_Animator = m_Component;
+                                                asset.Text = m_GameObject.asset.Text;
                                                 break;
                                             }
                                     }
@@ -520,23 +523,64 @@ namespace AssetStudio
                         continue;
                     //处理非法文件名
                     var filename = FixFileName(j.Text);
-                    //每个文件单独文件夹
-                    var saveName = $"{savePath}{filename}\\{filename}.fbx";
+                    //每个文件存放在单独的文件夹
+                    var targetPath = $"{savePath}{filename}\\";
                     //重名文件处理
                     for (int i = 1; ; i++)
                     {
-                        if (File.Exists(saveName))
+                        if (Directory.Exists(targetPath))
                         {
-                            saveName = $"{savePath}{filename} ({i})\\{filename}.fbx";
+                            targetPath = $"{savePath}{filename} ({i})\\";
                         }
                         else
                         {
                             break;
                         }
                     }
-                    Directory.CreateDirectory(Path.GetDirectoryName(saveName));
+                    Directory.CreateDirectory(targetPath);
                     //导出FBX
-                    FBXExporter.WriteFBX(saveName, gameObjects);
+                    StatusStripUpdate($"Exporting {filename}.fbx");
+                    FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
+                    StatusStripUpdate($"Finished exporting {filename}.fbx");
+                }
+                ProgressBarPerformStep();
+            }
+        }
+
+        public static void ExportSplitObjectsNew(string savePath, TreeNodeCollection nodes)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                //遍历一级子节点
+                foreach (TreeNode j in node.Nodes)
+                {
+                    //收集所有子节点
+                    var gameObjects = new List<GameObject>();
+                    CollectNode(j, gameObjects);
+                    //跳过一些不需要导出的object
+                    if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
+                        continue;
+                    //处理非法文件名
+                    var filename = FixFileName(j.Text);
+                    //每个文件存放在单独的文件夹
+                    var targetPath = $"{savePath}{filename}\\";
+                    //重名文件处理
+                    for (int i = 1; ; i++)
+                    {
+                        if (Directory.Exists(targetPath))
+                        {
+                            targetPath = $"{savePath}{filename} ({i})\\";
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    Directory.CreateDirectory(targetPath);
+                    //导出FBX
+                    StatusStripUpdate($"Exporting {j.Text}.fbx");
+                    ExportGameObject((GameObject)j, targetPath);
+                    StatusStripUpdate($"Finished exporting {j.Text}.fbx");
                 }
                 ProgressBarPerformStep();
             }

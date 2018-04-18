@@ -1392,7 +1392,9 @@ namespace AssetStudio
                         toolStripStatusLabel1.Text = "Nothing exported.";
                         return;
                     }
+                    toolStripStatusLabel1.Text = $"Exporting {Path.GetFileName(saveFileDialog1.FileName)}.fbx";
                     FBXExporter.WriteFBX(saveFileDialog1.FileName, gameObjects);
+                    toolStripStatusLabel1.Text = $"Finished exporting  {Path.GetFileName(saveFileDialog1.FileName)}.fbx";
                     progressBar1.PerformStep();
                     if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
                     {
@@ -1813,6 +1815,26 @@ namespace AssetStudio
             {
                 var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
                 ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath, o => { ExportObjectsWithAnimationClip(o, exportPath); }));
+            }
+        }
+
+        private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    var savePath = saveFolderDialog1.Folder + "\\";
+                    progressBar1.Value = 0;
+                    progressBar1.Maximum = sceneTreeView.Nodes.Count;
+
+                    ThreadPool.QueueUserWorkItem(state => ExportSplitObjectsNew(savePath, sceneTreeView.Nodes));
+                }
+            }
+            else
+            {
+                StatusStripUpdate("No Objects available for export");
             }
         }
 

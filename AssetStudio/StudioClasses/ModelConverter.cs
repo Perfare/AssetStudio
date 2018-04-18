@@ -25,7 +25,15 @@ namespace AssetStudio
 
         public ModelConverter(GameObject m_GameObject)
         {
-            InitWithGameObject(m_GameObject);
+            if (assetsfileList.TryGetPD(m_GameObject.m_Animator, out var m_Animator))
+            {
+                var animator = new Animator(m_Animator);
+                InitWithAnimator(animator);
+                CollectAnimationClip(animator);
+                ConvertAnimations();
+            }
+            else
+                InitWithGameObject(m_GameObject);
         }
 
         public ModelConverter(Animator m_Animator)
@@ -64,7 +72,6 @@ namespace AssetStudio
             assetsfileList.TryGetGameObject(m_Animator.m_GameObject, out var m_GameObject);
             InitWithGameObject(m_GameObject);
         }
-
 
         private void InitWithGameObject(GameObject m_GameObject)
         {
