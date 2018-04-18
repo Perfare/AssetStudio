@@ -231,7 +231,6 @@ namespace AssetStudio
                     showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
                 allToolStripMenuItem.Checked = true;
-                showTypeToolStripMenuItem.Visible = true;
                 StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
             }));

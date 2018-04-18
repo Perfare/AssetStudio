@@ -226,9 +226,10 @@ namespace AssetStudio
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
                 iSubmesh.VertexList = new List<ImportedVertex>((int)submesh.vertexCount);
+                var vertexColours = mesh.m_Colors != null && mesh.m_Colors.Length > 0;
                 for (var j = mesh.m_SubMeshes[i].firstVertex; j < mesh.m_SubMeshes[i].firstVertex + mesh.m_SubMeshes[i].vertexCount; j++)
                 {
-                    var iVertex = new ImportedVertexWithColour();
+                    var iVertex = vertexColours ? new ImportedVertexWithColour() : new ImportedVertex();
                     //Vertices
                     int c = 3;
                     if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
@@ -250,21 +251,25 @@ namespace AssetStudio
                         iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
                     }
                     //Colors
-                    if (mesh.m_Colors != null && mesh.m_Colors.Length > 0)
+                    if (vertexColours)
                     {
                         if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
                         {
-                            iVertex.Colour = new Color4(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                            ((ImportedVertexWithColour)iVertex).Colour = new Color4(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
                         }
                         else
                         {
-                            iVertex.Colour = new Color4(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                            ((ImportedVertexWithColour)iVertex).Colour = new Color4(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
                         }
                     }
                     //UV
                     if (mesh.m_UV1 != null && mesh.m_UV1.Length == mesh.m_VertexCount * 2)
                     {
                         iVertex.UV = new[] { mesh.m_UV1[j * 2], -mesh.m_UV1[j * 2 + 1] };
+                    }
+                    else if (mesh.m_UV2 != null && mesh.m_UV2.Length == mesh.m_VertexCount * 2)
+                    {
+                        iVertex.UV = new[] { mesh.m_UV2[j * 2], -mesh.m_UV2[j * 2 + 1] };
                     }
                     //Tangent
                     if (mesh.m_Tangents != null)
