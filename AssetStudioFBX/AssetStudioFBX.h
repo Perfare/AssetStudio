@@ -47,7 +47,6 @@ namespace AssetStudio {
 			IImported^ imported;
 
 			char* cDest;
-			char* cFormat;
 			FbxManager* pSdkManager;
 			FbxScene* pScene;
 			FbxExporter* pExporter;

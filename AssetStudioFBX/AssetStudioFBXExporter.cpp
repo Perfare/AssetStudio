@@ -52,7 +52,6 @@ namespace AssetStudio
 		this->boneSize = boneSize;
 
 		cDest = NULL;
-		cFormat = NULL;
 		pSdkManager = NULL;
 		pScene = NULL;
 		pExporter = NULL;
@@ -165,10 +164,6 @@ namespace AssetStudio
 		if (pSdkManager != NULL)
 		{
 			pSdkManager->Destroy();
-		}
-		if (cFormat != NULL)
-		{
-			Marshal::FreeHGlobal((IntPtr)cFormat);
 		}
 		if (cDest != NULL)
 		{

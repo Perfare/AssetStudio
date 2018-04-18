@@ -170,6 +170,12 @@ namespace AssetStudio
 
         private void BuildAssetStrucutres()
         {
+            if (assetsfileList.Count == 0)
+            {
+                StatusStripUpdate("No file was loaded.");
+                return;
+            }
+
             bool optionLoadAssetsMenuItem = !dontLoadAssetsMenuItem.Checked;
             bool optionDisplayAll = displayAll.Checked;
             bool optionBuildHierarchyMenuItem = !dontBuildHierarchyMenuItem.Checked;
@@ -231,7 +237,7 @@ namespace AssetStudio
                     showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
                 allToolStripMenuItem.Checked = true;
-                StatusStripUpdate(assetsfileList.Count == 0 ? "No file was loaded." : $"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
+                StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
             }));
         }
@@ -1350,10 +1356,8 @@ namespace AssetStudio
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
                     progressBar1.Maximum = sceneTreeView.Nodes.Count;
-
-                    ThreadPool.QueueUserWorkItem(state => ExportSplitObjects(savePath, sceneTreeView.Nodes));
+                    ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
-
             }
             else
             {
@@ -1734,12 +1738,14 @@ namespace AssetStudio
         {
             if (e.Button == MouseButtons.Right && assetListView.SelectedIndices.Count > 0)
             {
+                jumpToSceneHierarchyToolStripMenuItem.Visible = false;
                 showOriginalFileToolStripMenuItem.Visible = false;
                 exportAnimatorwithselectedAnimationClipMenuItem.Visible = false;
                 exportobjectswithselectedAnimationClipMenuItem.Visible = false;
 
                 if (assetListView.SelectedIndices.Count == 1)
                 {
+                    jumpToSceneHierarchyToolStripMenuItem.Visible = true;
                     showOriginalFileToolStripMenuItem.Visible = true;
                 }
                 if (assetListView.SelectedIndices.Count >= 1)
@@ -1809,11 +1815,45 @@ namespace AssetStudio
 
         private void exportSelectedObjectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var saveFolderDialog1 = new OpenFolderDialog();
-            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            if (sceneTreeView.Nodes.Count > 0)
             {
-                var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath, o => { ExportObjectsWithAnimationClip(o, exportPath); }));
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes);
+                }
+            }
+            else
+            {
+                StatusStripUpdate("No Objects available for export");
+            }
+        }
+
+        private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, GetSelectedAssets());
+                }
+            }
+            else
+            {
+                StatusStripUpdate("No Objects available for export");
+            }
+        }
+
+        private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
+            if (selectasset.gameObject != null)
+            {
+                sceneTreeView.SelectedNode = selectasset.gameObject;
+                tabControl1.SelectedTab = tabPage1;
             }
         }
 
@@ -1827,24 +1867,12 @@ namespace AssetStudio
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
                     progressBar1.Maximum = sceneTreeView.Nodes.Count;
-
-                    ThreadPool.QueueUserWorkItem(state => ExportSplitObjectsNew(savePath, sceneTreeView.Nodes));
+                    ExportSplitObjectsNew(savePath, sceneTreeView.Nodes);
                 }
             }
             else
             {
                 StatusStripUpdate("No Objects available for export");
-            }
-        }
-
-        private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
-        {
-            var selectedAssets = GetSelectedAssets();
-            var saveFolderDialog1 = new OpenFolderDialog();
-            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
-            {
-                var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                ThreadPool.QueueUserWorkItem(state => ForeachTreeNodes(sceneTreeView.Nodes, exportPath, o => { ExportObjectsWithAnimationClip(o, exportPath, selectedAssets); }));
             }
         }
 

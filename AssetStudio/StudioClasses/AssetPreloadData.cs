@@ -21,6 +21,7 @@ namespace AssetStudio
         public string extension;
 
         public AssetsFile sourceFile;
+        public GameObject gameObject;
         public string uniqueID;
 
         public EndianBinaryReader InitReader()

@@ -328,9 +328,8 @@ namespace AssetStudio
             fileNodes = new List<GameObject>();
             if (buildHierarchyMenuItem)
             {
-                SetProgressBarMaximum(1);
-                SetProgressBarValue(1);
-                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count) + 1);
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count));
                 StatusStripUpdate("Building tree structure...");
 
                 foreach (var assetsFile in assetsfileList)
@@ -341,7 +340,6 @@ namespace AssetStudio
 
                     foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                     {
-                        //ParseGameObject
                         foreach (var m_Component in m_GameObject.m_Components)
                         {
                             if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
@@ -364,11 +362,27 @@ namespace AssetStudio
                                         case ClassIDReference.MeshFilter:
                                             {
                                                 m_GameObject.m_MeshFilter = m_Component;
+                                                if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                {
+                                                    var m_MeshFilter = new MeshFilter(assetPreloadData);
+                                                    if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out assetPreloadData))
+                                                    {
+                                                        assetPreloadData.gameObject = m_GameObject;
+                                                    }
+                                                }
                                                 break;
                                             }
                                         case ClassIDReference.SkinnedMeshRenderer:
                                             {
                                                 m_GameObject.m_SkinnedMeshRenderer = m_Component;
+                                                if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                {
+                                                    var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
+                                                    if (assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out assetPreloadData))
+                                                    {
+                                                        assetPreloadData.gameObject = m_GameObject;
+                                                    }
+                                                }
                                                 break;
                                             }
                                         case ClassIDReference.Animator:
@@ -381,7 +395,6 @@ namespace AssetStudio
                                 }
                             }
                         }
-                        //
 
                         var parentNode = fileNode;
 
@@ -413,10 +426,10 @@ namespace AssetStudio
                 {
                     string matLine;
                     using (StreamReader reader = File.OpenText(mainPath + "\\materials.json"))
-                    { matLine = reader.ReadToEnd(); }
-
+                    {
+                        matLine = reader.ReadToEnd();
+                    }
                     jsonMats = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(matLine);
-                    //var jsonMats = new JavaScriptSerializer().DeserializeObject(matLine);
                 }
             }
             #endregion
@@ -586,80 +599,86 @@ namespace AssetStudio
 
         public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
         {
-            foreach (TreeNode node in nodes)
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                //遍历一级子节点
-                foreach (TreeNode j in node.Nodes)
+                foreach (TreeNode node in nodes)
                 {
-                    //收集所有子节点
-                    var gameObjects = new List<GameObject>();
-                    CollectNode(j, gameObjects);
-                    //跳过一些不需要导出的object
-                    if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
-                        continue;
-                    //处理非法文件名
-                    var filename = FixFileName(j.Text);
-                    //每个文件存放在单独的文件夹
-                    var targetPath = $"{savePath}{filename}\\";
-                    //重名文件处理
-                    for (int i = 1; ; i++)
+                    //遍历一级子节点
+                    foreach (TreeNode j in node.Nodes)
                     {
-                        if (Directory.Exists(targetPath))
+                        //收集所有子节点
+                        var gameObjects = new List<GameObject>();
+                        CollectNode(j, gameObjects);
+                        //跳过一些不需要导出的object
+                        if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
+                            continue;
+                        //处理非法文件名
+                        var filename = FixFileName(j.Text);
+                        //每个文件存放在单独的文件夹
+                        var targetPath = $"{savePath}{filename}\\";
+                        //重名文件处理
+                        for (int i = 1; ; i++)
                         {
-                            targetPath = $"{savePath}{filename} ({i})\\";
+                            if (Directory.Exists(targetPath))
+                            {
+                                targetPath = $"{savePath}{filename} ({i})\\";
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
-                        {
-                            break;
-                        }
+                        Directory.CreateDirectory(targetPath);
+                        //导出FBX
+                        StatusStripUpdate($"Exporting {filename}.fbx");
+                        FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
+                        StatusStripUpdate($"Finished exporting {filename}.fbx");
                     }
-                    Directory.CreateDirectory(targetPath);
-                    //导出FBX
-                    StatusStripUpdate($"Exporting {filename}.fbx");
-                    FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
-                    StatusStripUpdate($"Finished exporting {filename}.fbx");
+                    ProgressBarPerformStep();
                 }
-                ProgressBarPerformStep();
-            }
+            });
         }
 
         public static void ExportSplitObjectsNew(string savePath, TreeNodeCollection nodes)
         {
-            foreach (TreeNode node in nodes)
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                //遍历一级子节点
-                foreach (TreeNode j in node.Nodes)
+                foreach (TreeNode node in nodes)
                 {
-                    //收集所有子节点
-                    var gameObjects = new List<GameObject>();
-                    CollectNode(j, gameObjects);
-                    //跳过一些不需要导出的object
-                    if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
-                        continue;
-                    //处理非法文件名
-                    var filename = FixFileName(j.Text);
-                    //每个文件存放在单独的文件夹
-                    var targetPath = $"{savePath}{filename}\\";
-                    //重名文件处理
-                    for (int i = 1; ; i++)
+                    //遍历一级子节点
+                    foreach (TreeNode j in node.Nodes)
                     {
-                        if (Directory.Exists(targetPath))
+                        //收集所有子节点
+                        var gameObjects = new List<GameObject>();
+                        CollectNode(j, gameObjects);
+                        //跳过一些不需要导出的object
+                        if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
+                            continue;
+                        //处理非法文件名
+                        var filename = FixFileName(j.Text);
+                        //每个文件存放在单独的文件夹
+                        var targetPath = $"{savePath}{filename}\\";
+                        //重名文件处理
+                        for (int i = 1; ; i++)
                         {
-                            targetPath = $"{savePath}{filename} ({i})\\";
+                            if (Directory.Exists(targetPath))
+                            {
+                                targetPath = $"{savePath}{filename} ({i})\\";
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
-                        {
-                            break;
-                        }
+                        Directory.CreateDirectory(targetPath);
+                        //导出FBX
+                        StatusStripUpdate($"Exporting {j.Text}.fbx");
+                        ExportGameObject((GameObject)j, targetPath);
+                        StatusStripUpdate($"Finished exporting {j.Text}.fbx");
                     }
-                    Directory.CreateDirectory(targetPath);
-                    //导出FBX
-                    StatusStripUpdate($"Exporting {j.Text}.fbx");
-                    ExportGameObject((GameObject)j, targetPath);
-                    StatusStripUpdate($"Finished exporting {j.Text}.fbx");
+                    ProgressBarPerformStep();
                 }
-                ProgressBarPerformStep();
-            }
+            });
         }
 
         private static void CollectNode(TreeNode node, List<GameObject> gameObjects)
@@ -690,32 +709,43 @@ namespace AssetStudio
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(GameObject gameObject, string exportPath, List<AssetPreloadData> animationList = null)
+        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetPreloadData> animationList = null)
         {
-            StatusStripUpdate($"Exporting {gameObject.Text}");
-            try
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                ExportGameObject(gameObject, exportPath, animationList);
-                StatusStripUpdate($"Finished exporting {gameObject.Text}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
-                StatusStripUpdate("Error in export");
-            }
+                var gameObjects = new List<GameObject>();
+                GetSelectedParentNode(nodes, gameObjects);
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(gameObjects.Count);
+                foreach (var gameObject in gameObjects)
+                {
+                    StatusStripUpdate($"Exporting {gameObject.Text}");
+                    try
+                    {
+                        ExportGameObject(gameObject, exportPath, animationList);
+                        StatusStripUpdate($"Finished exporting {gameObject.Text}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                        StatusStripUpdate("Error in export");
+                    }
+                    ProgressBarPerformStep();
+                }
+            });
         }
 
-        public static void ForeachTreeNodes(TreeNodeCollection nodes, string exportPath, Action<GameObject> action)
+        private static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
         {
             foreach (TreeNode i in nodes)
             {
                 if (i.Checked)
                 {
-                    action((GameObject)i);
+                    gameObjects.Add((GameObject)i);
                 }
                 else
                 {
-                    ForeachTreeNodes(i.Nodes, exportPath, action);
+                    GetSelectedParentNode(i.Nodes, gameObjects);
                 }
             }
         }

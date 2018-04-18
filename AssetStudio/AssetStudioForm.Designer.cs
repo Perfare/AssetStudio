@@ -113,6 +113,7 @@
             this.exportSelectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportobjectswithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.jumpToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -163,33 +164,33 @@
             // loadFileToolStripMenuItem
             // 
             this.loadFileToolStripMenuItem.Name = "loadFileToolStripMenuItem";
-            this.loadFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadFileToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.loadFileToolStripMenuItem.Text = "Load file";
             this.loadFileToolStripMenuItem.Click += new System.EventHandler(this.loadFile_Click);
             // 
             // loadFolderToolStripMenuItem
             // 
             this.loadFolderToolStripMenuItem.Name = "loadFolderToolStripMenuItem";
-            this.loadFolderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadFolderToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.loadFolderToolStripMenuItem.Text = "Load folder";
             this.loadFolderToolStripMenuItem.Click += new System.EventHandler(this.loadFolder_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(151, 6);
             // 
             // extractFileToolStripMenuItem
             // 
             this.extractFileToolStripMenuItem.Name = "extractFileToolStripMenuItem";
-            this.extractFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.extractFileToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.extractFileToolStripMenuItem.Text = "Extract file";
             this.extractFileToolStripMenuItem.Click += new System.EventHandler(this.extractFileToolStripMenuItem_Click);
             // 
             // extractFolderToolStripMenuItem
             // 
             this.extractFolderToolStripMenuItem.Name = "extractFolderToolStripMenuItem";
-            this.extractFolderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.extractFolderToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.extractFolderToolStripMenuItem.Text = "Extract folder";
             this.extractFolderToolStripMenuItem.Click += new System.EventHandler(this.extractFolderToolStripMenuItem_Click);
             // 
@@ -902,9 +903,10 @@
             this.exportSelectedAssetsToolStripMenuItem,
             this.exportAnimatorwithselectedAnimationClipMenuItem,
             this.exportobjectswithselectedAnimationClipMenuItem,
+            this.jumpToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 136);
             // 
             // exportSelectedAssetsToolStripMenuItem
             // 
@@ -928,6 +930,14 @@
             this.exportobjectswithselectedAnimationClipMenuItem.Text = "Export objects with selected AnimationClip";
             this.exportobjectswithselectedAnimationClipMenuItem.Visible = false;
             this.exportobjectswithselectedAnimationClipMenuItem.Click += new System.EventHandler(this.exportObjectswithAnimationClipMenuItem_Click);
+            // 
+            // jumpToSceneHierarchyToolStripMenuItem
+            // 
+            this.jumpToSceneHierarchyToolStripMenuItem.Name = "jumpToSceneHierarchyToolStripMenuItem";
+            this.jumpToSceneHierarchyToolStripMenuItem.Size = new System.Drawing.Size(334, 22);
+            this.jumpToSceneHierarchyToolStripMenuItem.Text = "Jump to scene hierarchy";
+            this.jumpToSceneHierarchyToolStripMenuItem.Visible = false;
+            this.jumpToSceneHierarchyToolStripMenuItem.Click += new System.EventHandler(this.jumpToSceneHierarchyToolStripMenuItem_Click);
             // 
             // showOriginalFileToolStripMenuItem
             // 
@@ -1068,6 +1078,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem exportAnimatorWithSelectedAnimationClipToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllObjectssplitToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem jumpToSceneHierarchyToolStripMenuItem;
     }
 }
 

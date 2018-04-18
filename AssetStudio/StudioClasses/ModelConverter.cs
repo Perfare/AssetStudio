@@ -30,10 +30,20 @@ namespace AssetStudio
                 var animator = new Animator(m_Animator);
                 InitWithAnimator(animator);
                 CollectAnimationClip(animator);
-                ConvertAnimations();
             }
             else
                 InitWithGameObject(m_GameObject);
+            ConvertAnimations();
+        }
+
+        public ModelConverter(GameObject m_GameObject, List<AssetPreloadData> animationList)
+        {
+            InitWithGameObject(m_GameObject);
+            foreach (var assetPreloadData in animationList)
+            {
+                animationClipHashSet.Add(assetPreloadData);
+            }
+            ConvertAnimations();
         }
 
         public ModelConverter(Animator m_Animator)
@@ -46,16 +56,6 @@ namespace AssetStudio
         public ModelConverter(Animator m_Animator, List<AssetPreloadData> animationList)
         {
             InitWithAnimator(m_Animator);
-            foreach (var assetPreloadData in animationList)
-            {
-                animationClipHashSet.Add(assetPreloadData);
-            }
-            ConvertAnimations();
-        }
-
-        public ModelConverter(GameObject m_GameObject, List<AssetPreloadData> animationList)
-        {
-            InitWithGameObject(m_GameObject);
             foreach (var assetPreloadData in animationList)
             {
                 animationClipHashSet.Add(assetPreloadData);
