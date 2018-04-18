@@ -138,11 +138,11 @@ namespace AssetStudio
             }
         }
 
-        private void extractBundleToolStripMenuItem_Click(object sender, EventArgs e)
+        private void extractFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var openBundleDialog = new OpenFileDialog
             {
-                Filter = "Bundle files|*.*",
+                Filter = "All types|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
                 Multiselect = true
@@ -152,7 +152,7 @@ namespace AssetStudio
             {
                 progressBar1.Value = 0;
                 progressBar1.Maximum = openBundleDialog.FileNames.Length;
-                ExtractBundle(openBundleDialog.FileNames);
+                ExtractFile(openBundleDialog.FileNames);
             }
         }
 
@@ -161,10 +161,10 @@ namespace AssetStudio
             var openFolderDialog1 = new OpenFolderDialog();
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                var bundleFiles = Directory.GetFiles(openFolderDialog1.Folder, "*.*", SearchOption.AllDirectories);
+                var files = Directory.GetFiles(openFolderDialog1.Folder, "*.*", SearchOption.AllDirectories);
                 progressBar1.Value = 0;
-                progressBar1.Maximum = bundleFiles.Length;
-                ExtractBundle(bundleFiles);
+                progressBar1.Maximum = files.Length;
+                ExtractFile(files);
             }
         }
 
@@ -231,7 +231,7 @@ namespace AssetStudio
                     showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
                 allToolStripMenuItem.Checked = true;
-                StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
+                StatusStripUpdate(assetsfileList.Count == 0 ? "No file was loaded." : $"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
             }));
         }

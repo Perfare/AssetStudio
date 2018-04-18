@@ -34,45 +34,121 @@ namespace AssetStudio
         public static Action<string> StatusStripUpdate;
         public static Action<int> ProgressBarMaximumAdd;
 
+        public enum FileType
+        {
+            AssetsFile,
+            BundleFile,
+            WebFile
+        }
 
-        public static void ExtractBundle(string[] bundleFileName)
+        public static FileType CheckFileType(MemoryStream stream, out EndianBinaryReader reader)
+        {
+            reader = new EndianBinaryReader(stream);
+            return CheckFileType(reader);
+        }
+
+        public static FileType CheckFileType(string fileName, out EndianBinaryReader reader)
+        {
+            reader = new EndianBinaryReader(File.OpenRead(fileName));
+            return CheckFileType(reader);
+        }
+
+        private static FileType CheckFileType(EndianBinaryReader reader)
+        {
+            var signature = reader.ReadStringToNull();
+            reader.Position = 0;
+            switch (signature)
+            {
+                case "UnityWeb":
+                case "UnityRaw":
+                case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
+                case "UnityFS":
+                    return FileType.BundleFile;
+                case "UnityWebData1.0":
+                    return FileType.WebFile;
+                default:
+                    {
+                        var magic = reader.ReadBytes(2);
+                        reader.Position = 0;
+                        if (WebFile.gzipMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
+                        reader.Position = 0x20;
+                        magic = reader.ReadBytes(6);
+                        reader.Position = 0;
+                        if (WebFile.brotliMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
+                        return FileType.AssetsFile;
+                    }
+            }
+        }
+
+        public static void ExtractFile(string[] fileNames)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
                 int extractedCount = 0;
-                foreach (var fileName in bundleFileName)
+                foreach (var fileName in fileNames)
                 {
-                    extractedCount += ExtractBundleFile(fileName);
+                    var type = CheckFileType(fileName, out var reader);
+                    if (type == FileType.BundleFile)
+                        extractedCount += ExtractBundleFile(fileName, reader);
+                    else if (type == FileType.WebFile)
+                        extractedCount += ExtractWebDataFile(fileName, reader);
+                    else
+                        reader.Dispose();
                     ProgressBarPerformStep();
                 }
                 StatusStripUpdate($"Finished extracting {extractedCount} files.");
             });
         }
 
-        private static int ExtractBundleFile(string bundleFileName)
+        private static int ExtractBundleFile(string bundleFileName, EndianBinaryReader reader)
         {
-            int extractedCount = 0;
-            var extractPath = bundleFileName + "_unpacked\\";
-            Directory.CreateDirectory(extractPath);
-            var reader = new EndianBinaryReader(File.OpenRead(bundleFileName));
             var bundleFile = new BundleFile(reader);
             reader.Dispose();
             if (bundleFile.fileList.Count > 0)
             {
                 StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-                foreach (var memFile in bundleFile.fileList)
+                var extractPath = bundleFileName + "_unpacked\\";
+                Directory.CreateDirectory(extractPath);
+                return ExtractMemoryFile(extractPath, bundleFile.fileList);
+            }
+            return 0;
+        }
+
+        private static int ExtractWebDataFile(string webFileName, EndianBinaryReader reader)
+        {
+            var webFile = new WebFile(reader);
+            reader.Dispose();
+            if (webFile.fileList.Count > 0)
+            {
+                StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
+                var extractPath = webFileName + "_unpacked\\";
+                Directory.CreateDirectory(extractPath);
+                return ExtractMemoryFile(extractPath, webFile.fileList);
+            }
+            return 0;
+        }
+
+        private static int ExtractMemoryFile(string extractPath, List<MemoryFile> fileList)
+        {
+            int extractedCount = 0;
+            foreach (var memFile in fileList)
+            {
+                var filePath = extractPath + memFile.fileName;
+                if (!Directory.Exists(extractPath))
                 {
-                    var filePath = extractPath + memFile.fileName.Replace('/', '\\');
-                    if (!Directory.Exists(Path.GetDirectoryName(filePath)))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    }
-                    if (!File.Exists(filePath))
-                    {
-                        File.WriteAllBytes(filePath, memFile.stream.ToArray());
-                        memFile.stream.Dispose();
-                        extractedCount += 1;
-                    }
+                    Directory.CreateDirectory(extractPath);
+                }
+                if (!File.Exists(filePath))
+                {
+                    File.WriteAllBytes(filePath, memFile.stream.ToArray());
+                    memFile.stream.Dispose();
+                    extractedCount += 1;
                 }
             }
             return extractedCount;
