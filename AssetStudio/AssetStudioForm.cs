@@ -515,11 +515,6 @@ namespace AssetStudio
             }
         }
 
-        private void treeSearch_MouseEnter(object sender, EventArgs e)
-        {
-            treeTip.Show("Search with * ? widcards. Enter to scroll through results, Ctrl+Enter to select all results.", treeSearch, 5000);
-        }
-
         private void treeSearch_Enter(object sender, EventArgs e)
         {
             if (treeSearch.Text == " Search ")
@@ -538,19 +533,6 @@ namespace AssetStudio
             }
         }
 
-        private void recurseTreeCheck(TreeNodeCollection start)
-        {
-            foreach (GameObject GObject in start)
-            {
-                if (GObject.Text.Like(treeSearch.Text))
-                {
-                    GObject.Checked = !GObject.Checked;
-                    if (GObject.Checked) { GObject.EnsureVisible(); }
-                }
-                else { recurseTreeCheck(GObject.Nodes); }
-            }
-        }
-
         private void treeSearch_TextChanged(object sender, EventArgs e)
         {
             treeSrcResults.Clear();
@@ -565,30 +547,24 @@ namespace AssetStudio
                 {
                     foreach (var aFile in assetsfileList)
                     {
-                        foreach (var GObject in aFile.GameObjectList.Values)
+                        foreach (var gObject in aFile.GameObjectList.Values)
                         {
-                            if (GObject.Text.Like(treeSearch.Text)) { treeSrcResults.Add(GObject); }
+                            if (gObject.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                            {
+                                treeSrcResults.Add(gObject);
+                            }
                         }
                     }
                 }
-
-
-                if (e.Control) //toggle all matching nodes
+                if (treeSrcResults.Count > 0)
                 {
-                    sceneTreeView.BeginUpdate();
-                    //loop TreeView recursively to avoid children already checked by parent
-                    recurseTreeCheck(sceneTreeView.Nodes);
-                    sceneTreeView.EndUpdate();
-                }
-                else //make visible one by one
-                {
-                    if (treeSrcResults.Count > 0)
+                    if (nextGObject >= treeSrcResults.Count)
                     {
-                        if (nextGObject >= treeSrcResults.Count) { nextGObject = 0; }
-                        treeSrcResults[nextGObject].EnsureVisible();
-                        sceneTreeView.SelectedNode = treeSrcResults[nextGObject];
-                        nextGObject++;
+                        nextGObject = 0;
                     }
+                    treeSrcResults[nextGObject].EnsureVisible();
+                    sceneTreeView.SelectedNode = treeSrcResults[nextGObject];
+                    nextGObject++;
                 }
             }
         }

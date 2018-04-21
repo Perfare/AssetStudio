@@ -173,7 +173,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="StudioClasses\SpriteHelper.cs" />
-    <Compile Include="StudioClasses\StringExtensions.cs" />
     <Compile Include="StudioClasses\EndianBinaryReader.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />

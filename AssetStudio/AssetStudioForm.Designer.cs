@@ -108,7 +108,6 @@
             this.timerOpenTK = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.treeTip = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportSelectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -522,7 +521,6 @@
             this.treeSearch.Enter += new System.EventHandler(this.treeSearch_Enter);
             this.treeSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.treeSearch_KeyDown);
             this.treeSearch.Leave += new System.EventHandler(this.treeSearch_Leave);
-            this.treeSearch.MouseEnter += new System.EventHandler(this.treeSearch_MouseEnter);
             // 
             // tabPage2
             // 
@@ -906,7 +904,7 @@
             this.jumpToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 136);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 114);
             // 
             // exportSelectedAssetsToolStripMenuItem
             // 
@@ -1049,7 +1047,6 @@
         private System.Windows.Forms.ToolStripMenuItem openAfterExport;
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
         private GOHierarchy sceneTreeView;
-        private System.Windows.Forms.ToolTip treeTip;
         private System.Windows.Forms.ToolStripMenuItem debugMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildClassStructuresMenuItem;
         private System.Windows.Forms.ToolStripMenuItem dontLoadAssetsMenuItem;
