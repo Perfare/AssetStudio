@@ -319,7 +319,7 @@ namespace AssetStudio
                     exportableAssets.AddRange(assetsFile.exportableAssets);
                 }
 
-                visibleAssets = exportableAssets;
+                visibleAssets = exportableAssets.ToList();
                 exportableAssetsHash.Clear();
             }
             #endregion

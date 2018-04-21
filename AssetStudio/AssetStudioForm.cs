@@ -245,18 +245,9 @@ namespace AssetStudio
         private void typeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var typeItem = (ToolStripMenuItem)sender;
-            var show = new List<ClassIDReference>();
             if (typeItem != allToolStripMenuItem)
             {
                 allToolStripMenuItem.Checked = false;
-                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
-                {
-                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
-                    if (item.Checked)
-                    {
-                        show.Add((ClassIDReference)Enum.Parse(typeof(ClassIDReference), item.Text));
-                    }
-                }
             }
             else if (allToolStripMenuItem.Checked)
             {
@@ -266,11 +257,7 @@ namespace AssetStudio
                     item.Checked = false;
                 }
             }
-            assetListView.BeginUpdate();
-            assetListView.SelectedIndices.Clear();
-            visibleAssets = allToolStripMenuItem.Checked ? exportableAssets : exportableAssets.FindAll(x => show.Contains(x.Type));
-            assetListView.VirtualListSize = visibleAssets.Count;
-            assetListView.EndUpdate();
+            FilterAssetList();
         }
 
         private void AssetStudioForm_KeyDown(object sender, KeyEventArgs e)
@@ -655,11 +642,7 @@ namespace AssetStudio
         {
             if (enableFiltering)
             {
-                assetListView.BeginUpdate();
-                assetListView.SelectedIndices.Clear();
-                visibleAssets = exportableAssets.FindAll(ListAsset => ListAsset.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
-                assetListView.VirtualListSize = visibleAssets.Count;
-                assetListView.EndUpdate();
+                FilterAssetList();
             }
         }
 
@@ -1885,6 +1868,36 @@ namespace AssetStudio
             }
 
             return selectedAssets;
+        }
+
+        private void FilterAssetList()
+        {
+            assetListView.BeginUpdate();
+            assetListView.SelectedIndices.Clear();
+            visibleAssets.Clear();
+            var show = new List<ClassIDReference>();
+            if (!allToolStripMenuItem.Checked)
+            {
+                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
+                {
+                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
+                    if (item.Checked)
+                    {
+                        show.Add((ClassIDReference)Enum.Parse(typeof(ClassIDReference), item.Text));
+                    }
+                }
+                visibleAssets = exportableAssets.FindAll(x => show.Contains(x.Type));
+            }
+            else
+            {
+                visibleAssets = exportableAssets;
+            }
+            if (listSearch.Text != " Filter ")
+            {
+                visibleAssets = visibleAssets.FindAll(x => x.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
+            }
+            assetListView.VirtualListSize = visibleAssets.Count;
+            assetListView.EndUpdate();
         }
     }
 }
