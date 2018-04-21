@@ -213,8 +213,6 @@ namespace AssetStudio
             {
                 var submesh = mesh.m_SubMeshes[i];
                 var iSubmesh = new ImportedSubmesh();
-                iSubmesh.Index = i;
-                iSubmesh.Visible = true;
                 Material mat = null;
                 if (i < meshR.m_Materials.Length)
                 {
@@ -867,9 +865,9 @@ namespace AssetStudio
 
         private static ImportedVertex GetSourceVertex(List<ImportedSubmesh> submeshList, int morphVertIndex)
         {
-            for (int i = 0; i < submeshList.Count; i++)
+            foreach (var submesh in submeshList)
             {
-                List<ImportedVertex> vertList = submeshList[i].VertexList;
+                var vertList = submesh.VertexList;
                 if (morphVertIndex < vertList.Count)
                 {
                     return vertList[morphVertIndex];

@@ -16,13 +16,6 @@ namespace AssetStudio
             var sourceFile = preloadData.sourceFile;
             var reader = preloadData.InitReader();
 
-            if (sourceFile.platform == -2)
-            {
-                uint m_ObjectHideFlags = reader.ReadUInt32();
-                PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
-                PPtr m_PrefabInternal = sourceFile.ReadPPtr();
-            }
-
             m_GameObject = sourceFile.ReadPPtr();
             m_Mesh = sourceFile.ReadPPtr();
         }

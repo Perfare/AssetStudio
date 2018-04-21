@@ -967,9 +967,9 @@ namespace AssetStudio
                 else
                 {
                     lineSplit = ob.Length;
-                    for (int i = 0; i < m_Mesh.m_materialIDs.Count; i++)
+                    foreach (var m_materialID in m_Mesh.m_materialIDs)
                     {
-                        ob.AppendFormat("{0},", m_Mesh.m_materialIDs[i]);
+                        ob.AppendFormat("{0},", m_materialID);
 
                         if (ob.Length - lineSplit > 2000)
                         {

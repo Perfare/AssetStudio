@@ -45,13 +45,6 @@ namespace AssetStudio
             var reader = preloadData.InitReader();
             var version = sourceFile.version;
 
-            if (sourceFile.platform == -2)
-            {
-                uint m_ObjectHideFlags = reader.ReadUInt32();
-                PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
-                PPtr m_PrefabInternal = sourceFile.ReadPPtr();
-            }
-
             m_Name = reader.ReadAlignedString();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
             {

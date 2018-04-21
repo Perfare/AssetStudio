@@ -19,7 +19,6 @@ namespace AssetStudio
     {
         public string Name { get; set; }
         public Matrix Matrix { get; set; }
-
         public dynamic Parent { get; set; }
     }
 
@@ -35,9 +34,6 @@ namespace AssetStudio
         public List<ImportedVertex> VertexList { get; set; }
         public List<ImportedFace> FaceList { get; set; }
         public string Material { get; set; }
-        public int Index { get; set; }
-        public bool WorldCoords { get; set; }
-        public bool Visible { get; set; }
     }
 
     public class ImportedVertex

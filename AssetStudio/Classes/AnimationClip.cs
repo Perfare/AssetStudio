@@ -621,9 +621,8 @@ namespace AssetStudio
         public GenericBinding FindBinding(int index)
         {
             int curves = 0;
-            for (int i = 0; i < genericBindings.Count; i++)
+            foreach (var b in genericBindings)
             {
-                GenericBinding b = genericBindings[i];
                 curves += b.attribute == 2 ? 4 : b.attribute <= 4 ? 3 : 1;
                 if (curves > index)
                 {
@@ -632,17 +631,6 @@ namespace AssetStudio
             }
 
             return null;
-        }
-
-        public GenericBinding FindBinding(uint path, uint attribute)
-        {
-            return genericBindings.Find
-            (
-                delegate (GenericBinding b)
-                {
-                    return b.path == path && b.attribute == attribute;
-                }
-            );
         }
     }
 

@@ -33,13 +33,6 @@ namespace AssetStudio
 
                 uniqueID = preloadData.uniqueID;
 
-                if (sourceFile.platform == -2)
-                {
-                    uint m_ObjectHideFlags = reader.ReadUInt32();
-                    PPtr m_PrefabParentObject = sourceFile.ReadPPtr();
-                    PPtr m_PrefabInternal = sourceFile.ReadPPtr();
-                }
-
                 int m_Component_size = reader.ReadInt32();
                 for (int j = 0; j < m_Component_size; j++)
                 {

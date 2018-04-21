@@ -414,12 +414,10 @@ namespace AssetStudio
                         ProgressBarPerformStep();
                     }
 
-
-                    if (fileNode.Nodes.Count == 0)
+                    if (fileNode.Nodes.Count > 0)
                     {
-                        fileNode.Text += " (no children)";
+                        fileNodes.Add(fileNode);
                     }
-                    fileNodes.Add(fileNode);
                 }
 
                 if (File.Exists(mainPath + "\\materials.json"))
