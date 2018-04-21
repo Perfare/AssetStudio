@@ -211,6 +211,7 @@
     <Compile Include="StudioClasses\AssetsFile.cs" />
     <Compile Include="StudioClasses\Texture2DConverter.cs" />
     <Compile Include="StudioClasses\WebFile.cs" />
+    <Compile Include="TreeViewExtensions.cs" />
     <EmbeddedResource Include="AssetStudioForm.resx">
       <DependentUpon>AssetStudioForm.cs</DependentUpon>
       <SubType>Designer</SubType>

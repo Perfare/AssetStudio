@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using static AssetStudio.Exporter;
 
@@ -19,13 +18,9 @@ namespace AssetStudio
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> exportableAssetsHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
-
-        public static string productName = "";
-        public static string mainPath = "";
-        public static List<GameObject> fileNodes = new List<GameObject>();
-
-        public static Dictionary<string, Dictionary<string, string>> jsonMats;
         public static Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
+        public static string mainPath;
+        public static string productName = "";
 
         //UI
         public static Action<int> SetProgressBarValue;
@@ -154,10 +149,12 @@ namespace AssetStudio
             return extractedCount;
         }
 
-        public static void BuildAssetStructures(bool loadAssetsMenuItem, bool displayAll, bool buildHierarchyMenuItem, bool buildClassStructuresMenuItem, bool displayOriginalName)
+        public static void BuildAssetStructures(bool loadAssets, bool displayAll, bool buildHierarchy, bool buildClassStructures, bool displayOriginalName, out List<GameObject> fileNodes)
         {
+            fileNodes = null;
+
             #region first loop - read asset data & create list
-            if (loadAssetsMenuItem)
+            if (loadAssets)
             {
                 SetProgressBarValue(0);
                 SetProgressBarMaximum(assetsfileList.Sum(x => x.preloadTable.Values.Count));
@@ -325,115 +322,107 @@ namespace AssetStudio
             #endregion
 
             #region second loop - build tree structure
-            fileNodes = new List<GameObject>();
-            if (buildHierarchyMenuItem)
+            if (buildHierarchy)
             {
-                SetProgressBarValue(0);
-                SetProgressBarMaximum(assetsfileList.Sum(x => x.GameObjectList.Values.Count));
-                StatusStripUpdate("Building tree structure...");
-
-                foreach (var assetsFile in assetsfileList)
+                fileNodes = new List<GameObject>();
+                var gameObjectCount = assetsfileList.Sum(x => x.GameObjectList.Values.Count);
+                if (gameObjectCount > 0)
                 {
-                    GameObject fileNode = new GameObject(null);
-                    fileNode.Text = Path.GetFileName(assetsFile.filePath);
-                    fileNode.m_Name = "RootNode";
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(gameObjectCount);
+                    StatusStripUpdate("Building tree structure...");
 
-                    foreach (var m_GameObject in assetsFile.GameObjectList.Values)
+                    foreach (var assetsFile in assetsfileList)
                     {
-                        foreach (var m_Component in m_GameObject.m_Components)
+                        GameObject fileNode = new GameObject(null);
+                        fileNode.Text = Path.GetFileName(assetsFile.filePath);
+                        fileNode.m_Name = "RootNode";
+
+                        foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                         {
-                            if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
+                            foreach (var m_Component in m_GameObject.m_Components)
                             {
-                                var sourceFile = assetsfileList[m_Component.m_FileID];
-                                if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
+                                if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
                                 {
-                                    switch (asset.Type)
+                                    var sourceFile = assetsfileList[m_Component.m_FileID];
+                                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
                                     {
-                                        case ClassIDReference.Transform:
-                                            {
-                                                m_GameObject.m_Transform = m_Component;
-                                                break;
-                                            }
-                                        case ClassIDReference.MeshRenderer:
-                                            {
-                                                m_GameObject.m_MeshRenderer = m_Component;
-                                                break;
-                                            }
-                                        case ClassIDReference.MeshFilter:
-                                            {
-                                                m_GameObject.m_MeshFilter = m_Component;
-                                                if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                        switch (asset.Type)
+                                        {
+                                            case ClassIDReference.Transform:
                                                 {
-                                                    var m_MeshFilter = new MeshFilter(assetPreloadData);
-                                                    if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out assetPreloadData))
-                                                    {
-                                                        assetPreloadData.gameObject = m_GameObject;
-                                                    }
+                                                    m_GameObject.m_Transform = m_Component;
+                                                    break;
                                                 }
-                                                break;
-                                            }
-                                        case ClassIDReference.SkinnedMeshRenderer:
-                                            {
-                                                m_GameObject.m_SkinnedMeshRenderer = m_Component;
-                                                if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                            case ClassIDReference.MeshRenderer:
                                                 {
-                                                    var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
-                                                    if (assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out assetPreloadData))
-                                                    {
-                                                        assetPreloadData.gameObject = m_GameObject;
-                                                    }
+                                                    m_GameObject.m_MeshRenderer = m_Component;
+                                                    break;
                                                 }
-                                                break;
-                                            }
-                                        case ClassIDReference.Animator:
-                                            {
-                                                m_GameObject.m_Animator = m_Component;
-                                                asset.Text = m_GameObject.asset.Text;
-                                                break;
-                                            }
+                                            case ClassIDReference.MeshFilter:
+                                                {
+                                                    m_GameObject.m_MeshFilter = m_Component;
+                                                    if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                    {
+                                                        var m_MeshFilter = new MeshFilter(assetPreloadData);
+                                                        if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out assetPreloadData))
+                                                        {
+                                                            assetPreloadData.gameObject = m_GameObject;
+                                                        }
+                                                    }
+                                                    break;
+                                                }
+                                            case ClassIDReference.SkinnedMeshRenderer:
+                                                {
+                                                    m_GameObject.m_SkinnedMeshRenderer = m_Component;
+                                                    if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                    {
+                                                        var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
+                                                        if (assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out assetPreloadData))
+                                                        {
+                                                            assetPreloadData.gameObject = m_GameObject;
+                                                        }
+                                                    }
+                                                    break;
+                                                }
+                                            case ClassIDReference.Animator:
+                                                {
+                                                    m_GameObject.m_Animator = m_Component;
+                                                    asset.Text = m_GameObject.asset.Text;
+                                                    break;
+                                                }
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        var parentNode = fileNode;
+                            var parentNode = fileNode;
 
-                        if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
-                        {
-                            if (assetsfileList.TryGetTransform(m_Transform.m_Father, out var m_Father))
+                            if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
                             {
-                                //GameObject Parent;
-                                if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
+                                if (assetsfileList.TryGetTransform(m_Transform.m_Father, out var m_Father))
                                 {
-                                    //parentNode = Parent;
+                                    if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
+                                    {
+                                    }
                                 }
                             }
+
+                            parentNode.Nodes.Add(m_GameObject);
+                            ProgressBarPerformStep();
                         }
 
-                        parentNode.Nodes.Add(m_GameObject);
-                        ProgressBarPerformStep();
+                        if (fileNode.Nodes.Count > 0)
+                        {
+                            fileNodes.Add(fileNode);
+                        }
                     }
-
-                    if (fileNode.Nodes.Count > 0)
-                    {
-                        fileNodes.Add(fileNode);
-                    }
-                }
-
-                if (File.Exists(mainPath + "\\materials.json"))
-                {
-                    string matLine;
-                    using (StreamReader reader = File.OpenText(mainPath + "\\materials.json"))
-                    {
-                        matLine = reader.ReadToEnd();
-                    }
-                    jsonMats = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(matLine);
                 }
             }
             #endregion
 
             #region build list of class strucutres
-            if (buildClassStructuresMenuItem)
+            if (buildClassStructures)
             {
                 //group class structures by versionv
                 foreach (var assetsFile in assetsfileList)
@@ -595,7 +584,7 @@ namespace AssetStudio
             });
         }
 
-        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes, bool isNew = false)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -629,50 +618,11 @@ namespace AssetStudio
                         Directory.CreateDirectory(targetPath);
                         //导出FBX
                         StatusStripUpdate($"Exporting {filename}.fbx");
-                        FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
+                        if (isNew)
+                            ExportGameObject((GameObject)j, targetPath);
+                        else
+                            FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
-                    }
-                    ProgressBarPerformStep();
-                }
-            });
-        }
-
-        public static void ExportSplitObjectsNew(string savePath, TreeNodeCollection nodes)
-        {
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                foreach (TreeNode node in nodes)
-                {
-                    //遍历一级子节点
-                    foreach (TreeNode j in node.Nodes)
-                    {
-                        //收集所有子节点
-                        var gameObjects = new List<GameObject>();
-                        CollectNode(j, gameObjects);
-                        //跳过一些不需要导出的object
-                        if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
-                            continue;
-                        //处理非法文件名
-                        var filename = FixFileName(j.Text);
-                        //每个文件存放在单独的文件夹
-                        var targetPath = $"{savePath}{filename}\\";
-                        //重名文件处理
-                        for (int i = 1; ; i++)
-                        {
-                            if (Directory.Exists(targetPath))
-                            {
-                                targetPath = $"{savePath}{filename} ({i})\\";
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        Directory.CreateDirectory(targetPath);
-                        //导出FBX
-                        StatusStripUpdate($"Exporting {j.Text}.fbx");
-                        ExportGameObject((GameObject)j, targetPath);
-                        StatusStripUpdate($"Finished exporting {j.Text}.fbx");
                     }
                     ProgressBarPerformStep();
                 }

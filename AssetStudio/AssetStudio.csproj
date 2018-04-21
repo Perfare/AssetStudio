@@ -211,6 +211,7 @@
     <Compile Include="AssetStudioForm.Designer.cs">
       <DependentUpon>AssetStudioForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TreeViewExtensions.cs" />
     <EmbeddedResource Include="ExportOptions.resx">
       <DependentUpon>ExportOptions.cs</DependentUpon>
     </EmbeddedResource>

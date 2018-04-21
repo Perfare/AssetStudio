@@ -30,34 +30,27 @@ namespace AssetStudio
         private FMOD.MODE loopMode = FMOD.MODE.LOOP_OFF;
         private uint FMODlenms;
         private float FMODVolume = 0.8f;
-        private float FMODfrequency;
 
         private Bitmap imageTexture;
 
-        #region OpenTK variables
-        int pgmID, pgmColorID, pgmBlackID;
-        int attributeVertexPosition;
-        int attributeNormalDirection;
-        int attributeVertexColor;
-        int uniformModelMatrix;
-        int uniformViewMatrix;
-        int vao;
-        int vboPositions;
-        int vboNormals;
-        int vboColors;
-        int vboModelMatrix;
-        int vboViewMatrix;
-        int eboElements;
-        Vector3[] vertexData;
-        Vector3[] normalData;
-        Vector3[] normal2Data;
-        Vector4[] colorData;
-        Matrix4 modelMatrixData;
-        Matrix4 viewMatrixData;
-        int[] indiceData;
-        int wireFrameMode;
-        int shadeMode;
-        int normalMode;
+        #region OpenTK
+        private int pgmID, pgmColorID, pgmBlackID;
+        private int attributeVertexPosition;
+        private int attributeNormalDirection;
+        private int attributeVertexColor;
+        private int uniformModelMatrix;
+        private int uniformViewMatrix;
+        private int vao;
+        private Vector3[] vertexData;
+        private Vector3[] normalData;
+        private Vector3[] normal2Data;
+        private Vector4[] colorData;
+        private Matrix4 modelMatrixData;
+        private Matrix4 viewMatrixData;
+        private int[] indiceData;
+        private int wireFrameMode;
+        private int shadeMode;
+        private int normalMode;
         #endregion
 
         //asset list sorting helpers
@@ -69,8 +62,6 @@ namespace AssetStudio
         //tree search
         private int nextGObject;
         private List<GameObject> treeSrcResults = new List<GameObject>();
-
-        private PrivateFontCollection pfc = new PrivateFontCollection();
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -176,16 +167,12 @@ namespace AssetStudio
                 return;
             }
 
-            bool optionLoadAssetsMenuItem = !dontLoadAssetsMenuItem.Checked;
-            bool optionDisplayAll = displayAll.Checked;
-            bool optionBuildHierarchyMenuItem = !dontBuildHierarchyMenuItem.Checked;
-            bool optionBuildClassStructuresMenuItem = buildClassStructuresMenuItem.Checked;
-
-            BuildAssetStructures(optionLoadAssetsMenuItem, optionDisplayAll, optionBuildHierarchyMenuItem, optionBuildClassStructuresMenuItem, displayOriginalName.Checked);
+            BuildAssetStructures(!dontLoadAssetsMenuItem.Checked, displayAll.Checked, !dontBuildHierarchyMenuItem.Checked, buildClassStructuresMenuItem.Checked,
+                displayOriginalName.Checked, out var fileNodes);
 
             BeginInvoke(new Action(() =>
             {
-                if (productName != "")
+                if (!string.IsNullOrEmpty(productName))
                 {
                     Text = $"AssetStudio - {productName} - {assetsfileList[0].m_Version} - {assetsfileList[0].platformStr}";
                 }
@@ -203,7 +190,10 @@ namespace AssetStudio
                 {
                     sceneTreeView.BeginUpdate();
                     sceneTreeView.Nodes.AddRange(fileNodes.ToArray());
-                    fileNodes.Clear();
+                    foreach (TreeNode node in sceneTreeView.Nodes)
+                    {
+                        node.HideCheckBox();
+                    }
                     sceneTreeView.EndUpdate();
                 }
                 if (buildClassStructuresMenuItem.Checked)
@@ -676,7 +666,6 @@ namespace AssetStudio
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
             fontPreviewBox.Visible = false;
-            pfc.Dispose();
             FMODpanel.Visible = false;
             glControl1.Visible = false;
             lastLoadedAsset = null;
@@ -759,10 +748,10 @@ namespace AssetStudio
 
                         FMODpanel.Visible = true;
 
-                        result = channel.getFrequency(out FMODfrequency);
+                        result = channel.getFrequency(out var frequency);
                         if (ERRCHECK(result)) { break; }
 
-                        FMODinfoLabel.Text = FMODfrequency + " Hz";
+                        FMODinfoLabel.Text = frequency + " Hz";
                         FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
                         break;
                     }
@@ -808,38 +797,38 @@ namespace AssetStudio
                             var re = AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
                             if (re != IntPtr.Zero)
                             {
-                                pfc = new PrivateFontCollection();
-                                pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
-                                Marshal.FreeCoTaskMem(data);
-                                if (pfc.Families.Length > 0)
+                                using (var pfc = new PrivateFontCollection())
                                 {
-                                    //textPreviewBox.Font = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                                    //textPreviewBox.Text = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWYZ\r\n1234567890.:,;'\"(!?)+-*/=\r\nThe quick brown fox jumps over the lazy dog. 1234567890";
-                                    fontPreviewBox.SelectionStart = 0;
-                                    fontPreviewBox.SelectionLength = 80;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 81;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 138;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 195;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 252;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 309;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 366;
-                                    fontPreviewBox.SelectionLength = 56;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
-                                    fontPreviewBox.SelectionStart = 423;
-                                    fontPreviewBox.SelectionLength = 55;
-                                    fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
-                                    fontPreviewBox.Visible = true;
+                                    pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
+                                    Marshal.FreeCoTaskMem(data);
+                                    if (pfc.Families.Length > 0)
+                                    {
+                                        fontPreviewBox.SelectionStart = 0;
+                                        fontPreviewBox.SelectionLength = 80;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 81;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 138;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 195;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 252;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 309;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 366;
+                                        fontPreviewBox.SelectionLength = 56;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
+                                        fontPreviewBox.SelectionStart = 423;
+                                        fontPreviewBox.SelectionLength = 55;
+                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
+                                        fontPreviewBox.Visible = true;
+                                    }
                                 }
                                 break;
                             }
@@ -1576,20 +1565,20 @@ namespace AssetStudio
             GL.DeleteVertexArray(vao);
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
-            createVBO(out vboPositions, vertexData, attributeVertexPosition);
+            createVBO(out var vboPositions, vertexData, attributeVertexPosition);
             if (normalMode == 0)
             {
-                createVBO(out vboNormals, normal2Data, attributeNormalDirection);
+                createVBO(out var vboNormals, normal2Data, attributeNormalDirection);
             }
             else
             {
                 if (normalData != null)
-                    createVBO(out vboNormals, normalData, attributeNormalDirection);
+                    createVBO(out var vboNormals, normalData, attributeNormalDirection);
             }
-            createVBO(out vboColors, colorData, attributeVertexColor);
-            createVBO(out vboModelMatrix, modelMatrixData, uniformModelMatrix);
-            createVBO(out vboViewMatrix, viewMatrixData, uniformViewMatrix);
-            createEBO(out eboElements, indiceData);
+            createVBO(out var vboColors, colorData, attributeVertexColor);
+            createVBO(out var vboModelMatrix, modelMatrixData, uniformModelMatrix);
+            createVBO(out var vboViewMatrix, viewMatrixData, uniformViewMatrix);
+            createEBO(out var eboElements, indiceData);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
         }
@@ -1826,7 +1815,7 @@ namespace AssetStudio
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
                     progressBar1.Maximum = sceneTreeView.Nodes.Count;
-                    ExportSplitObjectsNew(savePath, sceneTreeView.Nodes);
+                    ExportSplitObjects(savePath, sceneTreeView.Nodes, true);
                 }
             }
             else

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Script.Serialization;
 using static AssetStudio.Studio;
 using static AssetStudio.Exporter;
 
@@ -13,6 +14,15 @@ namespace AssetStudio
         public static void WriteFBX(string FBXfile, List<GameObject> gameObjects)
         {
             var timestamp = DateTime.Now;
+            Dictionary<string, Dictionary<string, string>> jsonMats = null;
+            if (File.Exists(mainPath + "\\materials.json"))
+            {
+                using (var reader = File.OpenText(mainPath + "\\materials.json"))
+                {
+                    var matLine = reader.ReadToEnd();
+                    jsonMats = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(matLine);
+                }
+            }
 
             using (StreamWriter FBXwriter = new StreamWriter(FBXfile))
             {
