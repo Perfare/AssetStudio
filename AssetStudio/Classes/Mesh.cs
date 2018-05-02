@@ -670,7 +670,11 @@ namespace AssetStudio
                         }
                     }
 
-                    BitArray m_CurrentChannels = new BitArray(new int[1] { reader.ReadInt32() });
+                    if (version[0] < 2018)//2018 down
+                    {
+                        var m_CurrentChannels = reader.ReadInt32();
+                    }
+
                     m_VertexCount = reader.ReadInt32();
                     //int singleStreamStride = 0;//used tor version 5
                     int streamCount = 0;
@@ -730,46 +734,50 @@ namespace AssetStudio
                     }
                     #endregion
 
-                    //actual Vertex Buffer
-                    byte[] m_DataSize = new byte[reader.ReadInt32()];
-                    reader.Read(m_DataSize, 0, m_DataSize.Length);
-
-                    if (version[0] >= 5) //create streams
+                    if (version[0] >= 5) //ComputeCompressedStreams
                     {
-                        m_Streams = new StreamInfo[streamCount];
-                        for (int s = 0; s < streamCount; s++)
+                        int maxStream = 0;
+                        foreach (var m_Channel in m_Channels)
                         {
-                            m_Streams[s] = new StreamInfo();
-                            m_Streams[s].channelMask = new BitArray(new int[1] { 0 });
-                            m_Streams[s].offset = 0;
-                            m_Streams[s].stride = 0;
-
-                            foreach (var m_Channel in m_Channels)
+                            if (m_Channel.stream > maxStream)
                             {
-                                if (m_Channel.stream == s) { m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format)); }
-                            }
-
-                            if (s > 0)
-                            {
-                                m_Streams[s].offset = m_Streams[s - 1].offset + m_Streams[s - 1].stride * m_VertexCount;
-                                //sometimes there are 8 bytes between streams
-                                //this is NOT an alignment, even if sometimes it may seem so
-
-                                if (streamCount == 2) { m_Streams[s].offset = m_DataSize.Length - m_Streams[s].stride * m_VertexCount; }
-                                else
-                                {
-                                    m_VertexCount = 0;
-                                    return;
-                                }
-
-                                /*var absoluteOffset = a_Stream.Position + 4 + m_Streams[s].offset;
-								if ((absoluteOffset % m_Streams[s].stride) != 0)
-								{
-									m_Streams[s].offset += m_Streams[s].stride - (int)(absoluteOffset % m_Streams[s].stride);
-								}*/
+                                maxStream = m_Channel.stream;
                             }
                         }
+                        var streamList = new List<StreamInfo>(maxStream + 1);
+                        uint offset = 0;
+                        for (int str = 0; str <= maxStream; str++)
+                        {
+                            uint chnMask = 0;
+                            byte stride = 0;
+                            for (int chn = 0; chn < m_Channels.Length; chn++)
+                            {
+                                if (m_Channels[chn].dimension > 0 && m_Channels[chn].stream == str)
+                                {
+                                    chnMask |= 1u << chn;
+                                    stride += (byte)(m_Channels[chn].dimension * (m_Channels[chn].format == 0 ? 4 : 1));
+                                }
+                            }
+
+                            var streamInfo = new StreamInfo
+                            {
+                                channelMask = new BitArray(new[] { (int)chnMask }),
+                                offset = (int)offset,
+                                stride = stride,
+                                dividerOp = 0,
+                                frequency = 0
+                            };
+                            streamList.Add(streamInfo);
+                            offset += (uint)m_VertexCount * stride + (((uint)m_VertexCount & 1) != 0 ? (uint)8 : 0);
+                        }
+
+                        m_Streams = streamList.ToArray();
                     }
+
+
+                    //actual Vertex Buffer
+                    var m_DataSize = new byte[reader.ReadInt32()];
+                    reader.Read(m_DataSize, 0, m_DataSize.Length);
                     #endregion
 
                     #region compute FvF
@@ -790,11 +798,13 @@ namespace AssetStudio
 
                                 for (int b = 0; b < 8; b++)
                                 {
-                                    //in the future, try to use only m_CurrentChannels
-                                    if ((version[0] < 5 && m_Stream.channelMask.Get(b)) || (version[0] >= 5 && m_CurrentChannels.Get(b)))
+                                    if (m_Stream.channelMask.Get(b))
                                     {
                                         // in version 4.x the colors channel has 1 dimension, as in 1 color with 4 components
-                                        if (b == 2 && m_Channel.format == 2) { m_Channel.dimension = 4; }
+                                        if (b == 2 && m_Channel.format == 2)
+                                        {
+                                            m_Channel.dimension = 4;
+                                        }
 
                                         componentByteSize = 4 / (int)Math.Pow(2, m_Channel.format);
 
@@ -834,7 +844,7 @@ namespace AssetStudio
                                             case 3: m_UV1 = componentsArray; break;
                                             case 4: m_UV2 = componentsArray; break;
                                             case 5:
-                                                if (version[0] == 5) { m_UV3 = componentsArray; }
+                                                if (version[0] >= 5) { m_UV3 = componentsArray; }
                                                 else { m_Tangents = componentsArray; }
                                                 break;
                                             case 6: m_UV4 = componentsArray; break;
@@ -842,10 +852,7 @@ namespace AssetStudio
                                         }
 
                                         m_Stream.channelMask.Set(b, false);
-                                        m_CurrentChannels.Set(b, false);
-                                        componentBytes = null;
-                                        componentsArray = null;
-                                        break; //go to next channel
+                                        break;
                                     }
                                 }
                             }

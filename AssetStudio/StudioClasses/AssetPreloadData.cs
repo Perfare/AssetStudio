@@ -26,7 +26,7 @@ namespace AssetStudio
 
         public EndianBinaryReader InitReader()
         {
-            var reader = sourceFile.assetsFileReader;
+            var reader = sourceFile.reader;
             reader.Position = Offset;
             return reader;
         }

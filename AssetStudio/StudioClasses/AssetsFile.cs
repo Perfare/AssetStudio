@@ -10,7 +10,7 @@ namespace AssetStudio
 {
     public class AssetsFile
     {
-        public EndianBinaryReader assetsFileReader;
+        public EndianBinaryReader reader;
         public string filePath;
         public string parentPath;
         public string fileName;
@@ -151,46 +151,46 @@ namespace AssetStudio
 
         public AssetsFile(string fullName, EndianBinaryReader reader)
         {
-            assetsFileReader = reader;
+            this.reader = reader;
             filePath = fullName;
             fileName = Path.GetFileName(fullName);
             upperFileName = fileName.ToUpper();
             try
             {
-                int tableSize = assetsFileReader.ReadInt32();
-                int dataEnd = assetsFileReader.ReadInt32();
-                fileGen = assetsFileReader.ReadInt32();
-                uint dataOffset = assetsFileReader.ReadUInt32();
+                int tableSize = this.reader.ReadInt32();
+                int dataEnd = this.reader.ReadInt32();
+                fileGen = this.reader.ReadInt32();
+                uint dataOffset = this.reader.ReadUInt32();
                 sharedAssetsList[0].fileName = fileName; //reference itself because sharedFileIDs start from 1
 
                 switch (fileGen)
                 {
                     case 6: //2.5.0 - 2.6.1
                         {
-                            assetsFileReader.Position = (dataEnd - tableSize);
-                            assetsFileReader.Position += 1;
+                            this.reader.Position = (dataEnd - tableSize);
+                            this.reader.Position += 1;
                             break;
                         }
                     case 7: //3.0.0 beta
                         {
-                            assetsFileReader.Position = (dataEnd - tableSize);
-                            assetsFileReader.Position += 1;
-                            m_Version = assetsFileReader.ReadStringToNull();
+                            this.reader.Position = (dataEnd - tableSize);
+                            this.reader.Position += 1;
+                            m_Version = this.reader.ReadStringToNull();
                             break;
                         }
                     case 8: //3.0.0 - 3.4.2
                         {
-                            assetsFileReader.Position = (dataEnd - tableSize);
-                            assetsFileReader.Position += 1;
-                            m_Version = assetsFileReader.ReadStringToNull();
-                            platform = assetsFileReader.ReadInt32();
+                            this.reader.Position = (dataEnd - tableSize);
+                            this.reader.Position += 1;
+                            m_Version = this.reader.ReadStringToNull();
+                            platform = this.reader.ReadInt32();
                             break;
                         }
                     case 9: //3.5.0 - 4.6.x
                         {
-                            assetsFileReader.Position += 4; //azero
-                            m_Version = assetsFileReader.ReadStringToNull();
-                            platform = assetsFileReader.ReadInt32();
+                            this.reader.Position += 4; //azero
+                            m_Version = this.reader.ReadStringToNull();
+                            platform = this.reader.ReadInt32();
                             break;
                         }
                     case 14: //5.0.0 beta and final
@@ -198,10 +198,10 @@ namespace AssetStudio
                     case 16: //??.. no sure
                     case 17: //5.5.0 and up
                         {
-                            assetsFileReader.Position += 4; //azero
-                            m_Version = assetsFileReader.ReadStringToNull();
-                            platform = assetsFileReader.ReadInt32();
-                            baseDefinitions = assetsFileReader.ReadBoolean();
+                            this.reader.Position += 4; //azero
+                            m_Version = this.reader.ReadStringToNull();
+                            platform = this.reader.ReadInt32();
+                            baseDefinitions = this.reader.ReadBoolean();
                             break;
                         }
                     default:
@@ -216,21 +216,21 @@ namespace AssetStudio
                     byte[] b32 = BitConverter.GetBytes(platform);
                     Array.Reverse(b32);
                     platform = BitConverter.ToInt32(b32, 0);
-                    assetsFileReader.endian = EndianType.LittleEndian;
+                    this.reader.endian = EndianType.LittleEndian;
                 }
 
                 platformStr = Enum.IsDefined(typeof(BuildTarget), platform) ? ((BuildTarget)platform).ToString() : "Unknown Platform";
 
-                int baseCount = assetsFileReader.ReadInt32();
+                int baseCount = this.reader.ReadInt32();
                 for (int i = 0; i < baseCount; i++)
                 {
                     if (fileGen < 14)
                     {
-                        int classID = assetsFileReader.ReadInt32();
-                        string baseType = assetsFileReader.ReadStringToNull();
-                        string baseName = assetsFileReader.ReadStringToNull();
-                        assetsFileReader.Position += 20;
-                        int memberCount = assetsFileReader.ReadInt32();
+                        int classID = this.reader.ReadInt32();
+                        string baseType = this.reader.ReadStringToNull();
+                        string baseName = this.reader.ReadStringToNull();
+                        this.reader.Position += 20;
+                        int memberCount = this.reader.ReadInt32();
 
                         var cb = new List<ClassMember>();
                         for (int m = 0; m < memberCount; m++)
@@ -250,10 +250,10 @@ namespace AssetStudio
 
                 if (fileGen >= 7 && fileGen < 14)
                 {
-                    assetsFileReader.Position += 4; //azero
+                    this.reader.Position += 4; //azero
                 }
 
-                int assetCount = assetsFileReader.ReadInt32();
+                int assetCount = this.reader.ReadInt32();
 
                 #region asset preload table
                 string assetIDfmt = "D" + assetCount.ToString().Length; //format for unique ID
@@ -263,29 +263,29 @@ namespace AssetStudio
                     //each table entry is aligned individually, not the whole table
                     if (fileGen >= 14)
                     {
-                        assetsFileReader.AlignStream(4);
+                        this.reader.AlignStream(4);
                     }
 
                     AssetPreloadData asset = new AssetPreloadData();
-                    asset.m_PathID = fileGen < 14 ? assetsFileReader.ReadInt32() : assetsFileReader.ReadInt64();
-                    asset.Offset = assetsFileReader.ReadUInt32();
+                    asset.m_PathID = fileGen < 14 ? this.reader.ReadInt32() : this.reader.ReadInt64();
+                    asset.Offset = this.reader.ReadUInt32();
                     asset.Offset += dataOffset;
-                    asset.Size = assetsFileReader.ReadInt32();
+                    asset.Size = this.reader.ReadInt32();
                     if (fileGen > 15)
                     {
-                        int index = assetsFileReader.ReadInt32();
+                        int index = this.reader.ReadInt32();
                         asset.Type1 = classIDs[index][0];
                         asset.Type2 = classIDs[index][1];
                     }
                     else
                     {
-                        asset.Type1 = assetsFileReader.ReadInt32();
-                        asset.Type2 = assetsFileReader.ReadUInt16();
-                        assetsFileReader.Position += 2;
+                        asset.Type1 = this.reader.ReadInt32();
+                        asset.Type2 = this.reader.ReadUInt16();
+                        this.reader.Position += 2;
                     }
                     if (fileGen == 15)
                     {
-                        byte unknownByte = assetsFileReader.ReadByte();
+                        byte unknownByte = this.reader.ReadByte();
                         //this is a single byte, not an int32
                         //the next entry is aligned after this
                         //but not the last!
@@ -312,45 +312,46 @@ namespace AssetStudio
                     #region read BuildSettings to get version for version 2.x files
                     if (asset.Type == ClassIDReference.BuildSettings && fileGen == 6)
                     {
-                        long nextAsset = assetsFileReader.Position;
+                        long nextAsset = this.reader.Position;
 
                         BuildSettings BSettings = new BuildSettings(asset);
                         m_Version = BSettings.m_Version;
 
-                        assetsFileReader.Position = nextAsset;
+                        this.reader.Position = nextAsset;
                     }
                     #endregion
                 }
                 #endregion
 
                 buildType = Regex.Replace(m_Version, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                var firstVersion = int.Parse(m_Version.Split('.')[0]);
                 version = Regex.Matches(m_Version, @"\d").Cast<Match>().Select(m => int.Parse(m.Value)).ToArray();
-                if (version[0] == 2 && version[1] == 0 && version[2] == 1 && version[3] == 7)//2017.x
+                if (firstVersion > 5)//2017 and up
                 {
                     var nversion = new int[version.Length - 3];
-                    nversion[0] = 2017;
+                    nversion[0] = firstVersion;
                     Array.Copy(version, 4, nversion, 1, version.Length - 4);
                     version = nversion;
                 }
                 if (fileGen >= 14)
                 {
                     //this looks like a list of assets that need to be preloaded in memory before anytihng else
-                    int someCount = assetsFileReader.ReadInt32();
+                    int someCount = this.reader.ReadInt32();
                     for (int i = 0; i < someCount; i++)
                     {
-                        int num1 = assetsFileReader.ReadInt32();
-                        assetsFileReader.AlignStream(4);
-                        long m_PathID = assetsFileReader.ReadInt64();
+                        int num1 = this.reader.ReadInt32();
+                        this.reader.AlignStream(4);
+                        long m_PathID = this.reader.ReadInt64();
                     }
                 }
 
-                int sharedFileCount = assetsFileReader.ReadInt32();
+                int sharedFileCount = this.reader.ReadInt32();
                 for (int i = 0; i < sharedFileCount; i++)
                 {
                     var shared = new SharedAssets();
-                    shared.aName = assetsFileReader.ReadStringToNull();
-                    assetsFileReader.Position += 20;
-                    var sharedFilePath = assetsFileReader.ReadStringToNull(); //relative path
+                    shared.aName = this.reader.ReadStringToNull();
+                    this.reader.Position += 20;
+                    var sharedFilePath = this.reader.ReadStringToNull(); //relative path
                     shared.fileName = Path.GetFileName(sharedFilePath);
                     sharedAssetsList.Add(shared);
                 }
@@ -363,14 +364,14 @@ namespace AssetStudio
 
         private void readBase(List<ClassMember> cb, int level)
         {
-            string varType = assetsFileReader.ReadStringToNull();
-            string varName = assetsFileReader.ReadStringToNull();
-            int size = assetsFileReader.ReadInt32();
-            int index = assetsFileReader.ReadInt32();
-            int isArray = assetsFileReader.ReadInt32();
-            int num0 = assetsFileReader.ReadInt32();
-            int flag = assetsFileReader.ReadInt32();
-            int childrenCount = assetsFileReader.ReadInt32();
+            string varType = reader.ReadStringToNull();
+            string varName = reader.ReadStringToNull();
+            int size = reader.ReadInt32();
+            int index = reader.ReadInt32();
+            int isArray = reader.ReadInt32();
+            int num0 = reader.ReadInt32();
+            int flag = reader.ReadInt32();
+            int childrenCount = reader.ReadInt32();
 
             cb.Add(new ClassMember
             {
@@ -385,12 +386,12 @@ namespace AssetStudio
 
         private void readBase5()
         {
-            int classID = assetsFileReader.ReadInt32();
+            int classID = reader.ReadInt32();
             if (fileGen > 15)//5.5.0 and up
             {
-                assetsFileReader.ReadByte();
+                reader.ReadByte();
                 int type1;
-                if ((type1 = assetsFileReader.ReadInt16()) >= 0)
+                if ((type1 = reader.ReadInt16()) >= 0)
                 {
                     type1 = -1 - type1;
                 }
@@ -401,36 +402,36 @@ namespace AssetStudio
                 classIDs.Add(new[] { type1, classID });
                 if (classID == 114)
                 {
-                    assetsFileReader.Position += 16;
+                    reader.Position += 16;
                 }
                 classID = type1;
             }
             else if (classID < 0)
             {
-                assetsFileReader.Position += 16;
+                reader.Position += 16;
             }
-            assetsFileReader.Position += 16;
+            reader.Position += 16;
 
             if (baseDefinitions)
             {
-                int varCount = assetsFileReader.ReadInt32();
-                int stringSize = assetsFileReader.ReadInt32();
+                int varCount = reader.ReadInt32();
+                int stringSize = reader.ReadInt32();
 
-                assetsFileReader.Position += varCount * 24;
-                using (var stringReader = new BinaryReader(new MemoryStream(assetsFileReader.ReadBytes(stringSize))))
+                reader.Position += varCount * 24;
+                using (var stringReader = new BinaryReader(new MemoryStream(reader.ReadBytes(stringSize))))
                 {
                     string className = "";
                     var classVar = new List<ClassMember>();
                     //build Class Structures
-                    assetsFileReader.Position -= varCount * 24 + stringSize;
+                    reader.Position -= varCount * 24 + stringSize;
                     for (int i = 0; i < varCount; i++)
                     {
-                        ushort num0 = assetsFileReader.ReadUInt16();
-                        byte level = assetsFileReader.ReadByte();
-                        bool isArray = assetsFileReader.ReadBoolean();
+                        ushort num0 = reader.ReadUInt16();
+                        byte level = reader.ReadByte();
+                        bool isArray = reader.ReadBoolean();
 
-                        ushort varTypeIndex = assetsFileReader.ReadUInt16();
-                        ushort test = assetsFileReader.ReadUInt16();
+                        ushort varTypeIndex = reader.ReadUInt16();
+                        ushort test = reader.ReadUInt16();
                         string varTypeStr;
                         if (test == 0) //varType is an offset in the string block
                         {
@@ -442,8 +443,8 @@ namespace AssetStudio
                             varTypeStr = baseStrings.ContainsKey(varTypeIndex) ? baseStrings[varTypeIndex] : varTypeIndex.ToString();
                         }
 
-                        ushort varNameIndex = assetsFileReader.ReadUInt16();
-                        test = assetsFileReader.ReadUInt16();
+                        ushort varNameIndex = reader.ReadUInt16();
+                        test = reader.ReadUInt16();
                         string varNameStr;
                         if (test == 0)
                         {
@@ -455,9 +456,9 @@ namespace AssetStudio
                             varNameStr = baseStrings.ContainsKey(varNameIndex) ? baseStrings[varNameIndex] : varNameIndex.ToString();
                         }
 
-                        int size = assetsFileReader.ReadInt32();
-                        int index = assetsFileReader.ReadInt32();
-                        int flag = assetsFileReader.ReadInt32();
+                        int size = reader.ReadInt32();
+                        int index = reader.ReadInt32();
+                        int flag = reader.ReadInt32();
 
                         if (index == 0)
                         {
@@ -475,7 +476,7 @@ namespace AssetStudio
                             });
                         }
                     }
-                    assetsFileReader.Position += stringSize;
+                    reader.Position += stringSize;
                     var aClass = new ClassStruct { ID = classID, Text = className, members = classVar };
                     aClass.SubItems.Add(classID.ToString());
                     ClassStructures[classID] = aClass;

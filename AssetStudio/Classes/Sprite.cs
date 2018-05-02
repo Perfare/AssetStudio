@@ -47,7 +47,7 @@ namespace AssetStudio
                 }
 
                 var m_Extrude = reader.ReadUInt32();
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 3)) //5.3 and up TODO need more test
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 3)) //5.3 and up
                 {
                     var m_IsPolygon = reader.ReadBoolean();
                     reader.AlignStream(4);
@@ -97,7 +97,10 @@ namespace AssetStudio
                     reader.Position += size; //UInt8 data   
                     reader.AlignStream(4);
                     //  VertexData m_VertexData
-                    var m_CurrentChannels = reader.ReadInt32();
+                    if (version[0] < 2018)//2018 down
+                    {
+                        var m_CurrentChannels = reader.ReadInt32();
+                    }
                     var m_VertexCount = reader.ReadUInt32();
                     //      vector m_Channels
                     size = reader.ReadInt32();
@@ -106,6 +109,18 @@ namespace AssetStudio
                     size = reader.ReadInt32();
                     reader.Position += size; //UInt8 data   
                     reader.AlignStream(4);
+
+                    if (version[0] >= 2018)//2018 and up
+                    {
+                        //	vector m_Bindpose
+                        //			Matrix4x4f data
+                        size = reader.ReadInt32();
+                        reader.Position += size * 64;
+                        //	vector m_SourceSkin
+                        //			BoneWeights4 data
+                        size = reader.ReadInt32();
+                        reader.Position += size * 32;
+                    }
                 }
                 else
                 {
@@ -159,6 +174,7 @@ namespace AssetStudio
                         }
                     }
                 }
+                //vector m_Bones 2018 and up
             }
             else
             {

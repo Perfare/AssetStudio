@@ -14,13 +14,23 @@ namespace AssetStudio
         public T value { get; set; }
         public T inSlope { get; set; }
         public T outSlope { get; set; }
+        public int weightedMode { get; set; }
+        public T inWeight { get; set; }
+        public T outWeight { get; set; }
 
-        public Keyframe(EndianBinaryReader reader, Func<T> readerFunc)
+
+        public Keyframe(EndianBinaryReader reader, Func<T> readerFunc, int[] version)
         {
             time = reader.ReadSingle();
             value = readerFunc();
             inSlope = readerFunc();
             outSlope = readerFunc();
+            if (version[0] >= 2018)
+            {
+                weightedMode = reader.ReadInt32();
+                inWeight = readerFunc();
+                outWeight = readerFunc();
+            }
         }
     }
 
@@ -37,7 +47,7 @@ namespace AssetStudio
             m_Curve = new List<Keyframe<T>>(numCurves);
             for (int i = 0; i < numCurves; i++)
             {
-                m_Curve.Add(new Keyframe<T>(reader, readerFunc));
+                m_Curve.Add(new Keyframe<T>(reader, readerFunc, version));
             }
 
             m_PreInfinity = reader.ReadInt32();
@@ -162,7 +172,7 @@ namespace AssetStudio
 
         public FloatCurve(AssetPreloadData preloadData)
         {
-            var reader = preloadData.sourceFile.assetsFileReader;
+            var reader = preloadData.sourceFile.reader;
             curve = new AnimationCurve<float>(reader, reader.ReadSingle, preloadData.sourceFile.version);
             attribute = reader.ReadAlignedString();
             path = reader.ReadAlignedString();
@@ -179,7 +189,7 @@ namespace AssetStudio
 
         public PPtrKeyframe(AssetPreloadData preloadData)
         {
-            var reader = preloadData.sourceFile.assetsFileReader;
+            var reader = preloadData.sourceFile.reader;
             time = reader.ReadSingle();
             value = preloadData.sourceFile.ReadPPtr();
         }
@@ -196,7 +206,7 @@ namespace AssetStudio
 
         public PPtrCurve(AssetPreloadData preloadData)
         {
-            var reader = preloadData.sourceFile.assetsFileReader;
+            var reader = preloadData.sourceFile.reader;
 
             int numCurves = reader.ReadInt32();
             curve = new List<PPtrKeyframe>(numCurves);
@@ -576,7 +586,7 @@ namespace AssetStudio
 
         public GenericBinding(AssetPreloadData preloadData)
         {
-            var reader = preloadData.sourceFile.assetsFileReader;
+            var reader = preloadData.sourceFile.reader;
             var version = preloadData.sourceFile.version;
             path = reader.ReadUInt32();
             attribute = reader.ReadUInt32();
@@ -602,7 +612,7 @@ namespace AssetStudio
 
         public AnimationClipBindingConstant(AssetPreloadData preloadData)
         {
-            var reader = preloadData.sourceFile.assetsFileReader;
+            var reader = preloadData.sourceFile.reader;
             int numBindings = reader.ReadInt32();
             genericBindings = new List<GenericBinding>(numBindings);
             for (int i = 0; i < numBindings; i++)

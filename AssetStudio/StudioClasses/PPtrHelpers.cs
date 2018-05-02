@@ -19,7 +19,7 @@ namespace AssetStudio
         public static PPtr ReadPPtr(this AssetsFile sourceFile)
         {
             var result = new PPtr();
-            var reader = sourceFile.assetsFileReader;
+            var reader = sourceFile.reader;
 
             int FileID = reader.ReadInt32();
             if (FileID >= 0 && FileID < sourceFile.sharedAssetsList.Count)

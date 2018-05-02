@@ -1303,7 +1303,7 @@ namespace AssetStudio
                 {
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
-                    progressBar1.Maximum = sceneTreeView.Nodes.Count;
+                    progressBar1.Maximum = sceneTreeView.Nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count);
                     ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
             }
@@ -1343,9 +1343,9 @@ namespace AssetStudio
                         toolStripStatusLabel1.Text = "Nothing exported.";
                         return;
                     }
-                    toolStripStatusLabel1.Text = $"Exporting {Path.GetFileName(saveFileDialog1.FileName)}.fbx";
+                    toolStripStatusLabel1.Text = $"Exporting {Path.GetFileName(saveFileDialog1.FileName)}";
                     FBXExporter.WriteFBX(saveFileDialog1.FileName, gameObjects);
-                    toolStripStatusLabel1.Text = $"Finished exporting  {Path.GetFileName(saveFileDialog1.FileName)}.fbx";
+                    toolStripStatusLabel1.Text = $"Finished exporting {Path.GetFileName(saveFileDialog1.FileName)}";
                     progressBar1.PerformStep();
                     if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
                     {
@@ -1637,7 +1637,7 @@ namespace AssetStudio
             importFiles.Clear();
             foreach (var assetsFile in assetsfileList)
             {
-                assetsFile.assetsFileReader.Dispose();
+                assetsFile.reader.Dispose();
             }
             assetsfileList.Clear();
             exportableAssets.Clear();
@@ -1814,7 +1814,7 @@ namespace AssetStudio
                 {
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
-                    progressBar1.Maximum = sceneTreeView.Nodes.Count;
+                    progressBar1.Maximum = sceneTreeView.Nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count); ;
                     ExportSplitObjects(savePath, sceneTreeView.Nodes, true);
                 }
             }
@@ -1839,7 +1839,6 @@ namespace AssetStudio
         {
             assetListView.BeginUpdate();
             assetListView.SelectedIndices.Clear();
-            visibleAssets.Clear();
             var show = new List<ClassIDReference>();
             if (!allToolStripMenuItem.Checked)
             {

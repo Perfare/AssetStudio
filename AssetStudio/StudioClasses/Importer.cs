@@ -125,7 +125,7 @@ namespace AssetStudio
                     }
                     else
                     {
-                        resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.assetsFileReader);
+                        resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.reader);
                     }
                 }
             }

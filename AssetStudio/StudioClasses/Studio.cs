@@ -273,7 +273,7 @@ namespace AssetStudio
                             case ClassIDReference.AnimationClip:
                                 {
                                     exportable = true;
-                                    var reader = asset.sourceFile.assetsFileReader;
+                                    var reader = asset.sourceFile.reader;
                                     reader.Position = asset.Offset;
                                     asset.Text = reader.ReadAlignedString();
                                     break;
@@ -316,7 +316,7 @@ namespace AssetStudio
                     exportableAssets.AddRange(assetsFile.exportableAssets);
                 }
 
-                visibleAssets = exportableAssets.ToList();
+                visibleAssets = exportableAssets;
                 exportableAssetsHash.Clear();
             }
             #endregion
@@ -619,12 +619,21 @@ namespace AssetStudio
                         //导出FBX
                         StatusStripUpdate($"Exporting {filename}.fbx");
                         if (isNew)
-                            ExportGameObject((GameObject)j, targetPath);
+                        {
+                            try
+                            {
+                                ExportGameObject((GameObject)j, targetPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                            }
+                        }
                         else
                             FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
+                        ProgressBarPerformStep();
                     }
-                    ProgressBarPerformStep();
                 }
             });
         }

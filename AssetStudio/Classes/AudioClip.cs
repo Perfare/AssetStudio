@@ -49,7 +49,7 @@ namespace AssetStudio
                 m_Type = (AudioType)reader.ReadInt32();
                 m_3D = reader.ReadBoolean();
                 m_UseHardware = reader.ReadBoolean();
-                reader.Position += 2; //4 byte alignment
+                reader.AlignStream(4);
 
                 if (sourceFile.version[0] >= 4 || (sourceFile.version[0] == 3 && sourceFile.version[1] >= 2)) //3.2.0 to 5
                 {
@@ -76,12 +76,12 @@ namespace AssetStudio
                 m_BitsPerSample = reader.ReadInt32();
                 m_Length = reader.ReadSingle();
                 m_IsTrackerFormat = reader.ReadBoolean();
-                reader.Position += 3;
+                reader.AlignStream(4);
                 m_SubsoundIndex = reader.ReadInt32();
                 m_PreloadAudioData = reader.ReadBoolean();
                 m_LoadInBackground = reader.ReadBoolean();
                 m_Legacy3D = reader.ReadBoolean();
-                reader.Position += 1;
+                reader.AlignStream(4);
                 m_3D = m_Legacy3D;
 
                 m_Source = reader.ReadAlignedString();

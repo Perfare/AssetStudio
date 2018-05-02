@@ -14,31 +14,41 @@ namespace AssetStudio
         public SkinnedMeshRenderer(AssetPreloadData preloadData)
         {
             var sourceFile = preloadData.sourceFile;
-            var version = preloadData.sourceFile.version;
+            var version = sourceFile.version;
             var reader = preloadData.InitReader();
 
             m_GameObject = sourceFile.ReadPPtr();
-            if (sourceFile.version[0] < 5)
+            if (version[0] < 5)
             {
-                m_Enabled = reader.ReadBoolean();
-                m_CastShadows = reader.ReadByte();//bool
-                m_ReceiveShadows = reader.ReadBoolean();
-                m_LightmapIndex = reader.ReadByte();
+                var m_Enabled = reader.ReadBoolean();
+                var m_CastShadows = reader.ReadByte();
+                var m_ReceiveShadows = reader.ReadBoolean();
+                var m_LightmapIndex = reader.ReadByte();
             }
             else
             {
-                m_Enabled = reader.ReadBoolean();
+                var m_Enabled = reader.ReadBoolean();
                 reader.AlignStream(4);
-                m_CastShadows = reader.ReadByte();
-                m_ReceiveShadows = reader.ReadBoolean();
+                var m_CastShadows = reader.ReadByte();
+                var m_ReceiveShadows = reader.ReadBoolean();
                 reader.AlignStream(4);
-
-                m_LightmapIndex = reader.ReadUInt16();
-                m_LightmapIndexDynamic = reader.ReadUInt16();
+                if (version[0] >= 2018)//2018 and up
+                {
+                    var m_RenderingLayerMask = reader.ReadUInt32();
+                }
+                var m_LightmapIndex = reader.ReadUInt16();
+                var m_LightmapIndexDynamic = reader.ReadUInt16();
             }
 
-            if (version[0] >= 3) { reader.Position += 16; } //m_LightmapTilingOffset vector4d
-            if (sourceFile.version[0] >= 5) { reader.Position += 16; } //Vector4f m_LightmapTilingOffsetDynamic
+            if (version[0] >= 3)
+            {
+                reader.Position += 16;//Vector4f m_LightmapTilingOffset
+            }
+
+            if (version[0] >= 5)
+            {
+                reader.Position += 16;//Vector4f m_LightmapTilingOffsetDynamic
+            }
 
             m_Materials = new PPtr[reader.ReadInt32()];
             for (int m = 0; m < m_Materials.Length; m++)
@@ -61,26 +71,36 @@ namespace AssetStudio
                     int m_SubsetIndices_size = reader.ReadInt32();
                     reader.Position += m_SubsetIndices_size * 4;
                 }
-                PPtr m_StaticBatchRoot = sourceFile.ReadPPtr();
+
+                var m_StaticBatchRoot = sourceFile.ReadPPtr();
 
                 if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 4) || sourceFile.version[0] > 5)//5.4.0 and up
                 {
-                    PPtr m_ProbeAnchor = sourceFile.ReadPPtr();
-                    PPtr m_LightProbeVolumeOverride = sourceFile.ReadPPtr();
+                    var m_ProbeAnchor = sourceFile.ReadPPtr();
+                    var m_LightProbeVolumeOverride = sourceFile.ReadPPtr();
                 }
-                else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))
+                else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))//3.5 - 5.3
                 {
-                    bool m_UseLightProbes = reader.ReadBoolean();
-                    reader.Position += 3; //alignment
-                    if (version[0] == 5) { int m_ReflectionProbeUsage = reader.ReadInt32(); }
-                    //did I ever check if the anchor is conditioned by the bool?
-                    PPtr m_LightProbeAnchor = sourceFile.ReadPPtr();
+                    var m_UseLightProbes = reader.ReadBoolean();
+                    reader.AlignStream(4);
+                    if (version[0] == 5)//5.0 and up
+                    {
+                        int m_ReflectionProbeUsage = reader.ReadInt32();
+                    }
+                    var m_LightProbeAnchor = sourceFile.ReadPPtr();
                 }
 
-                if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
+                if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))//4.3 and up
                 {
-                    if (version[0] == 4 && version[1] <= 3) { int m_SortingLayer = reader.ReadInt16(); }
-                    else { int m_SortingLayer = reader.ReadInt32(); }
+                    if (version[0] == 4 && version[1] == 3)//4.3
+                    {
+                        int m_SortingLayer = reader.ReadInt16();
+                    }
+                    else
+                    {
+                        int m_SortingLayerID = reader.ReadInt32();
+                        //SInt16 m_SortingOrder 5.6 and up
+                    }
 
                     int m_SortingOrder = reader.ReadInt16();
                     reader.AlignStream(4);
@@ -88,14 +108,13 @@ namespace AssetStudio
             }
 
             int m_Quality = reader.ReadInt32();
-            bool m_UpdateWhenOffscreen = reader.ReadBoolean();
-            bool m_SkinNormals = reader.ReadBoolean(); //3.1.0 and below
-            reader.Position += 2;
+            var m_UpdateWhenOffscreen = reader.ReadBoolean();
+            var m_SkinNormals = reader.ReadBoolean(); //3.1.0 and below
+            reader.AlignStream(4);
 
-            if (version[0] == 2 && version[1] < 6)
+            if (version[0] == 2 && version[1] < 6)//2.6 down
             {
-                //this would be the only error if mainVersion is not read in time for a version 2.x game
-                PPtr m_DisableAnimationWhenOffscreen = sourceFile.ReadPPtr();
+                var m_DisableAnimationWhenOffscreen = sourceFile.ReadPPtr();
             }
 
             m_Mesh = sourceFile.ReadPPtr();
@@ -122,19 +141,6 @@ namespace AssetStudio
                         m_BlendShapeWeights.Add(reader.ReadSingle());
                     }
                 }
-
-                /*if (version[0] > 4 || (version[0] >= 3 && version[1] >= 5))
-                {
-                    PPtr m_RootBone = sourceFile.ReadPPtr();
-                }
-
-                if (version[0] > 4 || (version[0] == 3 && version[1] >= 4))
-                {
-                    //AABB
-                    float[] m_Center = { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
-                    float[] m_Extent = { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
-                    bool m_DirtyAABB = reader.ReadBoolean();
-                }*/
             }
         }
     }
