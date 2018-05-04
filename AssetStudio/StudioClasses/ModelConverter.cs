@@ -77,13 +77,29 @@ namespace AssetStudio
         {
             assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform);
             var rootTransform = m_Transform;
-            while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))//Get Root Transform
+            var frameList = new List<ImportedFrame>();
+            while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))
             {
+                frameList.Add(ConvertFrames(m_Father));
                 rootTransform = m_Father;
+            }
+            if (frameList.Count > 0)
+            {
+                FrameList.Add(frameList[frameList.Count - 1]);
+                for (var i = frameList.Count - 2; i >= 0; i--)
+                {
+                    var frame = frameList[i];
+                    var parent = frameList[i + 1];
+                    parent.AddChild(frame);
+                }
+                ConvertFrames(m_Transform, frameList[0]);
+            }
+            else
+            {
+                ConvertFrames(m_Transform, null);
             }
 
             CreateBonePathHash(rootTransform);
-            ConvertFrames(rootTransform, null);
             ConvertMeshRenderer(m_Transform);
         }
 
@@ -170,7 +186,7 @@ namespace AssetStudio
             }
         }
 
-        private void ConvertFrames(Transform trans, ImportedFrame parent)
+        private ImportedFrame ConvertFrames(Transform trans)
         {
             var frame = new ImportedFrame();
             assetsfileList.TryGetGameObject(trans.m_GameObject, out var m_GameObject);
@@ -182,9 +198,14 @@ namespace AssetStudio
             var m_LocalScale = new Vector3(trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2]);
             var m_LocalPosition = new Vector3(trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2]);
             frame.Matrix = Matrix.Scaling(m_LocalScale) * Matrix.RotationQuaternion(mirroredRotation) * Matrix.Translation(-m_LocalPosition.X, m_LocalPosition.Y, m_LocalPosition.Z);
+            return frame;
+        }
+
+        private void ConvertFrames(Transform trans, ImportedFrame parent)
+        {
+            var frame = ConvertFrames(trans);
             if (parent == null)
             {
-                FrameList = new List<ImportedFrame>();
                 FrameList.Add(frame);
             }
             else
@@ -356,57 +377,60 @@ namespace AssetStudio
                 }
 
                 //Morphs
-                foreach (var channel in mesh.m_Shapes.channels)
+                if (mesh.m_Shapes != null)
                 {
-                    morphChannelInfo.Add(channel.nameHash, channel.name);
-                }
-                if (mesh.m_Shapes.shapes.Count > 0)
-                {
-                    ImportedMorph morph = null;
-                    string lastGroup = "";
-                    for (int i = 0; i < mesh.m_Shapes.channels.Count; i++)
+                    foreach (var channel in mesh.m_Shapes.channels)
                     {
-                        string group = BlendShapeNameGroup(mesh, i);
-                        if (group != lastGroup)
+                        morphChannelInfo.Add(channel.nameHash, channel.name);
+                    }
+                    if (mesh.m_Shapes.shapes.Count > 0)
+                    {
+                        ImportedMorph morph = null;
+                        string lastGroup = "";
+                        for (int i = 0; i < mesh.m_Shapes.channels.Count; i++)
                         {
-                            morph = new ImportedMorph();
-                            MorphList.Add(morph);
-                            morph.Name = iMesh.Name;
-                            morph.ClipName = group;
-                            morph.Channels = new List<Tuple<float, int, int>>(mesh.m_Shapes.channels.Count);
-                            morph.KeyframeList = new List<ImportedMorphKeyframe>(mesh.m_Shapes.shapes.Count);
-                            lastGroup = group;
-                        }
-
-                        morph.Channels.Add(new Tuple<float, int, int>(i < sMesh.m_BlendShapeWeights.Count ? sMesh.m_BlendShapeWeights[i] : 0f, morph.KeyframeList.Count, mesh.m_Shapes.channels[i].frameCount));
-                        for (int frameIdx = 0; frameIdx < mesh.m_Shapes.channels[i].frameCount; frameIdx++)
-                        {
-                            ImportedMorphKeyframe keyframe = new ImportedMorphKeyframe();
-                            keyframe.Name = BlendShapeNameExtension(mesh, i) + "_" + frameIdx;
-                            int shapeIdx = mesh.m_Shapes.channels[i].frameIndex + frameIdx;
-                            keyframe.VertexList = new List<ImportedVertex>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
-                            keyframe.MorphedVertexIndices = new List<ushort>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
-                            keyframe.Weight = shapeIdx < mesh.m_Shapes.fullWeights.Count ? mesh.m_Shapes.fullWeights[shapeIdx] : 100f;
-                            int lastVertIndex = (int)(mesh.m_Shapes.shapes[shapeIdx].firstVertex + mesh.m_Shapes.shapes[shapeIdx].vertexCount);
-                            for (int j = (int)mesh.m_Shapes.shapes[shapeIdx].firstVertex; j < lastVertIndex; j++)
+                            string group = BlendShapeNameGroup(mesh, i);
+                            if (group != lastGroup)
                             {
-                                var morphVert = mesh.m_Shapes.vertices[j];
-                                ImportedVertex vert = GetSourceVertex(iMesh.SubmeshList, (int)morphVert.index);
-                                ImportedVertex destVert = new ImportedVertex();
-                                Vector3 morphPos = morphVert.vertex;
-                                morphPos.X *= -1;
-                                destVert.Position = vert.Position + morphPos;
-                                Vector3 morphNormal = morphVert.normal;
-                                morphNormal.X *= -1;
-                                destVert.Normal = morphNormal;
-                                Vector4 morphTangent = new Vector4(morphVert.tangent, 0);
-                                morphTangent.X *= -1;
-                                destVert.Tangent = morphTangent;
-                                keyframe.VertexList.Add(destVert);
-                                keyframe.MorphedVertexIndices.Add((ushort)morphVert.index);
+                                morph = new ImportedMorph();
+                                MorphList.Add(morph);
+                                morph.Name = iMesh.Name;
+                                morph.ClipName = group;
+                                morph.Channels = new List<Tuple<float, int, int>>(mesh.m_Shapes.channels.Count);
+                                morph.KeyframeList = new List<ImportedMorphKeyframe>(mesh.m_Shapes.shapes.Count);
+                                lastGroup = group;
                             }
 
-                            morph.KeyframeList.Add(keyframe);
+                            morph.Channels.Add(new Tuple<float, int, int>(i < sMesh.m_BlendShapeWeights.Count ? sMesh.m_BlendShapeWeights[i] : 0f, morph.KeyframeList.Count, mesh.m_Shapes.channels[i].frameCount));
+                            for (int frameIdx = 0; frameIdx < mesh.m_Shapes.channels[i].frameCount; frameIdx++)
+                            {
+                                ImportedMorphKeyframe keyframe = new ImportedMorphKeyframe();
+                                keyframe.Name = BlendShapeNameExtension(mesh, i) + "_" + frameIdx;
+                                int shapeIdx = mesh.m_Shapes.channels[i].frameIndex + frameIdx;
+                                keyframe.VertexList = new List<ImportedVertex>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
+                                keyframe.MorphedVertexIndices = new List<ushort>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
+                                keyframe.Weight = shapeIdx < mesh.m_Shapes.fullWeights.Count ? mesh.m_Shapes.fullWeights[shapeIdx] : 100f;
+                                int lastVertIndex = (int)(mesh.m_Shapes.shapes[shapeIdx].firstVertex + mesh.m_Shapes.shapes[shapeIdx].vertexCount);
+                                for (int j = (int)mesh.m_Shapes.shapes[shapeIdx].firstVertex; j < lastVertIndex; j++)
+                                {
+                                    var morphVert = mesh.m_Shapes.vertices[j];
+                                    ImportedVertex vert = GetSourceVertex(iMesh.SubmeshList, (int)morphVert.index);
+                                    ImportedVertex destVert = new ImportedVertex();
+                                    Vector3 morphPos = morphVert.vertex;
+                                    morphPos.X *= -1;
+                                    destVert.Position = vert.Position + morphPos;
+                                    Vector3 morphNormal = morphVert.normal;
+                                    morphNormal.X *= -1;
+                                    destVert.Normal = morphNormal;
+                                    Vector4 morphTangent = new Vector4(morphVert.tangent, 0);
+                                    morphTangent.X *= -1;
+                                    destVert.Tangent = morphTangent;
+                                    keyframe.VertexList.Add(destVert);
+                                    keyframe.MorphedVertexIndices.Add((ushort)morphVert.index);
+                                }
+
+                                morph.KeyframeList.Add(keyframe);
+                            }
                         }
                     }
                 }

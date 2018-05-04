@@ -511,7 +511,7 @@ namespace AssetStudio
                 #region BlendShapeData and BindPose for 4.3.0 and later
                 else if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))
                 {
-                    m_Shapes = new BlendShapeData(reader);//TODO 4.3 down
+                    m_Shapes = new BlendShapeData(reader);
 
                     m_BindPose = new float[reader.ReadInt32()][,];
                     for (int i = 0; i < m_BindPose.Length; i++)

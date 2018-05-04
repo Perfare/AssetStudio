@@ -53,21 +53,24 @@ namespace AssetStudio
                 else
                     reader.Position += 48;
             }
-            //- OffsetPtr m_DefaultPose
-            //-- SkeletonPose data
-            numXforms = reader.ReadInt32();
-            for (int i = 0; i < numXforms; i++)
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3))//4.3 and up
             {
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
-                    reader.Position += 40;
-                else
-                    reader.Position += 48;
-            }
-            //- vector m_SkeletonNameIDArray
-            numIDs = reader.ReadInt32();
-            for (int i = 0; i < numIDs; i++)
-            {
-                reader.Position += 4;
+                //- OffsetPtr m_DefaultPose
+                //-- SkeletonPose data
+                numXforms = reader.ReadInt32();
+                for (int i = 0; i < numXforms; i++)
+                {
+                    if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
+                        reader.Position += 40;
+                    else
+                        reader.Position += 48;
+                }
+                //- vector m_SkeletonNameIDArray
+                numIDs = reader.ReadInt32();
+                for (int i = 0; i < numIDs; i++)
+                {
+                    reader.Position += 4;
+                }
             }
             //- OffsetPtr m_Human
             //-- Human data
@@ -176,11 +179,14 @@ namespace AssetStudio
             {
                 reader.Position += 4;
             }
-            //- vector m_HumanSkeletonReverseIndexArray
-            int numReverseIndexes = reader.ReadInt32();
-            for (int i = 0; i < numReverseIndexes; i++)
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
-                reader.Position += 4;
+                //- vector m_HumanSkeletonReverseIndexArray
+                int numReverseIndexes = reader.ReadInt32();
+                for (int i = 0; i < numReverseIndexes; i++)
+                {
+                    reader.Position += 4;
+                }
             }
             var m_RootMotionBoneIndex = reader.ReadInt32();
             //- xform m_RootMotionBoneX
@@ -188,44 +194,47 @@ namespace AssetStudio
                 reader.Position += 40;
             else
                 reader.Position += 48;
-            //- OffsetPtr m_RootMotionSkeleton
-            //-- Skeleton data
-            //--- vector m_Node
-            numNodes = reader.ReadInt32();
-            for (int i = 0; i < numNodes; i++)
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
-                reader.Position += 8;
-            }
-            //--- vector m_ID
-            numIDs = reader.ReadInt32();
-            for (int i = 0; i < numIDs; i++)
-            {
-                reader.Position += 4;
-            }
-            //--- vector m_AxesArray
-            numAxes = reader.ReadInt32();
-            for (int i = 0; i < numAxes; i++)
-            {
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
-                    reader.Position += 76;
-                else
-                    reader.Position += 88;
-            }
-            //- OffsetPtr m_RootMotionSkeletonPose
-            //-- SkeletonPose data
-            numXforms = reader.ReadInt32();
-            for (int i = 0; i < numXforms; i++)
-            {
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
-                    reader.Position += 40;
-                else
-                    reader.Position += 48;
-            }
-            //- vector m_RootMotionSkeletonIndexArray
-            int numMotionIndexes = reader.ReadInt32();
-            for (int i = 0; i < numMotionIndexes; i++)
-            {
-                reader.Position += 4;
+                //- OffsetPtr m_RootMotionSkeleton
+                //-- Skeleton data
+                //--- vector m_Node
+                numNodes = reader.ReadInt32();
+                for (int i = 0; i < numNodes; i++)
+                {
+                    reader.Position += 8;
+                }
+                //--- vector m_ID
+                numIDs = reader.ReadInt32();
+                for (int i = 0; i < numIDs; i++)
+                {
+                    reader.Position += 4;
+                }
+                //--- vector m_AxesArray
+                numAxes = reader.ReadInt32();
+                for (int i = 0; i < numAxes; i++)
+                {
+                    if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
+                        reader.Position += 76;
+                    else
+                        reader.Position += 88;
+                }
+                //- OffsetPtr m_RootMotionSkeletonPose
+                //-- SkeletonPose data
+                numXforms = reader.ReadInt32();
+                for (int i = 0; i < numXforms; i++)
+                {
+                    if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
+                        reader.Position += 40;
+                    else
+                        reader.Position += 48;
+                }
+                //- vector m_RootMotionSkeletonIndexArray
+                int numMotionIndexes = reader.ReadInt32();
+                for (int i = 0; i < numMotionIndexes; i++)
+                {
+                    reader.Position += 4;
+                }
             }
             //map m_TOS
             int numTOS = reader.ReadInt32();
