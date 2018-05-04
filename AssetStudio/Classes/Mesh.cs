@@ -753,7 +753,10 @@ namespace AssetStudio
                                 var m_Channel = m_Channels[chn];
                                 if (m_Channel.stream == s)
                                 {
-                                    chnMask |= 1u << chn;
+                                    if (m_Channel.dimension > 0)
+                                    {
+                                        chnMask |= 1u << chn;
+                                    }
                                     m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format));
                                 }
                             }
