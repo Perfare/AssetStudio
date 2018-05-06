@@ -679,20 +679,22 @@ namespace AssetStudio
             {
                 m_Legacy = reader.ReadBoolean();
             }
-            else
+            else if (version[0] >= 4)//4.0 and up
             {
                 m_AnimationType = reader.ReadInt32();
                 if (m_AnimationType == 1)
                     m_Legacy = true;
             }
-            m_Compressed = reader.ReadBoolean();
-            m_UseHighQualityCurve = reader.ReadBoolean();
-            reader.AlignStream(4);
-            if (m_Compressed)
+            else
             {
-                //TODO
+                m_Legacy = true;
             }
-
+            m_Compressed = reader.ReadBoolean();
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3))//4.3 and up
+            {
+                m_UseHighQualityCurve = reader.ReadBoolean();
+            }
+            reader.AlignStream(4);
             int numRCurves = reader.ReadInt32();
             m_RotationCurves = new List<QuaternionCurve>(numRCurves);
             for (int i = 0; i < numRCurves; i++)
@@ -738,20 +740,31 @@ namespace AssetStudio
                 m_FloatCurves.Add(new FloatCurve(preloadData));
             }
 
-            int numPtrCurves = reader.ReadInt32();
-            m_PPtrCurves = new List<PPtrCurve>(numPtrCurves);
-            for (int i = 0; i < numPtrCurves; i++)
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
-                m_PPtrCurves.Add(new PPtrCurve(preloadData));
+                int numPtrCurves = reader.ReadInt32();
+                m_PPtrCurves = new List<PPtrCurve>(numPtrCurves);
+                for (int i = 0; i < numPtrCurves; i++)
+                {
+                    m_PPtrCurves.Add(new PPtrCurve(preloadData));
+                }
             }
 
             m_SampleRate = reader.ReadSingle();
             m_WrapMode = reader.ReadInt32();
-            m_Bounds = new AABB(reader);
-            m_MuscleClipSize = reader.ReadUInt32();
-            m_MuscleClip = new ClipMuscleConstant(reader, version);
-            m_ClipBindingConstant = new AnimationClipBindingConstant(preloadData);
-
+            if (version[0] > 3 || (version[0] == 3 && version[1] >= 4)) //3.4 and up
+            {
+                m_Bounds = new AABB(reader);
+            }
+            if (version[0] >= 4)//4.0 and up
+            {
+                m_MuscleClipSize = reader.ReadUInt32();
+                m_MuscleClip = new ClipMuscleConstant(reader, version);
+            }
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
+                m_ClipBindingConstant = new AnimationClipBindingConstant(preloadData);
+            }
             /*int numEvents = reader.ReadInt32();
             m_Events = new List<AnimationEvent>(numEvents);
             for (int i = 0; i < numEvents; i++)

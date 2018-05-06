@@ -1353,6 +1353,7 @@ namespace AssetStudio
                     }
                     else
                     {
+                        uint j = 0;
                         for (int i = 0; i < m_SubMeshes[s].indexCount - 2; i++)
                         {
                             uint fa = m_IndexBuffer[firstIndex + i];
@@ -1373,8 +1374,11 @@ namespace AssetStudio
                                     m_Indices.Add(fb);
                                 }
                                 m_materialIDs.Add(s);
+                                j++;
                             }
                         }
+                        //just fix it
+                        m_SubMeshes[s].indexCount = j * 3;
                     }
                 }
                 #endregion
