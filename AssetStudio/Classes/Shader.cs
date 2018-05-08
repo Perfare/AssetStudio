@@ -38,7 +38,7 @@ namespace AssetStudio
                         reader.Position = preloadData.Offset;
                         var sb = new StringBuilder();
                         var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
-                        ClassStructHelper.ReadClassStruct(sb, members, reader);
+                        ClassStructHelper.ReadClass(sb, members, reader);
                         m_Script = Encoding.UTF8.GetBytes(sb.ToString());
                         //m_Script = ReadSerializedShader(members, a_Stream);
                     }
@@ -67,128 +67,5 @@ namespace AssetStudio
                 preloadData.Text = m_Name;
             }
         }
-
-        /*private static byte[] ReadSerializedShader(List<ClassMember> members, EndianBinaryReader a_Stream)
-        {
-            var offsets = new List<uint>();
-            var compressedLengths = new List<uint>();
-            var decompressedLengths = new List<uint>();
-            for (int i = 0; i < members.Count; i++)
-            {
-                var member = members[i];
-                var level = member.Level;
-                var varTypeStr = member.Type;
-                if (member.Name == "offsets")
-                {
-                    var offsets_size = a_Stream.ReadInt32();
-                    for (int j = 0; j < offsets_size; j++)
-                    {
-                        offsets.Add(a_Stream.ReadUInt32());
-                    }
-                    var compressedLengths_size = a_Stream.ReadInt32();
-                    for (int j = 0; j < compressedLengths_size; j++)
-                    {
-                        compressedLengths.Add(a_Stream.ReadUInt32());
-                    }
-                    var decompressedLengths_size = a_Stream.ReadInt32();
-                    for (int j = 0; j < decompressedLengths_size; j++)
-                    {
-                        decompressedLengths.Add(a_Stream.ReadUInt32());
-                    }
-                    var compressedBlob = a_Stream.ReadBytes(a_Stream.ReadInt32());
-                    var decompressedStream = new MemoryStream();
-                    for (int j = 0; j < offsets.Count; j++)
-                    {
-                        var compressedBytes = new byte[compressedLengths[j]];
-                        Array.Copy(compressedBlob, offsets[j], compressedBytes, 0, compressedLengths[j]);
-                        var decompressedBytes = new byte[decompressedLengths[j]];
-                        using (var mstream = new MemoryStream(compressedBytes))
-                        {
-                            var decoder = new Lz4DecoderStream(mstream);
-                            decoder.Read(decompressedBytes, 0, (int)decompressedLengths[j]);
-                            decoder.Dispose();
-                        }
-                        decompressedStream.Write(decompressedBytes, 0, decompressedBytes.Length);
-                    }
-                    var decompressedBlob = decompressedStream.ToArray();
-                    return decompressedBlob;
-                }
-                var align = (member.Flag & 0x4000) != 0;
-                if (member.alignBefore)
-                    a_Stream.AlignStream(4);
-                if (varTypeStr == "SInt8")//sbyte
-                {
-                    a_Stream.ReadSByte();
-                }
-                else if (varTypeStr == "UInt8")//byte
-                {
-                    a_Stream.ReadByte();
-                }
-                else if (varTypeStr == "short" || varTypeStr == "SInt16")//Int16
-                {
-                    a_Stream.ReadInt16();
-                }
-                else if (varTypeStr == "UInt16" || varTypeStr == "unsigned short")//UInt16
-                {
-                    a_Stream.ReadUInt16();
-                }
-                else if (varTypeStr == "int" || varTypeStr == "SInt32")//Int32
-                {
-                    a_Stream.ReadInt32();
-                }
-                else if (varTypeStr == "UInt32" || varTypeStr == "unsigned int" || varTypeStr == "Type*")//UInt32
-                {
-                    a_Stream.ReadUInt32();
-                }
-                else if (varTypeStr == "long long" || varTypeStr == "SInt64")//Int64
-                {
-                    a_Stream.ReadInt64();
-                }
-                else if (varTypeStr == "UInt64" || varTypeStr == "unsigned long long")//UInt64
-                {
-                    a_Stream.ReadUInt64();
-                }
-                else if (varTypeStr == "float")//float
-                {
-                    a_Stream.ReadSingle();
-                }
-                else if (varTypeStr == "double")//double
-                {
-                    a_Stream.ReadDouble();
-                }
-                else if (varTypeStr == "bool")//bool
-                {
-                    a_Stream.ReadBoolean();
-                }
-                else if (varTypeStr == "string")//string
-                {
-                    a_Stream.ReadAlignedString(a_Stream.ReadInt32());
-                    i += 3;//skip
-                }
-                else if (varTypeStr == "Array")//Array
-                {
-                    if ((members[i - 1].Flag & 0x4000) != 0)
-                        align = true;
-                    var size = a_Stream.ReadInt32();
-                    var array = ClassStructHelper.ReadArray(members, level, i);
-                    for (int j = 0; j < size; j++)
-                    {
-                        ReadSerializedShader(array, a_Stream);
-                    }
-                    i += array.Count + 1;//skip
-                }
-                else
-                {
-                    if (align)
-                    {
-                        align = false;
-                        ClassStructHelper.SetAlignBefore(members, level, i + 1);
-                    }
-                }
-                if (align)
-                    a_Stream.AlignStream(4);
-            }
-            return null;
-        }*/
     }
 }

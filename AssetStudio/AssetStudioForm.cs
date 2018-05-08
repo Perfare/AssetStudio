@@ -377,7 +377,7 @@ namespace AssetStudio
                                 string saveFile = $"{versionPath}\\{uclass.Key} {uclass.Value.Text}.txt";
                                 using (StreamWriter TXTwriter = new StreamWriter(saveFile))
                                 {
-                                    TXTwriter.Write(uclass.Value.membersstr);
+                                    TXTwriter.Write(uclass.Value.ToString());
                                 }
                             }
                         }
@@ -694,7 +694,7 @@ namespace AssetStudio
         {
             if (e.IsSelected)
             {
-                classTextBox.Text = ((ClassStruct)classesListView.SelectedItems[0]).membersstr;
+                classTextBox.Text = ((ClassStruct)classesListView.SelectedItems[0]).ToString();
             }
         }
 
