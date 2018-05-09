@@ -30,5 +30,17 @@ namespace AssetStudio
             reader.Position = Offset;
             return reader;
         }
+
+        public string Deserialize()
+        {
+            var reader = InitReader();
+            if (sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure))
+            {
+                var sb = new StringBuilder();
+                ClassStructHelper.ReadClassString(sb, classStructure.members, reader);
+                return sb.ToString();
+            }
+            return null;
+        }
     }
 }

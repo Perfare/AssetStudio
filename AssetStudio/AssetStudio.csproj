@@ -150,6 +150,8 @@
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ClassIDReference.cs" />
+    <Compile Include="StudioClasses\ClassMember.cs" />
+    <Compile Include="StudioClasses\ClassStructHelper.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -27,7 +27,7 @@ namespace AssetStudio
                     var str = (string)ShaderResource.ResourceManager.GetObject($"Shader{sourceFile.version[0]}{sourceFile.version[1]}");
                     if (str == null)
                     {
-                        str = preloadData.ViewStruct();
+                        str = preloadData.Deserialize();
                         if (str == null)
                             m_Script = Encoding.UTF8.GetBytes("Serialized Shader can't be read");
                         else
@@ -38,9 +38,8 @@ namespace AssetStudio
                         reader.Position = preloadData.Offset;
                         var sb = new StringBuilder();
                         var members = new JavaScriptSerializer().Deserialize<List<ClassMember>>(str);
-                        ClassStructHelper.ReadClass(sb, members, reader);
+                        ClassStructHelper.ReadClassString(sb, members, reader);
                         m_Script = Encoding.UTF8.GetBytes(sb.ToString());
-                        //m_Script = ReadSerializedShader(members, a_Stream);
                     }
                 }
                 else

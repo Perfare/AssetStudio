@@ -21,7 +21,7 @@ namespace AssetStudio
             var m_Name = reader.ReadAlignedString();
             if (readSwitch)
             {
-                if ((serializedText = preloadData.ViewStruct()) == null)
+                if ((serializedText = preloadData.Deserialize()) == null)
                 {
                     var str = "PPtr<GameObject> m_GameObject\r\n";
                     str += "\tint m_FileID = " + m_GameObject.m_FileID + "\r\n";

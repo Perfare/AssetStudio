@@ -163,7 +163,9 @@
     <Compile Include="StudioClasses\BinaryReaderExtensions.cs" />
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BundleFile.cs" />
+    <Compile Include="StudioClasses\ClassMember.cs" />
     <Compile Include="StudioClasses\ClassStruct.cs" />
+    <Compile Include="StudioClasses\ClassStructHelper.cs" />
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ModelConverter.cs" />
