@@ -83,7 +83,7 @@ namespace AssetStudio
         private static extern bool DecompressUnityCRN(byte[] pSrc_file_data, int src_file_size, out IntPtr uncompressedData, out int uncompressedSize);
 
         [DllImport("texgenpack.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void texgenpackdecode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp, bool fixAlpha);
+        private static extern void Decode(int texturetype, byte[] texturedata, int width, int height, IntPtr bmp);
 
 
         public Texture2DConverter(Texture2D m_Texture2D)
@@ -991,8 +991,7 @@ namespace AssetStudio
             var bitmap = new Bitmap(m_Width, m_Height);
             var rect = new Rectangle(0, 0, m_Width, m_Height);
             var bmd = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            var fixAlpha = glBaseInternalFormat == KTXHeader.GL_RED || glBaseInternalFormat == KTXHeader.GL_RG;
-            texgenpackdecode((int)texturetype, image_data, m_Width, m_Height, bmd.Scan0, fixAlpha);
+            Decode((int)texturetype, image_data, m_Width, m_Height, bmd.Scan0);
             bitmap.UnlockBits(bmd);
             return bitmap;
         }
