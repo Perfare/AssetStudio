@@ -75,6 +75,8 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
+                case "staticvector":
+                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
@@ -217,6 +219,8 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
+                case "staticvector":
+                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
@@ -367,6 +371,8 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
+                case "staticvector":
+                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
