@@ -584,6 +584,7 @@ namespace AssetStudio
                     memStream.Position = 0;
                     iTex = new ImportedTexture(memStream, name);
                     TextureList.Add(iTex);
+                    bitmap.Dispose();
                 }
             }
         }
