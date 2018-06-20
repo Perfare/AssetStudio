@@ -540,10 +540,18 @@ namespace AssetStudio
                     m_MeshCompression = reader.ReadByte();
                     if (version[0] >= 4)
                     {
-                        if (version[0] < 5) { uint m_StreamCompression = reader.ReadByte(); }
+                        if (version[0] < 5)
+                        {
+                            uint m_StreamCompression = reader.ReadByte();
+                        }
                         bool m_IsReadable = reader.ReadBoolean();
                         bool m_KeepVertices = reader.ReadBoolean();
                         bool m_KeepIndices = reader.ReadBoolean();
+                        if (version[0] == 5 && version[1] == 6 && version[2] == 4 &&
+                            MeshPD.sourceFile.buildType[0] == "p")
+                        {
+                            var m_UsedForStaticMeshColliderOnly = reader.ReadBoolean();
+                        }
                     }
                     reader.AlignStream(4);
                     //This is a bug fixed in 2017.3.1p1 and later versions
