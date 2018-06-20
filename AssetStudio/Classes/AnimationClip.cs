@@ -52,7 +52,7 @@ namespace AssetStudio
 
             m_PreInfinity = reader.ReadInt32();
             m_PostInfinity = reader.ReadInt32();
-            if (version[0] >= 5)//5.0 and up
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
             {
                 m_RotationOrder = reader.ReadInt32();
             }
@@ -552,7 +552,7 @@ namespace AssetStudio
             {
                 m_ValueArrayDelta.Add(new ValueDelta(reader));
             }
-            if (version[0] >= 5)//5.0 and up
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
             {
                 m_ValueArrayReferencePose = reader.ReadSingleArray(reader.ReadInt32());
             }
@@ -709,7 +709,7 @@ namespace AssetStudio
                 m_CompressedRotationCurves.Add(new CompressedAnimationCurve(reader));
             }
 
-            if (version[0] >= 5)//5.0 and up
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
             {
                 int numEulerCurves = reader.ReadInt32();
                 m_EulerCurves = new List<Vector3Curve>(numEulerCurves);
