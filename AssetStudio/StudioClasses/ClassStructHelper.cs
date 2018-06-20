@@ -75,8 +75,6 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
-                case "staticvector":
-                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
@@ -134,6 +132,10 @@ namespace AssetStudio
                     }
                 default:
                     {
+                        if (i != members.Count && members[i + 1].Type == "Array")
+                        {
+                            goto case "vector";
+                        }
                         append = false;
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
                         var @class = GetMembers(members, level, i);
@@ -219,8 +221,6 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
-                case "staticvector":
-                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
@@ -267,6 +267,10 @@ namespace AssetStudio
                     }
                 default:
                     {
+                        if (i != members.Count && members[i + 1].Type == "Array")
+                        {
+                            goto case "vector";
+                        }
                         var @class = GetMembers(members, level, i);
                         @class.RemoveAt(0);
                         i += @class.Count;
@@ -371,8 +375,6 @@ namespace AssetStudio
                     i += 3;
                     break;
                 case "vector":
-                case "staticvector":
-                case "set":
                     {
                         if ((members[i + 1].Flag & 0x4000) != 0)
                             align = true;
@@ -422,6 +424,10 @@ namespace AssetStudio
                     }
                 default:
                     {
+                        if (i != members.Count && members[i + 1].Type == "Array")
+                        {
+                            goto case "vector";
+                        }
                         var @class = GetMembers(members, level, i);
                         @class.RemoveAt(0);
                         i += @class.Count;
