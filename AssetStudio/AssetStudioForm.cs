@@ -72,29 +72,34 @@ namespace AssetStudio
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 resetForm();
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
-                    MergeSplitAssets(mainPath);
-                    var readFile = ProcessingSplitFiles(openFileDialog1.FileNames.ToList());
-                    foreach (var i in readFile)
-                    {
-                        importFiles.Add(i);
-                        importFilesHash.Add(Path.GetFileName(i).ToUpper());
-                    }
-                    SetProgressBarValue(0);
-                    SetProgressBarMaximum(importFiles.Count);
-                    //use a for loop because list size can change
-                    for (int f = 0; f < importFiles.Count; f++)
-                    {
-                        LoadFile(importFiles[f]);
-                        ProgressBarPerformStep();
-                    }
-                    importFilesHash.Clear();
-                    assetsfileListHash.Clear();
-                    BuildAssetStrucutres();
-                });
+                LoadFiles(openFileDialog1.FileNames);
             }
+        }
+
+        private void LoadFiles(string[] filePaths)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                mainPath = Path.GetDirectoryName(filePaths[0]);
+                MergeSplitAssets(mainPath);
+                var readFile = ProcessingSplitFiles(filePaths.ToList());
+                foreach (var i in readFile)
+                {
+                    importFiles.Add(i);
+                    importFilesHash.Add(Path.GetFileName(i).ToUpper());
+                }
+                SetProgressBarValue(0);
+                SetProgressBarMaximum(importFiles.Count);
+                //use a for loop because list size can change
+                for (int f = 0; f < importFiles.Count; f++)
+                {
+                    LoadFile(importFiles[f]);
+                    ProgressBarPerformStep();
+                }
+                importFilesHash.Clear();
+                assetsfileListHash.Clear();
+                BuildAssetStrucutres();
+            });
         }
 
         private void loadFolder_Click(object sender, EventArgs e)
@@ -1454,7 +1459,7 @@ namespace AssetStudio
             }
         }
 
-        public AssetStudioForm()
+        public AssetStudioForm(string[] filesToOpen = null)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
@@ -1471,6 +1476,12 @@ namespace AssetStudio
             Studio.ProgressBarPerformStep = ProgressBarPerformStep;
             Studio.StatusStripUpdate = StatusStripUpdate;
             Studio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
+
+
+            if (filesToOpen?.Length > 0)
+            {
+                LoadFiles(filesToOpen);
+            }
         }
 
         private void timerOpenTK_Tick(object sender, EventArgs e)
