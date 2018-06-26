@@ -381,7 +381,7 @@ namespace AssetStudio
                 {
                     foreach (var channel in mesh.m_Shapes.channels)
                     {
-                        morphChannelInfo.Add(channel.nameHash, channel.name);
+                        morphChannelInfo[channel.nameHash] = channel.name;
                     }
                     if (mesh.m_Shapes.shapes.Count > 0)
                     {
