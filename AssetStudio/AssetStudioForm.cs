@@ -1013,7 +1013,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        var str = asset.Deserialize();
+                        var str = asset.GetClassString();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;

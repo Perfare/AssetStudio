@@ -31,7 +31,7 @@ namespace AssetStudio
             return reader;
         }
 
-        public string Deserialize()
+        public string GetClassString()
         {
             var reader = InitReader();
             if (sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure))
@@ -41,6 +41,11 @@ namespace AssetStudio
                 return sb.ToString();
             }
             return null;
+        }
+
+        public bool HasStructMember(string name)
+        {
+            return sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure) && classStructure.members.Any(x => x.Name == name);
         }
     }
 }

@@ -417,21 +417,19 @@ namespace AssetStudio
             return unpackedVectors;
         }
 
-        public Mesh(AssetPreloadData MeshPD, bool readSwitch)
+        public Mesh(AssetPreloadData preloadData, bool readSwitch)
         {
-            //Stream = new EndianStream(File.OpenRead(sourceFile.filePath), sourceFile.endianType);
-            //Stream.endian = sourceFile.endianType;
-            var version = MeshPD.sourceFile.version;
-            reader = MeshPD.InitReader();
+            var version = preloadData.sourceFile.version;
+            reader = preloadData.InitReader();
 
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;
 
-            if (MeshPD.sourceFile.platform == -2)
+            if (preloadData.sourceFile.platform == -2)
             {
                 uint m_ObjectHideFlags = reader.ReadUInt32();
-                PPtr m_PrefabParentObject = MeshPD.sourceFile.ReadPPtr();
-                PPtr m_PrefabInternal = MeshPD.sourceFile.ReadPPtr();
+                PPtr m_PrefabParentObject = preloadData.sourceFile.ReadPPtr();
+                PPtr m_PrefabInternal = preloadData.sourceFile.ReadPPtr();
             }
 
             m_Name = reader.ReadAlignedString();
@@ -490,8 +488,7 @@ namespace AssetStudio
                 #endregion
 
                 #region BlendShapeData for 4.1.0 to 4.2.x, excluding 4.1.0 alpha
-                if (version[0] == 4 && ((version[1] == 1 && MeshPD.sourceFile.buildType[0] != "a") ||
-                                        (version[1] > 1 && version[1] <= 2)))
+                if (version[0] == 4 && ((version[1] == 1 && preloadData.sourceFile.buildType[0] != "a") || (version[1] > 1 && version[1] <= 2)))
                 {
                     int m_Shapes_size = reader.ReadInt32();
                     if (m_Shapes_size > 0)
@@ -547,17 +544,15 @@ namespace AssetStudio
                         bool m_IsReadable = reader.ReadBoolean();
                         bool m_KeepVertices = reader.ReadBoolean();
                         bool m_KeepIndices = reader.ReadBoolean();
-                        //TODO Need other ways to solve this problem
-                        /*if (version[0] == 5 && version[1] == 6 && version[2] == 4 &&
-                            MeshPD.sourceFile.buildType[0] == "p")
+                        if (preloadData.HasStructMember("m_UsedForStaticMeshColliderOnly"))
                         {
                             var m_UsedForStaticMeshColliderOnly = reader.ReadBoolean();
-                        }*/
+                        }
                     }
                     reader.AlignStream(4);
                     //This is a bug fixed in 2017.3.1p1 and later versions
                     if ((version[0] > 2017 || (version[0] == 2017 && version[1] >= 4)) || //2017.4
-                        ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && MeshPD.sourceFile.buildType[0] == "p") || //fixed after 2017.3.1px
+                        ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && preloadData.sourceFile.buildType[0] == "p") || //fixed after 2017.3.1px
                         ((version[0] == 2017 && version[1] == 3) && m_MeshCompression == 0))//2017.3.xfx with no compression
                     {
                         var m_IndexFormat = reader.ReadInt32();
@@ -1394,8 +1389,8 @@ namespace AssetStudio
             }
             else
             {
-                MeshPD.extension = ".obj";
-                MeshPD.Text = m_Name;
+                preloadData.extension = ".obj";
+                preloadData.Text = m_Name;
             }
         }
     }

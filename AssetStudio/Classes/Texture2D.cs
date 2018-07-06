@@ -69,7 +69,10 @@ namespace AssetStudio
             m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
             m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
             reader.AlignStream(4);
-
+            if (preloadData.HasStructMember("m_StreamingMipmapsPriority"))
+            {
+                var m_StreamingMipmapsPriority = reader.ReadInt32();
+            }
             m_ImageCount = reader.ReadInt32();
             m_TextureDimension = reader.ReadInt32();
             //m_TextureSettings

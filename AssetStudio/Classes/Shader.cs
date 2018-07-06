@@ -27,7 +27,7 @@ namespace AssetStudio
                     var str = (string)ShaderResource.ResourceManager.GetObject($"Shader{sourceFile.version[0]}{sourceFile.version[1]}");
                     if (str == null)
                     {
-                        str = preloadData.Deserialize();
+                        str = preloadData.GetClassString();
                         if (str == null)
                             m_Script = Encoding.UTF8.GetBytes("Serialized Shader can't be read");
                         else
