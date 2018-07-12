@@ -4,7 +4,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace AssetStudio
 {
@@ -117,36 +116,7 @@ namespace AssetStudio
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    var resourceFileName = Path.GetFileName(path);
-                    var resourceFilePath = Path.GetDirectoryName(sourceFile.filePath) + "\\" + resourceFileName;
-                    if (!File.Exists(resourceFilePath))
-                    {
-                        var findFiles = Directory.GetFiles(Path.GetDirectoryName(sourceFile.filePath), resourceFileName, SearchOption.AllDirectories);
-                        if (findFiles.Length > 0)
-                        {
-                            resourceFilePath = findFiles[0];
-                        }
-                    }
-                    if (File.Exists(resourceFilePath))
-                    {
-                        using (var resourceReader = new BinaryReader(File.OpenRead(resourceFilePath)))
-                        {
-                            resourceReader.BaseStream.Position = offset;
-                            image_data = resourceReader.ReadBytes(image_data_size);
-                        }
-                    }
-                    else
-                    {
-                        if (Studio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var resourceReader))
-                        {
-                            resourceReader.Position = offset;
-                            image_data = resourceReader.ReadBytes(image_data_size);
-                        }
-                        else
-                        {
-                            MessageBox.Show($"can't find the resource file {resourceFileName}");
-                        }
-                    }
+                    image_data = ResourcesHelper.GetData(path, sourceFile.filePath, offset, image_data_size);
                 }
                 else
                 {

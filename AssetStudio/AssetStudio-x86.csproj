@@ -169,6 +169,7 @@
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ModelConverter.cs" />
+    <Compile Include="StudioClasses\ResourcesHelper.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">
       <DependentUpon>ShaderResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
