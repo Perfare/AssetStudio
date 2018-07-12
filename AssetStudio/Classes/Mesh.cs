@@ -643,23 +643,33 @@ namespace AssetStudio
                 else
                 {
                     #region read vertex stream
-                    m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
-                    //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
-                    for (int s = 0; s < m_Skin.Length; s++)
+
+                    if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
                     {
-                        m_Skin[s] = new List<BoneInfluence>();
-                        for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = reader.ReadSingle() }); }
-                        for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = reader.ReadInt32(); }
+                        m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
+                        //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
+                        for (int s = 0; s < m_Skin.Length; s++)
+                        {
+                            m_Skin[s] = new List<BoneInfluence>();
+                            for (int i = 0; i < 4; i++)
+                            {
+                                m_Skin[s].Add(new BoneInfluence() {weight = reader.ReadSingle()});
+                            }
 
-                        /*m_Skin[s] = new Dictionary<int, float>();
-						float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-						for (int i = 0; i < 4; i++)
-						{
-							int boneIndex = a_Stream.ReadInt32();
-							m_Skin[s][boneIndex] = weights[i];
-						}*/
+                            for (int i = 0; i < 4; i++)
+                            {
+                                m_Skin[s][i].boneIndex = reader.ReadInt32();
+                            }
+
+                            /*m_Skin[s] = new Dictionary<int, float>();
+                            float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
+                            for (int i = 0; i < 4; i++)
+                            {
+                                int boneIndex = a_Stream.ReadInt32();
+                                m_Skin[s][boneIndex] = weights[i];
+                            }*/
+                        }
                     }
-
 
                     if (version[0] == 3 || (version[0] == 4 && version[1] <= 2))
                     {
@@ -737,59 +747,45 @@ namespace AssetStudio
                         }
                     }
                     #endregion
-
-                    //actual Vertex Buffer
-                    byte[] m_DataSize = new byte[reader.ReadInt32()];
-                    reader.Read(m_DataSize, 0, m_DataSize.Length);
-
-                    if (version[0] >= 5) //create streams
+                    if (version[0] >= 5) //ComputeCompressedStreams
                     {
-                        m_Streams = new StreamInfo[streamCount];
-                        for (int s = 0; s < streamCount; s++)
+                        var streamList = new List<StreamInfo>(streamCount);
+                        uint offset = 0;
+                        for (int str = 0; str < streamCount; str++)
                         {
-                            m_Streams[s] = new StreamInfo();
-                            m_Streams[s].offset = 0;
-                            m_Streams[s].stride = 0;
-
                             uint chnMask = 0;
-                            for (var chn = 0; chn < m_Channels.Length; chn++)
+                            byte stride = 0;
+                            for (int chn = 0; chn < m_Channels.Length; chn++)
                             {
                                 var m_Channel = m_Channels[chn];
-                                if (m_Channel.stream == s)
+                                if (m_Channel.stream == str)
                                 {
+                                    stride += (byte)(m_Channel.dimension * (m_Channel.format == 0 ? 4 : 1));
                                     if (m_Channel.dimension > 0)
                                     {
                                         chnMask |= 1u << chn;
                                     }
-                                    m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format));
                                 }
                             }
 
-                            if (s > 0)
+                            var streamInfo = new StreamInfo
                             {
-                                m_Streams[s].offset = m_Streams[s - 1].offset + m_Streams[s - 1].stride * m_VertexCount;
-                                //sometimes there are 8 bytes between streams
-                                //this is NOT an alignment, even if sometimes it may seem so
-
-                                if (streamCount == 2)
-                                {
-                                    m_Streams[s].offset = m_DataSize.Length - m_Streams[s].stride * m_VertexCount;
-                                }
-                                else
-                                {
-                                    m_VertexCount = 0;
-                                    return;
-                                }
-
-                                /*var absoluteOffset = a_Stream.Position + 4 + m_Streams[s].offset;
-								if ((absoluteOffset % m_Streams[s].stride) != 0)
-								{
-									m_Streams[s].offset += m_Streams[s].stride - (int)(absoluteOffset % m_Streams[s].stride);
-								}*/
-                            }
-                            m_Streams[s].channelMask = new BitArray(new[] { (int)chnMask });
+                                channelMask = new BitArray(new[] { (int)chnMask }),
+                                offset = (int)offset,
+                                stride = stride,
+                                dividerOp = 0,
+                                frequency = 0
+                            };
+                            streamList.Add(streamInfo);
+                            offset += (uint)m_VertexCount * stride + (((uint)m_VertexCount & 1) != 0 ? (uint)8 : 0);
                         }
+
+                        m_Streams = streamList.ToArray();
                     }
+
+                    //actual Vertex Buffer
+                    byte[] m_DataSize = new byte[reader.ReadInt32()];
+                    reader.Read(m_DataSize, 0, m_DataSize.Length);
                     #endregion
 
                     #region compute FvF

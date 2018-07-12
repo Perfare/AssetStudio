@@ -68,8 +68,13 @@ namespace AssetStudio
 
             m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
             m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
+            //m_StreamingMipmaps 2018.2 and up
             reader.AlignStream(4);
-            if (preloadData.HasStructMember("m_StreamingMipmapsPriority"))
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
+            {
+                var m_StreamingMipmapsPriority = reader.ReadInt32();
+            }
+            else if (preloadData.HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }

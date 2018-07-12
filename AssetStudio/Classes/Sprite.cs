@@ -116,10 +116,13 @@ namespace AssetStudio
                         //			Matrix4x4f data
                         size = reader.ReadInt32();
                         reader.Position += size * 64;
-                        //	vector m_SourceSkin
-                        //			BoneWeights4 data
-                        size = reader.ReadInt32();
-                        reader.Position += size * 32;
+                        if (version[0] == 2018 && version[1] < 2) //2018.2 down
+                        {
+                            //	vector m_SourceSkin
+                            //			BoneWeights4 data
+                            size = reader.ReadInt32();
+                            reader.Position += size * 32;
+                        }
                     }
                 }
                 else

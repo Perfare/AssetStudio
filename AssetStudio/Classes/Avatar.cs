@@ -125,23 +125,27 @@ namespace AssetStudio
             {
                 reader.Position += 4;
             }
-            //--- vector m_Handles
-            int numHandles = reader.ReadInt32();
-            for (int i = 0; i < numHandles; i++)
+
+            if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
             {
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
-                    reader.Position += 48;
-                else
-                    reader.Position += 56;
-            }
-            //--- vector m_ColliderArray
-            int numColliders = reader.ReadInt32();
-            for (int i = 0; i < numColliders; i++)
-            {
-                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4))//5.4 and up
-                    reader.Position += 72;
-                else
-                    reader.Position += 80;
+                //--- vector m_Handles
+                int numHandles = reader.ReadInt32();
+                for (int i = 0; i < numHandles; i++)
+                {
+                    if (version[0] > 5 || (version[0] == 5 && version[1] >= 4)) //5.4 and up
+                        reader.Position += 48;
+                    else
+                        reader.Position += 56;
+                }
+                //--- vector m_ColliderArray
+                int numColliders = reader.ReadInt32();
+                for (int i = 0; i < numColliders; i++)
+                {
+                    if (version[0] > 5 || (version[0] == 5 && version[1] >= 4)) //5.4 and up
+                        reader.Position += 72;
+                    else
+                        reader.Position += 80;
+                }
             }
             //--- staticvector m_HumanBoneIndex
             numIndexes = reader.ReadInt32();
@@ -155,11 +159,14 @@ namespace AssetStudio
             {
                 reader.Position += 4;
             }
-            //--- staticvector m_ColliderIndex
-            int numColliderIndexes = reader.ReadInt32();
-            for (int i = 0; i < numColliderIndexes; i++)
+            if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
             {
-                reader.Position += 4;
+                //--- staticvector m_ColliderIndex
+                int numColliderIndexes = reader.ReadInt32();
+                for (int i = 0; i < numColliderIndexes; i++)
+                {
+                    reader.Position += 4;
+                }
             }
             var m_Scale = reader.ReadSingle();
             var m_ArmTwist = reader.ReadSingle();
