@@ -20,7 +20,14 @@ namespace AssetStudio
                 var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
                 if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
                 {
-                    return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
+                    try
+                    {
+                        return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
+                    }
+                    catch
+                    {
+                        return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                    }
                 }
             }
             else
