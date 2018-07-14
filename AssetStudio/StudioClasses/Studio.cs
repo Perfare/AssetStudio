@@ -593,6 +593,7 @@ namespace AssetStudio
                     //遍历一级子节点
                     foreach (TreeNode j in node.Nodes)
                     {
+                        ProgressBarPerformStep();
                         //收集所有子节点
                         var gameObjects = new List<GameObject>();
                         CollectNode(j, gameObjects);
@@ -632,7 +633,6 @@ namespace AssetStudio
                         else
                             FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
-                        ProgressBarPerformStep();
                     }
                 }
             });
