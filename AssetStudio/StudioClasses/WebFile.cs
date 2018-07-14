@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using BrotliSharpLib;
+using Org.Brotli.Dec;
 
 namespace AssetStudio
 {
@@ -47,9 +47,10 @@ namespace AssetStudio
                 reader.Position = 0;
                 if (brotliMagic.SequenceEqual(magic))
                 {
-                    var buff = reader.ReadBytes((int)reader.BaseStream.Length);
-                    var uncompressedData = Brotli.DecompressBuffer(buff, 0, buff.Length);
-                    var stream = new MemoryStream(uncompressedData);
+                    var brotliStream = new BrotliInputStream(reader.BaseStream);
+                    var stream = new MemoryStream();
+                    brotliStream.CopyTo(stream);
+                    stream.Position = 0;
                     using (reader = new EndianBinaryReader(stream, EndianType.LittleEndian))
                     {
                         ReadWebData(reader);

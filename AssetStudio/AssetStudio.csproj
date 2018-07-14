@@ -55,11 +55,6 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BrotliSharpLib, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Library\BrotliSharpLib.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Library\OpenTK.dll</HintPath>
@@ -136,6 +131,21 @@
     <Compile Include="7zip\ICoder.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Brotli\BitReader.cs" />
+    <Compile Include="Brotli\BrotliInputStream.cs" />
+    <Compile Include="Brotli\BrotliRuntimeException.cs" />
+    <Compile Include="Brotli\Context.cs" />
+    <Compile Include="Brotli\Decode.cs" />
+    <Compile Include="Brotli\Dictionary.cs" />
+    <Compile Include="Brotli\Huffman.cs" />
+    <Compile Include="Brotli\HuffmanTreeGroup.cs" />
+    <Compile Include="Brotli\IntReader.cs" />
+    <Compile Include="Brotli\Prefix.cs" />
+    <Compile Include="Brotli\RunningState.cs" />
+    <Compile Include="Brotli\State.cs" />
+    <Compile Include="Brotli\Transform.cs" />
+    <Compile Include="Brotli\Utils.cs" />
+    <Compile Include="Brotli\WordTransformType.cs" />
     <Compile Include="StudioClasses\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
