@@ -36,7 +36,7 @@ namespace AssetStudio
             WebFile
         }
 
-        public static FileType CheckFileType(MemoryStream stream, out EndianBinaryReader reader)
+        public static FileType CheckFileType(Stream stream, out EndianBinaryReader reader)
         {
             reader = new EndianBinaryReader(stream);
             return CheckFileType(reader);
@@ -103,48 +103,48 @@ namespace AssetStudio
 
         private static int ExtractBundleFile(string bundleFileName, EndianBinaryReader reader)
         {
-            var bundleFile = new BundleFile(reader);
+            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
+            var bundleFile = new BundleFile(reader, bundleFileName);
             reader.Dispose();
             if (bundleFile.fileList.Count > 0)
             {
-                StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
                 var extractPath = bundleFileName + "_unpacked\\";
                 Directory.CreateDirectory(extractPath);
-                return ExtractMemoryFile(extractPath, bundleFile.fileList);
+                return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
         }
 
         private static int ExtractWebDataFile(string webFileName, EndianBinaryReader reader)
         {
+            StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
             if (webFile.fileList.Count > 0)
             {
-                StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
                 var extractPath = webFileName + "_unpacked\\";
                 Directory.CreateDirectory(extractPath);
-                return ExtractMemoryFile(extractPath, webFile.fileList);
+                return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractMemoryFile(string extractPath, List<MemoryFile> fileList)
+        private static int ExtractStreamFile(string extractPath, List<StreamFile> fileList)
         {
             int extractedCount = 0;
-            foreach (var memFile in fileList)
+            foreach (var file in fileList)
             {
-                var filePath = extractPath + memFile.fileName;
+                var filePath = extractPath + file.fileName;
                 if (!Directory.Exists(extractPath))
                 {
                     Directory.CreateDirectory(extractPath);
                 }
-                if (!File.Exists(filePath))
+                if (!File.Exists(filePath) && file.stream is MemoryStream stream)
                 {
-                    File.WriteAllBytes(filePath, memFile.stream.ToArray());
-                    memFile.stream.Dispose();
+                    File.WriteAllBytes(filePath, stream.ToArray());
                     extractedCount += 1;
                 }
+                file.stream.Dispose();
             }
             return extractedCount;
         }

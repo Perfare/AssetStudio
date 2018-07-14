@@ -136,7 +136,7 @@
     <Compile Include="7zip\ICoder.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="7zip\SevenZipHelper.cs">
+    <Compile Include="StudioClasses\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classes\Animation.cs" />
@@ -172,6 +172,7 @@
     <Compile Include="StudioClasses\SpriteHelper.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />
+    <Compile Include="StudioClasses\StreamExtensions.cs" />
     <Compile Include="StudioClasses\Studio.cs" />
     <Compile Include="StudioClasses\EndianBinaryReader.cs" />
     <Compile Include="ExportOptions.cs">

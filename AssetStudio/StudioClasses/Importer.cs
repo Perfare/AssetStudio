@@ -100,7 +100,7 @@ namespace AssetStudio
         {
             var fileName = Path.GetFileName(fullName);
             StatusStripUpdate("Decompressing " + fileName);
-            var bundleFile = new BundleFile(reader);
+            var bundleFile = new BundleFile(reader, fullName);
             reader.Dispose();
             foreach (var file in bundleFile.fileList)
             {

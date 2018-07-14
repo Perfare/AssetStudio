@@ -1,25 +1,34 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Lz4;
 using SevenZip.Compression.LZMA;
 
 namespace AssetStudio
 {
-    public class MemoryFile
+    public class StreamFile
     {
         public string fileName;
-        public MemoryStream stream;
+        public Stream stream;
+    }
+
+    public class BlockInfo
+    {
+        public uint compressedSize;
+        public uint uncompressedSize;
+        public short flag;
     }
 
     public class BundleFile
     {
-        public int format;
+        private string path;
         public string versionPlayer;
         public string versionEngine;
-        public List<MemoryFile> fileList = new List<MemoryFile>();
+        public List<StreamFile> fileList = new List<StreamFile>();
 
-        public BundleFile(EndianBinaryReader bundleReader)
+        public BundleFile(EndianBinaryReader bundleReader, string path)
         {
+            this.path = path;
             var signature = bundleReader.ReadStringToNull();
             switch (signature)
             {
@@ -27,7 +36,7 @@ namespace AssetStudio
                 case "UnityRaw":
                 case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
                     {
-                        format = bundleReader.ReadInt32();
+                        var format = bundleReader.ReadInt32();
                         versionPlayer = bundleReader.ReadStringToNull();
                         versionEngine = bundleReader.ReadStringToNull();
                         if (format < 6)
@@ -75,14 +84,16 @@ namespace AssetStudio
                         break;
                     }
                 case "UnityFS":
-                    format = bundleReader.ReadInt32();
-                    versionPlayer = bundleReader.ReadStringToNull();
-                    versionEngine = bundleReader.ReadStringToNull();
-                    if (format == 6)
                     {
-                        ReadFormat6(bundleReader);
+                        var format = bundleReader.ReadInt32();
+                        versionPlayer = bundleReader.ReadStringToNull();
+                        versionEngine = bundleReader.ReadStringToNull();
+                        if (format == 6)
+                        {
+                            ReadFormat6(bundleReader);
+                        }
+                        break;
                     }
-                    break;
             }
         }
 
@@ -91,7 +102,7 @@ namespace AssetStudio
             int fileCount = reader.ReadInt32();
             for (int i = 0; i < fileCount; i++)
             {
-                var file = new MemoryFile();
+                var file = new StreamFile();
                 file.fileName = reader.ReadStringToNull();
                 int fileOffset = reader.ReadInt32();
                 fileOffset += offset;
@@ -151,63 +162,82 @@ namespace AssetStudio
                     }
                     //case 4:LZHAM?
             }
-            using (var blocksInfo = new EndianBinaryReader(blocksInfoStream))
+            using (var blocksInfoReader = new EndianBinaryReader(blocksInfoStream))
             {
-                blocksInfo.Position = 0x10;
-                int blockcount = blocksInfo.ReadInt32();
-                var assetsDataStream = new MemoryStream();
+                blocksInfoReader.Position = 0x10;
+                int blockcount = blocksInfoReader.ReadInt32();
+                var blockInfos = new BlockInfo[blockcount];
                 for (int i = 0; i < blockcount; i++)
                 {
-                    uncompressedSize = blocksInfo.ReadInt32();
-                    compressedSize = blocksInfo.ReadInt32();
-                    flag = blocksInfo.ReadInt16();
-                    var compressedBytes = bundleReader.ReadBytes(compressedSize);
-                    switch (flag & 0x3F)
+                    blockInfos[i] = new BlockInfo
+                    {
+                        uncompressedSize = blocksInfoReader.ReadUInt32(),
+                        compressedSize = blocksInfoReader.ReadUInt32(),
+                        flag = blocksInfoReader.ReadInt16()
+                    };
+                }
+                Stream dataStream;
+                var uncompressedSizeSum = blockInfos.Sum(x => x.uncompressedSize);
+                if (uncompressedSizeSum > int.MaxValue)
+                {
+                    /*var memoryMappedFile = MemoryMappedFile.CreateNew(Path.GetFileName(path), uncompressedSizeSum);
+                    assetsDataStream = memoryMappedFile.CreateViewStream();*/
+                    dataStream = new FileStream(path + ".temp", FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                }
+                else
+                {
+                    dataStream = new MemoryStream();
+                }
+                foreach (var blockInfo in blockInfos)
+                {
+                    switch (blockInfo.flag & 0x3F)
                     {
                         default://None
                             {
-                                assetsDataStream.Write(compressedBytes, 0, compressedSize);
+                                bundleReader.BaseStream.CopyTo(dataStream, blockInfo.compressedSize);
                                 break;
                             }
                         case 1://LZMA
                             {
-                                var uncompressedBytes = new byte[uncompressedSize];
-                                using (var mstream = new MemoryStream(compressedBytes))
-                                {
-                                    var decoder = SevenZipHelper.StreamDecompress(mstream, uncompressedSize);
-                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                    decoder.Dispose();
-                                }
-                                assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
+                                SevenZipHelper.StreamDecompress(bundleReader.BaseStream, dataStream, blockInfo.compressedSize, blockInfo.uncompressedSize);
                                 break;
                             }
                         case 2://LZ4
                         case 3://LZ4HC
                             {
-                                var uncompressedBytes = new byte[uncompressedSize];
-                                using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
-                                {
-                                    decoder.Read(uncompressedBytes, 0, uncompressedSize);
-                                }
-                                assetsDataStream.Write(uncompressedBytes, 0, uncompressedSize);
+                                var lz4Stream = new Lz4DecoderStream(bundleReader.BaseStream, blockInfo.compressedSize);
+                                lz4Stream.CopyTo(dataStream, blockInfo.uncompressedSize);
                                 break;
                             }
                             //case 4:LZHAM?
                     }
                 }
-                using (var assetsDataReader = new EndianBinaryReader(assetsDataStream))
+                dataStream.Position = 0;
+                using (dataStream)
                 {
-                    var entryinfo_count = blocksInfo.ReadInt32();
+                    var entryinfo_count = blocksInfoReader.ReadInt32();
                     for (int i = 0; i < entryinfo_count; i++)
                     {
-                        var file = new MemoryFile();
-                        var entryinfo_offset = blocksInfo.ReadInt64();
-                        var entryinfo_size = blocksInfo.ReadInt64();
-                        flag = blocksInfo.ReadInt32();
-                        file.fileName = Path.GetFileName(blocksInfo.ReadStringToNull());
-                        assetsDataReader.Position = entryinfo_offset;
-                        var buffer = assetsDataReader.ReadBytes((int)entryinfo_size);
-                        file.stream = new MemoryStream(buffer);
+                        var file = new StreamFile();
+                        var entryinfo_offset = blocksInfoReader.ReadInt64();
+                        var entryinfo_size = blocksInfoReader.ReadInt64();
+                        flag = blocksInfoReader.ReadInt32();
+                        file.fileName = Path.GetFileName(blocksInfoReader.ReadStringToNull());
+                        if (entryinfo_size > int.MaxValue)
+                        {
+                            /*var memoryMappedFile = MemoryMappedFile.CreateNew(file.fileName, entryinfo_size);
+                            file.stream = memoryMappedFile.CreateViewStream();*/
+                            var extractPath = path + "_unpacked\\";
+                            Directory.CreateDirectory(extractPath);
+                            file.stream = new FileStream(extractPath + file.fileName, FileMode.Create);
+                        }
+                        else
+                        {
+                            file.stream = new MemoryStream();
+                        }
+                        dataStream.Position = entryinfo_offset;
+                        dataStream.CopyTo(file.stream, entryinfo_size);
+                        file.stream.Position = 0;
                         fileList.Add(file);
                     }
                 }

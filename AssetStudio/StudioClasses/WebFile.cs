@@ -12,7 +12,7 @@ namespace AssetStudio
     {
         public static byte[] gzipMagic = { 0x1f, 0x8b };
         public static byte[] brotliMagic = { 0x62, 0x72, 0x6F, 0x74, 0x6C, 0x69 };
-        public List<MemoryFile> fileList = new List<MemoryFile>();
+        public List<StreamFile> fileList = new List<StreamFile>();
 
 
         public class WebData
@@ -82,7 +82,7 @@ namespace AssetStudio
 
             foreach (var data in dataList)
             {
-                var file = new MemoryFile();
+                var file = new StreamFile();
                 file.fileName = Path.GetFileName(data.path);
                 reader.Position = data.dataOffset;
                 file.stream = new MemoryStream(reader.ReadBytes(data.dataLength));

@@ -136,9 +136,6 @@
     <Compile Include="7zip\ICoder.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="7zip\SevenZipHelper.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="AssetStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -170,6 +167,7 @@
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ModelConverter.cs" />
     <Compile Include="StudioClasses\ResourcesHelper.cs" />
+    <Compile Include="StudioClasses\SevenZipHelper.cs" />
     <Compile Include="StudioClasses\ShaderResource.Designer.cs">
       <DependentUpon>ShaderResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -179,6 +177,7 @@
     <Compile Include="StudioClasses\EndianBinaryReader.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />
+    <Compile Include="StudioClasses\StreamExtensions.cs" />
     <Compile Include="StudioClasses\Studio.cs" />
     <Compile Include="StudioClasses\ClassIDReference.cs" />
     <Compile Include="ExportOptions.cs">
