@@ -178,6 +178,10 @@ namespace AssetStudio
             var sb = new StringBuilder();
             sb.AppendLine("g " + m_Mesh.m_Name);
             #region Vertices
+            if (m_Mesh.m_Vertices == null || m_Mesh.m_Vertices.Length == 0)
+            {
+                return false;
+            }
             int c = 3;
             if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
             {

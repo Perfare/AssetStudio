@@ -841,9 +841,13 @@ namespace AssetStudio
                         var m_Mesh = new Mesh(asset, true);
                         if (m_Mesh.m_VertexCount > 0)
                         {
-                            glControl1.Visible = true;
                             viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
                             #region Vertices
+                            if (m_Mesh.m_Vertices == null || m_Mesh.m_Vertices.Length == 0)
+                            {
+                                StatusStripUpdate("Mesh can't be previewed.");
+                                return;
+                            }
                             int count = 3;
                             if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
                             {
@@ -970,6 +974,7 @@ namespace AssetStudio
                                 }
                             }
                             #endregion
+                            glControl1.Visible = true;
                             createVAO();
                         }
                         StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
