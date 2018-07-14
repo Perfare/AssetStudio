@@ -747,45 +747,53 @@ namespace AssetStudio
                         }
                     }
                     #endregion
-                    if (version[0] >= 5) //ComputeCompressedStreams
+                    //actual Vertex Buffer
+                    byte[] m_DataSize = new byte[reader.ReadInt32()];
+                    reader.Read(m_DataSize, 0, m_DataSize.Length);
+
+                    if (version[0] >= 5) //create streams
                     {
-                        var streamList = new List<StreamInfo>(streamCount);
-                        uint offset = 0;
-                        for (int str = 0; str < streamCount; str++)
+                        m_Streams = new StreamInfo[streamCount];
+                        for (int s = 0; s < streamCount; s++)
                         {
+                            m_Streams[s] = new StreamInfo();
+                            m_Streams[s].offset = 0;
+                            m_Streams[s].stride = 0;
+
                             uint chnMask = 0;
-                            byte stride = 0;
-                            for (int chn = 0; chn < m_Channels.Length; chn++)
+                            for (var chn = 0; chn < m_Channels.Length; chn++)
                             {
                                 var m_Channel = m_Channels[chn];
-                                if (m_Channel.stream == str)
+                                if (m_Channel.stream == s)
                                 {
-                                    stride += (byte)(m_Channel.dimension * (m_Channel.format == 0 ? 4 : 1));
                                     if (m_Channel.dimension > 0)
                                     {
                                         chnMask |= 1u << chn;
                                     }
+                                    m_Streams[s].stride += m_Channel.dimension * (4 / (int)Math.Pow(2, m_Channel.format));
                                 }
                             }
 
-                            var streamInfo = new StreamInfo
+                            if (s > 0)
                             {
-                                channelMask = new BitArray(new[] { (int)chnMask }),
-                                offset = (int)offset,
-                                stride = stride,
-                                dividerOp = 0,
-                                frequency = 0
-                            };
-                            streamList.Add(streamInfo);
-                            offset += (uint)m_VertexCount * stride + (((uint)m_VertexCount & 1) != 0 ? (uint)8 : 0);
+                                m_Streams[s].offset = m_Streams[s - 1].offset + m_Streams[s - 1].stride * m_VertexCount;
+                                //sometimes there are 8 bytes between streams
+                                //this is NOT an alignment, even if sometimes it may seem so
+
+                                if (streamCount >= 2)
+                                {
+                                    m_Streams[s].offset = m_DataSize.Length - m_Streams[s].stride * m_VertexCount;
+                                }
+
+                                /*var absoluteOffset = a_Stream.Position + 4 + m_Streams[s].offset;
+								if ((absoluteOffset % m_Streams[s].stride) != 0)
+								{
+									m_Streams[s].offset += m_Streams[s].stride - (int)(absoluteOffset % m_Streams[s].stride);
+								}*/
+                            }
+                            m_Streams[s].channelMask = new BitArray(new[] { (int)chnMask });
                         }
-
-                        m_Streams = streamList.ToArray();
                     }
-
-                    //actual Vertex Buffer
-                    byte[] m_DataSize = new byte[reader.ReadInt32()];
-                    reader.Read(m_DataSize, 0, m_DataSize.Length);
                     #endregion
 
                     #region compute FvF
