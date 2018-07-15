@@ -291,7 +291,7 @@ namespace AssetStudio
                         iVertex.UV = new[] { mesh.m_UV2[j * 2], -mesh.m_UV2[j * 2 + 1] };
                     }
                     //Tangent
-                    if (mesh.m_Tangents != null)
+                    if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
                     {
                         iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
                     }
