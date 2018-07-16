@@ -228,10 +228,35 @@ namespace AssetStudio
             assetsfileList.TryGetGameObject(meshR.m_GameObject, out var m_GameObject2);
             assetsfileList.TryGetTransform(m_GameObject2.m_Transform, out var meshTransform);
             iMesh.Name = GetTransformPath(meshTransform);
-            iMesh.SubmeshList = new List<ImportedSubmesh>(mesh.m_SubMeshes.Count);
-            int sum = 0;
+            iMesh.SubmeshList = new List<ImportedSubmesh>();
+            var subHashSet = new HashSet<int>();
+            var combine = false;
+            if (meshR.m_StaticBatchInfo != null && meshR.m_StaticBatchInfo.subMeshCount > 0)
+            {
+                var finalSubMesh = meshR.m_StaticBatchInfo.firstSubMesh + meshR.m_StaticBatchInfo.subMeshCount;
+                for (int i = meshR.m_StaticBatchInfo.firstSubMesh; i < finalSubMesh; i++)
+                {
+                    subHashSet.Add(i);
+                }
+                combine = true;
+            }
+            else if (meshR.m_SubsetIndices != null)
+            {
+                foreach (var index in meshR.m_SubsetIndices)
+                {
+                    subHashSet.Add((int)index);
+                }
+                combine = true;
+            }
+            int firstFace = 0;
             for (int i = 0; i < mesh.m_SubMeshes.Count; i++)
             {
+                int numFaces = (int)mesh.m_SubMeshes[i].indexCount / 3;
+                if (subHashSet.Count > 0 && !subHashSet.Contains(i))
+                {
+                    firstFace += numFaces;
+                    continue;
+                }
                 var submesh = mesh.m_SubMeshes[i];
                 var iSubmesh = new ImportedSubmesh();
                 Material mat = null;
@@ -310,10 +335,9 @@ namespace AssetStudio
                     iSubmesh.VertexList.Add(iVertex);
                 }
                 //Face
-                int numFaces = (int)mesh.m_SubMeshes[i].indexCount / 3;
                 iSubmesh.FaceList = new List<ImportedFace>(numFaces);
-                var end = sum + numFaces;
-                for (int f = sum; f < end; f++)
+                var end = firstFace + numFaces;
+                for (int f = firstFace; f < end; f++)
                 {
                     var face = new ImportedFace();
                     face.VertexIndices = new int[3];
@@ -322,7 +346,7 @@ namespace AssetStudio
                     face.VertexIndices[2] = (int)(mesh.m_Indices[f * 3] - submesh.firstVertex);
                     iSubmesh.FaceList.Add(face);
                 }
-                sum = end;
+                firstFace = end;
                 iMesh.SubmeshList.Add(iSubmesh);
             }
 
@@ -432,6 +456,35 @@ namespace AssetStudio
                                 morph.KeyframeList.Add(keyframe);
                             }
                         }
+                    }
+                }
+            }
+            //TODO
+            if (combine)
+            {
+                assetsfileList.TryGetGameObject(meshR.m_GameObject, out var m_GameObject);
+                foreach (var root in FrameList)
+                {
+                    var frame = ImportedHelpers.FindFrame(m_GameObject.m_Name, root);
+                    if (frame != null)
+                    {
+                        if (frame.Parent != null)
+                        {
+                            var parent = frame;
+                            while (true)
+                            {
+                                if (parent.Parent != null)
+                                {
+                                    parent = parent.Parent;
+                                }
+                                else
+                                {
+                                    frame.Matrix = parent.Matrix;
+                                    break;
+                                }
+                            }
+                        }
+                        break;
                     }
                 }
             }

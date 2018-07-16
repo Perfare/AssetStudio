@@ -64,12 +64,16 @@ namespace AssetStudio
             {
                 if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
                 {
-                    reader.Position += 4;//m_StaticBatchInfo
+                    m_StaticBatchInfo = new StaticBatchInfo
+                    {
+                        firstSubMesh = reader.ReadUInt16(),
+                        subMeshCount = reader.ReadUInt16()
+                    };
                 }
                 else
                 {
-                    int m_SubsetIndices_size = reader.ReadInt32();
-                    reader.Position += m_SubsetIndices_size * 4;
+                    int numSubsetIndices = reader.ReadInt32();
+                    m_SubsetIndices = reader.ReadUInt32Array(numSubsetIndices);
                 }
 
                 var m_StaticBatchRoot = sourceFile.ReadPPtr();

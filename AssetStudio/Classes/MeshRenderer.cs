@@ -5,10 +5,18 @@ using System.Text;
 
 namespace AssetStudio
 {
+    public class StaticBatchInfo
+    {
+        public ushort firstSubMesh;
+        public ushort subMeshCount;
+    }
+
     public class MeshRenderer
     {
         public PPtr m_GameObject;
         public PPtr[] m_Materials;
+        public StaticBatchInfo m_StaticBatchInfo;
+        public uint[] m_SubsetIndices;
 
         protected MeshRenderer() { }
 
@@ -55,6 +63,27 @@ namespace AssetStudio
             for (int m = 0; m < m_Materials.Length; m++)
             {
                 m_Materials[m] = sourceFile.ReadPPtr();
+            }
+
+            if (version[0] < 3)
+            {
+                reader.Position += 16;//m_LightmapTilingOffset vector4d
+            }
+            else
+            {
+                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
+                {
+                    m_StaticBatchInfo = new StaticBatchInfo
+                    {
+                        firstSubMesh = reader.ReadUInt16(),
+                        subMeshCount = reader.ReadUInt16()
+                    };
+                }
+                else
+                {
+                    int numSubsetIndices = reader.ReadInt32();
+                    m_SubsetIndices = reader.ReadUInt32Array(numSubsetIndices);
+                }
             }
         }
     }
