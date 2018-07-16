@@ -270,7 +270,7 @@ namespace AssetStudio
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
                 iSubmesh.VertexList = new List<ImportedVertex>((int)submesh.vertexCount);
-                var vertexColours = mesh.m_Colors != null && mesh.m_Colors.Length > 0;
+                var vertexColours = mesh.m_Colors != null && (mesh.m_Colors.Length == mesh.m_VertexCount * 3 || mesh.m_Colors.Length == mesh.m_VertexCount * 4);
                 for (var j = mesh.m_SubMeshes[i].firstVertex; j < mesh.m_SubMeshes[i].firstVertex + mesh.m_SubMeshes[i].vertexCount; j++)
                 {
                     var iVertex = vertexColours ? new ImportedVertexWithColour() : new ImportedVertex();

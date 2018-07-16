@@ -941,15 +941,7 @@ namespace AssetStudio
                             }
                             #endregion
                             #region Colors
-                            if (m_Mesh.m_Colors == null || m_Mesh.m_Colors.Length == 0)
-                            {
-                                colorData = new Vector4[m_Mesh.m_VertexCount];
-                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                                {
-                                    colorData[c] = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
-                                }
-                            }
-                            else if (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
+                            if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
                             {
                                 colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
@@ -961,7 +953,7 @@ namespace AssetStudio
                                         1.0f);
                                 }
                             }
-                            else
+                            else if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 4)
                             {
                                 colorData = new Vector4[m_Mesh.m_VertexCount];
                                 for (int c = 0; c < m_Mesh.m_VertexCount; c++)
@@ -971,6 +963,14 @@ namespace AssetStudio
                                     m_Mesh.m_Colors[c * 4 + 1],
                                     m_Mesh.m_Colors[c * 4 + 2],
                                     m_Mesh.m_Colors[c * 4 + 3]);
+                                }
+                            }
+                            else
+                            {
+                                colorData = new Vector4[m_Mesh.m_VertexCount];
+                                for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                                {
+                                    colorData[c] = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
                                 }
                             }
                             #endregion

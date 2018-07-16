@@ -803,7 +803,7 @@ namespace AssetStudio
                 #endregion
 
                 #region Colors
-                if ((bool)Properties.Settings.Default["exportColors"] && m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length > 0)
+                if ((bool)Properties.Settings.Default["exportColors"] && m_Mesh.m_Colors != null && (m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3 || m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 4))
                 {
                     ob.Append("\n\t\tLayerElementColor: 0 {");
                     ob.Append("\n\t\t\tVersion: 101");
