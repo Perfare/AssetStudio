@@ -810,18 +810,21 @@ namespace AssetStudio
                         }
                     }
                     #endregion
+                    //actual Vertex Buffer
+                    var m_DataSize = reader.ReadBytes(reader.ReadInt32());
+
                     if (version[0] >= 5) //ComputeCompressedStreams
                     {
                         m_Streams = new StreamInfo[streamCount];
                         int offset = 0;
-                        for (int str = 0; str < streamCount; str++)
+                        for (int s = 0; s < streamCount; s++)
                         {
                             int chnMask = 0;
                             int stride = 0;
                             for (int chn = 0; chn < m_Channels.Length; chn++)
                             {
                                 var m_Channel = m_Channels[chn];
-                                if (m_Channel.stream == str)
+                                if (m_Channel.stream == s)
                                 {
                                     if (m_Channel.dimension > 0)
                                     {
@@ -830,7 +833,11 @@ namespace AssetStudio
                                     }
                                 }
                             }
-                            m_Streams[str] = new StreamInfo
+                            if (streamCount == 2 && s == 1)
+                            {
+                                offset = m_DataSize.Length - stride * m_VertexCount;
+                            }
+                            m_Streams[s] = new StreamInfo
                             {
                                 channelMask = new BitArray(new[] { chnMask }),
                                 offset = offset,
@@ -841,10 +848,6 @@ namespace AssetStudio
                             offset += m_VertexCount * stride + ((m_VertexCount & 1) != 0 ? 8 : 0);
                         }
                     }
-
-                    //actual Vertex Buffer
-                    byte[] m_DataSize = new byte[reader.ReadInt32()];
-                    reader.Read(m_DataSize, 0, m_DataSize.Length);
                     #endregion
 
                     #region compute FvF
