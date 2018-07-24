@@ -231,7 +231,7 @@ namespace AssetStudio
             var subHashSet = new HashSet<int>();
             var combine = false;
             int firstSubMesh = 0;
-            if (meshR.m_StaticBatchInfo != null && meshR.m_StaticBatchInfo.subMeshCount > 0)
+            if (meshR.m_StaticBatchInfo?.subMeshCount > 0)
             {
                 firstSubMesh = meshR.m_StaticBatchInfo.firstSubMesh;
                 var finalSubMesh = meshR.m_StaticBatchInfo.firstSubMesh + meshR.m_StaticBatchInfo.subMeshCount;
@@ -241,7 +241,7 @@ namespace AssetStudio
                 }
                 combine = true;
             }
-            else if (meshR.m_SubsetIndices != null)
+            else if (meshR.m_SubsetIndices?.Length > 0)
             {
                 firstSubMesh = (int)meshR.m_SubsetIndices.Min(x => x);
                 foreach (var index in meshR.m_SubsetIndices)
@@ -284,7 +284,7 @@ namespace AssetStudio
                     }
                     iVertex.Position = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
                     //Normals
-                    if (mesh.m_Normals != null && mesh.m_Normals.Length > 0)
+                    if (mesh.m_Normals?.Length > 0)
                     {
                         if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
                         {
