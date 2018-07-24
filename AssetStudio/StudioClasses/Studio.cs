@@ -672,22 +672,30 @@ namespace AssetStudio
             {
                 var gameObjects = new List<GameObject>();
                 GetSelectedParentNode(nodes, gameObjects);
-                SetProgressBarValue(0);
-                SetProgressBarMaximum(gameObjects.Count);
-                foreach (var gameObject in gameObjects)
+                if (gameObjects.Count > 0)
                 {
-                    StatusStripUpdate($"Exporting {gameObject.Text}");
-                    try
+                    SetProgressBarValue(0);
+                    SetProgressBarMaximum(gameObjects.Count);
+                    foreach (var gameObject in gameObjects)
                     {
-                        ExportGameObject(gameObject, exportPath, animationList);
-                        StatusStripUpdate($"Finished exporting {gameObject.Text}");
+                        StatusStripUpdate($"Exporting {gameObject.Text}");
+                        try
+                        {
+                            ExportGameObject(gameObject, exportPath, animationList);
+                            StatusStripUpdate($"Finished exporting {gameObject.Text}");
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                            StatusStripUpdate("Error in export");
+                        }
+
+                        ProgressBarPerformStep();
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
-                        StatusStripUpdate("Error in export");
-                    }
-                    ProgressBarPerformStep();
+                }
+                else
+                {
+                    StatusStripUpdate("No Object can be exported.");
                 }
             });
         }

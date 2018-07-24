@@ -211,6 +211,11 @@ namespace AssetStudio
                         }
                 }
 
+                if (fileGen > 6 && m_Version == "")
+                {
+                    return;
+                }
+
                 if (platform > 255 || platform < 0)
                 {
                     byte[] b32 = BitConverter.GetBytes(platform);
