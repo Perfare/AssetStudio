@@ -9,7 +9,7 @@ namespace AssetStudio
     public class GameObject : TreeNode
     {
         public AssetPreloadData asset;
-        public List<PPtr> m_Components = new List<PPtr>();
+        public List<PPtr> m_Components;
         public int m_Layer;
         public string m_Name;
         public ushort m_Tag;
@@ -34,6 +34,7 @@ namespace AssetStudio
                 uniqueID = preloadData.uniqueID;
 
                 int m_Component_size = reader.ReadInt32();
+                m_Components = new List<PPtr>(m_Component_size);
                 for (int j = 0; j < m_Component_size; j++)
                 {
                     if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up

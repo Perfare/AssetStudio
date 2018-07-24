@@ -8,7 +8,7 @@ namespace AssetStudio
     class Avatar
     {
         public string m_Name;
-        private List<KeyValuePair<uint, string>> m_TOS;
+        public List<KeyValuePair<uint, string>> m_TOS;
 
         public Avatar(AssetPreloadData preloadData)
         {

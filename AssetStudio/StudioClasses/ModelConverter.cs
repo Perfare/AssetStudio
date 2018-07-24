@@ -65,7 +65,6 @@ namespace AssetStudio
 
         private void InitWithAnimator(Animator m_Animator)
         {
-            //In fact, doesn't need this.
             if (assetsfileList.TryGetPD(m_Animator.m_Avatar, out var m_Avatar))
                 avatar = new Avatar(m_Avatar);
 
@@ -231,8 +230,10 @@ namespace AssetStudio
             iMesh.SubmeshList = new List<ImportedSubmesh>();
             var subHashSet = new HashSet<int>();
             var combine = false;
+            int firstSubMesh = 0;
             if (meshR.m_StaticBatchInfo != null && meshR.m_StaticBatchInfo.subMeshCount > 0)
             {
+                firstSubMesh = meshR.m_StaticBatchInfo.firstSubMesh;
                 var finalSubMesh = meshR.m_StaticBatchInfo.firstSubMesh + meshR.m_StaticBatchInfo.subMeshCount;
                 for (int i = meshR.m_StaticBatchInfo.firstSubMesh; i < finalSubMesh; i++)
                 {
@@ -242,6 +243,7 @@ namespace AssetStudio
             }
             else if (meshR.m_SubsetIndices != null)
             {
+                firstSubMesh = (int)meshR.m_SubsetIndices.Min(x => x);
                 foreach (var index in meshR.m_SubsetIndices)
                 {
                     subHashSet.Add((int)index);
@@ -260,9 +262,9 @@ namespace AssetStudio
                 var submesh = mesh.m_SubMeshes[i];
                 var iSubmesh = new ImportedSubmesh();
                 Material mat = null;
-                if (i < meshR.m_Materials.Length)
+                if (i - firstSubMesh < meshR.m_Materials.Length)
                 {
-                    if (assetsfileList.TryGetPD(meshR.m_Materials[i], out var MaterialPD))
+                    if (assetsfileList.TryGetPD(meshR.m_Materials[i - firstSubMesh], out var MaterialPD))
                     {
                         mat = new Material(MaterialPD);
                     }
@@ -379,7 +381,8 @@ namespace AssetStudio
                         }
                         if (string.IsNullOrEmpty(bone.Name))
                         {
-                            throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
+                            //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
+                            continue;
                         }
                     }
 
@@ -459,6 +462,7 @@ namespace AssetStudio
                     }
                 }
             }
+
             //TODO
             if (combine)
             {
