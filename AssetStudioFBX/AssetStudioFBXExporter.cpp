@@ -218,7 +218,7 @@ namespace AssetStudio
 			while (parent != nullptr)
 			{
 				exportFrames->Add(parent->Name);
-				parent = (ImportedFrame^)parent->Parent;
+				parent = parent->Parent;
 			}
 
 			List<ImportedBone^>^ boneList = meshListSome->BoneList;
@@ -232,7 +232,7 @@ namespace AssetStudio
 						while (boneParent != nullptr)
 						{
 							exportFrames->Add(boneParent->Name);
-							boneParent = (ImportedFrame^)boneParent->Parent;
+							boneParent = boneParent->Parent;
 						}
 					}
 				}
