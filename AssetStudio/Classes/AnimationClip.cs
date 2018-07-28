@@ -322,7 +322,7 @@ namespace AssetStudio
             int numDoFs = reader.ReadInt32();
             m_DoFArray = reader.ReadSingleArray(numDoFs);
 
-            if (version[0] >= 5)//5.0 and up
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 2))//5.2 and up
             {
                 int numTDof = reader.ReadInt32();
                 m_TDoFArray = new object[numTDof];
