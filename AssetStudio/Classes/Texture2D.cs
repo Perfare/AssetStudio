@@ -77,6 +77,10 @@ namespace AssetStudio
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }
+            if (preloadData.HasStructMember("m_StreamingGroupID")) //What the hell is this?
+            {
+                var m_StreamingGroupID = reader.ReadUInt32();
+            }
             m_ImageCount = reader.ReadInt32();
             m_TextureDimension = reader.ReadInt32();
             //m_TextureSettings
