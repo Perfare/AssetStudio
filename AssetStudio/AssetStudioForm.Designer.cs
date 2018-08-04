@@ -59,7 +59,7 @@
             this.exportFilteredAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.showTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.filterTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.buildClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -140,7 +140,7 @@
             this.optionsToolStripMenuItem,
             this.modelToolStripMenuItem,
             this.exportToolStripMenuItem,
-            this.showTypeToolStripMenuItem,
+            this.filterTypeToolStripMenuItem,
             this.debugMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -385,11 +385,11 @@
             // 
             // showTypeToolStripMenuItem
             // 
-            this.showTypeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.filterTypeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.allToolStripMenuItem});
-            this.showTypeToolStripMenuItem.Name = "showTypeToolStripMenuItem";
-            this.showTypeToolStripMenuItem.Size = new System.Drawing.Size(83, 21);
-            this.showTypeToolStripMenuItem.Text = "Show Type";
+            this.filterTypeToolStripMenuItem.Name = "showTypeToolStripMenuItem";
+            this.filterTypeToolStripMenuItem.Size = new System.Drawing.Size(83, 21);
+            this.filterTypeToolStripMenuItem.Text = "Filter Type";
             // 
             // allToolStripMenuItem
             // 
@@ -1067,7 +1067,7 @@
         private System.Windows.Forms.ToolStripMenuItem exportAnimatorwithselectedAnimationClipMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportobjectswithselectedAnimationClipMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedAssetsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem showTypeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem filterTypeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem allToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedObjectsToolStripMenuItem;

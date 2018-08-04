@@ -224,7 +224,7 @@ namespace AssetStudio
                         Text = type.ToString()
                     };
                     typeItem.Click += typeToolStripMenuItem_Click;
-                    showTypeToolStripMenuItem.DropDownItems.Add(typeItem);
+                    filterTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
                 allToolStripMenuItem.Checked = true;
                 StatusStripUpdate($"Finished loading {assetsfileList.Count} files with {assetListView.Items.Count} exportable assets.");
@@ -241,9 +241,9 @@ namespace AssetStudio
             }
             else if (allToolStripMenuItem.Checked)
             {
-                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
+                for (var i = 1; i < filterTypeToolStripMenuItem.DropDownItems.Count; i++)
                 {
-                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
+                    var item = (ToolStripMenuItem)filterTypeToolStripMenuItem.DropDownItems[i];
                     item.Checked = false;
                 }
             }
@@ -1685,10 +1685,10 @@ namespace AssetStudio
             enableFiltering = false;
             listSearch.Text = " Filter ";
 
-            var count = showTypeToolStripMenuItem.DropDownItems.Count;
+            var count = filterTypeToolStripMenuItem.DropDownItems.Count;
             for (var i = 1; i < count; i++)
             {
-                showTypeToolStripMenuItem.DropDownItems.RemoveAt(1);
+                filterTypeToolStripMenuItem.DropDownItems.RemoveAt(1);
             }
 
             FMODreset();
@@ -1857,9 +1857,9 @@ namespace AssetStudio
             var show = new List<ClassIDReference>();
             if (!allToolStripMenuItem.Checked)
             {
-                for (var i = 1; i < showTypeToolStripMenuItem.DropDownItems.Count; i++)
+                for (var i = 1; i < filterTypeToolStripMenuItem.DropDownItems.Count; i++)
                 {
-                    var item = (ToolStripMenuItem)showTypeToolStripMenuItem.DropDownItems[i];
+                    var item = (ToolStripMenuItem)filterTypeToolStripMenuItem.DropDownItems[i];
                     if (item.Checked)
                     {
                         show.Add((ClassIDReference)Enum.Parse(typeof(ClassIDReference), item.Text));
