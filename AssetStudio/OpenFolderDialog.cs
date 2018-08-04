@@ -8,32 +8,19 @@ namespace AssetStudio
 {
     class OpenFolderDialog
     {
-        /// <summary>  
-        /// Gets/sets folder in which dialog will be open.  
-        /// </summary>  
         public string InitialFolder { get; set; }
-
-        /// <summary>  
-        /// Gets/sets directory in which dialog will be open if there is no recent directory available.  
-        /// </summary>  
         public string DefaultFolder { get; set; }
-
-        /// <summary>  
-        /// Gets selected folder.  
-        /// </summary>  
         public string Folder { get; private set; }
+        public string Title { get; set; }
 
-
-        internal DialogResult ShowDialog(IWin32Window owner)
+        internal DialogResult ShowDialog(IWin32Window owner = null)
         {
             if (Environment.OSVersion.Version.Major >= 6)
             {
                 return ShowVistaDialog(owner);
             }
-            else
-            {
-                return ShowLegacyDialog(owner);
-            }
+
+            return ShowLegacyDialog(owner);
         }
 
         private DialogResult ShowVistaDialog(IWin32Window owner)
@@ -42,24 +29,26 @@ namespace AssetStudio
             frm.GetOptions(out var options);
             options |= NativeMethods.FOS_PICKFOLDERS | NativeMethods.FOS_FORCEFILESYSTEM | NativeMethods.FOS_NOVALIDATE | NativeMethods.FOS_NOTESTFILECREATE | NativeMethods.FOS_DONTADDTORECENT;
             frm.SetOptions(options);
-            if (this.InitialFolder != null)
+            if (Title != null)
+                frm.SetTitle(Title);
+            if (InitialFolder != null)
             {
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
-                if (NativeMethods.SHCreateItemFromParsingName(this.InitialFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
+                if (NativeMethods.SHCreateItemFromParsingName(InitialFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
                 {
                     frm.SetFolder(directoryShellItem);
                 }
             }
-            if (this.DefaultFolder != null)
+            if (DefaultFolder != null)
             {
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
-                if (NativeMethods.SHCreateItemFromParsingName(this.DefaultFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
+                if (NativeMethods.SHCreateItemFromParsingName(DefaultFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
                 {
                     frm.SetDefaultFolder(directoryShellItem);
                 }
             }
 
-            if (frm.Show(owner.Handle) == NativeMethods.S_OK)
+            if ((owner == null ? frm.Show() : frm.Show(owner.Handle)) == NativeMethods.S_OK)
             {
                 if (frm.GetResult(out var shellItem) == NativeMethods.S_OK)
                 {
@@ -69,7 +58,7 @@ namespace AssetStudio
                         {
                             try
                             {
-                                this.Folder = Marshal.PtrToStringAuto(pszString);
+                                Folder = Marshal.PtrToStringAuto(pszString);
                                 return DialogResult.OK;
                             }
                             finally
@@ -87,16 +76,17 @@ namespace AssetStudio
         {
             using (var frm = new FolderBrowserDialog())
             {
-                if (this.InitialFolder != null) { frm.SelectedPath = this.InitialFolder; }
-                if (frm.ShowDialog(owner) == DialogResult.OK)
+                if (InitialFolder != null)
                 {
-                    this.Folder = Path.GetDirectoryName(frm.SelectedPath);
+                    frm.SelectedPath = InitialFolder;
+                }
+                if ((owner == null ? frm.ShowDialog() : frm.ShowDialog(owner)) == DialogResult.OK)
+                {
+                    Folder = Path.GetDirectoryName(frm.SelectedPath);
                     return DialogResult.OK;
                 }
-                else
-                {
-                    return DialogResult.Cancel;
-                }
+
+                return DialogResult.Cancel;
             }
         }
     }

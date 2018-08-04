@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using dnlib.DotNet;
 using static AssetStudio.Exporter;
 
 namespace AssetStudio
@@ -21,6 +23,8 @@ namespace AssetStudio
         public static Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
         public static string mainPath;
         public static string productName = "";
+        public static bool moduleLoaded;
+        public static Dictionary<string, ModuleDef> LoadedModuleDic = new Dictionary<string, ModuleDef>();
 
         //UI
         public static Action<int> SetProgressBarValue;
@@ -218,9 +222,17 @@ namespace AssetStudio
                                 }
                             case ClassIDReference.MonoBehaviour:
                                 {
-                                    var m_MonoBehaviour = new MonoBehaviour(asset, false);
-                                    if (asset.Type1 != asset.Type2 && assetsFile.ClassStructures.ContainsKey(asset.Type1))
-                                        exportable = true;
+                                    var m_MonoBehaviour = new MonoBehaviour(asset);
+                                    if (m_MonoBehaviour.m_Name == "" && assetsfileList.TryGetPD(m_MonoBehaviour.m_Script, out var script))
+                                    {
+                                        var m_Script = new MonoScript(script);
+                                        asset.Text = m_Script.m_ClassName;
+                                    }
+                                    else
+                                    {
+                                        asset.Text = m_MonoBehaviour.m_Name;
+                                    }
+                                    exportable = true;
                                     break;
                                 }
                             case ClassIDReference.Font:
@@ -719,6 +731,258 @@ namespace AssetStudio
                 else
                 {
                     GetSelectedParentNode(i.Nodes, gameObjects);
+                }
+            }
+        }
+
+        public static string GetScriptString(AssetPreloadData assetPreloadData)
+        {
+            if (!moduleLoaded)
+            {
+                var openFolderDialog = new OpenFolderDialog();
+                openFolderDialog.Title = "Select Assembly Folder";
+                if (openFolderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var files = Directory.GetFiles(openFolderDialog.Folder, "*.dll");
+                    var moduleContext = new ModuleContext();
+                    var asmResolver = new AssemblyResolver(moduleContext, true);
+                    var resolver = new Resolver(asmResolver);
+                    moduleContext.AssemblyResolver = asmResolver;
+                    moduleContext.Resolver = resolver;
+                    try
+                    {
+                        foreach (var file in files)
+                        {
+                            var module = ModuleDefMD.Load(file, moduleContext);
+                            LoadedModuleDic.Add(Path.GetFileName(file), module);
+                        }
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                moduleLoaded = true;
+            }
+            var m_MonoBehaviour = new MonoBehaviour(assetPreloadData);
+            var sb = new StringBuilder();
+            sb.AppendLine("PPtr<GameObject> m_GameObject");
+            sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
+            sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
+            sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
+            sb.AppendLine("PPtr<MonoScript> m_Script");
+            sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
+            sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
+            sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
+            if (assetsfileList.TryGetPD(m_MonoBehaviour.m_Script, out var script))
+            {
+                var m_Script = new MonoScript(script);
+                if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
+                {
+                    /*using (var openFileDialog = new OpenFileDialog())
+                    {
+                        openFileDialog.Title = $"Select {m_Script.m_AssemblyName}";
+                        openFileDialog.FileName = m_Script.m_AssemblyName;
+                        openFileDialog.Filter = $"{m_Script.m_AssemblyName}|{m_Script.m_AssemblyName}";
+                        if (openFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            var moduleContext = new ModuleContext();
+                            var asmResolver = new AssemblyResolver(moduleContext, true);
+                            var resolver = new Resolver(asmResolver);
+                            moduleContext.AssemblyResolver = asmResolver;
+                            moduleContext.Resolver = resolver;
+                            module = ModuleDefMD.Load(openFileDialog.FileName, moduleContext);
+                            LoadedModule.Add(m_Script.m_AssemblyName, module);
+                        }
+                        else
+                        {
+                            return sb.ToString();
+                        }
+                    }*/
+                    return sb.ToString();
+                }
+                var typeDef = module.Assembly.Find(m_Script.m_Namespace != "" ? $"{m_Script.m_Namespace}.{m_Script.m_ClassName}" : m_Script.m_ClassName, false);
+                if (typeDef != null)
+                {
+                    try
+                    {
+                        DumpType(typeDef.ToTypeSig(), sb, assetPreloadData.sourceFile, null, -1, true);
+                    }
+                    catch
+                    {
+                        sb = new StringBuilder();
+                        sb.AppendLine("PPtr<GameObject> m_GameObject");
+                        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
+                        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
+                        sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
+                        sb.AppendLine("PPtr<MonoScript> m_Script");
+                        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
+                        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
+                        sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+
+        private static void DumpType(TypeSig typeSig, StringBuilder sb, AssetsFile assetsFile, string name, int indent, bool isRoot = false)
+        {
+            var typeDef = typeSig.ToTypeDefOrRef().ResolveTypeDefThrow();
+            var reader = assetsFile.reader;
+            if (typeDef.IsPrimitive)
+            {
+                object value = null;
+                switch (typeDef.Name)
+                {
+                    case "Boolean":
+                        value = reader.ReadBoolean();
+                        break;
+                    case "Byte":
+                        value = reader.ReadByte();
+                        break;
+                    case "SByte":
+                        value = reader.ReadSByte();
+                        break;
+                    case "Int16":
+                        value = reader.ReadInt16();
+                        break;
+                    case "UInt16":
+                        value = reader.ReadUInt16();
+                        break;
+                    case "Int32":
+                        value = reader.ReadInt32();
+                        break;
+                    case "UInt32":
+                        value = reader.ReadUInt32();
+                        break;
+                    case "Int64":
+                        value = reader.ReadInt64();
+                        break;
+                    case "UInt64":
+                        value = reader.ReadUInt64();
+                        break;
+                    case "Single":
+                        value = reader.ReadSingle();
+                        break;
+                    case "Double":
+                        value = reader.ReadDouble();
+                        break;
+                }
+                reader.AlignStream(4);
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {value}");
+                return;
+            }
+            if (typeDef.FullName == "System.String")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = \"{reader.ReadAlignedString()}\"");
+                return;
+            }
+            if (typeDef.IsEnum)
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {reader.ReadUInt32()}");
+                return;
+            }
+            if (typeSig is ArraySigBase)
+            {
+                var size = reader.ReadInt32();
+                sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
+                sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+                for (int i = 0; i < size; i++)
+                {
+                    sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+                    DumpType(typeDef.ToTypeSig(), sb, assetsFile, "data", indent + 2);
+                }
+                return;
+            }
+            if (!isRoot && typeSig is GenericInstSig genericInstSig)
+            {
+                var size = reader.ReadInt32();
+                sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
+                sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+                if (genericInstSig.GenericArguments.Count == 1) //vector
+                {
+                    for (int i = 0; i < size; i++)
+                    {
+                        sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+                        DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "data", indent + 2);
+                    }
+                }
+                else if (genericInstSig.GenericArguments.Count == 2) //map
+                {
+                    for (int i = 0; i < size; i++)
+                    {
+                        sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+                        DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "first", indent + 2);
+                        DumpType(genericInstSig.GenericArguments[1], sb, assetsFile, "second", indent + 2);
+                    }
+                }
+                return;
+            }
+            if (indent != -1 && typeDef.FullName == "UnityEngine.Object")
+            {
+                var pptr = assetsFile.ReadPPtr();
+                sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
+                return;
+            }
+            if (indent != -1 && typeDef.BaseType != null && typeDef.BaseType.FullName != "System.Object")
+            {
+                var flag = false;
+                var type = typeDef;
+                while (true)
+                {
+                    if (type.BaseType.FullName == "UnityEngine.Object")
+                    {
+                        flag = true;
+                        break;
+                    }
+                    type = type.BaseType.ResolveTypeDefThrow();
+                    if (type.BaseType == null)
+                    {
+                        break;
+                    }
+                }
+                if (flag)
+                {
+                    var pptr = assetsFile.ReadPPtr();
+                    sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
+                    return;
+                }
+            }
+            if (typeDef.IsClass || typeDef.IsValueType)
+            {
+                if (name != null && indent != -1)
+                {
+                    sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                }
+                if (indent == -1 && typeDef.BaseType.FullName != "UnityEngine.Object")
+                {
+                    DumpType(typeDef.BaseType.ToTypeSig(), sb, assetsFile, null, indent, true);
+                }
+                if (indent != -1 && typeDef.BaseType.FullName != "System.Object")
+                {
+                    DumpType(typeDef.BaseType.ToTypeSig(), sb, assetsFile, null, indent, true);
+                }
+                /*if (typeDef.FullName == "UnityEngine.AnimationCurve") //TODO
+                {
+                    var AnimationCurve = new AnimationCurve<float>(reader, reader.ReadSingle, assetsFile.version);
+                }*/
+                foreach (var fieldDef in typeDef.Fields)
+                {
+                    var access = fieldDef.Access & FieldAttributes.FieldAccessMask;
+                    if (access != FieldAttributes.Public)
+                    {
+                        if (fieldDef.CustomAttributes.Any(x => x.TypeFullName.Contains("SerializeField")))
+                        {
+                            DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
+                        }
+                    }
+                    else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0)
+                    {
+                        DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
+                    }
                 }
             }
         }

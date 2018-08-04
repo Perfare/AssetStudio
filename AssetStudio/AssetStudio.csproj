@@ -55,6 +55,10 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="dnlib">
+      <HintPath>Library\dnlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Library\OpenTK.dll</HintPath>
@@ -146,6 +150,7 @@
     <Compile Include="Brotli\Transform.cs" />
     <Compile Include="Brotli\Utils.cs" />
     <Compile Include="Brotli\WordTransformType.cs" />
+    <Compile Include="Classes\MonoScript.cs" />
     <Compile Include="StudioClasses\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -55,6 +55,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="dnlib">
+      <HintPath>Library\dnlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Library\OpenTK.dll</HintPath>
@@ -158,6 +162,7 @@
     <Compile Include="Classes\AnimatorController.cs" />
     <Compile Include="Classes\AnimatorOverrideController.cs" />
     <Compile Include="Classes\Avatar.cs" />
+    <Compile Include="Classes\MonoScript.cs" />
     <Compile Include="OpenFolderDialog.cs" />
     <Compile Include="Classes\AssetBundle.cs" />
     <Compile Include="Classes\MovieTexture.cs" />

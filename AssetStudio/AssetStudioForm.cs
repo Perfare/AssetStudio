@@ -778,8 +778,15 @@ namespace AssetStudio
                     }
                 case ClassIDReference.MonoBehaviour:
                     {
-                        MonoBehaviour m_MonoBehaviour = new MonoBehaviour(asset, true);
-                        textPreviewBox.Text = m_MonoBehaviour.serializedText;
+                        var m_MonoBehaviour = new MonoBehaviour(asset);
+                        if (asset.Type1 != asset.Type2 && asset.sourceFile.ClassStructures.ContainsKey(asset.Type1))
+                        {
+                            textPreviewBox.Text = asset.GetClassString();
+                        }
+                        else
+                        {
+                            textPreviewBox.Text = GetScriptString(asset);
+                        }
                         textPreviewBox.Visible = true;
 
                         break;
@@ -1685,6 +1692,9 @@ namespace AssetStudio
             }
 
             FMODreset();
+
+            moduleLoaded = false;
+            LoadedModuleDic.Clear();
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)
