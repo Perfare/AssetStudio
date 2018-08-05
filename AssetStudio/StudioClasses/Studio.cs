@@ -830,10 +830,10 @@ namespace AssetStudio
         {
             var typeDef = typeSig.ToTypeDefOrRef().ResolveTypeDefThrow();
             var reader = assetsFile.reader;
-            if (typeDef.IsPrimitive)
+            if (typeSig.IsPrimitive)
             {
                 object value = null;
-                switch (typeDef.Name)
+                switch (typeSig.TypeName)
                 {
                     case "Boolean":
                         value = reader.ReadBoolean();
@@ -868,23 +868,33 @@ namespace AssetStudio
                     case "Double":
                         value = reader.ReadDouble();
                         break;
+                    case "Char":
+                        value = reader.ReadChar();
+                        break;
                 }
                 reader.AlignStream(4);
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {value}");
                 return;
             }
-            if (typeDef.FullName == "System.String")
+            if (typeSig.FullName == "System.String")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = \"{reader.ReadAlignedString()}\"");
                 return;
             }
-            if (typeDef.IsEnum)
+            if (typeSig.FullName == "System.Object")
             {
-                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {reader.ReadUInt32()}");
+                return;
+            }
+            if (typeDef.IsDelegate)
+            {
                 return;
             }
             if (typeSig is ArraySigBase)
             {
+                if (!typeDef.IsEnum && !IsBaseType(typeDef) && !IsAssignFromUnityObject(typeDef) && !IsEngineType(typeDef) && !typeDef.IsSerializable)
+                {
+                    return;
+                }
                 var size = reader.ReadInt32();
                 sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
                 sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
@@ -898,58 +908,81 @@ namespace AssetStudio
             }
             if (!isRoot && typeSig is GenericInstSig genericInstSig)
             {
-                var size = reader.ReadInt32();
-                sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
-                sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
-                sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
-                if (genericInstSig.GenericArguments.Count == 1) //vector
+                if (genericInstSig.GenericArguments.Count == 1)
                 {
+                    var type = genericInstSig.GenericArguments[0].ToTypeDefOrRef().ResolveTypeDefThrow();
+                    if (!type.IsEnum && !IsBaseType(type) && !IsAssignFromUnityObject(type) && !IsEngineType(type) && !type.IsSerializable)
+                    {
+                        return;
+                    }
+                    var size = reader.ReadInt32();
+                    sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
+                    sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
+                    sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
                     for (int i = 0; i < size; i++)
                     {
                         sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
                         DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "data", indent + 2);
                     }
                 }
-                else if (genericInstSig.GenericArguments.Count == 2) //map
-                {
-                    for (int i = 0; i < size; i++)
-                    {
-                        sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
-                        DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "first", indent + 2);
-                        DumpType(genericInstSig.GenericArguments[1], sb, assetsFile, "second", indent + 2);
-                    }
-                }
                 return;
             }
-            if (indent != -1 && typeDef.FullName == "UnityEngine.Object")
+            if (indent != -1 && IsAssignFromUnityObject(typeDef))
             {
                 var pptr = assetsFile.ReadPPtr();
                 sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
                 return;
             }
-            if (indent != -1 && typeDef.BaseType != null && typeDef.BaseType.FullName != "System.Object")
+            if (typeDef.IsEnum)
             {
-                var flag = false;
-                var type = typeDef;
-                while (true)
-                {
-                    if (type.BaseType.FullName == "UnityEngine.Object")
-                    {
-                        flag = true;
-                        break;
-                    }
-                    type = type.BaseType.ResolveTypeDefThrow();
-                    if (type.BaseType == null)
-                    {
-                        break;
-                    }
-                }
-                if (flag)
-                {
-                    var pptr = assetsFile.ReadPPtr();
-                    sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
-                    return;
-                }
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {reader.ReadUInt32()}");
+                return;
+            }
+            if (indent != -1 && !IsEngineType(typeDef) && !typeDef.IsSerializable)
+            {
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Rect")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var rect = reader.ReadSingleArray(4);
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.LayerMask")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var value = reader.ReadInt32();
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.AnimationCurve")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var animationCurve = new AnimationCurve<float>(reader, reader.ReadSingle, assetsFile.version);
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Gradient")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                if (assetsFile.version[0] == 5 && assetsFile.version[1] < 5)
+                    reader.Position += 68;
+                else if (assetsFile.version[0] == 5 && assetsFile.version[1] < 6)
+                    reader.Position += 72;
+                else
+                    reader.Position += 168;
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.RectOffset")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var left = reader.ReadSingle();
+                var right = reader.ReadSingle();
+                var top = reader.ReadSingle();
+                var bottom = reader.ReadSingle();
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.GUIStyle") //TODO
+            {
+                return;
             }
             if (typeDef.IsClass || typeDef.IsValueType)
             {
@@ -965,10 +998,6 @@ namespace AssetStudio
                 {
                     DumpType(typeDef.BaseType.ToTypeSig(), sb, assetsFile, null, indent, true);
                 }
-                /*if (typeDef.FullName == "UnityEngine.AnimationCurve") //TODO
-                {
-                    var AnimationCurve = new AnimationCurve<float>(reader, reader.ReadSingle, assetsFile.version);
-                }*/
                 foreach (var fieldDef in typeDef.Fields)
                 {
                     var access = fieldDef.Access & FieldAttributes.FieldAccessMask;
@@ -979,11 +1008,84 @@ namespace AssetStudio
                             DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
                         }
                     }
-                    else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0)
+                    else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0 && (fieldDef.Attributes & FieldAttributes.NotSerialized) == 0)
                     {
                         DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
                     }
                 }
+            }
+        }
+
+        private static bool IsAssignFromUnityObject(TypeDef typeDef)
+        {
+            if (typeDef.FullName == "UnityEngine.Object")
+            {
+                return true;
+            }
+            if (typeDef.BaseType != null)
+            {
+                if (typeDef.BaseType.FullName == "UnityEngine.Object")
+                {
+                    return true;
+                }
+                while (true)
+                {
+                    typeDef = typeDef.BaseType.ResolveTypeDefThrow();
+                    if (typeDef.BaseType == null)
+                    {
+                        break;
+                    }
+                    if (typeDef.BaseType.FullName == "UnityEngine.Object")
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool IsBaseType(IFullName typeDef)
+        {
+            switch (typeDef.FullName)
+            {
+                case "System.Boolean":
+                case "System.Byte":
+                case "System.SByte":
+                case "System.Int16":
+                case "System.UInt16":
+                case "System.Int32":
+                case "System.UInt32":
+                case "System.Int64":
+                case "System.UInt64":
+                case "System.Single":
+                case "System.Double":
+                case "System.String":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsEngineType(IFullName typeDef)
+        {
+            switch (typeDef.FullName)
+            {
+                case "UnityEngine.Vector2":
+                case "UnityEngine.Vector3":
+                case "UnityEngine.Vector4":
+                case "UnityEngine.Rect":
+                case "UnityEngine.Quaternion":
+                case "UnityEngine.Matrix4x4":
+                case "UnityEngine.Color":
+                case "UnityEngine.Color32":
+                case "UnityEngine.LayerMask":
+                case "UnityEngine.AnimationCurve":
+                case "UnityEngine.Gradient":
+                case "UnityEngine.RectOffset":
+                case "UnityEngine.GUIStyle":
+                    return true;
+                default:
+                    return false;
             }
         }
     }
