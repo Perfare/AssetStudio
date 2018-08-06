@@ -619,6 +619,7 @@
             this.previewPanel.Name = "previewPanel";
             this.previewPanel.Size = new System.Drawing.Size(838, 632);
             this.previewPanel.TabIndex = 1;
+            this.previewPanel.Resize += new System.EventHandler(this.preview_Resize);
             // 
             // assetInfoLabel
             // 
