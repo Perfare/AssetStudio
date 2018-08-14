@@ -40,6 +40,7 @@ namespace AssetStudio
         private int attributeVertexColor;
         private int uniformModelMatrix;
         private int uniformViewMatrix;
+        private int uniformProjMatrix;
         private int vao;
         private Vector3[] vertexData;
         private Vector3[] normalData;
@@ -47,6 +48,7 @@ namespace AssetStudio
         private Vector4[] colorData;
         private Matrix4 modelMatrixData;
         private Matrix4 viewMatrixData;
+        private Matrix4 projMatrixData;
         private int[] indiceData;
         private int wireFrameMode;
         private int shadeMode;
@@ -582,6 +584,31 @@ namespace AssetStudio
         private void tabPage2_Resize(object sender, EventArgs e)
         {
             resizeAssetListColumns();
+        }
+
+        private void changeGLSize(Size size)
+        {
+            GL.Viewport(0, 0, size.Width, size.Height);
+
+            if (size.Width <= size.Height)
+            {
+                float k = 1.0f * size.Width / size.Height;
+                projMatrixData = Matrix4.CreateScale(1, k, 1);
+            }
+            else
+            {
+                float k = 1.0f * size.Height / size.Width;
+                projMatrixData = Matrix4.CreateScale(k, 1, 1);
+            }
+        }
+
+        private void preview_Resize(object sender, EventArgs e)
+        {
+            glControl1.Size = previewPanel.Size;
+            changeGLSize(glControl1.Size);
+
+            if (glControl1.Visible)
+                glControl1.Invalidate();
         }
 
         private void listSearch_Enter(object sender, EventArgs e)
@@ -1496,7 +1523,7 @@ namespace AssetStudio
 
         private void initOpenTK()
         {
-            GL.Viewport(0, 0, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
+            changeGLSize(glControl1.Size);
             GL.ClearColor(Color.CadetBlue);
             pgmID = GL.CreateProgram();
             loadShader("vs", ShaderType.VertexShader, pgmID, out int vsID);
@@ -1518,6 +1545,7 @@ namespace AssetStudio
             attributeVertexColor = GL.GetAttribLocation(pgmColorID, "vertexColor");
             uniformModelMatrix = GL.GetUniformLocation(pgmID, "modelMatrix");
             uniformViewMatrix = GL.GetUniformLocation(pgmID, "viewMatrix");
+            uniformProjMatrix = GL.GetUniformLocation(pgmID, "projMatrix");
             glControl1.Visible = false;
         }
 
@@ -1590,6 +1618,7 @@ namespace AssetStudio
             createVBO(out var vboColors, colorData, attributeVertexColor);
             createVBO(out var vboModelMatrix, modelMatrixData, uniformModelMatrix);
             createVBO(out var vboViewMatrix, viewMatrixData, uniformViewMatrix);
+            createVBO(out var vboProjMatrix, projMatrixData, uniformProjMatrix);
             createEBO(out var eboElements, indiceData);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
@@ -1613,6 +1642,7 @@ namespace AssetStudio
                 GL.UseProgram(shadeMode == 0 ? pgmID : pgmColorID);
                 GL.UniformMatrix4(uniformModelMatrix, false, ref modelMatrixData);
                 GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData);
+                GL.UniformMatrix4(uniformProjMatrix, false, ref projMatrixData);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
             }
@@ -1624,6 +1654,7 @@ namespace AssetStudio
                 GL.UseProgram(pgmBlackID);
                 GL.UniformMatrix4(uniformModelMatrix, false, ref modelMatrixData);
                 GL.UniformMatrix4(uniformViewMatrix, false, ref viewMatrixData);
+                GL.UniformMatrix4(uniformProjMatrix, false, ref projMatrixData);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 GL.DrawElements(BeginMode.Triangles, indiceData.Length, DrawElementsType.UnsignedInt, 0);
                 GL.Disable(EnableCap.PolygonOffsetLine);
