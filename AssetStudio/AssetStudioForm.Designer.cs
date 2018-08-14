@@ -792,8 +792,10 @@
             this.glControl1.Size = new System.Drawing.Size(838, 632);
             this.glControl1.TabIndex = 4;
             this.glControl1.VSync = false;
+            this.glControl1.Visible = false;
             this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
             this.glControl1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseWheel);
+            this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
             // 
             // classPreviewPanel
             // 

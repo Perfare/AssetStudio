@@ -34,6 +34,7 @@ namespace AssetStudio
         private Bitmap imageTexture;
 
         #region OpenTK
+        private bool glControlLoaded;
         private int pgmID, pgmColorID, pgmBlackID;
         private int attributeVertexPosition;
         private int attributeNormalDirection;
@@ -584,31 +585,6 @@ namespace AssetStudio
         private void tabPage2_Resize(object sender, EventArgs e)
         {
             resizeAssetListColumns();
-        }
-
-        private void changeGLSize(Size size)
-        {
-            GL.Viewport(0, 0, size.Width, size.Height);
-
-            if (size.Width <= size.Height)
-            {
-                float k = 1.0f * size.Width / size.Height;
-                projMatrixData = Matrix4.CreateScale(1, k, 1);
-            }
-            else
-            {
-                float k = 1.0f * size.Height / size.Width;
-                projMatrixData = Matrix4.CreateScale(k, 1, 1);
-            }
-        }
-
-        private void preview_Resize(object sender, EventArgs e)
-        {
-            glControl1.Size = previewPanel.Size;
-            changeGLSize(glControl1.Size);
-
-            if (glControl1.Visible)
-                glControl1.Invalidate();
         }
 
         private void listSearch_Enter(object sender, EventArgs e)
@@ -1546,7 +1522,6 @@ namespace AssetStudio
             uniformModelMatrix = GL.GetUniformLocation(pgmID, "modelMatrix");
             uniformViewMatrix = GL.GetUniformLocation(pgmID, "viewMatrix");
             uniformProjMatrix = GL.GetUniformLocation(pgmID, "projMatrix");
-            glControl1.Visible = false;
         }
 
         private void loadShader(string filename, ShaderType type, int program, out int address)
@@ -1624,10 +1599,35 @@ namespace AssetStudio
             GL.BindVertexArray(0);
         }
 
-        protected override void OnLoad(EventArgs e)
+        private void changeGLSize(Size size)
         {
-            base.OnLoad(e);
+            GL.Viewport(0, 0, size.Width, size.Height);
+
+            if (size.Width <= size.Height)
+            {
+                float k = 1.0f * size.Width / size.Height;
+                projMatrixData = Matrix4.CreateScale(1, k, 1);
+            }
+            else
+            {
+                float k = 1.0f * size.Height / size.Width;
+                projMatrixData = Matrix4.CreateScale(k, 1, 1);
+            }
+        }
+
+        private void preview_Resize(object sender, EventArgs e)
+        {
+            if (glControlLoaded && glControl1.Visible)
+            {
+                changeGLSize(glControl1.Size);
+                glControl1.Invalidate();
+            }
+        }
+
+        private void glControl1_Load(object sender, EventArgs e)
+        {
             initOpenTK();
+            glControlLoaded = true;
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
