@@ -261,10 +261,12 @@
             // 
             // assetGroupOptions
             // 
+            this.assetGroupOptions.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.assetGroupOptions.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.assetGroupOptions.Items.AddRange(new object[] {
-            "Group exported assets by type",
-            "Group exported assets by source file",
-            "Do not group exported assets"});
+            "Group by type",
+            "Group by source file",
+            "Do not group"});
             this.assetGroupOptions.Name = "assetGroupOptions";
             this.assetGroupOptions.Size = new System.Drawing.Size(192, 25);
             this.assetGroupOptions.SelectedIndexChanged += new System.EventHandler(this.assetGroupOptions_SelectedIndexChanged);
