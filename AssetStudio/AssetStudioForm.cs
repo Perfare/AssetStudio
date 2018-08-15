@@ -33,8 +33,10 @@ namespace AssetStudio
 
         private Bitmap imageTexture;
 
-        #region OpenTK
+        #region GLControl
         private bool glControlLoaded;
+        private int mdx, mdy;
+        private bool lmdown, rmdown;
         private int pgmID, pgmColorID, pgmBlackID;
         private int attributeVertexPosition;
         private int attributeNormalDirection;
@@ -267,82 +269,33 @@ namespace AssetStudio
 
             if (glControl1.Visible)
             {
-                switch (e.KeyCode)
+                if (e.Control)
                 {
-                    case Keys.D: // --> Right
-                        if (e.Shift) //Move
-                        {
-                            viewMatrixData *= Matrix4.CreateTranslation(0.1f, 0, 0);
-                        }
-                        else //Rotate
-                        {
-                            viewMatrixData *= Matrix4.CreateRotationY(0.1f);
-                        }
-                        glControl1.Invalidate();
-                        break;
-                    case Keys.A: // <-- Left
-                        if (e.Shift) //Move
-                        {
-                            viewMatrixData *= Matrix4.CreateTranslation(-0.1f, 0, 0);
-                        }
-                        else //Rotate
-                        {
-                            viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
-                        }
-                        glControl1.Invalidate();
-                        break;
-                    case Keys.W: // Up 
-                        if (e.Control) //Toggle WireFrame
-                        {
-                            wireFrameMode = (wireFrameMode + 1) % 3;
-                            glControl1.Invalidate();
-                        }
-                        else if (e.Shift) //Move
-                        {
-                            viewMatrixData *= Matrix4.CreateTranslation(0, 0.1f, 0);
-                        }
-                        else //Rotate
-                        {
-                            viewMatrixData *= Matrix4.CreateRotationX(0.1f);
-                        }
-                        glControl1.Invalidate();
-                        break;
-                    case Keys.S: // Down
-                        if (e.Control) //Toggle Shade
-                        {
-                            shadeMode = (shadeMode + 1) % 2;
-                            glControl1.Invalidate();
-                        }
-                        else if (e.Shift) //Move
-                        {
-                            viewMatrixData *= Matrix4.CreateTranslation(0, -0.1f, 0);
-                        }
-                        else //Rotate
-                        {
-                            viewMatrixData *= Matrix4.CreateRotationX(-0.1f);
-                        }
-                        glControl1.Invalidate();
-                        break;
-                    case Keys.Q: // Zoom Out
-                        viewMatrixData *= Matrix4.CreateScale(0.9f);
-                        glControl1.Invalidate();
-                        break;
-                    case Keys.E: // Zoom In
-                        viewMatrixData *= Matrix4.CreateScale(1.1f);
-                        glControl1.Invalidate();
-                        break;
-                }
-                // Normal mode
-                if (e.Control && e.KeyCode == Keys.N)
-                {
-                    normalMode = (normalMode + 1) % 2;
-                    createVAO();
-                    glControl1.Invalidate();
-                }
-                // Toggle Timer
-                if (e.KeyCode == Keys.T)
-                {
-                    timerOpenTK.Enabled = !timerOpenTK.Enabled;
+                    switch (e.KeyCode)
+                    {
+                        case Keys.W:
+                            if (e.Control) //Toggle WireFrame
+                            {
+                                wireFrameMode = (wireFrameMode + 1) % 3;
+                                glControl1.Invalidate();
+                            }
+                            break;
+                        case Keys.S:
+                            if (e.Control) //Toggle Shade
+                            {
+                                shadeMode = (shadeMode + 1) % 2;
+                                glControl1.Invalidate();
+                            }
+                            break;
+                        case Keys.N: 
+                            if (e.Control) //Normal mode
+                            {
+                                normalMode = (normalMode + 1) % 2;
+                                createVAO();
+                                glControl1.Invalidate();
+                            }
+                            break;
+                    }
                 }
             }
         }
@@ -988,7 +941,7 @@ namespace AssetStudio
                             createVAO();
                         }
                         StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
-                                        + "'T'=Start/Stop Rotation | 'WASD'=Manual Rotate | 'Shift WASD'=Move | 'Q/E'=Zoom \n"
+                                        + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
                                         + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
                     }
                     break;
@@ -1488,15 +1441,6 @@ namespace AssetStudio
             Studio.ProgressBarMaximumAdd = ProgressBarMaximumAdd;
         }
 
-        private void timerOpenTK_Tick(object sender, EventArgs e)
-        {
-            if (glControl1.Visible)
-            {
-                viewMatrixData *= Matrix4.CreateRotationY(-0.1f);
-                glControl1.Invalidate();
-            }
-        }
-
         private void initOpenTK()
         {
             changeGLSize(glControl1.Size);
@@ -1576,7 +1520,6 @@ namespace AssetStudio
 
         private void createVAO()
         {
-            timerOpenTK.Stop();
             GL.DeleteVertexArray(vao);
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
@@ -1670,6 +1613,57 @@ namespace AssetStudio
             {
                 viewMatrixData *= Matrix4.CreateScale(1 + e.Delta / 1000f);
                 glControl1.Invalidate();
+            }
+        }
+
+        private void glControl1_MouseDown(object sender, MouseEventArgs e)
+        {
+            mdx = e.X;
+            mdy = e.Y;
+            if (e.Button == MouseButtons.Left)
+            {
+                lmdown = true;
+            }
+            if (e.Button == MouseButtons.Right)
+            {
+                rmdown = true;
+            }
+        }
+
+        private void glControl1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (lmdown || rmdown)
+            {
+                float dx = mdx - e.X;
+                float dy = mdy - e.Y;
+                mdx = e.X;
+                mdy = e.Y;
+                if (lmdown)
+                {
+                    dx *= 0.01f;
+                    dy *= 0.01f;
+                    viewMatrixData *= Matrix4.CreateRotationX(dy);
+                    viewMatrixData *= Matrix4.CreateRotationY(dx);
+                }
+                if (rmdown)
+                {
+                    dx *= 0.003f;
+                    dy *= 0.003f;
+                    viewMatrixData *= Matrix4.CreateTranslation(-dx, dy, 0);
+                }
+                glControl1.Invalidate();
+            }
+        }
+
+        private void glControl1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                lmdown = false;
+            }
+            if (e.Button == MouseButtons.Right)
+            {
+                rmdown = false;
             }
         }
 
