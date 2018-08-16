@@ -191,12 +191,10 @@ namespace AssetStudio
             assetsfileList.TryGetGameObject(trans.m_GameObject, out var m_GameObject);
             frame.Name = m_GameObject.m_Name;
             frame.InitChildren(trans.m_Children.Count);
-            Quaternion mirroredRotation = new Quaternion(trans.m_LocalRotation[0], trans.m_LocalRotation[1], trans.m_LocalRotation[2], trans.m_LocalRotation[3]);
-            mirroredRotation.Y *= -1;
-            mirroredRotation.Z *= -1;
-            var m_LocalScale = new Vector3(trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2]);
-            var m_LocalPosition = new Vector3(trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2]);
-            frame.Matrix = Matrix.Scaling(m_LocalScale) * Matrix.RotationQuaternion(mirroredRotation) * Matrix.Translation(-m_LocalPosition.X, m_LocalPosition.Y, m_LocalPosition.Z);
+            var m_EulerRotation = QuatToEuler(new[] { trans.m_LocalRotation[0], -trans.m_LocalRotation[1], -trans.m_LocalRotation[2], trans.m_LocalRotation[3] });
+            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
+            frame.LocalScale = new[] { trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2] };
+            frame.LocalPosition = new[] { -trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2] };
             return frame;
         }
 
@@ -385,21 +383,25 @@ namespace AssetStudio
                             continue;
                         }
                     }
-
-                    var om = new Matrix();
-                    for (int x = 0; x < 4; x++)
-                    {
-                        for (int y = 0; y < 4; y++)
-                        {
-                            om[x, y] = mesh.m_BindPose[i][x, y];
-                        }
-                    }
-                    var m = Matrix.Transpose(om);
-                    m.Decompose(out var s, out var q, out var t);
-                    t.X *= -1;
-                    q.Y *= -1;
-                    q.Z *= -1;
-                    bone.Matrix = Matrix.Scaling(s) * Matrix.RotationQuaternion(q) * Matrix.Translation(t);
+                    var om = new float[4, 4];
+                    var m = mesh.m_BindPose[i];
+                    om[0, 0] = m[0, 0];
+                    om[0, 1] = -m[1, 0];
+                    om[0, 2] = -m[2, 0];
+                    om[0, 3] = m[3, 0];
+                    om[1, 0] = -m[0, 1];
+                    om[1, 1] = m[1, 1];
+                    om[1, 2] = m[2, 1];
+                    om[1, 3] = m[3, 1];
+                    om[2, 0] = -m[0, 2];
+                    om[2, 1] = m[1, 2];
+                    om[2, 2] = m[2, 2];
+                    om[2, 3] = m[3, 2];
+                    om[3, 0] = -m[0, 3];
+                    om[3, 1] = m[1, 3];
+                    om[3, 2] = m[2, 3];
+                    om[3, 3] = m[3, 3];
+                    bone.Matrix = om;
                     iMesh.BoneList.Add(bone);
                 }
 
@@ -470,26 +472,25 @@ namespace AssetStudio
                 foreach (var root in FrameList)
                 {
                     var frame = ImportedHelpers.FindFrame(m_GameObject.m_Name, root);
-                    if (frame != null)
+                    if (frame?.Parent != null)
                     {
-                        if (frame.Parent != null)
+                        var parent = frame;
+                        while (true)
                         {
-                            var parent = frame;
-                            while (true)
+                            if (parent.Parent != null)
                             {
-                                if (parent.Parent != null)
-                                {
-                                    parent = parent.Parent;
-                                }
-                                else
-                                {
-                                    frame.Matrix = parent.Matrix;
-                                    break;
-                                }
+                                parent = parent.Parent;
+                            }
+                            else
+                            {
+                                frame.LocalRotation = parent.LocalRotation;
+                                frame.LocalScale = parent.LocalScale;
+                                frame.LocalPosition = parent.LocalPosition;
+                                break;
                             }
                         }
-                        break;
                     }
+                    break;
                 }
             }
 
@@ -671,9 +672,7 @@ namespace AssetStudio
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
                             var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
-                            var inSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.inSlope.X, -m_Curve.inSlope.Y, -m_Curve.inSlope.Z, m_Curve.inSlope.W));
-                            var outSlope = Fbx.QuaternionToEuler(new Quaternion(m_Curve.outSlope.X, -m_Curve.outSlope.Y, -m_Curve.outSlope.Z, m_Curve.outSlope.W));
-                            track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, value, inSlope, outSlope));
+                            track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, value));
                         }
                     }
                     foreach (var m_PositionCurve in clip.m_PositionCurves)
@@ -689,11 +688,7 @@ namespace AssetStudio
                         }
                         foreach (var m_Curve in m_PositionCurve.curve.m_Curve)
                         {
-                            track.Translations.Add(new ImportedKeyframe<Vector3>(
-                                m_Curve.time,
-                                new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z),
-                                new Vector3(-m_Curve.inSlope.X, m_Curve.inSlope.Y, m_Curve.inSlope.Z),
-                                new Vector3(-m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z)));
+                            track.Translations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
                         }
                     }
                     foreach (var m_ScaleCurve in clip.m_ScaleCurves)
@@ -709,11 +704,7 @@ namespace AssetStudio
                         }
                         foreach (var m_Curve in m_ScaleCurve.curve.m_Curve)
                         {
-                            track.Scalings.Add(new ImportedKeyframe<Vector3>(
-                                m_Curve.time,
-                                new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z),
-                                new Vector3(m_Curve.inSlope.X, m_Curve.inSlope.Y, m_Curve.inSlope.Z),
-                                new Vector3(m_Curve.outSlope.X, m_Curve.outSlope.Y, m_Curve.outSlope.Z)));
+                            track.Scalings.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
                         }
                     }
 

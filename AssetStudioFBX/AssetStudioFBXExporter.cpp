@@ -286,14 +286,9 @@ namespace AssetStudio
 				Marshal::FreeHGlobal((IntPtr)pName);
 			}
 
-			Vector3 scale, translate;
-			Quaternion rotate;
-			frame->Matrix.Decompose(scale, rotate, translate);
-			Vector3 rotateVector = Fbx::QuaternionToEuler(rotate);
-
-			pFrameNode->LclScaling.Set(FbxVector4(scale.X, scale.Y, scale.Z));
-			pFrameNode->LclRotation.Set(FbxVector4(FbxDouble3(rotateVector.X, rotateVector.Y, rotateVector.Z)));
-			pFrameNode->LclTranslation.Set(FbxVector4(translate.X, translate.Y, translate.Z));
+			pFrameNode->LclScaling.Set(FbxDouble3(frame->LocalScale[0], frame->LocalScale[1], frame->LocalScale[2]));
+			pFrameNode->LclRotation.Set(FbxDouble3(frame->LocalRotation[0], frame->LocalRotation[1], frame->LocalRotation[2]));
+			pFrameNode->LclTranslation.Set(FbxDouble3(frame->LocalPosition[0], frame->LocalPosition[1], frame->LocalPosition[2]));
 			pParentNode->AddChild(pFrameNode);
 
 			if (imported->MeshList != nullptr && ImportedHelpers::FindMesh(frame, imported->MeshList) != nullptr)
@@ -595,7 +590,7 @@ namespace AssetStudio
 							if (pCluster->GetControlPointIndicesCount() > 0)
 							{
 								FbxNode* pBoneNode = pBoneNodeList->GetAt(j);
-								Matrix boneMatrix = boneList[j]->Matrix;
+								auto boneMatrix = boneList[j]->Matrix;
 								FbxAMatrix lBoneMatrix;
 								for (int m = 0; m < 4; m++)
 								{

@@ -19,7 +19,9 @@ namespace AssetStudio
     public class ImportedFrame : IEnumerable<ImportedFrame>
     {
         public string Name { get; set; }
-        public Matrix Matrix { get; set; }
+        public float[] LocalRotation { get; set; }
+        public float[] LocalPosition { get; set; }
+        public float[] LocalScale { get; set; }
         public ImportedFrame Parent { get; set; }
 
         private List<ImportedFrame> children;
@@ -110,7 +112,7 @@ namespace AssetStudio
     public class ImportedBone
     {
         public string Name { get; set; }
-        public Matrix Matrix { get; set; }
+        public float[,] Matrix { get; set; }
     }
 
     public class ImportedMaterial
@@ -172,15 +174,11 @@ namespace AssetStudio
     {
         public float time { get; set; }
         public T value { get; set; }
-        public T inSlope { get; set; }
-        public T outSlope { get; set; }
 
-        public ImportedKeyframe(float time, T value, T inSlope, T outSlope)
+        public ImportedKeyframe(float time, T value)
         {
             this.time = time;
             this.value = value;
-            this.inSlope = inSlope;
-            this.outSlope = outSlope;
         }
     }
 
