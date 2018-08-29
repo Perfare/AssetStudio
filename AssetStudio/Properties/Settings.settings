@@ -32,9 +32,6 @@
     <Setting Name="scaleFactor" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">2.54</Value>
     </Setting>
-    <Setting Name="upAxis" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
     <Setting Name="exportDeformers" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>

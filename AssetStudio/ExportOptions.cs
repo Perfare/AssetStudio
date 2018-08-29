@@ -23,7 +23,6 @@ namespace AssetStudio
             convertDummies.Checked = (bool)Properties.Settings.Default["convertDummies"];
             convertDummies.Enabled = (bool)Properties.Settings.Default["exportDeformers"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
-            upAxis.SelectedIndex = (int)Properties.Settings.Default["upAxis"];
             converttexture.Checked = (bool)Properties.Settings.Default["convertTexture"];
             convertAudio.Checked = (bool)Properties.Settings.Default["convertAudio"];
             var str = (string)Properties.Settings.Default["convertType"];
@@ -60,7 +59,6 @@ namespace AssetStudio
             Properties.Settings.Default["exportColors"] = exportColors.Checked;
             Properties.Settings.Default["exportDeformers"] = exportDeformers.Checked;
             Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
-            Properties.Settings.Default["upAxis"] = upAxis.SelectedIndex;
             Properties.Settings.Default["convertTexture"] = converttexture.Checked;
             Properties.Settings.Default["convertAudio"] = convertAudio.Checked;
             foreach (Control c in panel1.Controls)
