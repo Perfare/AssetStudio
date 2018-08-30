@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.FbxBox = new System.Windows.Forms.GroupBox();
+            this.scaleFactor = new System.Windows.Forms.NumericUpDown();
             this.convertDummies = new System.Windows.Forms.CheckBox();
+            this.scaleLabel = new System.Windows.Forms.Label();
             this.exportDeformers = new System.Windows.Forms.CheckBox();
             this.geometryBox = new System.Windows.Forms.GroupBox();
             this.exportColors = new System.Windows.Forms.CheckBox();
             this.exportUVs = new System.Windows.Forms.CheckBox();
             this.exportTangents = new System.Windows.Forms.CheckBox();
             this.exportNormals = new System.Windows.Forms.CheckBox();
-            this.scaleFactor = new System.Windows.Forms.NumericUpDown();
-            this.scaleLabel = new System.Windows.Forms.Label();
             this.fbxOKbutton = new System.Windows.Forms.Button();
             this.fbxCancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -60,8 +60,8 @@
             this.allFrames = new System.Windows.Forms.CheckBox();
             this.EulerFilter = new System.Windows.Forms.CheckBox();
             this.FbxBox.SuspendLayout();
-            this.geometryBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).BeginInit();
+            this.geometryBox.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -84,6 +84,24 @@
             this.FbxBox.TabStop = false;
             this.FbxBox.Text = "Fbx Ascii";
             // 
+            // scaleFactor
+            // 
+            this.scaleFactor.DecimalPlaces = 2;
+            this.scaleFactor.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.scaleFactor.Location = new System.Drawing.Point(95, 194);
+            this.scaleFactor.Name = "scaleFactor";
+            this.scaleFactor.Size = new System.Drawing.Size(46, 21);
+            this.scaleFactor.TabIndex = 1;
+            this.scaleFactor.Value = new decimal(new int[] {
+            254,
+            0,
+            0,
+            131072});
+            // 
             // convertDummies
             // 
             this.convertDummies.AutoSize = true;
@@ -94,6 +112,15 @@
             this.convertDummies.Text = "Convert Deforming Dummies to Bones";
             this.convertDummies.UseVisualStyleBackColor = true;
             this.convertDummies.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
+            // 
+            // scaleLabel
+            // 
+            this.scaleLabel.AutoSize = true;
+            this.scaleLabel.Location = new System.Drawing.Point(6, 196);
+            this.scaleLabel.Name = "scaleLabel";
+            this.scaleLabel.Size = new System.Drawing.Size(83, 12);
+            this.scaleLabel.TabIndex = 0;
+            this.scaleLabel.Text = "Scale Factor:";
             // 
             // exportDeformers
             // 
@@ -169,33 +196,6 @@
             this.exportNormals.Text = "Normals";
             this.exportNormals.UseVisualStyleBackColor = true;
             this.exportNormals.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // scaleFactor
-            // 
-            this.scaleFactor.DecimalPlaces = 2;
-            this.scaleFactor.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.scaleFactor.Location = new System.Drawing.Point(95, 194);
-            this.scaleFactor.Name = "scaleFactor";
-            this.scaleFactor.Size = new System.Drawing.Size(46, 21);
-            this.scaleFactor.TabIndex = 1;
-            this.scaleFactor.Value = new decimal(new int[] {
-            254,
-            0,
-            0,
-            131072});
-            // 
-            // scaleLabel
-            // 
-            this.scaleLabel.AutoSize = true;
-            this.scaleLabel.Location = new System.Drawing.Point(6, 196);
-            this.scaleLabel.Name = "scaleLabel";
-            this.scaleLabel.Size = new System.Drawing.Size(83, 12);
-            this.scaleLabel.TabIndex = 0;
-            this.scaleLabel.Text = "Scale Factor:";
             // 
             // fbxOKbutton
             // 
@@ -311,7 +311,7 @@
             this.groupBox2.Controls.Add(this.allBones);
             this.groupBox2.Controls.Add(this.allFrames);
             this.groupBox2.Controls.Add(this.EulerFilter);
-            this.groupBox2.Location = new System.Drawing.Point(265, 9);
+            this.groupBox2.Location = new System.Drawing.Point(265, 12);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(214, 235);
             this.groupBox2.TabIndex = 11;
@@ -448,7 +448,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.fbxCancel;
-            this.ClientSize = new System.Drawing.Size(493, 379);
+            this.ClientSize = new System.Drawing.Size(493, 382);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.fbxCancel);
@@ -464,9 +464,9 @@
             this.TopMost = true;
             this.FbxBox.ResumeLayout(false);
             this.FbxBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).EndInit();
             this.geometryBox.ResumeLayout(false);
             this.geometryBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.panel1.ResumeLayout(false);
