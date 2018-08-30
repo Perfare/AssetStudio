@@ -12,6 +12,13 @@ namespace AssetStudio
         public static byte[] GetData(string path, string sourceFilePath, long offset, int size)
         {
             var resourceFileName = Path.GetFileName(path);
+
+            if (Studio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var reader))
+            {
+                reader.Position = offset;
+                return reader.ReadBytes(size);
+            }
+
             var resourceFilePath = Path.GetDirectoryName(sourceFilePath) + "\\" + resourceFileName;
             if (!File.Exists(resourceFilePath))
             {
@@ -31,16 +38,8 @@ namespace AssetStudio
             }
             else
             {
-                if (Studio.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var resourceReader))
-                {
-                    resourceReader.Position = offset;
-                    return resourceReader.ReadBytes(size);
-                }
-                else
-                {
-                    MessageBox.Show($"can't find the resource file {resourceFileName}");
-                    return null;
-                }
+                MessageBox.Show($"can't find the resource file {resourceFileName}");
+                return null;
             }
         }
     }

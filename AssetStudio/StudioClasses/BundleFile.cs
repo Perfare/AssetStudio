@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using Lz4;
-using SevenZip.Compression.LZMA;
 
 namespace AssetStudio
 {
@@ -229,7 +228,7 @@ namespace AssetStudio
                             file.stream = memoryMappedFile.CreateViewStream();*/
                             var extractPath = path + "_unpacked\\";
                             Directory.CreateDirectory(extractPath);
-                            file.stream = new FileStream(extractPath + file.fileName, FileMode.Create);
+                            file.stream = File.Create(extractPath + file.fileName);
                         }
                         else
                         {
