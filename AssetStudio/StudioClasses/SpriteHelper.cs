@@ -18,15 +18,21 @@ namespace AssetStudio
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
                 var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
+
                 if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
                 {
+                    SpriteInfo(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
                     try
                     {
-                        return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
+                        if (m_Sprite.m_PhysicsShape.Length > 0)
+                        {
+                            return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
+                        }
+                        return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index]);
                     }
                     catch
                     {
-                        return CutImage(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                        return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index]);
                     }
                 }
             }
@@ -34,24 +40,29 @@ namespace AssetStudio
             {
                 if (assetsfileList.TryGetPD(m_Sprite.texture, out assetPreloadData))
                 {
-                    return CutImage(asset, assetPreloadData, m_Sprite.textureRect);
+                    SpriteInfo(asset, assetPreloadData, m_Sprite.textureRect);
+                    return CutImage(assetPreloadData, m_Sprite.textureRect);
                 }
             }
 
             return null;
         }
 
-        private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect)
+        private static void SpriteInfo(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect)
+        {
+            var info = texture2DAsset.InfoText;
+            var start = info.IndexOf("Format");
+            info = info.Substring(start, info.Length - start);
+            asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
+        }
+
+        private static Bitmap CutImage(AssetPreloadData texture2DAsset, RectangleF textureRect)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
             {
                 if (originalImage != null)
                 {
-                    var info = texture2DAsset.InfoText;
-                    var start = info.IndexOf("Format");
-                    info = info.Substring(start, info.Length - start);
-                    asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
                     var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
                     spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     return spriteImage;
@@ -61,17 +72,13 @@ namespace AssetStudio
             return null;
         }
 
-        private static Bitmap CutImage(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
+        private static Bitmap CutImage(AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
             {
                 if (originalImage != null)
                 {
-                    var info = texture2DAsset.InfoText;
-                    var start = info.IndexOf("Format");
-                    info = info.Substring(start, info.Length - start);
-                    asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
                     var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
                     using (var brush = new TextureBrush(spriteImage))
                     {
