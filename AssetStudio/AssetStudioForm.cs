@@ -287,7 +287,7 @@ namespace AssetStudio
                                 glControl1.Invalidate();
                             }
                             break;
-                        case Keys.N: 
+                        case Keys.N:
                             if (e.Control) //Normal mode
                             {
                                 normalMode = (normalMode + 1) % 2;
@@ -1826,7 +1826,8 @@ namespace AssetStudio
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, GetSelectedAssets());
+                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDReference.AnimationClip).ToList();
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList.Count == 0 ? null : animationList);
                 }
             }
             else
