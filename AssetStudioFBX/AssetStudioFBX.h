@@ -66,8 +66,7 @@ namespace AssetStudio {
 			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList, bool normals);
 			FbxFileTexture* ExportTexture(ImportedTexture^ matTex, FbxMesh* pMesh);
 			void ExportAnimations(bool EulerFilter, float filterValue, bool flatInbetween);
-			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, List<String^>^ pNotFound);
-			void ExportSampledAnimation(ImportedSampledAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween, List<String^>^ pNotFound);
+			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween);
 			void ExportMorphs(IImported^ imported, bool morphMask, bool flatInbetween);
 		};
 

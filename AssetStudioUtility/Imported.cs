@@ -12,7 +12,7 @@ namespace AssetStudio
         List<ImportedMesh> MeshList { get; }
         List<ImportedMaterial> MaterialList { get; }
         List<ImportedTexture> TextureList { get; }
-        List<ImportedAnimation> AnimationList { get; }
+        List<ImportedKeyframedAnimation> AnimationList { get; }
         List<ImportedMorph> MorphList { get; }
     }
 
@@ -140,34 +140,25 @@ namespace AssetStudio
         }
     }
 
-    public abstract class ImportedAnimation
+    public class ImportedKeyframedAnimation
     {
         public string Name { get; set; }
-    }
 
-    public abstract class ImportedAnimationTrackContainer<TrackType> : ImportedAnimation where TrackType : ImportedAnimationTrack
-    {
-        public List<TrackType> TrackList { get; set; }
+        public List<ImportedAnimationKeyframedTrack> TrackList { get; set; }
 
-        public TrackType FindTrack(string name)
+        public ImportedAnimationKeyframedTrack FindTrack(string name)
         {
             return TrackList.Find(track => track.Name == name);
         }
     }
 
-    public class ImportedKeyframedAnimation : ImportedAnimationTrackContainer<ImportedAnimationKeyframedTrack>
-    {
-
-    }
-
-    public class ImportedSampledAnimation : ImportedAnimationTrackContainer<ImportedAnimationSampledTrack>
-    {
-        public float SampleRate { get; set; }
-    }
-
-    public abstract class ImportedAnimationTrack
+    public class ImportedAnimationKeyframedTrack
     {
         public string Name { get; set; }
+        public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
+        public List<ImportedKeyframe<Vector3>> Rotations = new List<ImportedKeyframe<Vector3>>();
+        public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
+        public List<ImportedKeyframe<float>> Curve = new List<ImportedKeyframe<float>>();
     }
 
     public class ImportedKeyframe<T>
@@ -180,21 +171,6 @@ namespace AssetStudio
             this.time = time;
             this.value = value;
         }
-    }
-
-    public class ImportedAnimationKeyframedTrack : ImportedAnimationTrack
-    {
-        public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
-        public List<ImportedKeyframe<Vector3>> Rotations = new List<ImportedKeyframe<Vector3>>();
-        public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
-    }
-
-    public class ImportedAnimationSampledTrack : ImportedAnimationTrack
-    {
-        public Vector3?[] Scalings;
-        public Vector3?[] Rotations;
-        public Vector3?[] Translations;
-        public float?[] Curve;
     }
 
     public class ImportedMorph
