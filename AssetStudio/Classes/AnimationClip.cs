@@ -103,7 +103,7 @@ namespace AssetStudio
             if (numChunks == -1)
                 numChunks = (int)m_NumItems / itemCountInChunk;
             var end = chunkStride * numChunks / 4;
-            var data = new float[end];
+            var data = new List<float>();
             for (var index = 0; index != end; index += chunkStride / 4)
             {
                 for (int i = 0; i < itemCountInChunk; ++i)
@@ -124,11 +124,11 @@ namespace AssetStudio
                         }
                     }
                     x &= (uint)(1 << m_BitSize) - 1u;
-                    data[index + i] = x / (scale * ((1 << m_BitSize) - 1)) + m_Start;
+                    data.Add(x / (scale * ((1 << m_BitSize) - 1)) + m_Start);
                 }
             }
 
-            return data;
+            return data.ToArray();
         }
     }
 

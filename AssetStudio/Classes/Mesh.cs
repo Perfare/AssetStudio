@@ -1,103 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using System.Collections;
 using SharpDX;
-
-/*Notes about handedness
-Converting from left-handed to right-handed and vice versa requires either:
-a) swapping any 2 axes
-b) flipping any 1 axis
-c) any odd combinations of a&b
-
-An even number of combinations will result in the same handedness, but in a different perspective.
-Also, rotating the axes is just that, the same handedness in a different system.
-
-Y-up or Z-up are not requirements OR defining characteristics of a handedness, they are just common that way.
-
-unt is left-handed with Y-up
-Aircraft              View
-Y Top                          Y Up
-|                              |
-|    Z Nose                    |
-|   /                          |
-| /                            |
-+--------X           X--------+
-        Right       to the       \
-                    left           \
-                                     Z towards viewer
-
-3ds Max is right-handed with Z up
-Aircraft              View
-Z Top                          Z Up (Viewcube Top)
-|                              |
-|    (-Y) Nose       away Y    |
-|   /                from  \   |
-| /                  viewer  \ |
-+--------(-X)       (VC Back)  +--------X to the right
-         Right                         (Viewcube Right)
-
-
-
-FBX and Maya are both right-handed but with Y up! (90 degree rotation on X = samme handedness)
-Aircraft              View
-Y Top                 Y Up (Viewcube Top)
-|                     |
-|    Z Nose           |
-|   /                 |
-| /                   |
-+--------(-X)         +--------X to the right
-         Right          \        (Viewcube Right)
-                          \
-                            Z towards viewer
-                              (Viewcube Front)
-
-Exporting FBX from Max, vertex components are ALWAYS written as they are in max: X Y Z.
-The Axis option only affects GlobalSettings and PreRotation in the FBX file.
-"Z-up" option: 
-UpAxis=2,Sign=1     <=> ViewCube Up = FBX vertex[2] <=> Max Z = FBX Z <=> Maya Y = FBX Z
-FrontAxis=1,Sign=-1 <=> ViewCube -Front = FBX v[1] <=> Max -(-Y) = FBX Y <=> Maya -Z = FBX Y
-CoordAxis=0,Sign=1  <=> ViewCube Right = FBX v[0] <=> Max X = FBX X <=> Maya X = FBX X
-no PreRotation
-
-"Y-up" option:
-UpAxis=1,Sign=1    <=> ViewCube Up = FBX vertex[1] <=> Max Z = FBX Y <=> Maya Y = FBX Y
-FrontAxis=2,Sign=1 <=> ViewCube Front = FBX v[2] <=> Max -Y = FBX Z <=> Maya Z = FBX Z
-CoordAxis=0,Sign=1 <=> ViewCube Right = FBX v[0] <=> Max X = FBX X <=> Maya X = FBX X
-PreRotation -90,0,0 to bring Original Up (FBX Z) to ViewCube Up when importing
-PreRotation means only the geometry is rotated locally around pivot before applying other modifiers. It is "invisible" to the user.
-
-
-Importing FBX in Unt, Axis settings and PreRotations are ignored.
-They probably ignore them because the order of vertex components is always the same in FBX, and Unt axes never change orientation (as opposed to Max-Maya).
-Vertex components are loaded as follows:
-Unt Up(Y) = FBX Y
-Unt Front(Z) = FBX Z
-Unt Left(X) = FBX -X
-
-Technically, this is a correct handedness conversion, but to a different system, because the model is not properly oriented (plane nose is down).
-So Unt adds a -90 degree rotation, similar to the FBX PreRotation, to bring the nose to Front(Z).
-Except it does it as a regular rotation, and combines it with any other rotations in the Transform asset.
-
-Converting from Unt back to FBX, the same vertex conversion cannot be applied because we have to take into account the rotation.
-Option 0: export vertices and transformations as -X,Y,Z and set FBX option to Y-up without PreRotation!
-the result will be Max Z = FBX Y, Max -Y = FBX Z, Max X = FBX X => final order -X -Z Y
-Option 1: export vertices and transformations as -X,-Z,Y and set FBX options as "Z-up".
-The -90 rotation exported from Unt will bring the model in correct orientation.
-Option 2: export vertices and transformations as -X,-Y,-Z, add -90 PreRotation to every Mesh Node and set FBX options as "Y-up".
-The -90 rotation from Unt plus the -90 PreRotation will bring the model in correct orientation.
-Remember though that the PreRotation is baked into the Geometry.
-
-But since the -90 rotation from Unt is a regular type, it will show up in the modifier in both cases.
-Also, re-importing this FBX in Unt will now produce a (-90)+(-90)=-180 rotation.
-This is an unfortunate eyesore, but nothing more, the orientation will be fine.
-
-In theory, one could add +90 degrees rotation to GameObjects that link to Mesh assets (but not other types) to cancel out the Unt rotation.
-The problem is you can never know where the Unt mesh originated from. If it came from a left-handed format such as OBJ, there wouldn't have been any conversion and it wouldn't have that -90 degree adjustment.
-So it would "fix" meshes that were originally sourced form FBX, but would still have the "extra" rotation in mehses sourced from left-handed formats.
-*/
 
 namespace AssetStudio
 {
@@ -112,7 +16,6 @@ namespace AssetStudio
         private ChannelInfo[] m_Channels;
         private StreamInfo[] m_Streams;
         public List<BoneInfluence>[] m_Skin;
-        //public Dictionary<int, float>[] m_Skin;
         public float[][,] m_BindPose;
         public int m_VertexCount;
         public float[] m_Vertices;
@@ -158,15 +61,6 @@ namespace AssetStudio
             public uint align; //3.5.0 - 3.5.7
             public byte dividerOp; //4.0.0 and later
             public ushort frequency;
-        }
-
-        public class PackedBitVector
-        {
-            public int m_NumItems;
-            public float m_Range = 1.0f;
-            public float m_Start;
-            public byte[] m_Data;
-            public byte m_BitSize;
         }
 
         public class BlendShapeData
@@ -278,156 +172,19 @@ namespace AssetStudio
             return result;
         }
 
-        private static uint[] UnpackBitVector(PackedBitVector pakData)
-        {
-            uint[] unpackedVectors = new uint[pakData.m_NumItems];
-            //int bitmax = 0;//used to convert int value to float
-            //for (int b = 0; b < pakData.m_BitSize; b++) { bitmax |= (1 << b); }
-
-            //the lazy way
-            //split data into groups of "aligned" bytes i.e. 8 packed values per group
-            //I could calculate optimized group size based on BitSize, but this is the lazy way
-
-            if (pakData.m_BitSize == 0)
-            {
-                pakData.m_BitSize = (byte)((pakData.m_Data.Length * 8) / pakData.m_NumItems);
-                //don't know, don't care
-            }
-            int groupSize = pakData.m_BitSize; //bitSize * 8 values / 8 bits
-            byte[] group = new byte[groupSize];
-            int groupCount = pakData.m_NumItems / 8;
-
-            for (int g = 0; g < groupCount; g++)
-            {
-                Buffer.BlockCopy(pakData.m_Data, g * groupSize, group, 0, groupSize);
-                BitArray groupBits = new BitArray(group);
-
-                for (int v = 0; v < 8; v++)
-                {
-                    BitArray valueBits = new BitArray(new Boolean[pakData.m_BitSize]);
-                    for (int b = 0; b < pakData.m_BitSize; b++)
-                    {
-                        valueBits.Set(b, groupBits.Get(b + v * pakData.m_BitSize));
-                    }
-
-                    var valueArr = new int[1];
-                    valueBits.CopyTo(valueArr, 0);
-                    //unpackedVectors[v + g * 8] = (float)(valueArr[0] / bitmax) * pakData.m_Range + pakData.m_Start;
-                    //valueBits.CopyTo(unpackedVectors, v + g * 8);//doesn't work with uint[]
-                    unpackedVectors[v + g * 8] = (uint)valueArr[0];
-                }
-            }
-
-            //m_NumItems is not necessarily a multiple of 8, so there can be one extra group with fewer values
-            int endBytes = pakData.m_Data.Length - groupCount * groupSize;
-            int endVal = pakData.m_NumItems - groupCount * 8;
-
-            if (endBytes > 0)
-            {
-                Buffer.BlockCopy(pakData.m_Data, groupCount * groupSize, group, 0, endBytes);
-                BitArray groupBits = new BitArray(group);
-
-                for (int v = 0; v < endVal; v++)
-                {
-                    BitArray valueBits = new BitArray(new Boolean[pakData.m_BitSize]);
-                    for (int b = 0; b < pakData.m_BitSize; b++)
-                    {
-                        valueBits.Set(b, groupBits.Get(b + v * pakData.m_BitSize));
-                    }
-
-                    var valueArr = new int[1];
-                    valueBits.CopyTo(valueArr, 0);
-                    //unpackedVectors[v + groupCount * 8] = (float)(valueArr[0] / bitmax) * pakData.m_Range + pakData.m_Start;
-                    //valueBits.CopyTo(unpackedVectors, v + groupCount * 8);
-                    unpackedVectors[v + groupCount * 8] = (uint)valueArr[0];
-                }
-            }
-
-
-            //the hard way
-            //compute bit position in m_Data for each value
-            /*byte[] value = new byte[4] { 0, 0, 0, 0 };
-
-			int byteCount = pakData.m_BitSize / 8;//bytes in single value
-			int bitCount = pakData.m_BitSize % 8;
-
-			for (int v = 0; v < pakData.m_NumItems; v++)
-			{
-				if ((bitCount * v) % 8 == 0) //bitstream is "aligned"
-				{//does this make sense if I'm gonna compute unaligned anywhay?
-					for (int b = 0; b < byteCount; b++)
-					{
-						value[b] = pakData.m_Data[b + v * (byteCount+1)];
-					}
-
-					if (byteCount < 4) //shouldn't it be always?
-					{
-						byte lastByte = pakData.m_Data[bitCount * v / 8];
-
-						for (int b = 0; b < bitCount; b++)//no
-						{
-							//set bit in val[byteCount+1]
-						}
-					}
-				}
-				else
-				{
-					//god knows
-				}
-
-				unpackedVectors[v] = BitConverter.ToSingle(value, 0);
-			}*/
-
-
-            //first I split the data into byte-aligned arrays
-            //too complicated to calculate group size each time
-            //then no point in dividing?
-            /*int groupSize = byteCount + (bitCount + 7)/8;
-
-			int groups = pakData.m_Data.Length / groupSize;
-			int valPerGr = (int)(pakData.m_NumItems / groups);
-			byte[] group = new byte[groupSize];
-
-			for (int g = 0; g < groups; g++)
-			{
-				Buffer.BlockCopy(pakData.m_Data, g * groupSize, group, 0, groupSize);
-
-				for (int v = 0; v < valPerGr; v++)
-				{
-
-					unpackedVectors[v + g * valPerGr] = BitConverter.ToSingle(value, 0);
-				}
-			}
-
-			//m_Data size is not necessarily a multiple of align, so there can be one extra group with fewer values
-			int lastBytes = pakData.m_Data.Length % groupSize;
-			int lastVal = (int)(pakData.m_NumItems - groups * valPerGr);
-
-			if (lastBytes > 0)
-			{
-				Buffer.BlockCopy(pakData.m_Data, groups * groupSize, group, 0, lastBytes);
-
-				for (int v = 0; v < lastVal; v++)
-				{
-
-					unpackedVectors[v + groups * valPerGr] = BitConverter.ToSingle(value, 0);
-				}
-			}*/
-
-            return unpackedVectors;
-        }
-
-        private static int GetChannelFormatLength(int format)
+        private static int GetChannelFormatSize(int format)
         {
             switch (format)
             {
-                case 0: //float
+                case 0: //kChannelFormatFloat
                     return 4;
-                case 1: //half float
+                case 1: //kChannelFormatFloat16
                     return 2;
-                case 2: //byte float
+                case 2: //kChannelFormatColor
+                    return 1;//TODO actual is 4
+                case 3: //kChannelFormatByte
                     return 1;
-                case 11: //int
+                case 11: //kChannelFormatInt
                     return 4;
                 default:
                     return 0;
@@ -829,7 +586,7 @@ namespace AssetStudio
                                     if (m_Channel.dimension > 0)
                                     {
                                         chnMask |= 1 << chn;
-                                        stride += m_Channel.dimension * GetChannelFormatLength(m_Channel.format);
+                                        stride += m_Channel.dimension * GetChannelFormatSize(m_Channel.format);
                                     }
                                 }
                             }
@@ -877,7 +634,7 @@ namespace AssetStudio
                                         }
 
                                         int[] componentsIntArray = null;
-                                        componentByteSize = GetChannelFormatLength(m_Channel.format);
+                                        componentByteSize = GetChannelFormatSize(m_Channel.format);
                                         componentBytes = new byte[m_VertexCount * m_Channel.dimension * componentByteSize];
 
                                         for (int v = 0; v < m_VertexCount; v++)
@@ -1038,198 +795,120 @@ namespace AssetStudio
                 #region Compressed Mesh data for 2.6.0 and later - 160 bytes
                 if (version[0] >= 3 || (version[0] == 2 && version[1] >= 6))
                 {
-                    //remember there can be combinations of packed and regular vertex properties
-
-                    #region m_Vertices
-                    PackedBitVector m_Vertices_Packed = new PackedBitVector();
-                    m_Vertices_Packed.m_NumItems = reader.ReadInt32();
-                    m_Vertices_Packed.m_Range = reader.ReadSingle();
-                    m_Vertices_Packed.m_Start = reader.ReadSingle();
-                    m_Vertices_Packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_Vertices_Packed.m_Data, 0, m_Vertices_Packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_Vertices_Packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
+                    #region m_Vertices;
+                    var m_Vertices_Packed = new PackedFloatVector(reader);
                     if (m_Vertices_Packed.m_NumItems > 0)
                     {
-                        m_VertexCount = m_Vertices_Packed.m_NumItems / 3;
-                        uint[] m_Vertices_Unpacked = UnpackBitVector(m_Vertices_Packed);
-                        int bitmax = 0;//used to convert int value to float
-                        for (int b = 0; b < m_Vertices_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
-                        m_Vertices = new float[m_Vertices_Packed.m_NumItems];
-                        for (int v = 0; v < m_Vertices_Packed.m_NumItems; v++)
-                        {
-                            m_Vertices[v] = (float)((double)m_Vertices_Unpacked[v] / bitmax) * m_Vertices_Packed.m_Range + m_Vertices_Packed.m_Start;
-                        }
+                        m_VertexCount = (int)m_Vertices_Packed.m_NumItems / 3;
+                        m_Vertices = m_Vertices_Packed.UnpackFloats(3, 4);
                     }
                     #endregion
 
                     #region m_UV
-                    PackedBitVector m_UV_Packed = new PackedBitVector(); //contains all channels
-                    m_UV_Packed.m_NumItems = reader.ReadInt32();
-                    m_UV_Packed.m_Range = reader.ReadSingle();
-                    m_UV_Packed.m_Start = reader.ReadSingle();
-                    m_UV_Packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_UV_Packed.m_Data, 0, m_UV_Packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_UV_Packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
-                    if (m_UV_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportUVs"])
+                    var m_UV_Packed = new PackedFloatVector(reader);
+                    if (m_UV_Packed.m_NumItems > 0)
                     {
-                        uint[] m_UV_Unpacked = UnpackBitVector(m_UV_Packed);
-                        int bitmax = 0;
-                        for (int b = 0; b < m_UV_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
-
-                        m_UV1 = new float[m_VertexCount * 2];
-
-                        for (int v = 0; v < m_VertexCount * 2; v++)
-                        {
-                            m_UV1[v] = (float)((double)m_UV_Unpacked[v] / bitmax) * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
-                        }
-
+                        m_UV1 = m_UV_Packed.UnpackFloats(2, 4, 0, m_VertexCount);
                         if (m_UV_Packed.m_NumItems >= m_VertexCount * 4)
                         {
-                            m_UV2 = new float[m_VertexCount * 2];
-                            for (uint v = 0; v < m_VertexCount * 2; v++)
-                            {
-                                m_UV2[v] = (float)((double)m_UV_Unpacked[v + m_VertexCount * 2] / bitmax) * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
-                            }
-
-                            if (m_UV_Packed.m_NumItems >= m_VertexCount * 6)
-                            {
-                                m_UV3 = new float[m_VertexCount * 2];
-                                for (uint v = 0; v < m_VertexCount * 2; v++)
-                                {
-                                    m_UV3[v] = (float)((double)m_UV_Unpacked[v + m_VertexCount * 4] / bitmax) * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
-                                }
-
-                                if (m_UV_Packed.m_NumItems == m_VertexCount * 8)
-                                {
-                                    m_UV4 = new float[m_VertexCount * 2];
-                                    for (uint v = 0; v < m_VertexCount * 2; v++)
-                                    {
-                                        m_UV4[v] = (float)((double)m_UV_Unpacked[v + m_VertexCount * 6] / bitmax) * m_UV_Packed.m_Range + m_UV_Packed.m_Start;
-                                    }
-                                }
-                            }
+                            m_UV2 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 2, m_VertexCount);
+                        }
+                        if (m_UV_Packed.m_NumItems >= m_VertexCount * 6)
+                        {
+                            m_UV3 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 4, m_VertexCount);
+                        }
+                        if (m_UV_Packed.m_NumItems >= m_VertexCount * 8)
+                        {
+                            m_UV4 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 6, m_VertexCount);
                         }
                     }
                     #endregion
 
-                    #region m_BindPose
+                    #region m_BindPoses
                     if (version[0] < 5)
                     {
-                        PackedBitVector m_BindPoses_Packed = new PackedBitVector();
-                        m_BindPoses_Packed.m_NumItems = reader.ReadInt32();
-                        m_BindPoses_Packed.m_Range = reader.ReadSingle();
-                        m_BindPoses_Packed.m_Start = reader.ReadSingle();
-                        m_BindPoses_Packed.m_Data = new byte[reader.ReadInt32()];
-                        reader.Read(m_BindPoses_Packed.m_Data, 0, m_BindPoses_Packed.m_Data.Length);
-                        reader.AlignStream(4);
-                        m_BindPoses_Packed.m_BitSize = reader.ReadByte();
-                        reader.Position += 3; //4 byte alignment
-
-                        if (m_BindPoses_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportDeformers"])
+                        var m_BindPoses_Packed = new PackedFloatVector(reader);
+                        if (m_BindPoses_Packed.m_NumItems > 0)
                         {
-                            uint[] m_BindPoses_Unpacked = UnpackBitVector(m_BindPoses_Packed);
-                            int bitmax = 0;//used to convert int value to float
-                            for (int b = 0; b < m_BindPoses_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
-
                             m_BindPose = new float[m_BindPoses_Packed.m_NumItems / 16][,];
-
-                            for (int i = 0; i < m_BindPose.Length; i++)
-                            {
-                                m_BindPose[i] = new float[4, 4];
-                                for (int j = 0; j < 4; j++)
-                                {
-                                    for (int k = 0; k < 4; k++)
-                                    {
-                                        m_BindPose[i][j, k] = (float)((double)m_BindPoses_Unpacked[i * 16 + j * 4 + k] / bitmax) * m_BindPoses_Packed.m_Range + m_BindPoses_Packed.m_Start;
-                                    }
-                                }
-                            }
+                            var m_BindPoses_Unpacked = m_BindPoses_Packed.UnpackFloats(16, 4 * 16);
+                            throw new NotImplementedException();
                         }
                     }
                     #endregion
 
-                    PackedBitVector m_Normals_Packed = new PackedBitVector();
-                    m_Normals_Packed.m_NumItems = reader.ReadInt32();
-                    m_Normals_Packed.m_Range = reader.ReadSingle();
-                    m_Normals_Packed.m_Start = reader.ReadSingle();
-                    m_Normals_Packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_Normals_Packed.m_Data, 0, m_Normals_Packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_Normals_Packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
+                    var m_Normals_Packed = new PackedFloatVector(reader);
 
-                    PackedBitVector m_Tangents_Packed = new PackedBitVector();
-                    m_Tangents_Packed.m_NumItems = reader.ReadInt32();
-                    m_Tangents_Packed.m_Range = reader.ReadSingle();
-                    m_Tangents_Packed.m_Start = reader.ReadSingle();
-                    m_Tangents_Packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_Tangents_Packed.m_Data, 0, m_Tangents_Packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_Tangents_Packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
+                    var m_Tangents_Packed = new PackedFloatVector(reader);
 
-                    PackedBitVector m_Weights = new PackedBitVector();
-                    m_Weights.m_NumItems = reader.ReadInt32();
-                    m_Weights.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_Weights.m_Data, 0, m_Weights.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_Weights.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
+                    var m_Weights = new PackedIntVector(reader);
 
                     #region m_Normals
-                    PackedBitVector m_NormalSigns_packed = new PackedBitVector();
-                    m_NormalSigns_packed.m_NumItems = reader.ReadInt32();
-                    m_NormalSigns_packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_NormalSigns_packed.m_Data, 0, m_NormalSigns_packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_NormalSigns_packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
-                    if (m_Normals_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportNormals"])
+                    var m_NormalSigns = new PackedIntVector(reader);
+                    if (m_Normals_Packed.m_NumItems > 0)
                     {
-                        uint[] m_Normals_Unpacked = UnpackBitVector(m_Normals_Packed);
-                        uint[] m_NormalSigns = UnpackBitVector(m_NormalSigns_packed);
-                        int bitmax = 0;
-                        for (int b = 0; b < m_Normals_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
+                        var normalData = m_Normals_Packed.UnpackFloats(2, 4 * 2);
+                        var signs = m_NormalSigns.UnpackInts();
                         m_Normals = new float[m_Normals_Packed.m_NumItems / 2 * 3];
-                        for (int v = 0; v < m_Normals_Packed.m_NumItems / 2; v++)
+                        for (int i = 0; i < m_Normals_Packed.m_NumItems / 2; ++i)
                         {
-                            m_Normals[v * 3] = (float)((double)m_Normals_Unpacked[v * 2] / bitmax) * m_Normals_Packed.m_Range + m_Normals_Packed.m_Start;
-                            m_Normals[v * 3 + 1] = (float)((double)m_Normals_Unpacked[v * 2 + 1] / bitmax) * m_Normals_Packed.m_Range + m_Normals_Packed.m_Start;
-                            m_Normals[v * 3 + 2] = (float)Math.Sqrt(1 - m_Normals[v * 3] * m_Normals[v * 3] - m_Normals[v * 3 + 1] * m_Normals[v * 3 + 1]);
-                            if (m_NormalSigns[v] == 0) { m_Normals[v * 3 + 2] *= -1; }
+                            var x = normalData[i * 2 + 0];
+                            var y = normalData[i * 2 + 1];
+                            m_Normals[i * 3] = x;
+                            m_Normals[i * 3 + 1] = y;
+                            var zsqr = 1 - x * x - y * y;
+                            float z;
+                            if (zsqr >= 0f)
+                                z = (float)Math.Sqrt(zsqr);
+                            else
+                            {
+                                z = 0;
+                                var normal = new Vector3(x, y, z);
+                                normal.Normalize();
+                                x = normal.X;
+                                y = normal.Y;
+                                z = normal.Z;
+                            }
+                            if (signs[i] == 0)
+                                z = -z;
+                            m_Normals[i * 3] = x;
+                            m_Normals[i * 3 + 1] = y;
+                            m_Normals[i * 3 + 2] = z;
                         }
                     }
                     #endregion
 
                     #region m_Tangents
-                    PackedBitVector m_TangentSigns_packed = new PackedBitVector();
-                    m_TangentSigns_packed.m_NumItems = reader.ReadInt32();
-                    m_TangentSigns_packed.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_TangentSigns_packed.m_Data, 0, m_TangentSigns_packed.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_TangentSigns_packed.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
-                    if (m_Tangents_Packed.m_NumItems > 0 && (bool)Properties.Settings.Default["exportTangents"])
+                    var m_TangentSigns = new PackedIntVector(reader);
+                    if (m_Tangents_Packed.m_NumItems > 0)
                     {
-                        uint[] m_Tangents_Unpacked = UnpackBitVector(m_Tangents_Packed);
-                        uint[] m_TangentSigns = UnpackBitVector(m_TangentSigns_packed);
-                        int bitmax = 0;
-                        for (int b = 0; b < m_Tangents_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
-                        m_Tangents = new float[m_Tangents_Packed.m_NumItems / 2 * 3];
-                        for (int v = 0; v < m_Tangents_Packed.m_NumItems / 2; v++)
+                        var tangentData = m_Tangents_Packed.UnpackFloats(2, 4 * 2);
+                        var signs = m_TangentSigns.UnpackInts();
+                        m_Tangents = new float[m_Tangents_Packed.m_NumItems / 2 * 4];
+                        for (int i = 0; i < m_Tangents_Packed.m_NumItems / 2; ++i)
                         {
-                            m_Tangents[v * 3] = (float)((double)m_Tangents_Unpacked[v * 2] / bitmax) * m_Tangents_Packed.m_Range + m_Tangents_Packed.m_Start;
-                            m_Tangents[v * 3 + 1] = (float)((double)m_Tangents_Unpacked[v * 2 + 1] / bitmax) * m_Tangents_Packed.m_Range + m_Tangents_Packed.m_Start;
-                            m_Tangents[v * 3 + 2] = (float)Math.Sqrt(1 - m_Tangents[v * 3] * m_Tangents[v * 3] - m_Tangents[v * 3 + 1] * m_Tangents[v * 3 + 1]);
-                            if (m_TangentSigns[v] == 0) { m_Tangents[v * 3 + 2] *= -1; }
+                            var x = tangentData[i * 2 + 0];
+                            var y = tangentData[i * 2 + 1];
+                            var zsqr = 1 - x * x - y * y;
+                            float z;
+                            if (zsqr >= 0f)
+                                z = (float)Math.Sqrt(zsqr);
+                            else
+                            {
+                                z = 0;
+                                var vector3f = new Vector3(x, y, z);
+                                vector3f.Normalize();
+                                x = vector3f.X;
+                                y = vector3f.Y;
+                                z = vector3f.Z;
+                            }
+                            if (signs[i * 2 + 0] == 0)
+                                z = -z;
+                            var w = signs[i * 2 + 1] > 0 ? 1.0f : -1.0f;
+                            m_Tangents[i * 4] = x;
+                            m_Tangents[i * 4 + 1] = y;
+                            m_Tangents[i * 4 + 2] = z;
+                            m_Tangents[i * 4 + 3] = w;
                         }
                     }
                     #endregion
@@ -1237,134 +916,71 @@ namespace AssetStudio
                     #region m_FloatColors
                     if (version[0] >= 5)
                     {
-                        PackedBitVector m_FloatColors = new PackedBitVector();
-                        m_FloatColors.m_NumItems = reader.ReadInt32();
-                        m_FloatColors.m_Range = reader.ReadSingle();
-                        m_FloatColors.m_Start = reader.ReadSingle();
-                        m_FloatColors.m_Data = new byte[reader.ReadInt32()];
-                        reader.Read(m_FloatColors.m_Data, 0, m_FloatColors.m_Data.Length);
-                        reader.AlignStream(4);
-                        m_FloatColors.m_BitSize = reader.ReadByte();
-                        reader.Position += 3; //4 byte alignment
-
-                        if (m_FloatColors.m_NumItems > 0 && (bool)Properties.Settings.Default["exportColors"])
+                        var m_FloatColors = new PackedFloatVector(reader);
+                        if (m_FloatColors.m_NumItems > 0)
                         {
-                            uint[] m_FloatColors_Unpacked = UnpackBitVector(m_FloatColors);
-                            int bitmax = 0;
-                            for (int b = 0; b < m_FloatColors.m_BitSize; b++) { bitmax |= (1 << b); }
-
-                            m_Colors = new float[m_FloatColors.m_NumItems];
-
-                            for (int v = 0; v < m_FloatColors.m_NumItems; v++)
-                            {
-                                m_Colors[v] = (float)m_FloatColors_Unpacked[v] / bitmax * m_FloatColors.m_Range + m_FloatColors.m_Start;
-                            }
+                            throw new NotImplementedException();
                         }
                     }
                     #endregion
 
                     #region m_Skin
-                    PackedBitVector m_BoneIndices = new PackedBitVector();
-                    m_BoneIndices.m_NumItems = reader.ReadInt32();
-                    m_BoneIndices.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_BoneIndices.m_Data, 0, m_BoneIndices.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_BoneIndices.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
-                    if (m_BoneIndices.m_NumItems > 0 && (bool)Properties.Settings.Default["exportDeformers"])
+                    var m_BoneIndices = new PackedIntVector(reader);
+                    if (m_Weights.m_NumItems > 0)
                     {
-                        uint[] m_Weights_Unpacked = UnpackBitVector(m_Weights);
-                        int bitmax = 0;
-                        for (int b = 0; b < m_Weights.m_BitSize; b++) { bitmax |= (1 << b); }
+                        var weights = m_Weights.UnpackInts();
+                        var boneIndices = m_BoneIndices.UnpackInts();
 
-                        uint[] m_BoneIndices_Unpacked = UnpackBitVector(m_BoneIndices);
+                        InitMSkin();
 
-                        m_Skin = new List<BoneInfluence>[m_VertexCount];
-                        for (int s = 0; s < m_Skin.Length; s++)
+                        int bonePos = 0;
+                        int boneIndexPos = 0;
+                        int j = 0;
+                        int sum = 0;
+
+                        for (int i = 0; i < m_Weights.m_NumItems; i++)
                         {
-                            m_Skin[s] = new List<BoneInfluence>(4);
-                        }
+                            //read bone index and weight.
+                            m_Skin[bonePos][j].weight = weights[i] / 31.0f;
+                            m_Skin[bonePos][j].boneIndex = boneIndices[boneIndexPos++];
+                            j++;
+                            sum += weights[i];
 
-                        int inflCount = m_Weights.m_NumItems;
-                        int vertIndex = 0;
-                        int weightIndex = 0;
-                        int bonesIndex = 0;
-                        for (weightIndex = 0; weightIndex < inflCount; vertIndex++)
-                        {
-                            int inflSum = 0;
-                            int j;
-                            for (j = 0; j < 4; j++)
+                            //the weights add up to one. fill the rest for this vertex with zero, and continue with next one.
+                            if (sum >= 31)
                             {
-                                int curWeight = 0;
-                                if (j == 3)
+                                for (; j < 4; j++)
                                 {
-                                    curWeight = 31 - inflSum;
+                                    m_Skin[bonePos][j].weight = 0;
+                                    m_Skin[bonePos][j].boneIndex = 0;
                                 }
-                                else
-                                {
-                                    curWeight = (int)m_Weights_Unpacked[weightIndex];
-                                    weightIndex++;
-                                    inflSum += curWeight;
-                                }
-                                double curWeightDouble = (double)curWeight;
-                                float realCurWeight = (float)(curWeightDouble / bitmax);
-
-                                int boneIndex = (int)m_BoneIndices_Unpacked[bonesIndex];
-                                bonesIndex++;
-                                if (boneIndex < 0)
-                                {
-                                    throw new Exception($"Invalid bone index {boneIndex}");
-                                }
-                                BoneInfluence boneInfl = new BoneInfluence()
-                                {
-                                    weight = realCurWeight,
-                                    boneIndex = boneIndex,
-                                };
-                                m_Skin[vertIndex].Add(boneInfl);
-
-                                if (inflSum == 31)
-                                {
-                                    break;
-                                }
-                                if (inflSum > 31)
-                                {
-                                    throw new Exception("Influence sum " + inflSum + " greater than 31");
-                                }
+                                bonePos++;
+                                j = 0;
+                                sum = 0;
                             }
-                            for (; j < 4; j++)
+                            //we read three weights, but they don't add up to one. calculate the fourth one, and read
+                            //missing bone index. continue with next vertex.
+                            else if (j == 3)
                             {
-                                BoneInfluence boneInfl = new BoneInfluence()
-                                {
-                                    weight = 0.0f,
-                                    boneIndex = 0,
-                                };
-                                m_Skin[vertIndex].Add(boneInfl);
+                                m_Skin[bonePos][j].weight = (31 - sum) / 31.0f;
+                                m_Skin[bonePos][j].boneIndex = boneIndices[boneIndexPos++];
+                                bonePos++;
+                                j = 0;
+                                sum = 0;
                             }
-                        }
-
-                        bool isFine = vertIndex == m_VertexCount;
-                        if (!isFine)
-                        {
-                            throw new Exception("Vertecies aint equals");
                         }
                     }
                     #endregion
 
-                    PackedBitVector m_Triangles = new PackedBitVector();
-                    m_Triangles.m_NumItems = reader.ReadInt32();
-                    m_Triangles.m_Data = new byte[reader.ReadInt32()];
-                    reader.Read(m_Triangles.m_Data, 0, m_Triangles.m_Data.Length);
-                    reader.AlignStream(4);
-                    m_Triangles.m_BitSize = reader.ReadByte();
-                    reader.Position += 3; //4 byte alignment
-
-                    if (m_Triangles.m_NumItems > 0) { m_IndexBuffer = UnpackBitVector(m_Triangles); }
+                    #region m_IndexBuffer
+                    var m_Triangles = new PackedIntVector(reader);
+                    m_IndexBuffer = Array.ConvertAll(m_Triangles.UnpackInts(), x => (uint)x);
+                    #endregion
                 }
                 #endregion
 
                 #region Colors & Collision triangles for 3.4.2 and earlier
-                if (version[0] <= 2 || (version[0] == 3 && version[1] <= 4)) //
+                if (version[0] <= 2 || (version[0] == 3 && version[1] <= 4))
                 {
                     reader.Position += 24; //Axis-Aligned Bounding Box
                     int m_Colors_size = reader.ReadInt32();
@@ -1376,46 +992,23 @@ namespace AssetStudio
                     int m_CollisionVertexCount = reader.ReadInt32();
                 }
                 #endregion
-                #region Compressed colors & Local AABB for 3.5.0 to 4.x.x
-                else //vertex colors are either in streams or packed bits
+                #region Compressed colors
+                else
                 {
                     if (version[0] < 5)
                     {
-                        PackedBitVector m_Colors_Packed = new PackedBitVector();
-                        m_Colors_Packed.m_NumItems = reader.ReadInt32();
-                        m_Colors_Packed.m_Data = new byte[reader.ReadInt32()];
-                        reader.Read(m_Colors_Packed.m_Data, 0, m_Colors_Packed.m_Data.Length);
-                        reader.AlignStream(4);
-                        m_Colors_Packed.m_BitSize = reader.ReadByte();
-                        reader.Position += 3; //4 byte alignment
-
+                        var m_Colors_Packed = new PackedIntVector(reader);
                         if (m_Colors_Packed.m_NumItems > 0)
                         {
-                            if (m_Colors_Packed.m_BitSize == 32)
-                            {
-                                //4 x 8bit color channels
-                                m_Colors = new float[m_Colors_Packed.m_Data.Length];
-                                for (int v = 0; v < m_Colors_Packed.m_Data.Length; v++)
-                                {
-                                    m_Colors[v] = (float)m_Colors_Packed.m_Data[v] / 0xFF;
-                                }
-                            }
-                            else //not tested
-                            {
-                                uint[] m_Colors_Unpacked = UnpackBitVector(m_Colors_Packed);
-                                int bitmax = 0;//used to convert int value to float
-                                for (int b = 0; b < m_Colors_Packed.m_BitSize; b++) { bitmax |= (1 << b); }
-                                m_Colors = new float[m_Colors_Packed.m_NumItems];
-                                for (int v = 0; v < m_Colors_Packed.m_NumItems; v++)
-                                {
-                                    m_Colors[v] = (float)m_Colors_Unpacked[v] / bitmax;
-                                }
-                            }
+                            throw new NotImplementedException();
                         }
                     }
-                    else { uint m_UVInfo = reader.ReadUInt32(); }
+                    else
+                    {
+                        var m_UVInfo = reader.ReadUInt32();
+                    }
 
-                    reader.Position += 24; //Axis-Aligned Bounding Box
+                    reader.Position += 24; //AABB m_LocalAABB
                 }
                 #endregion
 
