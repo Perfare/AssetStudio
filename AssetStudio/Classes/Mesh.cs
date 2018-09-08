@@ -955,7 +955,7 @@ namespace AssetStudio
                         var m_FloatColors = new PackedFloatVector(reader);
                         if (m_FloatColors.m_NumItems > 0)
                         {
-                            throw new NotImplementedException();
+                            m_Colors = m_FloatColors.UnpackFloats(1, 4);
                         }
                     }
                     #endregion
@@ -1039,7 +1039,14 @@ namespace AssetStudio
                         var m_Colors_Packed = new PackedIntVector(reader);
                         if (m_Colors_Packed.m_NumItems > 0)
                         {
-                            throw new NotImplementedException();
+                            m_Colors_Packed.m_NumItems *= 4;
+                            m_Colors_Packed.m_BitSize /= 4;
+                            var tempColors = m_Colors_Packed.UnpackInts();
+                            m_Colors = new float[m_Colors_Packed.m_NumItems];
+                            for (int v = 0; v < m_Colors_Packed.m_NumItems; v++)
+                            {
+                                m_Colors[v] = tempColors[v] / 255f;
+                            }
                         }
                     }
                     else
