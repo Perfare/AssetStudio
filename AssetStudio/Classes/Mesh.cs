@@ -402,20 +402,11 @@ namespace AssetStudio
                     for (int v = 0; v < m_VertexCount * 3; v++) { m_Vertices[v] = reader.ReadSingle(); }
 
                     m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
-                    //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
                     for (int s = 0; s < m_Skin.Length; s++)
                     {
                         m_Skin[s] = new List<BoneInfluence>();
                         for (int i = 0; i < 4; i++) { m_Skin[s].Add(new BoneInfluence() { weight = reader.ReadSingle() }); }
                         for (int i = 0; i < 4; i++) { m_Skin[s][i].boneIndex = reader.ReadInt32(); }
-
-                        /*m_Skin[s] = new Dictionary<int, float>();
-						float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-						for (int i = 0; i < 4; i++)
-						{
-							int boneIndex = a_Stream.ReadInt32();
-							m_Skin[s][boneIndex] = weights[i];
-						}*/
                     }
 
                     m_BindPose = new float[reader.ReadInt32()][,];
@@ -467,7 +458,6 @@ namespace AssetStudio
                     if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
                     {
                         m_Skin = new List<BoneInfluence>[reader.ReadInt32()];
-                        //m_Skin = new Dictionary<int, float>[a_Stream.ReadInt32()];
                         for (int s = 0; s < m_Skin.Length; s++)
                         {
                             m_Skin[s] = new List<BoneInfluence>();
@@ -480,14 +470,6 @@ namespace AssetStudio
                             {
                                 m_Skin[s][i].boneIndex = reader.ReadInt32();
                             }
-
-                            /*m_Skin[s] = new Dictionary<int, float>();
-                            float[] weights = new float[4] { a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle(), a_Stream.ReadSingle() };
-                            for (int i = 0; i < 4; i++)
-                            {
-                                int boneIndex = a_Stream.ReadInt32();
-                                m_Skin[s][boneIndex] = weights[i];
-                            }*/
                         }
                     }
 
@@ -510,7 +492,6 @@ namespace AssetStudio
                     }
 
                     m_VertexCount = reader.ReadInt32();
-                    //int singleStreamStride = 0;//used tor version 5
                     int streamCount = 0;
 
                     #region streams for 3.5.0 - 3.5.7
@@ -545,9 +526,6 @@ namespace AssetStudio
                             m_Channels[c].offset = reader.ReadByte();
                             m_Channels[c].format = reader.ReadByte();
                             m_Channels[c].dimension = reader.ReadByte();
-
-                            //calculate stride for version 5
-                            //singleStreamStride += m_Channels[c].dimension * (4 / (int)Math.Pow(2, m_Channels[c].format));
 
                             if (m_Channels[c].stream >= streamCount) { streamCount = m_Channels[c].stream + 1; }
                         }
@@ -974,7 +952,10 @@ namespace AssetStudio
 
                     #region m_IndexBuffer
                     var m_Triangles = new PackedIntVector(reader);
-                    m_IndexBuffer = Array.ConvertAll(m_Triangles.UnpackInts(), x => (uint)x);
+                    if (m_Triangles.m_NumItems > 0)
+                    {
+                        m_IndexBuffer = Array.ConvertAll(m_Triangles.UnpackInts(), x => (uint) x);
+                    }
                     #endregion
                 }
                 #endregion
