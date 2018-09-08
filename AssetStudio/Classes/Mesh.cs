@@ -180,9 +180,10 @@ namespace AssetStudio
                     return 4;
                 case 1: //kChannelFormatFloat16
                     return 2;
-                case 2: //kChannelFormatColor
-                    return 1;//TODO actual is 4
-                case 3: //kChannelFormatByte
+                //in version 4.x is kChannelFormatColor with 4 dimension 
+                case 2: //kChannelFormatByte
+                    return 1;
+                case 3: //kChannelFormatByte, only used in 4.x
                     return 1;
                 case 11: //kChannelFormatInt
                     return 4;
@@ -545,9 +546,6 @@ namespace AssetStudio
                         }
                     }
                     #endregion
-                    //actual Vertex Buffer
-                    var m_DataSize = reader.ReadBytes(reader.ReadInt32());
-
                     if (version[0] >= 5) //ComputeCompressedStreams
                     {
                         m_Streams = new StreamInfo[streamCount];
@@ -568,10 +566,6 @@ namespace AssetStudio
                                     }
                                 }
                             }
-                            if (streamCount == 2 && s == 1)
-                            {
-                                offset = m_DataSize.Length - stride * m_VertexCount;
-                            }
                             m_Streams[s] = new StreamInfo
                             {
                                 channelMask = new BitArray(new[] { chnMask }),
@@ -580,40 +574,33 @@ namespace AssetStudio
                                 dividerOp = 0,
                                 frequency = 0
                             };
-                            offset += m_VertexCount * stride + ((m_VertexCount & 1) != 0 ? 8 : 0);
+                            offset += m_VertexCount * stride;
+                            //static size_t AlignStreamSize (size_t size) { return (size + (kVertexStreamAlign-1)) & ~(kVertexStreamAlign-1); }
+                            offset = (offset + (16 - 1)) & ~(16 - 1);
                         }
                     }
+
+                    //actual Vertex Buffer
+                    var m_DataSize = reader.ReadBytes(reader.ReadInt32());
                     #endregion
 
                     #region compute FvF
-                    int componentByteSize = 0;
-                    byte[] componentBytes;
-                    float[] componentsArray = null;
-
-                    #region 4.0.0 and later
-                    if (m_Channels != null)
+                    #region 2018 and up
+                    if (version[0] >= 2018)
                     {
-                        //it is better to loop channels instead of streams
-                        //because channels are likely to be sorted by vertex property
+                        InitMSkin();
                         foreach (var m_Channel in m_Channels)
                         {
                             if (m_Channel.dimension > 0)
                             {
                                 var m_Stream = m_Streams[m_Channel.stream];
 
-                                for (int b = 0; b < 32; b++)
+                                for (int b = 0; b < 14; b++)
                                 {
                                     if (m_Stream.channelMask.Get(b))
                                     {
-                                        // in version 4.x the colors channel has 1 dimension, as in 1 color with 4 components
-                                        if (b == 2 && m_Channel.format == 2)
-                                        {
-                                            m_Channel.dimension = 4;
-                                        }
-
-                                        int[] componentsIntArray = null;
-                                        componentByteSize = GetChannelFormatSize(m_Channel.format);
-                                        componentBytes = new byte[m_VertexCount * m_Channel.dimension * componentByteSize];
+                                        var componentByteSize = GetChannelFormatSize(m_Channel.format);
+                                        var componentBytes = new byte[m_VertexCount * m_Channel.dimension * componentByteSize];
 
                                         for (int v = 0; v < m_VertexCount; v++)
                                         {
@@ -625,59 +612,50 @@ namespace AssetStudio
                                             }
                                         }
 
+                                        int[] componentsIntArray = null;
+                                        float[] componentsFloatArray = null;
                                         if (m_Channel.format == 11)
                                             componentsIntArray = BytesToIntArray(componentBytes);
                                         else
-                                            componentsArray = BytesToFloatArray(componentBytes, componentByteSize);
+                                            componentsFloatArray = BytesToFloatArray(componentBytes, componentByteSize);
 
                                         switch (b)
                                         {
-                                            case 0:
-                                                m_Vertices = componentsArray;
+                                            case 0: //kShaderChannelVertex
+                                                m_Vertices = componentsFloatArray;
                                                 break;
-                                            case 1:
-                                                m_Normals = componentsArray;
+                                            case 1: //kShaderChannelNormal
+                                                m_Normals = componentsFloatArray;
                                                 break;
-                                            case 2:
-                                                m_Colors = componentsArray;
+                                            case 2: //kShaderChannelTangent
+                                                m_Tangents = componentsFloatArray;
                                                 break;
-                                            case 3:
-                                                m_UV1 = componentsArray;
+                                            case 3: //kShaderChannelColor
+                                                m_Colors = componentsFloatArray;
                                                 break;
-                                            case 4:
-                                                m_UV2 = componentsArray;
+                                            case 4: //kShaderChannelTexCoord0
+                                                m_UV1 = componentsFloatArray;
                                                 break;
-                                            case 5:
-                                                if (version[0] >= 5)
-                                                {
-                                                    m_UV3 = componentsArray;
-                                                }
-                                                else
-                                                {
-                                                    m_Tangents = componentsArray;
-                                                }
+                                            case 5: //kShaderChannelTexCoord1
+                                                m_UV2 = componentsFloatArray;
                                                 break;
-                                            case 6:
-                                                m_UV4 = componentsArray;
+                                            case 6: //kShaderChannelTexCoord2
+                                                m_UV3 = componentsFloatArray;
                                                 break;
-                                            case 7:
-                                                m_Tangents = componentsArray;
+                                            case 7: //kShaderChannelTexCoord3
+                                                m_UV4 = componentsFloatArray;
                                                 break;
                                             //2018.2 and up
                                             case 12:
-                                                if (m_Skin == null)
-                                                    InitMSkin();
                                                 for (int i = 0; i < m_VertexCount; i++)
                                                 {
                                                     for (int j = 0; j < 4; j++)
                                                     {
-                                                        m_Skin[i][j].weight = componentsArray[i * 4 + j];
+                                                        m_Skin[i][j].weight = componentsFloatArray[i * 4 + j];
                                                     }
                                                 }
                                                 break;
                                             case 13:
-                                                if (m_Skin == null)
-                                                    InitMSkin();
                                                 for (int i = 0; i < m_VertexCount; i++)
                                                 {
                                                     for (int j = 0; j < 4; j++)
@@ -696,76 +674,156 @@ namespace AssetStudio
                         }
                     }
                     #endregion
-                    #region 3.5.0 - 3.5.7
-                    else if (m_Streams != null)
+                    else
                     {
-                        foreach (var m_Stream in m_Streams)
+                        #region 4.0 - 2017.x
+                        if (m_Channels != null)
                         {
-                            //a stream may have multiple vertex components but without channels there are no offsets, so I assume all vertex properties are in order
-                            //version 3.5.x only uses floats, and that's probably why channels were introduced in version 4
-
-                            ChannelInfo m_Channel = new ChannelInfo();//create my own channel so I can use the same methods
-                            m_Channel.offset = 0;
-
-                            for (int b = 0; b < 6; b++)
+                            //it is better to loop channels instead of streams
+                            //because channels are likely to be sorted by vertex property
+                            foreach (var m_Channel in m_Channels)
                             {
-                                if (m_Stream.channelMask.Get(b))
+                                if (m_Channel.dimension > 0)
                                 {
-                                    switch (b)
-                                    {
-                                        case 0:
-                                        case 1:
-                                            componentByteSize = 4;
-                                            m_Channel.dimension = 3;
-                                            break;
-                                        case 2:
-                                            componentByteSize = 1;
-                                            m_Channel.dimension = 4;
-                                            break;
-                                        case 3:
-                                        case 4:
-                                            componentByteSize = 4;
-                                            m_Channel.dimension = 2;
-                                            break;
-                                        case 5:
-                                            componentByteSize = 4;
-                                            m_Channel.dimension = 4;
-                                            break;
-                                    }
+                                    var m_Stream = m_Streams[m_Channel.stream];
 
-                                    componentBytes = new byte[componentByteSize];
-                                    componentsArray = new float[m_VertexCount * m_Channel.dimension];
-
-                                    for (int v = 0; v < m_VertexCount; v++)
+                                    for (int b = 0; b < 8; b++)
                                     {
-                                        int vertexOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v;
-                                        for (int d = 0; d < m_Channel.dimension; d++)
+                                        if (m_Stream.channelMask.Get(b))
                                         {
-                                            int m_DataSizeOffset = vertexOffset + componentByteSize * d;
-                                            Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, componentBytes, 0, componentByteSize);
-                                            componentsArray[v * m_Channel.dimension + d] = BytesToFloat(componentBytes);
+                                            // in version 4.x the colors channel has 1 dimension, as in 1 color with 4 components
+                                            if (b == 2 && m_Channel.format == 2)
+                                            {
+                                                m_Channel.dimension = 4;
+                                            }
+
+                                            var componentByteSize = GetChannelFormatSize(m_Channel.format);
+                                            var componentBytes = new byte[m_VertexCount * m_Channel.dimension * componentByteSize];
+
+                                            for (int v = 0; v < m_VertexCount; v++)
+                                            {
+                                                int vertexOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v;
+                                                for (int d = 0; d < m_Channel.dimension; d++)
+                                                {
+                                                    int componentOffset = vertexOffset + componentByteSize * d;
+                                                    Buffer.BlockCopy(m_DataSize, componentOffset, componentBytes, componentByteSize * (v * m_Channel.dimension + d), componentByteSize);
+                                                }
+                                            }
+
+                                            var componentsFloatArray = BytesToFloatArray(componentBytes, componentByteSize);
+
+                                            switch (b)
+                                            {
+                                                case 0: //kShaderChannelVertex
+                                                    m_Vertices = componentsFloatArray;
+                                                    break;
+                                                case 1: //kShaderChannelNormal
+                                                    m_Normals = componentsFloatArray;
+                                                    break;
+                                                case 2: //kShaderChannelColor
+                                                    m_Colors = componentsFloatArray;
+                                                    break;
+                                                case 3: //kShaderChannelTexCoord0
+                                                    m_UV1 = componentsFloatArray;
+                                                    break;
+                                                case 4: //kShaderChannelTexCoord1
+                                                    m_UV2 = componentsFloatArray;
+                                                    break;
+                                                case 5: //kShaderChannelTangent & kShaderChannelTexCoord2
+                                                    if (version[0] >= 5)
+                                                    {
+                                                        m_UV3 = componentsFloatArray;
+                                                    }
+                                                    else
+                                                    {
+                                                        m_Tangents = componentsFloatArray;
+                                                    }
+                                                    break;
+                                                case 6: //kShaderChannelTexCoord3
+                                                    m_UV4 = componentsFloatArray;
+                                                    break;
+                                                case 7: //kShaderChannelTangent
+                                                    m_Tangents = componentsFloatArray;
+                                                    break;
+                                            }
+
+                                            m_Stream.channelMask.Set(b, false);
+                                            break; //go to next channel
                                         }
                                     }
-
-                                    switch (b)
-                                    {
-                                        case 0: m_Vertices = componentsArray; break;
-                                        case 1: m_Normals = componentsArray; break;
-                                        case 2: m_Colors = componentsArray; break;
-                                        case 3: m_UV1 = componentsArray; break;
-                                        case 4: m_UV2 = componentsArray; break;
-                                        case 5: m_Tangents = componentsArray; break;
-                                    }
-
-                                    m_Channel.offset += (byte)(m_Channel.dimension * componentByteSize); //safe to cast as byte because strides larger than 255 are unlikely
-                                    m_Stream.channelMask.Set(b, false);
-                                    componentBytes = null;
-                                    componentsArray = null;
                                 }
                             }
                         }
+                        #endregion
+                        #region 3.5.0 - 3.5.7
+                        else if (m_Streams != null)
+                        {
+                            foreach (var m_Stream in m_Streams)
+                            {
+                                //a stream may have multiple vertex components but without channels there are no offsets, so I assume all vertex properties are in order
+                                //version 3.5.x only uses floats, and that's probably why channels were introduced in version 4
+
+                                ChannelInfo m_Channel = new ChannelInfo();//create my own channel so I can use the same methods
+                                m_Channel.offset = 0;
+                                int componentByteSize = 0;
+                                for (int b = 0; b < 6; b++)
+                                {
+                                    if (m_Stream.channelMask.Get(b))
+                                    {
+                                        switch (b)
+                                        {
+                                            case 0:
+                                            case 1:
+                                                componentByteSize = 4;
+                                                m_Channel.dimension = 3;
+                                                break;
+                                            case 2:
+                                                componentByteSize = 1;
+                                                m_Channel.dimension = 4;
+                                                break;
+                                            case 3:
+                                            case 4:
+                                                componentByteSize = 4;
+                                                m_Channel.dimension = 2;
+                                                break;
+                                            case 5:
+                                                componentByteSize = 4;
+                                                m_Channel.dimension = 4;
+                                                break;
+                                        }
+
+                                        var componentBytes = new byte[componentByteSize];
+                                        var componentsArray = new float[m_VertexCount * m_Channel.dimension];
+
+                                        for (int v = 0; v < m_VertexCount; v++)
+                                        {
+                                            int vertexOffset = m_Stream.offset + m_Channel.offset + m_Stream.stride * v;
+                                            for (int d = 0; d < m_Channel.dimension; d++)
+                                            {
+                                                int m_DataSizeOffset = vertexOffset + componentByteSize * d;
+                                                Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, componentBytes, 0, componentByteSize);
+                                                componentsArray[v * m_Channel.dimension + d] = BytesToFloat(componentBytes);
+                                            }
+                                        }
+
+                                        switch (b)
+                                        {
+                                            case 0: m_Vertices = componentsArray; break;
+                                            case 1: m_Normals = componentsArray; break;
+                                            case 2: m_Colors = componentsArray; break;
+                                            case 3: m_UV1 = componentsArray; break;
+                                            case 4: m_UV2 = componentsArray; break;
+                                            case 5: m_Tangents = componentsArray; break;
+                                        }
+
+                                        m_Channel.offset += (byte)(m_Channel.dimension * componentByteSize); //safe to cast as byte because strides larger than 255 are unlikely
+                                        m_Stream.channelMask.Set(b, false);
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
                     }
-                    #endregion
                     #endregion
                 }
                 #endregion
@@ -954,7 +1012,7 @@ namespace AssetStudio
                     var m_Triangles = new PackedIntVector(reader);
                     if (m_Triangles.m_NumItems > 0)
                     {
-                        m_IndexBuffer = Array.ConvertAll(m_Triangles.UnpackInts(), x => (uint) x);
+                        m_IndexBuffer = Array.ConvertAll(m_Triangles.UnpackInts(), x => (uint)x);
                     }
                     #endregion
                 }
