@@ -71,7 +71,7 @@ namespace AssetStudio
         }
     }
 
-    public class PackedBitVector
+    public class PackedFloatVector
     {
         public uint m_NumItems { get; set; }
         public float m_Range { get; set; }
@@ -79,7 +79,7 @@ namespace AssetStudio
         public byte[] m_Data { get; set; }
         public byte m_BitSize { get; set; }
 
-        public PackedBitVector(EndianBinaryReader reader)
+        public PackedFloatVector(EndianBinaryReader reader)
         {
             m_NumItems = reader.ReadUInt32();
             m_Range = reader.ReadSingle();
@@ -92,15 +92,53 @@ namespace AssetStudio
             m_BitSize = reader.ReadByte();
             reader.AlignStream(4);
         }
+
+        public float[] UnpackFloats(int itemCountInChunk, int chunkStride, int start = 0, int numChunks = -1)
+        {
+            int bitPos = m_BitSize * start;
+            int indexPos = bitPos / 8;
+            bitPos %= 8;
+
+            float scale = 1.0f / m_Range;
+            if (numChunks == -1)
+                numChunks = (int)m_NumItems / itemCountInChunk;
+            var end = chunkStride * numChunks / 4;
+            var data = new float[end];
+            for (var index = 0; index != end; index += chunkStride / 4)
+            {
+                for (int i = 0; i < itemCountInChunk; ++i)
+                {
+                    uint x = 0;
+
+                    int bits = 0;
+                    while (bits < m_BitSize)
+                    {
+                        x |= (uint)((m_Data[indexPos] >> bitPos) << bits);
+                        int num = Math.Min(m_BitSize - bits, 8 - bitPos);
+                        bitPos += num;
+                        bits += num;
+                        if (bitPos == 8)
+                        {
+                            indexPos++;
+                            bitPos = 0;
+                        }
+                    }
+                    x &= (uint)(1 << m_BitSize) - 1u;
+                    data[index + i] = x / (scale * ((1 << m_BitSize) - 1)) + m_Start;
+                }
+            }
+
+            return data;
+        }
     }
 
-    public class PackedBitVector2
+    public class PackedIntVector
     {
         public uint m_NumItems { get; set; }
         public byte[] m_Data { get; set; }
         public byte m_BitSize { get; set; }
 
-        public PackedBitVector2(EndianBinaryReader reader)
+        public PackedIntVector(EndianBinaryReader reader)
         {
             m_NumItems = reader.ReadUInt32();
 
@@ -111,14 +149,40 @@ namespace AssetStudio
             m_BitSize = reader.ReadByte();
             reader.AlignStream(4);
         }
+
+        public int[] UnpackInts()
+        {
+            var data = new int[m_NumItems];
+            int indexPos = 0;
+            int bitPos = 0;
+            for (int i = 0; i < m_NumItems; i++)
+            {
+                int bits = 0;
+                data[i] = 0;
+                while (bits < m_BitSize)
+                {
+                    data[i] |= (m_Data[indexPos] >> bitPos) << bits;
+                    int num = Math.Min(m_BitSize - bits, 8 - bitPos);
+                    bitPos += num;
+                    bits += num;
+                    if (bitPos == 8)
+                    {
+                        indexPos++;
+                        bitPos = 0;
+                    }
+                }
+                data[i] &= (1 << m_BitSize) - 1;
+            }
+            return data;
+        }
     }
 
-    public class PackedBitVector3
+    public class PackedQuatVector
     {
         public uint m_NumItems { get; set; }
         public byte[] m_Data { get; set; }
 
-        public PackedBitVector3(EndianBinaryReader reader)
+        public PackedQuatVector(EndianBinaryReader reader)
         {
             m_NumItems = reader.ReadUInt32();
 
@@ -127,23 +191,87 @@ namespace AssetStudio
 
             reader.AlignStream(4);
         }
+
+        public Quaternion[] UnpackQuats()
+        {
+            var data = new Quaternion[m_NumItems];
+            int indexPos = 0;
+            int bitPos = 0;
+
+            for (int i = 0; i < m_NumItems; i++)
+            {
+                uint flags = 0;
+
+                int bits = 0;
+                while (bits < 3)
+                {
+                    flags |= (uint)((m_Data[indexPos] >> bitPos) << bits);
+                    int num = Math.Min(3 - bits, 8 - bitPos);
+                    bitPos += num;
+                    bits += num;
+                    if (bitPos == 8)
+                    {
+                        indexPos++;
+                        bitPos = 0;
+                    }
+                }
+                flags &= 7;
+
+
+                var q = new Quaternion();
+                float sum = 0;
+                for (int j = 0; j < 4; j++)
+                {
+                    if ((flags & 3) != j)
+                    {
+                        int bitSize = ((flags & 3) + 1) % 4 == j ? 9 : 10;
+                        uint x = 0;
+
+                        bits = 0;
+                        while (bits < bitSize)
+                        {
+                            x |= (uint)((m_Data[indexPos] >> bitPos) << bits);
+                            int num = Math.Min(bitSize - bits, 8 - bitPos);
+                            bitPos += num;
+                            bits += num;
+                            if (bitPos == 8)
+                            {
+                                indexPos++;
+                                bitPos = 0;
+                            }
+                        }
+                        x &= (uint)((1 << bitSize) - 1);
+                        q[j] = x / (0.5f * ((1 << bitSize) - 1)) - 1;
+                        sum += q[j] * q[j];
+                    }
+                }
+
+                int lastComponent = (int)(flags & 3);
+                q[lastComponent] = (float)Math.Sqrt(1 - sum);
+                if ((flags & 4) != 0u)
+                    q[lastComponent] = -q[lastComponent];
+                data[i] = q;
+            }
+
+            return data;
+        }
     }
 
     public class CompressedAnimationCurve
     {
         public string m_Path { get; set; }
-        public PackedBitVector2 m_Times { get; set; }
-        public PackedBitVector3 m_Values { get; set; }
-        public PackedBitVector m_Slopes { get; set; }
+        public PackedIntVector m_Times { get; set; }
+        public PackedQuatVector m_Values { get; set; }
+        public PackedFloatVector m_Slopes { get; set; }
         public int m_PreInfinity { get; set; }
         public int m_PostInfinity { get; set; }
 
         public CompressedAnimationCurve(EndianBinaryReader reader)
         {
             m_Path = reader.ReadAlignedString();
-            m_Times = new PackedBitVector2(reader);
-            m_Values = new PackedBitVector3(reader);
-            m_Slopes = new PackedBitVector(reader);
+            m_Times = new PackedIntVector(reader);
+            m_Values = new PackedQuatVector(reader);
+            m_Slopes = new PackedFloatVector(reader);
             m_PreInfinity = reader.ReadInt32();
             m_PostInfinity = reader.ReadInt32();
         }

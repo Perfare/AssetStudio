@@ -658,17 +658,35 @@ namespace AssetStudio
                 iAnim.TrackList = new List<ImportedAnimationKeyframedTrack>();
                 if (animationClip.m_Legacy)
                 {
+                    foreach (var m_CompressedRotationCurve in animationClip.m_CompressedRotationCurves)
+                    {
+                        var path = m_CompressedRotationCurve.m_Path;
+                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
+                        var track = iAnim.FindTrack(boneName);
+
+                        var numKeys = m_CompressedRotationCurve.m_Times.m_NumItems;
+                        var data = m_CompressedRotationCurve.m_Times.UnpackInts();
+                        var times = new float[numKeys];
+                        int t = 0;
+                        for (int i = 0; i < numKeys; i++)
+                        {
+                            t += data[i];
+                            times[i] = t * 0.01f;
+                        }
+                        var quats = m_CompressedRotationCurve.m_Values.UnpackQuats();
+
+                        for (int i = 0; i < numKeys; i++)
+                        {
+                            var quat = quats[i];
+                            var value = Fbx.QuaternionToEuler(new Quaternion(quat.X, -quat.Y, -quat.Z, quat.W));
+                            track.Rotations.Add(new ImportedKeyframe<Vector3>(times[i], value));
+                        }
+                    }
                     foreach (var m_RotationCurve in animationClip.m_RotationCurves)
                     {
                         var path = m_RotationCurve.path;
                         var boneName = path.Substring(path.LastIndexOf('/') + 1);
                         var track = iAnim.FindTrack(boneName);
-                        if (track == null)
-                        {
-                            track = new ImportedAnimationKeyframedTrack();
-                            track.Name = boneName;
-                            iAnim.TrackList.Add(track);
-                        }
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
                             var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
@@ -680,12 +698,6 @@ namespace AssetStudio
                         var path = m_PositionCurve.path;
                         var boneName = path.Substring(path.LastIndexOf('/') + 1);
                         var track = iAnim.FindTrack(boneName);
-                        if (track == null)
-                        {
-                            track = new ImportedAnimationKeyframedTrack();
-                            track.Name = boneName;
-                            iAnim.TrackList.Add(track);
-                        }
                         foreach (var m_Curve in m_PositionCurve.curve.m_Curve)
                         {
                             track.Translations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
@@ -696,15 +708,32 @@ namespace AssetStudio
                         var path = m_ScaleCurve.path;
                         var boneName = path.Substring(path.LastIndexOf('/') + 1);
                         var track = iAnim.FindTrack(boneName);
-                        if (track == null)
-                        {
-                            track = new ImportedAnimationKeyframedTrack();
-                            track.Name = boneName;
-                            iAnim.TrackList.Add(track);
-                        }
                         foreach (var m_Curve in m_ScaleCurve.curve.m_Curve)
                         {
                             track.Scalings.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
+                        }
+                    }
+                    if (animationClip.m_EulerCurves != null)
+                    {
+                        foreach (var m_EulerCurve in animationClip.m_EulerCurves)
+                        {
+                            var path = m_EulerCurve.path;
+                            var boneName = path.Substring(path.LastIndexOf('/') + 1);
+                            var track = iAnim.FindTrack(boneName);
+                            foreach (var m_Curve in m_EulerCurve.curve.m_Curve)
+                            {
+                                track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z)));
+                            }
+                        }
+                    }
+                    foreach (var m_FloatCurve in animationClip.m_FloatCurves)
+                    {
+                        var path = m_FloatCurve.path;
+                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
+                        var track = iAnim.FindTrack(boneName);
+                        foreach (var m_Curve in m_FloatCurve.curve.m_Curve)
+                        {
+                            track.Curve.Add(new ImportedKeyframe<float>(m_Curve.time, m_Curve.value));
                         }
                     }
                 }
@@ -775,11 +804,6 @@ namespace AssetStudio
             }
             var boneName = GetNameFromHashes(binding.path, binding.attribute);
             var track = iAnim.FindTrack(boneName);
-            if (track == null)
-            {
-                track = new ImportedAnimationKeyframedTrack { Name = boneName };
-                iAnim.TrackList.Add(track);
-            }
 
             switch (binding.attribute)
             {

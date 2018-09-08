@@ -148,7 +148,14 @@ namespace AssetStudio
 
         public ImportedAnimationKeyframedTrack FindTrack(string name)
         {
-            return TrackList.Find(track => track.Name == name);
+            var track = TrackList.Find(x => x.Name == name);
+            if (track == null)
+            {
+                track = new ImportedAnimationKeyframedTrack { Name = name };
+                TrackList.Add(track);
+            }
+
+            return track;
         }
     }
 
