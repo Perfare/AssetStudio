@@ -180,12 +180,11 @@ namespace AssetStudio
                     return 4;
                 case 1: //kChannelFormatFloat16
                     return 2;
-                //in version 4.x is kChannelFormatColor with 4 dimension 
-                case 2: //kChannelFormatByte
+                case 2: //kChannelFormatColor, in 4.x is size 4
                     return 1;
-                case 3: //kChannelFormatByte, only used in 4.x
+                case 3: //kChannelFormatByte
                     return 1;
-                case 11: //kChannelFormatInt
+                case 11: //kChannelFormatInt32
                     return 4;
                 default:
                     return 0;

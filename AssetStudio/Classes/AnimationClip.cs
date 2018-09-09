@@ -772,10 +772,17 @@ namespace AssetStudio
         }
     }
 
+    public enum AnimationType
+    {
+        kLegacy = 1,
+        kGeneric = 2,
+        kHumanoid = 3
+    };
+
     public class AnimationClip
     {
         public string m_Name { get; set; }
-        public int m_AnimationType { get; set; }
+        public AnimationType m_AnimationType { get; set; }
         public bool m_Legacy { get; set; }
         public bool m_Compressed { get; set; }
         public bool m_UseHighQualityCurve { get; set; }
@@ -809,8 +816,8 @@ namespace AssetStudio
             }
             else if (version[0] >= 4)//4.0 and up
             {
-                m_AnimationType = reader.ReadInt32();
-                if (m_AnimationType == 1)
+                m_AnimationType = (AnimationType)reader.ReadInt32();
+                if (m_AnimationType == AnimationType.kLegacy)
                     m_Legacy = true;
             }
             else
