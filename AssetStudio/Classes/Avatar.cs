@@ -362,5 +362,10 @@ namespace AssetStudio
             }
             return null;
         }
+
+        public string FindBonePath(uint hash)
+        {
+            return m_TOS.Find(pair => pair.Key == hash).Value;
+        }
     }
 }

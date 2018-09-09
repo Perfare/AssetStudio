@@ -22,6 +22,7 @@ namespace AssetStudio
         private Dictionary<uint, string> morphChannelInfo = new Dictionary<uint, string>();
         private HashSet<AssetPreloadData> animationClipHashSet = new HashSet<AssetPreloadData>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
+        private bool deoptimize;
 
         public ModelConverter(GameObject m_GameObject)
         {
@@ -198,6 +199,18 @@ namespace AssetStudio
             return frame;
         }
 
+        private ImportedFrame ConvertFrame(Transform trans, string name)
+        {
+            var frame = new ImportedFrame();
+            frame.Name = name;
+            frame.InitChildren(0);
+            var m_EulerRotation = QuatToEuler(new[] { trans.m_LocalRotation[0], -trans.m_LocalRotation[1], -trans.m_LocalRotation[2], trans.m_LocalRotation[3] });
+            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
+            frame.LocalScale = new[] { trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2] };
+            frame.LocalPosition = new[] { -trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2] };
+            return frame;
+        }
+
         private void ConvertFrames(Transform trans, ImportedFrame parent)
         {
             var frame = ConvertFrames(trans);
@@ -354,10 +367,6 @@ namespace AssetStudio
             {
                 //Bone
                 iMesh.BoneList = new List<ImportedBone>(sMesh.m_Bones.Length);
-                /*if (sMesh.m_Bones.Length >= 256)
-                {
-                    throw new Exception("Too many bones (" + mesh.m_BindPose.Length + ")");
-                }*/
                 for (int i = 0; i < sMesh.m_Bones.Length; i++)
                 {
                     var bone = new ImportedBone();
@@ -403,6 +412,52 @@ namespace AssetStudio
                     om[3, 3] = m[3, 3];
                     bone.Matrix = om;
                     iMesh.BoneList.Add(bone);
+                }
+
+                if (sMesh.m_Bones.Length == 0 && mesh.m_BindPose?.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
+                {
+                    //TODO move to Init method use Animator.m_HasTransformHierarchy to judge
+                    if (!deoptimize)
+                    {
+                        DeoptimizeTransformHierarchy();
+                        deoptimize = true;
+                    }
+                    //TODO Repeat code with above
+                    for (int i = 0; i < mesh.m_BindPose.Length; i++)
+                    {
+                        var bone = new ImportedBone();
+                        var boneHash = mesh.m_BoneNameHashes[i];
+                        bone.Name = GetNameFromBonePathHashes(boneHash);
+                        if (string.IsNullOrEmpty(bone.Name))
+                        {
+                            bone.Name = avatar?.FindBoneName(boneHash);
+                        }
+                        if (string.IsNullOrEmpty(bone.Name))
+                        {
+                            //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
+                            continue;
+                        }
+                        var om = new float[4, 4];
+                        var m = mesh.m_BindPose[i];
+                        om[0, 0] = m[0, 0];
+                        om[0, 1] = -m[1, 0];
+                        om[0, 2] = -m[2, 0];
+                        om[0, 3] = m[3, 0];
+                        om[1, 0] = -m[0, 1];
+                        om[1, 1] = m[1, 1];
+                        om[1, 2] = m[2, 1];
+                        om[1, 3] = m[3, 1];
+                        om[2, 0] = -m[0, 2];
+                        om[2, 1] = m[1, 2];
+                        om[2, 2] = m[2, 2];
+                        om[2, 3] = m[3, 2];
+                        om[3, 0] = -m[0, 3];
+                        om[3, 1] = m[1, 3];
+                        om[3, 2] = m[2, 3];
+                        om[3, 3] = m[3, 3];
+                        bone.Matrix = om;
+                        iMesh.BoneList.Add(bone);
+                    }
                 }
 
                 //Morphs
@@ -537,7 +592,7 @@ namespace AssetStudio
                 return GetTransformPath(Father) + "/" + m_GameObject.m_Name;
             }
 
-            return String.Empty + m_GameObject.m_Name;
+            return m_GameObject.m_Name;
         }
 
         private ImportedMaterial ConvertMaterial(Material mat)
@@ -967,6 +1022,57 @@ namespace AssetStudio
 
             double newValue = count * 360.0 + cur;
             return (float)newValue;
+        }
+
+        private void DeoptimizeTransformHierarchy()
+        {
+            if (avatar == null)
+                return;
+            // 1. Figure out the skeletonPaths from the unstripped avatar
+            var skeletonPaths = new List<string>();
+            foreach (var id in avatar.m_Avatar.m_AvatarSkeleton.m_ID)
+            {
+                var path = avatar.FindBonePath(id);
+                skeletonPaths.Add(path);
+            }
+            // 2. Restore the original transform hierarchy
+            // Prerequisite: skeletonPaths follow pre-order traversal
+            var rootFrame = FrameList[0];
+            rootFrame.ClearChild();
+            for (var i = 1; i < skeletonPaths.Count; i++) // start from 1, skip the root transform because it will always be there.
+            {
+                var path = skeletonPaths[i];
+                var strs = path.Split('/');
+                string transformName;
+                ImportedFrame parentFrame;
+                if (strs.Length == 1)
+                {
+                    transformName = path;
+                    parentFrame = rootFrame;
+                }
+                else
+                {
+                    transformName = strs.Last();
+                    var parentFrameName = strs[strs.Length - 2];
+                    parentFrame = ImportedHelpers.FindFrame(parentFrameName, rootFrame);
+                }
+
+                var skeletonPose = avatar.m_Avatar.m_DefaultPose;
+                var xform = skeletonPose.m_X[i];
+                if (!(xform.t is Vector3 t))
+                {
+                    var v4 = (Vector4)xform.t;
+                    t = (Vector3)v4;
+                }
+                if (!(xform.s is Vector3 s))
+                {
+                    var v4 = (Vector4)xform.s;
+                    s = (Vector3)v4;
+                }
+                var curTransform = new Transform(t, xform.q, s);
+                var frame = ConvertFrame(curTransform, transformName);
+                parentFrame.AddChild(frame);
+            }
         }
     }
 }

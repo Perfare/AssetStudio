@@ -64,6 +64,11 @@ namespace AssetStudio
             return children.IndexOf(obj);
         }
 
+        public void ClearChild()
+        {
+            children.Clear();
+        }
+
         public IEnumerator<ImportedFrame> GetEnumerator()
         {
             return children.GetEnumerator();
@@ -199,7 +204,7 @@ namespace AssetStudio
 
     public static class ImportedHelpers
     {
-        public static ImportedFrame FindFrame(String name, ImportedFrame root)
+        public static ImportedFrame FindFrame(string name, ImportedFrame root)
         {
             ImportedFrame frame = root;
             if ((frame != null) && (frame.Name == name))
@@ -218,7 +223,7 @@ namespace AssetStudio
             return null;
         }
 
-        public static ImportedMesh FindMesh(String frameName, List<ImportedMesh> importedMeshList)
+        public static ImportedMesh FindMesh(string frameName, List<ImportedMesh> importedMeshList)
         {
             foreach (ImportedMesh mesh in importedMeshList)
             {
@@ -252,7 +257,7 @@ namespace AssetStudio
             return null;
         }
 
-        public static ImportedMaterial FindMaterial(String name, List<ImportedMaterial> importedMats)
+        public static ImportedMaterial FindMaterial(string name, List<ImportedMaterial> importedMats)
         {
             foreach (ImportedMaterial mat in importedMats)
             {
