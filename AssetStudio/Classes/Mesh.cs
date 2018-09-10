@@ -889,8 +889,6 @@ namespace AssetStudio
                         {
                             var x = normalData[i * 2 + 0];
                             var y = normalData[i * 2 + 1];
-                            m_Normals[i * 3] = x;
-                            m_Normals[i * 3 + 1] = y;
                             var zsqr = 1 - x * x - y * y;
                             float z;
                             if (zsqr >= 0f)

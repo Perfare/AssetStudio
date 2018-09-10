@@ -90,8 +90,6 @@ namespace AssetStudio
 		IOS_REF.SetBoolProp(EXP_FBX_GLOBAL_SETTINGS, true);
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
-		FbxTime::EMode pTimeMode = FbxTime::eFrames24;
-		globalSettings.SetTimeMode(pTimeMode);
 
 		if (!pExporter->Initialize(cDest, lFormatIndex, pSdkManager->GetIOSettings()))
 		{
@@ -489,7 +487,6 @@ namespace AssetStudio
 							if (pTextureDiffuse != NULL)
 							{
 								LinkTexture(mat, 0, pTextureDiffuse, pMat->Diffuse);
-								pMat->TransparentColor.ConnectSrcObject(pTextureDiffuse);
 								hasTexture = true;
 							}
 

@@ -19,17 +19,6 @@ namespace AssetStudio
 
 		FbxIOSettings* ios = FbxIOSettings::Create(*pSdkManager, IOSROOT);
 		(*pSdkManager)->SetIOSettings(ios);
-
-		FbxString lPath = FbxGetApplicationDirectory();
-#if defined(FBXSDK_ENV_WIN)
-		FbxString lExtension = "dll";
-#elif defined(FBXSDK_ENV_MAC)
-		FbxString lExtension = "dylib";
-#elif defined(FBXSDK_ENV_LINUX)
-		FbxString lExtension = "so";
-#endif
-		(*pSdkManager)->LoadPluginsDirectory(lPath.Buffer(), lExtension.Buffer());
-
 		*pScene = FbxScene::Create(*pSdkManager, "");
 	}
 
