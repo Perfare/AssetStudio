@@ -42,7 +42,7 @@ namespace AssetStudio
             skins.Checked = (bool)Properties.Settings.Default["skins"];
             boneSize.Value = (decimal)Properties.Settings.Default["boneSize"];
             flatInbetween.Checked = (bool)Properties.Settings.Default["flatInbetween"];
-            compatibility.Checked = (bool)Properties.Settings.Default["compatibility"];
+            fbxVersion.SelectedIndex = (int)Properties.Settings.Default["fbxVersion"];
         }
 
         private void exportOpnions_CheckedChanged(object sender, EventArgs e)
@@ -77,7 +77,7 @@ namespace AssetStudio
             Properties.Settings.Default["skins"] = skins.Checked;
             Properties.Settings.Default["boneSize"] = boneSize.Value;
             Properties.Settings.Default["flatInbetween"] = flatInbetween.Checked;
-            Properties.Settings.Default["compatibility"] = compatibility.Checked;
+            Properties.Settings.Default["fbxVersion"] = fbxVersion.SelectedIndex;
             Properties.Settings.Default.Save();
             DialogResult = DialogResult.OK;
             Close();

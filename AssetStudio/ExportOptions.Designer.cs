@@ -48,8 +48,9 @@
             this.tobmp = new System.Windows.Forms.RadioButton();
             this.converttexture = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.fbxVersion = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.FixRotation = new System.Windows.Forms.CheckBox();
-            this.compatibility = new System.Windows.Forms.CheckBox();
             this.flatInbetween = new System.Windows.Forms.CheckBox();
             this.boneSize = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
@@ -300,8 +301,9 @@
             // groupBox2
             // 
             this.groupBox2.AutoSize = true;
+            this.groupBox2.Controls.Add(this.fbxVersion);
+            this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.FixRotation);
-            this.groupBox2.Controls.Add(this.compatibility);
             this.groupBox2.Controls.Add(this.flatInbetween);
             this.groupBox2.Controls.Add(this.boneSize);
             this.groupBox2.Controls.Add(this.label2);
@@ -313,10 +315,34 @@
             this.groupBox2.Controls.Add(this.EulerFilter);
             this.groupBox2.Location = new System.Drawing.Point(265, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 235);
+            this.groupBox2.Size = new System.Drawing.Size(214, 240);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Fbx Binary";
+            // 
+            // fbxVersion
+            // 
+            this.fbxVersion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.fbxVersion.FormattingEnabled = true;
+            this.fbxVersion.Items.AddRange(new object[] {
+            "6.1",
+            "7.1",
+            "7.2",
+            "7.3",
+            "7.4"});
+            this.fbxVersion.Location = new System.Drawing.Point(77, 200);
+            this.fbxVersion.Name = "fbxVersion";
+            this.fbxVersion.Size = new System.Drawing.Size(47, 20);
+            this.fbxVersion.TabIndex = 16;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 203);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(65, 12);
+            this.label3.TabIndex = 15;
+            this.label3.Text = "FBXVersion";
             // 
             // FixRotation
             // 
@@ -329,16 +355,6 @@
             this.FixRotation.TabIndex = 14;
             this.FixRotation.Text = "FixRotation";
             this.FixRotation.UseVisualStyleBackColor = true;
-            // 
-            // compatibility
-            // 
-            this.compatibility.AutoSize = true;
-            this.compatibility.Location = new System.Drawing.Point(6, 199);
-            this.compatibility.Name = "compatibility";
-            this.compatibility.Size = new System.Drawing.Size(138, 16);
-            this.compatibility.TabIndex = 13;
-            this.compatibility.Text = "Compatibility (6.1)";
-            this.compatibility.UseVisualStyleBackColor = true;
             // 
             // flatInbetween
             // 
@@ -502,7 +518,6 @@
         private System.Windows.Forms.CheckBox convertAudio;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.CheckBox compatibility;
         private System.Windows.Forms.CheckBox flatInbetween;
         private System.Windows.Forms.NumericUpDown boneSize;
         private System.Windows.Forms.Label label2;
@@ -513,5 +528,7 @@
         private System.Windows.Forms.CheckBox allFrames;
         private System.Windows.Forms.CheckBox EulerFilter;
         private System.Windows.Forms.CheckBox FixRotation;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox fbxVersion;
     }
 }

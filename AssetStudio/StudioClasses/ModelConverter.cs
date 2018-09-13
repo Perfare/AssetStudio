@@ -39,7 +39,13 @@ namespace AssetStudio
 
         public ModelConverter(GameObject m_GameObject, List<AssetPreloadData> animationList)
         {
-            InitWithGameObject(m_GameObject);
+            if (assetsfileList.TryGetPD(m_GameObject.m_Animator, out var m_Animator))
+            {
+                var animator = new Animator(m_Animator);
+                InitWithAnimator(animator);
+            }
+            else
+                InitWithGameObject(m_GameObject);
             foreach (var assetPreloadData in animationList)
             {
                 animationClipHashSet.Add(assetPreloadData);

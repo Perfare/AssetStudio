@@ -301,13 +301,13 @@ namespace AssetStudio.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool compatibility {
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int fbxVersion {
             get {
-                return ((bool)(this["compatibility"]));
+                return ((int)(this["fbxVersion"]));
             }
             set {
-                this["compatibility"] = value;
+                this["fbxVersion"] = value;
             }
         }
         

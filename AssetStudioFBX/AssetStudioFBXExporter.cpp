@@ -4,7 +4,7 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, bool compatibility)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -16,7 +16,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, compatibility, true);
+		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, versionIndex, true);
 		exporter->ExportMorphs(imported, false, flatInbetween);
 		exporter->ExportAnimations(EulerFilter, filterPrecision, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
@@ -25,7 +25,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, bool compatibility)
+	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -37,7 +37,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, compatibility, false);
+		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, versionIndex, false);
 		exporter->ExportMorphs(imported, morphMask, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
@@ -45,7 +45,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, bool compatibility, bool normals)
+	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool normals)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -63,24 +63,6 @@ namespace AssetStudio
 		pin_ptr<FbxScene*> pScenePin = &pScene;
 		Init(pSdkManagerPin, pScenePin);
 
-		cDest = Fbx::StringToCharArray(path);
-		pExporter = FbxExporter::Create(pScene, "");
-		int lFormatIndex, lFormatCount = pSdkManager->GetIOPluginRegistry()->GetWriterFormatCount();
-		for (lFormatIndex = 0; lFormatIndex < lFormatCount; lFormatIndex++)
-		{
-			if (pSdkManager->GetIOPluginRegistry()->WriterIsFBX(lFormatIndex))
-			{
-				FbxString lDesc = FbxString(pSdkManager->GetIOPluginRegistry()->GetWriterFormatDescription(lFormatIndex));
-				if (lDesc.Find("binary") >= 0)
-				{
-					if (!compatibility || lDesc.Find("6.") >= 0)
-					{
-						break;
-					}
-				}
-			}
-		}
-
 		IOS_REF.SetBoolProp(EXP_FBX_MATERIAL, true);
 		IOS_REF.SetBoolProp(EXP_FBX_TEXTURE, true);
 		IOS_REF.SetBoolProp(EXP_FBX_EMBEDDED, false);
@@ -91,10 +73,13 @@ namespace AssetStudio
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
 
-		if (!pExporter->Initialize(cDest, lFormatIndex, pSdkManager->GetIOSettings()))
+		cDest = StringToCharArray(path);
+		pExporter = FbxExporter::Create(pScene, "");
+		if (!pExporter->Initialize(cDest, 0, pSdkManager->GetIOSettings()))
 		{
 			throw gcnew Exception(gcnew String("Failed to initialize FbxExporter: ") + gcnew String(pExporter->GetStatus().GetErrorString()));
 		}
+		pExporter->SetFileExportVersion(FBXVersion[versionIndex], FbxSceneRenamer::ERenamingMode::eNone);
 
 		frameNames = nullptr;
 		if (!allFrames)
@@ -128,7 +113,7 @@ namespace AssetStudio
 					meshPath = gcnew String(rootNode->GetName()) + "/" + meshPath;
 				}
 				ImportedMesh^ mesh = ImportedHelpers::FindMesh(meshPath, imported->MeshList);
-				ExportMesh(meshNode, mesh, normals);
+  				ExportMesh(meshNode, mesh, normals);
 			}
 		}
 		else
@@ -543,7 +528,8 @@ namespace AssetStudio
 							lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
 						}
 						array<float>^ uv = vertex->UV;
-						lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], -uv[1]));
+						if (uv != nullptr)
+							lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], -uv[1]));
 						if (normals)
 						{
 							Vector4 tangent = vertex->Tangent;
@@ -568,13 +554,10 @@ namespace AssetStudio
 					for (int j = 0; j < faceList->Count; j++)
 					{
 						ImportedFace^ face = faceList[j];
-						unsigned short v1 = (unsigned short)face->VertexIndices[0];
-						unsigned short v2 = (unsigned short)face->VertexIndices[1];
-						unsigned short v3 = (unsigned short)face->VertexIndices[2];
-						pMesh->BeginPolygon(false);
-						pMesh->AddPolygon(v1);
-						pMesh->AddPolygon(v2);
-						pMesh->AddPolygon(v3);
+						pMesh->BeginPolygon(0);
+						pMesh->AddPolygon(face->VertexIndices[0]);
+						pMesh->AddPolygon(face->VertexIndices[1]);
+						pMesh->AddPolygon(face->VertexIndices[2]);
 						pMesh->EndPolygon();
 					}
 
@@ -586,7 +569,6 @@ namespace AssetStudio
 							FbxCluster* pCluster = pClusterArray->GetAt(j);
 							if (pCluster->GetControlPointIndicesCount() > 0)
 							{
-								FbxNode* pBoneNode = pBoneNodeList->GetAt(j);
 								auto boneMatrix = boneList[j]->Matrix;
 								FbxAMatrix lBoneMatrix;
 								for (int m = 0; m < 4; m++)
@@ -618,7 +600,7 @@ namespace AssetStudio
 					{
 						delete pClusterArray;
 					}
-				Marshal::FreeHGlobal((IntPtr)pName);
+					Marshal::FreeHGlobal((IntPtr)pName);
 				}
 			}
 		}
@@ -762,7 +744,7 @@ namespace AssetStudio
 			char* pName = NULL;
 			try
 			{
-				pName = Fbx::StringToCharArray(name);
+				pName = StringToCharArray(name);
 				pNode = pScene->GetRootNode()->FindChild(pName);
 			}
 			finally
@@ -976,7 +958,7 @@ namespace AssetStudio
 				}
 
 				int meshVertexIndex = 0;
-				for (int meshObjIdx = 0; meshObjIdx < meshList->SubmeshList->Count; meshObjIdx++)
+				for (int meshObjIdx = pBaseNode->GetChildCount() - meshList->SubmeshList->Count; meshObjIdx < meshList->SubmeshList->Count; meshObjIdx++)
 				{
 					List<ImportedVertex^>^ vertList = meshList->SubmeshList[meshObjIdx]->VertexList;
 					FbxNode* pBaseMeshNode = pBaseNode->GetChild(meshObjIdx);

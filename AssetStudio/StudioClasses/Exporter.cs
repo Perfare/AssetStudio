@@ -353,8 +353,8 @@ namespace AssetStudio
             var skins = (bool)Properties.Settings.Default["skins"];
             var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
             var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
-            var compatibility = (bool)Properties.Settings.Default["compatibility"];
-            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, flatInbetween, compatibility);
+            var fbxVersion = (int)Properties.Settings.Default["fbxVersion"];
+            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, flatInbetween, fbxVersion);
             return true;
         }
     }
