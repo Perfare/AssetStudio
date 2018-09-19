@@ -598,7 +598,10 @@ namespace AssetStudio
         {
             m_StreamedClip = new StreamedClip(reader);
             m_DenseClip = new DenseClip(reader);
-            m_ConstantClip = new ConstantClip(reader);
+            if ((version[0] > 4) || (version[0] == 4 && version[1] > 1) || (version[0] == 4 && version[1] == 1 && version[2] >= 5)) //4.1.5f1 and up
+            {
+                m_ConstantClip = new ConstantClip(reader);
+            }
             m_Binding = new ValueArrayConstant(reader, version);
         }
     }
@@ -673,7 +676,15 @@ namespace AssetStudio
 
             int numIndices = reader.ReadInt32();
             m_IndexArray = reader.ReadInt32Array(numIndices);
-
+            if ((version[0] < 4) || (version[0] == 4 && version[1] < 1) || (version[0] == 4 && version[1] == 1 && version[2] < 5)) //4.1.5f1 down
+            {
+                int numAdditionalCurveIndexs = reader.ReadInt32();
+                var m_AdditionalCurveIndexArray = new List<int>(numAdditionalCurveIndexs);
+                for (int i = 0; i < numAdditionalCurveIndexs; i++)
+                {
+                    m_AdditionalCurveIndexArray.Add(reader.ReadInt32());
+                }
+            }
             int numDeltas = reader.ReadInt32();
             m_ValueArrayDelta = new List<ValueDelta>(numDeltas);
             for (int i = 0; i < numDeltas; i++)
