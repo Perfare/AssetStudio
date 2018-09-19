@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using SharpDX;
 
 namespace AssetStudio
@@ -611,6 +612,17 @@ namespace AssetStudio
                                             }
                                         }
 
+                                        if (preloadData.sourceFile.platform == 11 && componentByteSize > 1) //swap bytes for Xbox
+                                        {
+                                            for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
+                                            {
+                                                var buff = new byte[componentByteSize];
+                                                Buffer.BlockCopy(componentBytes, i * componentByteSize, buff, 0, componentByteSize);
+                                                buff = buff.Reverse().ToArray();
+                                                Buffer.BlockCopy(buff, 0, componentBytes, i * componentByteSize, componentByteSize);
+                                            }
+                                        }
+
                                         int[] componentsIntArray = null;
                                         float[] componentsFloatArray = null;
                                         if (m_Channel.format == 11)
@@ -690,10 +702,10 @@ namespace AssetStudio
                                     {
                                         if (m_Stream.channelMask.Get(b))
                                         {
-                                            // in version 4.x the colors channel has 1 dimension, as in 1 color with 4 components
+                                            //in version 4.x the colors is ColorRGBA32, size 4 with 4 byte components
                                             if (b == 2 && m_Channel.format == 2)
                                             {
-                                                m_Channel.dimension = 4;
+                                                m_Channel.dimension = 4; //set this so that don't need to convert int to 4 bytes
                                             }
 
                                             var componentByteSize = GetChannelFormatSize(m_Channel.format);
@@ -706,6 +718,17 @@ namespace AssetStudio
                                                 {
                                                     int componentOffset = vertexOffset + componentByteSize * d;
                                                     Buffer.BlockCopy(m_DataSize, componentOffset, componentBytes, componentByteSize * (v * m_Channel.dimension + d), componentByteSize);
+                                                }
+                                            }
+
+                                            if (preloadData.sourceFile.platform == 11 && componentByteSize > 1) //swap bytes for Xbox
+                                            {
+                                                for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
+                                                {
+                                                    var buff = new byte[componentByteSize];
+                                                    Buffer.BlockCopy(componentBytes, i * componentByteSize, buff, 0, componentByteSize);
+                                                    buff = buff.Reverse().ToArray();
+                                                    Buffer.BlockCopy(buff, 0, componentBytes, i * componentByteSize, componentByteSize);
                                                 }
                                             }
 
@@ -1107,7 +1130,7 @@ namespace AssetStudio
                                 j++;
                             }
                         }
-                        //just fix it
+                        //TODO just fix it
                         m_SubMeshes[s].indexCount = j * 3;
                     }
                 }
