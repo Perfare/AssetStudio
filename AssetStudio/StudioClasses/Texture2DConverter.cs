@@ -967,7 +967,9 @@ namespace AssetStudio
             IntPtr uncompressedData;
             int uncompressedSize;
             bool result;
-            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)) //2017.3 and up
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)
+                || m_TextureFormat == TextureFormat.ETC_RGB4Crunched
+                || m_TextureFormat == TextureFormat.ETC2_RGBA8Crunched) //2017.3 and up
             {
                 result = DecompressUnityCRN(image_data, image_data_size, out uncompressedData, out uncompressedSize);
             }
