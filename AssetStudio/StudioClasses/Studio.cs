@@ -198,15 +198,34 @@ namespace AssetStudio
                                     break;
                                 }
                             case ClassIDReference.Texture2D:
+                                {
+                                    var m_Texture2D = new Texture2D(asset, false);
+                                    if (!string.IsNullOrEmpty(m_Texture2D.path))
+                                        asset.fullSize = asset.Size + (int)m_Texture2D.size;
+                                    goto case ClassIDReference.NamedObject;
+                                }
+                            case ClassIDReference.AudioClip:
+                                {
+                                    var m_AudioClip = new AudioClip(asset, false);
+                                    if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
+                                        asset.fullSize = asset.Size + (int)m_AudioClip.m_Size;
+                                    goto case ClassIDReference.NamedObject;
+                                }
+                            case ClassIDReference.VideoClip:
+                                {
+                                    var m_VideoClip = new VideoClip(asset, false);
+                                    if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
+                                        asset.fullSize = asset.Size + (int)m_VideoClip.m_Size;
+                                    goto case ClassIDReference.NamedObject;
+                                }
+                            case ClassIDReference.NamedObject:
                             case ClassIDReference.Mesh:
                             case ClassIDReference.Shader:
                             case ClassIDReference.TextAsset:
                             case ClassIDReference.AnimationClip:
-                            case ClassIDReference.AudioClip:
                             case ClassIDReference.Font:
                             case ClassIDReference.MovieTexture:
                             case ClassIDReference.Sprite:
-                            case ClassIDReference.VideoClip:
                                 {
                                     var obj = new NamedObject(asset);
                                     asset.Text = obj.m_Name;

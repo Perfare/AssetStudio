@@ -10,6 +10,8 @@ namespace AssetStudio
     {
         public byte[] m_VideoData;
         public string m_OriginalPath;
+        public string m_Source;
+        public ulong m_Size;
 
         public VideoClip(AssetPreloadData preloadData, bool readData) : base(preloadData)
         {
@@ -40,9 +42,9 @@ namespace AssetStudio
                 reader.ReadAlignedString();
             }
             //StreamedResource m_ExternalResources
-            var m_Source = reader.ReadAlignedString();
+            m_Source = reader.ReadAlignedString();
             var m_Offset = reader.ReadUInt64();
-            var m_Size = reader.ReadUInt64();
+            m_Size = reader.ReadUInt64();
             var m_HasSplitAlpha = reader.ReadBoolean();
 
             if (readData)
