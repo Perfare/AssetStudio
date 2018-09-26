@@ -5,26 +5,10 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public class RectTransform
+    public sealed class RectTransform : Transform
     {
-        public Transform m_Transform;
-
-        public RectTransform(AssetPreloadData preloadData)
+        public RectTransform(AssetPreloadData preloadData) : base(preloadData)
         {
-            m_Transform = new Transform(preloadData);
-
-            //var sourceFile = preloadData.sourceFile;
-            //var a_Stream = preloadData.sourceFile.a_Stream;
-
-            /*
-            float[2] AnchorsMin
-            float[2] AnchorsMax
-            float[2] Pivod
-            float Width
-            float Height
-            float[2] ?
-            */
-
         }
     }
 }

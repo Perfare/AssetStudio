@@ -150,7 +150,16 @@
     <Compile Include="Brotli\Transform.cs" />
     <Compile Include="Brotli\Utils.cs" />
     <Compile Include="Brotli\WordTransformType.cs" />
+    <Compile Include="Classes\Behaviour.cs" />
+    <Compile Include="Classes\Component.cs" />
+    <Compile Include="Classes\EditorExtension.cs" />
     <Compile Include="Classes\MonoScript.cs" />
+    <Compile Include="Classes\NamedObject.cs" />
+    <Compile Include="Classes\Object.cs" />
+    <Compile Include="Classes\Renderer.cs" />
+    <Compile Include="Classes\Texture.cs" />
+    <Compile Include="StudioClasses\AudioClipConverter.cs" />
+    <Compile Include="StudioClasses\GameObjectTreeNode.cs" />
     <Compile Include="StudioClasses\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -168,11 +177,6 @@
     <Compile Include="StudioClasses\ClassMember.cs" />
     <Compile Include="StudioClasses\ClassStructHelper.cs" />
     <Compile Include="StudioClasses\ResourcesHelper.cs" />
-    <Compile Include="StudioClasses\ShaderResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ShaderResource.resx</DependentUpon>
-    </Compile>
     <Compile Include="Classes\AssetBundle.cs" />
     <Compile Include="Classes\MovieTexture.cs" />
     <Compile Include="Classes\Sprite.cs" />
@@ -244,10 +248,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="StudioClasses\ShaderResource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ShaderResource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="AssetStudioForm.resx">
       <DependentUpon>AssetStudioForm.cs</DependentUpon>
       <SubType>Designer</SubType>

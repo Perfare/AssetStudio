@@ -325,21 +325,14 @@ namespace AssetStudio
         }
     }
 
-    public class Avatar
+    public sealed class Avatar : NamedObject
     {
-        public string m_Name { get; set; }
         public uint m_AvatarSize { get; set; }
         public AvatarConstant m_Avatar { get; set; }
         public List<KeyValuePair<uint, string>> m_TOS { get; set; }
 
-        public Avatar(AssetPreloadData preloadData)
+        public Avatar(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var version = sourceFile.version;
-            var reader = preloadData.InitReader();
-            reader.Position = preloadData.Offset;
-
-            m_Name = reader.ReadAlignedString();
             m_AvatarSize = reader.ReadUInt32();
             m_Avatar = new AvatarConstant(reader, version);
 

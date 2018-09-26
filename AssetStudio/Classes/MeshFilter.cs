@@ -5,18 +5,13 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public class MeshFilter
+    public sealed class MeshFilter : Component
     {
         public long preloadIndex;
-        public PPtr m_GameObject = new PPtr();
-        public PPtr m_Mesh = new PPtr();
+        public PPtr m_Mesh;
 
-        public MeshFilter(AssetPreloadData preloadData)
+        public MeshFilter(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
-            m_GameObject = sourceFile.ReadPPtr();
             m_Mesh = sourceFile.ReadPPtr();
         }
     }

@@ -6,7 +6,7 @@ using System.Text;
 namespace AssetStudio
 {
 
-    class AssetBundle
+    public sealed class AssetBundle : NamedObject
     {
         public class AssetInfo
         {
@@ -21,15 +21,10 @@ namespace AssetStudio
             public AssetInfo second;
         }
 
-
         public List<ContainerData> m_Container = new List<ContainerData>();
 
-        public AssetBundle(AssetPreloadData preloadData)
+        public AssetBundle(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
-            var m_Name = reader.ReadAlignedString();
             var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {

@@ -73,7 +73,7 @@ namespace AssetStudio
                             //write connections here and Mesh objects separately without having to backtrack through their MEshFilter to het the GameObject ID
                             //also note that MeshFilters are not unique, they cannot be used for instancing geometry
                             cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
-                            cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
+                            cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.preloadData.uniqueID);
                         }
                     }
 
@@ -88,7 +88,7 @@ namespace AssetStudio
                             {
                                 Materials.Add(MaterialPD);
                                 cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.preloadData.uniqueID);
                             }
                         }
                     }
@@ -108,7 +108,7 @@ namespace AssetStudio
                             {
                                 Materials.Add(MaterialPD);
                                 cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
-                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.uniqueID);
+                                cb2.AppendFormat("\n\tC: \"OO\",6{0},1{1}", MaterialPD.uniqueID, m_GameObject.preloadData.uniqueID);
                             }
                         }
 
@@ -125,7 +125,11 @@ namespace AssetStudio
                                     {
                                         LimbNodes.Add(m_Bone);
                                         //also collect the root bone
-                                        if (m_Bone.Parent.Level > 0) { LimbNodes.Add((GameObject)m_Bone.Parent); }
+                                        var parent = (GameObjectTreeNode)treeNodeDictionary[m_Bone].Parent;
+                                        if (parent.Level > 0)
+                                        {
+                                            LimbNodes.Add(parent.gameObject);
+                                        }
                                         //should I collect siblings?
                                     }
 
@@ -396,28 +400,28 @@ namespace AssetStudio
                     {
                         if ((bool)Properties.Settings.Default["exportDeformers"] && (bool)Properties.Settings.Default["convertDummies"] && LimbNodes.Contains(m_GameObject))
                         {
-                            ob.AppendFormat("\n\tNodeAttribute: 2{0}, \"NodeAttribute::\", \"LimbNode\" {{", m_GameObject.uniqueID);
+                            ob.AppendFormat("\n\tNodeAttribute: 2{0}, \"NodeAttribute::\", \"LimbNode\" {{", m_GameObject.preloadData.uniqueID);
                             ob.Append("\n\t\tTypeFlags: \"Skeleton\"");
                             ob.Append("\n\t}");
 
-                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"LimbNode\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"LimbNode\" {{", m_GameObject.preloadData.uniqueID, m_GameObject.m_Name);
                         }
                         else
                         {
-                            ob.AppendFormat("\n\tNodeAttribute: 2{0}, \"NodeAttribute::\", \"Null\" {{", m_GameObject.uniqueID);
+                            ob.AppendFormat("\n\tNodeAttribute: 2{0}, \"NodeAttribute::\", \"Null\" {{", m_GameObject.preloadData.uniqueID);
                             ob.Append("\n\t\tTypeFlags: \"Null\"");
                             ob.Append("\n\t}");
 
-                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Null\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                            ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Null\" {{", m_GameObject.preloadData.uniqueID, m_GameObject.m_Name);
                         }
 
                         //connect NodeAttribute to Model
                         cb.AppendFormat("\n\n\t;NodeAttribute::, Model::{0}", m_GameObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",2{0},1{0}", m_GameObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",2{0},1{0}", m_GameObject.preloadData.uniqueID);
                     }
                     else
                     {
-                        ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Mesh\" {{", m_GameObject.uniqueID, m_GameObject.m_Name);
+                        ob.AppendFormat("\n\tModel: 1{0}, \"Model::{1}\", \"Mesh\" {{", m_GameObject.preloadData.uniqueID, m_GameObject.m_Name);
                     }
 
                     ob.Append("\n\t\tVersion: 232");
@@ -442,16 +446,16 @@ namespace AssetStudio
                     ob.Append("\n\t\tCulling: \"CullingOff\"\n\t}");
 
                     //connect Model to parent
-                    GameObject parentObject = (GameObject)m_GameObject.Parent;
+                    var parentObject = ((GameObjectTreeNode)treeNodeDictionary[m_GameObject].Parent).gameObject;
                     if (GameObjects.Contains(parentObject))
                     {
                         cb.AppendFormat("\n\n\t;Model::{0}, Model::{1}", m_GameObject.m_Name, parentObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",1{0},1{1}", m_GameObject.uniqueID, parentObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",1{0},1{1}", m_GameObject.preloadData.uniqueID, parentObject.preloadData.uniqueID);
                     }
                     else
                     {
                         cb.AppendFormat("\n\n\t;Model::{0}, Model::RootNode", m_GameObject.m_Name);
-                        cb.AppendFormat("\n\tC: \"OO\",1{0},0", m_GameObject.uniqueID);
+                        cb.AppendFormat("\n\tC: \"OO\",1{0},0", m_GameObject.preloadData.uniqueID);
                     }
 
 
@@ -461,7 +465,7 @@ namespace AssetStudio
                 #region write non-skinnned Geometry
                 foreach (var MeshPD in Meshes)
                 {
-                    Mesh m_Mesh = new Mesh(MeshPD, true);
+                    Mesh m_Mesh = new Mesh(MeshPD);
                     MeshFBX(m_Mesh, MeshPD.uniqueID, ob);
 
                     //write data 8MB at a time
@@ -489,7 +493,7 @@ namespace AssetStudio
                         //find a way to test if a mesh instance was loaded previously and if it uses the same skeleton, then create instance or copy
                         var keepID = MeshPD.uniqueID;
                         MeshPD.uniqueID = SkinnedMeshPD.uniqueID;
-                        Mesh m_Mesh = new Mesh(MeshPD, true);
+                        Mesh m_Mesh = new Mesh(MeshPD);
                         MeshFBX(m_Mesh, MeshPD.uniqueID, ob);
 
                         //write data 8MB at a time
@@ -497,13 +501,13 @@ namespace AssetStudio
                         { FBXwriter.Write(ob); ob.Clear(); }
 
                         cb2.AppendFormat("\n\n\t;Geometry::, Model::{0}", m_GameObject.m_Name);
-                        cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.uniqueID);
+                        cb2.AppendFormat("\n\tC: \"OO\",3{0},1{1}", MeshPD.uniqueID, m_GameObject.preloadData.uniqueID);
 
                         if ((bool)Properties.Settings.Default["exportDeformers"])
                         {
                             //add BindPose node
                             pb.Append("\n\t\tPoseNode:  {");
-                            pb.AppendFormat("\n\t\t\tNode: 1{0}", m_GameObject.uniqueID);
+                            pb.AppendFormat("\n\t\t\tNode: 1{0}", m_GameObject.preloadData.uniqueID);
                             //pb.Append("\n\t\t\tMatrix: *16 {");
                             //pb.Append("\n\t\t\t\ta: ");
                             //pb.Append("\n\t\t\t} ");
@@ -516,7 +520,7 @@ namespace AssetStudio
 
                             //connect Model to DisplayLayer
                             cb2.AppendFormat("\n\n\t;Model::{0}, DisplayLayer::", m_GameObject.m_Name);
-                            cb2.AppendFormat("\n\tC: \"OO\",1{0},5{1}", m_GameObject.uniqueID, SkinnedMeshPD.uniqueID);
+                            cb2.AppendFormat("\n\tC: \"OO\",1{0},5{1}", m_GameObject.preloadData.uniqueID, SkinnedMeshPD.uniqueID);
 
                             //write Deformers
                             if (m_Mesh.m_Skin.Length > 0 && m_Mesh.m_BindPose.Length >= m_SkinnedMeshRenderer.m_Bones.Length)
@@ -616,7 +620,7 @@ namespace AssetStudio
 
                                             //connect dummy Model to SubDeformer
                                             cb2.AppendFormat("\n\n\t;Model::{0}, SubDeformer::", m_Bone.m_Name);
-                                            cb2.AppendFormat("\n\tC: \"OO\",1{0},4{1}{2}", m_Bone.uniqueID, b, SkinnedMeshPD.uniqueID);
+                                            cb2.AppendFormat("\n\tC: \"OO\",1{0},4{1}{2}", m_Bone.preloadData.uniqueID, b, SkinnedMeshPD.uniqueID);
                                         }
                                     }
                                 }
@@ -633,7 +637,7 @@ namespace AssetStudio
                     {
                         //add BindPose node
                         pb.Append("\n\t\tPoseNode:  {");
-                        pb.AppendFormat("\n\t\t\tNode: 1{0}", m_Bone.uniqueID);
+                        pb.AppendFormat("\n\t\t\tNode: 1{0}", m_Bone.preloadData.uniqueID);
                         //pb.Append("\n\t\t\tMatrix: *16 {");
                         //pb.Append("\n\t\t\t\ta: ");
                         //pb.Append("\n\t\t\t} ");

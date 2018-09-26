@@ -12,14 +12,16 @@ namespace AssetStudio
     {
         public static bool ExportTexture2D(AssetPreloadData asset, string exportPathName, bool flip)
         {
-            var texture2D = new Texture2D(asset, true);
-            if (texture2D.image_data == null || texture2D.image_data.Length == 0)
+            var m_Texture2D = new Texture2D(asset, true);
+            if (m_Texture2D.image_data == null || m_Texture2D.image_data.Length == 0)
                 return false;
-            var m_Texture2D = new Texture2DConverter(texture2D);
-            var convert = (bool)Properties.Settings.Default["convertTexture"];
-            var bitmap = m_Texture2D.ConvertToBitmap(flip);
-            if (convert && bitmap != null)
+            var converter = new Texture2DConverter(m_Texture2D);
+            var convertTexture = (bool)Properties.Settings.Default["convertTexture"];
+            if (convertTexture)
             {
+                var bitmap = converter.ConvertToBitmap(flip);
+                if (bitmap == null)
+                    return false;
                 ImageFormat format = null;
                 var ext = (string)Properties.Settings.Default["convertType"];
                 switch (ext)
@@ -43,10 +45,10 @@ namespace AssetStudio
             }
             else
             {
-                var exportFullName = exportPathName + asset.Text + m_Texture2D.GetExtensionName();
+                var exportFullName = exportPathName + asset.Text + converter.GetExtensionName();
                 if (ExportFileExists(exportFullName))
                     return false;
-                File.WriteAllBytes(exportFullName, m_Texture2D.ConvertToContainer());
+                File.WriteAllBytes(exportFullName, converter.ConvertToContainer());
                 return true;
             }
         }
@@ -57,65 +59,20 @@ namespace AssetStudio
             if (m_AudioClip.m_AudioData == null)
                 return false;
             var convertAudio = (bool)Properties.Settings.Default["convertAudio"];
-            if (convertAudio && m_AudioClip.IsFMODSupport)
+            var converter = new AudioClipConverter(m_AudioClip);
+            if (convertAudio && converter.IsFMODSupport)
             {
                 var exportFullName = exportPath + asset.Text + ".wav";
                 if (ExportFileExists(exportFullName))
                     return false;
-                FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
-                var result = FMOD.Factory.System_Create(out var system);
-                if (result != FMOD.RESULT.OK)
+                var buffer = converter.ConvertToWav();
+                if (buffer == null)
                     return false;
-                result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                exinfo.cbsize = Marshal.SizeOf(exinfo);
-                exinfo.length = (uint)m_AudioClip.m_Size;
-                result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                result = sound.getSubSound(0, out var subsound);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                result = subsound.getFormat(out var type, out var format, out int NumChannels, out int BitsPerSample);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                result = subsound.getDefaults(out var frequency, out int priority);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                var SampleRate = (int)frequency;
-                result = subsound.getLength(out var length, FMOD.TIMEUNIT.PCMBYTES);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                result = subsound.@lock(0, length, out var ptr1, out var ptr2, out var len1, out var len2);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                byte[] buffer = new byte[len1 + 44];
-                //添加wav头
-                Encoding.UTF8.GetBytes("RIFF").CopyTo(buffer, 0);
-                BitConverter.GetBytes(len1 + 36).CopyTo(buffer, 4);
-                Encoding.UTF8.GetBytes("WAVEfmt ").CopyTo(buffer, 8);
-                BitConverter.GetBytes(16).CopyTo(buffer, 16);
-                BitConverter.GetBytes((short)1).CopyTo(buffer, 20);
-                BitConverter.GetBytes((short)NumChannels).CopyTo(buffer, 22);
-                BitConverter.GetBytes(SampleRate).CopyTo(buffer, 24);
-                BitConverter.GetBytes(SampleRate * NumChannels * BitsPerSample / 8).CopyTo(buffer, 28);
-                BitConverter.GetBytes((short)(NumChannels * BitsPerSample / 8)).CopyTo(buffer, 32);
-                BitConverter.GetBytes((short)BitsPerSample).CopyTo(buffer, 34);
-                Encoding.UTF8.GetBytes("data").CopyTo(buffer, 36);
-                BitConverter.GetBytes(len1).CopyTo(buffer, 40);
-                Marshal.Copy(ptr1, buffer, 44, (int)len1);
                 File.WriteAllBytes(exportFullName, buffer);
-                result = subsound.unlock(ptr1, ptr2, len1, len2);
-                if (result != FMOD.RESULT.OK)
-                    return false;
-                subsound.release();
-                sound.release();
-                system.release();
             }
             else
             {
-                var exportFullName = exportPath + asset.Text + asset.extension;
+                var exportFullName = exportPath + asset.Text + converter.GetExtensionName();
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_AudioClip.m_AudioData);
@@ -125,8 +82,8 @@ namespace AssetStudio
 
         public static bool ExportShader(AssetPreloadData asset, string exportPath)
         {
-            var m_Shader = new Shader(asset, true);
-            var exportFullName = exportPath + asset.Text + asset.extension;
+            var m_Shader = new Shader(asset);
+            var exportFullName = exportPath + asset.Text + ".shader";
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_Shader.m_Script);
@@ -135,8 +92,8 @@ namespace AssetStudio
 
         public static bool ExportTextAsset(AssetPreloadData asset, string exportPath)
         {
-            var m_TextAsset = new TextAsset(asset, true);
-            var exportFullName = exportPath + asset.Text + asset.extension;
+            var m_TextAsset = new TextAsset(asset);
+            var exportFullName = exportPath + asset.Text + ".txt";
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_TextAsset.m_Script);
@@ -152,7 +109,7 @@ namespace AssetStudio
             string str;
             if (asset.Type1 != asset.Type2 && asset.sourceFile.ClassStructures.ContainsKey(asset.Type1))
             {
-                str = asset.GetClassString();
+                str = asset.Dump();
             }
             else
             {
@@ -164,10 +121,15 @@ namespace AssetStudio
 
         public static bool ExportFont(AssetPreloadData asset, string exportPath)
         {
-            var m_Font = new UFont(asset, true);
+            var m_Font = new Font(asset);
             if (m_Font.m_FontData != null)
             {
-                var exportFullName = exportPath + asset.Text + asset.extension;
+                string extension = ".ttf";
+                if (m_Font.m_FontData[0] == 79 && m_Font.m_FontData[1] == 84 && m_Font.m_FontData[2] == 84 && m_Font.m_FontData[3] == 79)
+                {
+                    extension = ".otf";
+                }
+                var exportFullName = exportPath + asset.Text + extension;
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_Font.m_FontData);
@@ -178,10 +140,10 @@ namespace AssetStudio
 
         public static bool ExportMesh(AssetPreloadData asset, string exportPath)
         {
-            var m_Mesh = new Mesh(asset, true);
+            var m_Mesh = new Mesh(asset);
             if (m_Mesh.m_VertexCount <= 0)
                 return false;
-            var exportFullName = exportPath + asset.Text + asset.extension;
+            var exportFullName = exportPath + asset.Text + ".obj";
             if (ExportFileExists(exportFullName))
                 return false;
             var sb = new StringBuilder();
@@ -262,7 +224,7 @@ namespace AssetStudio
             var m_VideoClip = new VideoClip(asset, true);
             if (m_VideoClip.m_VideoData != null)
             {
-                var exportFullName = exportPath + asset.Text + asset.extension;
+                var exportFullName = exportPath + asset.Text + Path.GetExtension(m_VideoClip.m_OriginalPath);
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_VideoClip.m_VideoData);
@@ -273,8 +235,8 @@ namespace AssetStudio
 
         public static bool ExportMovieTexture(AssetPreloadData asset, string exportPath)
         {
-            var m_MovieTexture = new MovieTexture(asset, true);
-            var exportFullName = exportPath + asset.Text + asset.extension;
+            var m_MovieTexture = new MovieTexture(asset);
+            var exportFullName = exportPath + asset.Text + ".ogv";
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_MovieTexture.m_MovieData);
@@ -300,7 +262,7 @@ namespace AssetStudio
             var exportFullName = exportPath + asset.Text + "." + type.ToLower();
             if (ExportFileExists(exportFullName))
                 return false;
-            var bitmap = SpriteHelper.GetImageFromSprite(asset);
+            var bitmap = SpriteHelper.GetImageFromSprite(new Sprite(asset));
             if (bitmap != null)
             {
                 bitmap.Save(exportFullName, format);
@@ -340,7 +302,7 @@ namespace AssetStudio
         public static bool ExportGameObject(GameObject gameObject, string exportPath, List<AssetPreloadData> animationList = null)
         {
             var convert = animationList != null ? new ModelConverter(gameObject, animationList) : new ModelConverter(gameObject);
-            exportPath = exportPath + Studio.FixFileName(gameObject.Text) + ".fbx";
+            exportPath = exportPath + Studio.FixFileName(gameObject.m_Name) + ".fbx";
             return ModelConverter(convert, exportPath);
         }
 

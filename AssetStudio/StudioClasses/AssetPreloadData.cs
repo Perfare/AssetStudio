@@ -18,7 +18,6 @@ namespace AssetStudio
         public string TypeString;
         public int fullSize;
         public string InfoText;
-        public string extension;
 
         public AssetsFile sourceFile;
         public GameObject gameObject;
@@ -31,7 +30,7 @@ namespace AssetStudio
             return reader;
         }
 
-        public string GetClassString()
+        public string Dump()
         {
             var reader = InitReader();
             if (sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure))

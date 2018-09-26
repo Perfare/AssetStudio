@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class TexEnv
+    public class TexEnv
     {
         public string name;
         public PPtr m_Texture;
@@ -13,21 +13,20 @@ namespace AssetStudio
         public float[] m_Offset;
     }
 
-    class strFloatPair
+    public class strFloatPair
     {
         public string first;
         public float second;
     }
 
-    class strColorPair
+    public class strColorPair
     {
         public string first;
         public float[] second;
     }
 
-    class Material
+    public sealed class Material : NamedObject
     {
-        public string m_Name;
         public PPtr m_Shader;
         public string[] m_ShaderKeywords;
         public int m_CustomRenderQueue;
@@ -35,12 +34,8 @@ namespace AssetStudio
         public strFloatPair[] m_Floats;
         public strColorPair[] m_Colors;
 
-        public Material(AssetPreloadData preloadData)
+        public Material(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
-            m_Name = reader.ReadAlignedString();
             m_Shader = sourceFile.ReadPPtr();
 
             if (sourceFile.version[0] == 4 && (sourceFile.version[1] >= 2 || (sourceFile.version[1] == 1 && sourceFile.buildType[0] != "a")))

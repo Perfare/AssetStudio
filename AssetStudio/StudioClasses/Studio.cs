@@ -25,6 +25,8 @@ namespace AssetStudio
         public static string productName = "";
         public static bool moduleLoaded;
         public static Dictionary<string, ModuleDef> LoadedModuleDic = new Dictionary<string, ModuleDef>();
+        public static List<GameObjectTreeNode> treeNodeCollection = new List<GameObjectTreeNode>();
+        public static Dictionary<GameObject, GameObjectTreeNode> treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
 
         //UI
         public static Action<int> SetProgressBarValue;
@@ -153,10 +155,8 @@ namespace AssetStudio
             return extractedCount;
         }
 
-        public static void BuildAssetStructures(bool loadAssets, bool displayAll, bool buildHierarchy, bool buildClassStructures, bool displayOriginalName, out List<GameObject> fileNodes)
+        public static void BuildAssetStructures(bool loadAssets, bool displayAll, bool buildHierarchy, bool buildClassStructures, bool displayOriginalName)
         {
-            fileNodes = null;
-
             #region first loop - read asset data & create list
             if (loadAssets)
             {
@@ -180,43 +180,52 @@ namespace AssetStudio
                         {
                             case ClassIDReference.GameObject:
                                 {
-                                    GameObject m_GameObject = new GameObject(asset);
+                                    var m_GameObject = new GameObject(asset);
+                                    asset.Text = m_GameObject.m_Name;
                                     assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
                                     break;
                                 }
                             case ClassIDReference.Transform:
                                 {
-                                    Transform m_Transform = new Transform(asset);
+                                    var m_Transform = new Transform(asset);
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
                                     break;
                                 }
                             case ClassIDReference.RectTransform:
                                 {
-                                    RectTransform m_Rect = new RectTransform(asset);
-                                    assetsFile.TransformList.Add(asset.m_PathID, m_Rect.m_Transform);
+                                    var m_Rect = new RectTransform(asset);
+                                    assetsFile.TransformList.Add(asset.m_PathID, m_Rect);
                                     break;
                                 }
                             case ClassIDReference.Texture2D:
-                                {
-                                    Texture2D m_Texture2D = new Texture2D(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
+                            case ClassIDReference.Mesh:
                             case ClassIDReference.Shader:
-                                {
-                                    Shader m_Shader = new Shader(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
                             case ClassIDReference.TextAsset:
+                            case ClassIDReference.AnimationClip:
+                            case ClassIDReference.AudioClip:
+                            case ClassIDReference.Font:
+                            case ClassIDReference.MovieTexture:
+                            case ClassIDReference.Sprite:
+                            case ClassIDReference.VideoClip:
                                 {
-                                    TextAsset m_TextAsset = new TextAsset(asset, false);
+                                    var obj = new NamedObject(asset);
+                                    asset.Text = obj.m_Name;
                                     exportable = true;
                                     break;
                                 }
-                            case ClassIDReference.AudioClip:
+                            case ClassIDReference.Avatar:
+                            case ClassIDReference.AnimatorController:
+                            case ClassIDReference.AnimatorOverrideController:
+                            case ClassIDReference.Material:
+                            case ClassIDReference.MonoScript:
+                            case ClassIDReference.SpriteAtlas:
                                 {
-                                    AudioClip m_AudioClip = new AudioClip(asset, false);
+                                    var obj = new NamedObject(asset);
+                                    asset.Text = obj.m_Name;
+                                    break;
+                                }
+                            case ClassIDReference.Animator:
+                                {
                                     exportable = true;
                                     break;
                                 }
@@ -235,58 +244,16 @@ namespace AssetStudio
                                     exportable = true;
                                     break;
                                 }
-                            case ClassIDReference.Font:
-                                {
-                                    UFont m_Font = new UFont(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
                             case ClassIDReference.PlayerSettings:
                                 {
                                     var plSet = new PlayerSettings(asset);
                                     productName = plSet.productName;
                                     break;
                                 }
-                            case ClassIDReference.Mesh:
-                                {
-                                    Mesh m_Mesh = new Mesh(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
                             case ClassIDReference.AssetBundle:
                                 {
                                     ab = new AssetBundle(asset);
-                                    break;
-                                }
-                            case ClassIDReference.VideoClip:
-                                {
-                                    var m_VideoClip = new VideoClip(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
-                            case ClassIDReference.MovieTexture:
-                                {
-                                    var m_MovieTexture = new MovieTexture(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
-                            case ClassIDReference.Sprite:
-                                {
-                                    var m_Sprite = new Sprite(asset, false);
-                                    exportable = true;
-                                    break;
-                                }
-                            case ClassIDReference.Animator:
-                                {
-                                    exportable = true;
-                                    break;
-                                }
-                            case ClassIDReference.AnimationClip:
-                                {
-                                    exportable = true;
-                                    var reader = asset.sourceFile.reader;
-                                    reader.Position = asset.Offset;
-                                    asset.Text = reader.ReadAlignedString();
+                                    asset.Text = ab.m_Name;
                                     break;
                                 }
                         }
@@ -335,7 +302,6 @@ namespace AssetStudio
             #region second loop - build tree structure
             if (buildHierarchy)
             {
-                fileNodes = new List<GameObject>();
                 var gameObjectCount = assetsfileList.Sum(x => x.GameObjectList.Values.Count);
                 if (gameObjectCount > 0)
                 {
@@ -345,9 +311,8 @@ namespace AssetStudio
 
                     foreach (var assetsFile in assetsfileList)
                     {
-                        GameObject fileNode = new GameObject(null);
-                        fileNode.Text = Path.GetFileName(assetsFile.filePath);
-                        fileNode.m_Name = "RootNode";
+                        var fileNode = new GameObjectTreeNode(null); //RootNode
+                        fileNode.Text = assetsFile.fileName;
 
                         foreach (var m_GameObject in assetsFile.GameObjectList.Values)
                         {
@@ -399,7 +364,7 @@ namespace AssetStudio
                                             case ClassIDReference.Animator:
                                                 {
                                                     m_GameObject.m_Animator = m_Component;
-                                                    asset.Text = m_GameObject.asset.Text;
+                                                    asset.Text = m_GameObject.preloadData.Text;
                                                     break;
                                                 }
                                         }
@@ -413,19 +378,29 @@ namespace AssetStudio
                             {
                                 if (assetsfileList.TryGetTransform(m_Transform.m_Father, out var m_Father))
                                 {
-                                    if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out parentNode))
+                                    if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out var parentGameObject))
                                     {
+                                        if (!treeNodeDictionary.TryGetValue(parentGameObject, out parentNode))
+                                        {
+                                            parentNode = new GameObjectTreeNode(parentGameObject);
+                                            treeNodeDictionary.Add(parentGameObject, parentNode);
+                                        }
                                     }
                                 }
                             }
 
-                            parentNode.Nodes.Add(m_GameObject);
+                            if (!treeNodeDictionary.TryGetValue(m_GameObject, out var currentNode))
+                            {
+                                currentNode = new GameObjectTreeNode(m_GameObject);
+                                treeNodeDictionary.Add(m_GameObject, currentNode);
+                            }
+                            parentNode.Nodes.Add(currentNode);
                             ProgressBarPerformStep();
                         }
 
                         if (fileNode.Nodes.Count > 0)
                         {
-                            fileNodes.Add(fileNode);
+                            treeNodeCollection.Add(fileNode);
                         }
                     }
                 }
@@ -608,10 +583,10 @@ namespace AssetStudio
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
-                foreach (TreeNode node in nodes)
+                foreach (GameObjectTreeNode node in nodes)
                 {
                     //遍历一级子节点
-                    foreach (TreeNode j in node.Nodes)
+                    foreach (GameObjectTreeNode j in node.Nodes)
                     {
                         ProgressBarPerformStep();
                         //收集所有子节点
@@ -643,7 +618,7 @@ namespace AssetStudio
                         {
                             try
                             {
-                                ExportGameObject((GameObject)j, targetPath);
+                                ExportGameObject(j.gameObject, targetPath);
                             }
                             catch (Exception ex)
                             {
@@ -658,10 +633,10 @@ namespace AssetStudio
             });
         }
 
-        private static void CollectNode(TreeNode node, List<GameObject> gameObjects)
+        private static void CollectNode(GameObjectTreeNode node, List<GameObject> gameObjects)
         {
-            gameObjects.Add((GameObject)node);
-            foreach (TreeNode i in node.Nodes)
+            gameObjects.Add(node.gameObject);
+            foreach (GameObjectTreeNode i in node.Nodes)
             {
                 CollectNode(i, gameObjects);
             }
@@ -698,11 +673,11 @@ namespace AssetStudio
                     SetProgressBarMaximum(gameObjects.Count);
                     foreach (var gameObject in gameObjects)
                     {
-                        StatusStripUpdate($"Exporting {gameObject.Text}");
+                        StatusStripUpdate($"Exporting {gameObject.m_Name}");
                         try
                         {
                             ExportGameObject(gameObject, exportPath, animationList);
-                            StatusStripUpdate($"Finished exporting {gameObject.Text}");
+                            StatusStripUpdate($"Finished exporting {gameObject.m_Name}");
                         }
                         catch (Exception ex)
                         {
@@ -722,11 +697,11 @@ namespace AssetStudio
 
         private static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
         {
-            foreach (TreeNode i in nodes)
+            foreach (GameObjectTreeNode i in nodes)
             {
                 if (i.Checked)
                 {
-                    gameObjects.Add((GameObject)i);
+                    gameObjects.Add(i.gameObject);
                 }
                 else
                 {

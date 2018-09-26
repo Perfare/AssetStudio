@@ -9,7 +9,7 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class Texture2DConverter
+    public class Texture2DConverter
     {
         //Texture2D
         private int m_Width;
@@ -94,8 +94,8 @@ namespace AssetStudio
             m_Height = m_Texture2D.m_Height;
             m_TextureFormat = m_Texture2D.m_TextureFormat;
             var mMipMap = m_Texture2D.m_MipMap;
-            version = m_Texture2D.preloadData.sourceFile.version;
-            var platform = m_Texture2D.preloadData.sourceFile.platform;
+            version = m_Texture2D.sourceFile.version;
+            var platform = m_Texture2D.sourceFile.platform;
 
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2))//5.2 down
             {

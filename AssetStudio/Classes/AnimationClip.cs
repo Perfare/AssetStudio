@@ -790,9 +790,8 @@ namespace AssetStudio
         kHumanoid = 3
     };
 
-    public class AnimationClip
+    public sealed class AnimationClip : NamedObject
     {
-        public string m_Name { get; set; }
         public AnimationType m_AnimationType { get; set; }
         public bool m_Legacy { get; set; }
         public bool m_Compressed { get; set; }
@@ -813,14 +812,8 @@ namespace AssetStudio
         //public List<AnimationEvent> m_Events { get; set; }
 
 
-        public AnimationClip(AssetPreloadData preloadData)
+        public AnimationClip(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var version = sourceFile.version;
-            var reader = preloadData.InitReader();
-            reader.Position = preloadData.Offset;
-
-            m_Name = reader.ReadAlignedString();
             if (version[0] >= 5)//5.0 and up
             {
                 m_Legacy = reader.ReadBoolean();

@@ -6,18 +6,14 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class VideoClip
+    public sealed class VideoClip : NamedObject
     {
-        public string m_Name;
         public byte[] m_VideoData;
+        public string m_OriginalPath;
 
-        public VideoClip(AssetPreloadData preloadData, bool readSwitch)
+        public VideoClip(AssetPreloadData preloadData, bool readData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
-            m_Name = reader.ReadAlignedString();
-            var m_OriginalPath = reader.ReadAlignedString();
+            m_OriginalPath = reader.ReadAlignedString();
             var m_ProxyWidth = reader.ReadUInt32();
             var m_ProxyHeight = reader.ReadUInt32();
             var Width = reader.ReadUInt32();
@@ -49,7 +45,7 @@ namespace AssetStudio
             var m_Size = reader.ReadUInt64();
             var m_HasSplitAlpha = reader.ReadBoolean();
 
-            if (readSwitch)
+            if (readData)
             {
                 if (!string.IsNullOrEmpty(m_Source))
                 {
@@ -60,12 +56,6 @@ namespace AssetStudio
                     if (m_Size > 0)
                         m_VideoData = reader.ReadBytes((int)m_Size);
                 }
-            }
-            else
-            {
-                preloadData.extension = Path.GetExtension(m_OriginalPath);
-                preloadData.Text = m_Name;
-                preloadData.fullSize = preloadData.Size + (int)m_Size;
             }
         }
     }

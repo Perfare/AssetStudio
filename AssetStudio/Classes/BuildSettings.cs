@@ -5,32 +5,40 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public class BuildSettings
+    public sealed class BuildSettings : Object
     {
         public string m_Version;
 
-        public BuildSettings(AssetPreloadData preloadData)
+        public BuildSettings(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
             int levels = reader.ReadInt32();
-            for (int l = 0; l < levels; l++) { string level = reader.ReadAlignedString(); }
-
-            if (sourceFile.version[0] == 5)
+            for (int l = 0; l < levels; l++)
             {
-                int preloadedPlugins = reader.ReadInt32();
-                for (int l = 0; l < preloadedPlugins; l++) { string preloadedPlugin = reader.ReadAlignedString(); }
+                var level = reader.ReadAlignedString();
             }
 
-            reader.Position += 4; //bool flags
-            if (sourceFile.fileGen >= 8) { reader.Position += 4; } //bool flags
-            if (sourceFile.fileGen >= 9) { reader.Position += 4; } //bool flags
-            if (sourceFile.version[0] == 5 || 
-                (sourceFile.version[0] == 4 && (sourceFile.version[1] >= 3 || 
-                                                (sourceFile.version[1] == 2 && sourceFile.buildType[0] != "a"))))
-                                                { reader.Position += 4; } //bool flags
+            if (version[0] >= 5)
+            {
+                int preloadedPlugins = reader.ReadInt32();
+                for (int l = 0; l < preloadedPlugins; l++)
+                {
+                    var preloadedPlugin = reader.ReadAlignedString();
+                }
+            }
 
+            reader.Position += 4;
+            if (version[0] >= 3) //3.0 and up
+            {
+                reader.Position += 4;
+            }
+            if (version[0] > 3 || (version[0] == 3 && version[1] >= 5))//3.5 and up
+            {
+                reader.Position += 4;
+            }
+            if (version[0] >= 5 || (version[0] == 4 && (version[1] >= 3 || (version[1] == 2 && buildType[0] != "a"))))
+            {
+                reader.Position += 4;
+            }
             m_Version = reader.ReadAlignedString();
         }
     }

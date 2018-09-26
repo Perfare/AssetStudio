@@ -66,7 +66,7 @@ namespace AssetStudio
 
         //tree search
         private int nextGObject;
-        private List<GameObject> treeSrcResults = new List<GameObject>();
+        private List<GameObjectTreeNode> treeSrcResults = new List<GameObjectTreeNode>();
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -172,8 +172,7 @@ namespace AssetStudio
                 return;
             }
 
-            BuildAssetStructures(!dontLoadAssetsMenuItem.Checked, displayAll.Checked, !dontBuildHierarchyMenuItem.Checked, buildClassStructuresMenuItem.Checked,
-                displayOriginalName.Checked, out var fileNodes);
+            BuildAssetStructures(!dontLoadAssetsMenuItem.Checked, displayAll.Checked, !dontBuildHierarchyMenuItem.Checked, buildClassStructuresMenuItem.Checked, displayOriginalName.Checked);
 
             BeginInvoke(new Action(() =>
             {
@@ -194,7 +193,7 @@ namespace AssetStudio
                 if (!dontBuildHierarchyMenuItem.Checked)
                 {
                     sceneTreeView.BeginUpdate();
-                    sceneTreeView.Nodes.AddRange(fileNodes.ToArray());
+                    sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
                     foreach (TreeNode node in sceneTreeView.Nodes)
                     {
                         node.HideCheckBox();
@@ -491,14 +490,11 @@ namespace AssetStudio
             {
                 if (treeSrcResults.Count == 0)
                 {
-                    foreach (var aFile in assetsfileList)
+                    foreach (var node in treeNodeDictionary.Values)
                     {
-                        foreach (var gObject in aFile.GameObjectList.Values)
+                        if (node.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
                         {
-                            if (gObject.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                            {
-                                treeSrcResults.Add(gObject);
-                            }
+                            treeSrcResults.Add(node);
                         }
                     }
                 }
@@ -517,7 +513,7 @@ namespace AssetStudio
 
         private void sceneTreeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            foreach (GameObject childNode in e.Node.Nodes)
+            foreach (TreeNode childNode in e.Node.Nodes)
             {
                 childNode.Checked = e.Node.Checked;
             }
@@ -661,8 +657,25 @@ namespace AssetStudio
                 case ClassIDReference.Texture2D:
                     {
                         imageTexture?.Dispose();
-                        var m_Texture2D = new Texture2DConverter(new Texture2D(asset, true));
-                        imageTexture = m_Texture2D.ConvertToBitmap(true);
+                        var m_Texture2D = new Texture2D(asset, true);
+
+                        //Info
+                        asset.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
+                        switch (m_Texture2D.m_FilterMode)
+                        {
+                            case 0: asset.InfoText += "\nFilter Mode: Point "; break;
+                            case 1: asset.InfoText += "\nFilter Mode: Bilinear "; break;
+                            case 2: asset.InfoText += "\nFilter Mode: Trilinear "; break;
+                        }
+                        asset.InfoText += $"\nAnisotropic level: {m_Texture2D.m_Aniso}\nMip map bias: {m_Texture2D.m_MipBias}";
+                        switch (m_Texture2D.m_WrapMode)
+                        {
+                            case 0: asset.InfoText += "\nWrap mode: Repeat"; break;
+                            case 1: asset.InfoText += "\nWrap mode: Clamp"; break;
+                        }
+
+                        var converter = new Texture2DConverter(m_Texture2D);
+                        imageTexture = converter.ConvertToBitmap(true);
                         if (imageTexture != null)
                         {
                             previewPanel.BackgroundImage = imageTexture;
@@ -679,7 +692,95 @@ namespace AssetStudio
                     }
                 case ClassIDReference.AudioClip:
                     {
-                        AudioClip m_AudioClip = new AudioClip(asset, true);
+                        var m_AudioClip = new AudioClip(asset, true);
+
+                        //Info
+                        asset.InfoText = "Compression format: ";
+                        if (m_AudioClip.version[0] < 5)
+                        {
+                            switch (m_AudioClip.m_Type)
+                            {
+                                case AudioType.ACC:
+                                    asset.InfoText += "Acc";
+                                    break;
+                                case AudioType.AIFF:
+                                    asset.InfoText += "AIFF";
+                                    break;
+                                case AudioType.IT:
+                                    asset.InfoText += "Impulse tracker";
+                                    break;
+                                case AudioType.MOD:
+                                    asset.InfoText += "Protracker / Fasttracker MOD";
+                                    break;
+                                case AudioType.MPEG:
+                                    asset.InfoText += "MP2/MP3 MPEG";
+                                    break;
+                                case AudioType.OGGVORBIS:
+                                    asset.InfoText += "Ogg vorbis";
+                                    break;
+                                case AudioType.S3M:
+                                    asset.InfoText += "ScreamTracker 3";
+                                    break;
+                                case AudioType.WAV:
+                                    asset.InfoText += "Microsoft WAV";
+                                    break;
+                                case AudioType.XM:
+                                    asset.InfoText += "FastTracker 2 XM";
+                                    break;
+                                case AudioType.XMA:
+                                    asset.InfoText += "Xbox360 XMA";
+                                    break;
+                                case AudioType.VAG:
+                                    asset.InfoText += "PlayStation Portable ADPCM";
+                                    break;
+                                case AudioType.AUDIOQUEUE:
+                                    asset.InfoText += "iPhone";
+                                    break;
+                                default:
+                                    asset.InfoText += "Unknown";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (m_AudioClip.m_CompressionFormat)
+                            {
+                                case AudioCompressionFormat.PCM:
+                                    asset.InfoText += "PCM";
+                                    break;
+                                case AudioCompressionFormat.Vorbis:
+                                    asset.InfoText += "Vorbis";
+                                    break;
+                                case AudioCompressionFormat.ADPCM:
+                                    asset.InfoText += "ADPCM";
+                                    break;
+                                case AudioCompressionFormat.MP3:
+                                    asset.InfoText += "MP3";
+                                    break;
+                                case AudioCompressionFormat.VAG:
+                                    asset.InfoText += "PlayStation Portable ADPCM";
+                                    break;
+                                case AudioCompressionFormat.HEVAG:
+                                    asset.InfoText += "PSVita ADPCM";
+                                    break;
+                                case AudioCompressionFormat.XMA:
+                                    asset.InfoText += "Xbox360 XMA";
+                                    break;
+                                case AudioCompressionFormat.AAC:
+                                    asset.InfoText += "AAC";
+                                    break;
+                                case AudioCompressionFormat.GCADPCM:
+                                    asset.InfoText += "Nintendo 3DS/Wii DSP";
+                                    break;
+                                case AudioCompressionFormat.ATRAC9:
+                                    asset.InfoText += "PSVita ATRAC9";
+                                    break;
+                                default:
+                                    asset.InfoText += "Unknown";
+                                    break;
+                            }
+                        }
+
                         if (m_AudioClip.m_AudioData == null)
                             break;
                         FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
@@ -713,7 +814,7 @@ namespace AssetStudio
                     }
                 case ClassIDReference.Shader:
                     {
-                        Shader m_TextAsset = new Shader(asset, true);
+                        Shader m_TextAsset = new Shader(asset);
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
                         m_Script_Text = m_Script_Text.Replace("\0", "\\0");
@@ -723,7 +824,7 @@ namespace AssetStudio
                     }
                 case ClassIDReference.TextAsset:
                     {
-                        TextAsset m_TextAsset = new TextAsset(asset, true);
+                        TextAsset m_TextAsset = new TextAsset(asset);
 
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
@@ -737,7 +838,7 @@ namespace AssetStudio
                         var m_MonoBehaviour = new MonoBehaviour(asset);
                         if (asset.Type1 != asset.Type2 && asset.sourceFile.ClassStructures.ContainsKey(asset.Type1))
                         {
-                            textPreviewBox.Text = asset.GetClassString();
+                            textPreviewBox.Text = asset.Dump();
                         }
                         else
                         {
@@ -749,7 +850,7 @@ namespace AssetStudio
                     }
                 case ClassIDReference.Font:
                     {
-                        UFont m_Font = new UFont(asset, true);
+                        Font m_Font = new Font(asset);
                         if (m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
@@ -768,28 +869,28 @@ namespace AssetStudio
                                     {
                                         fontPreviewBox.SelectionStart = 0;
                                         fontPreviewBox.SelectionLength = 80;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 16, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 16, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 81;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 12, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 12, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 138;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 18, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 18, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 195;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 24, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 24, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 252;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 36, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 36, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 309;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 48, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 48, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 366;
                                         fontPreviewBox.SelectionLength = 56;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 60, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 60, FontStyle.Regular);
                                         fontPreviewBox.SelectionStart = 423;
                                         fontPreviewBox.SelectionLength = 55;
-                                        fontPreviewBox.SelectionFont = new Font(pfc.Families[0], 72, FontStyle.Regular);
+                                        fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 72, FontStyle.Regular);
                                         fontPreviewBox.Visible = true;
                                     }
                                 }
@@ -801,7 +902,7 @@ namespace AssetStudio
                     }
                 case ClassIDReference.Mesh:
                     {
-                        var m_Mesh = new Mesh(asset, true);
+                        var m_Mesh = new Mesh(asset);
                         if (m_Mesh.m_VertexCount > 0)
                         {
                             viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
@@ -954,9 +1055,10 @@ namespace AssetStudio
                 case ClassIDReference.Sprite:
                     {
                         imageTexture?.Dispose();
-                        imageTexture = SpriteHelper.GetImageFromSprite(asset);
+                        imageTexture = SpriteHelper.GetImageFromSprite(new Sprite(asset));
                         if (imageTexture != null)
                         {
+                            asset.InfoText = $"Width: {imageTexture.Width}\nHeight: {imageTexture.Height}\n";
                             previewPanel.BackgroundImage = imageTexture;
                             if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
                                 previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
@@ -981,7 +1083,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        var str = asset.GetClassString();
+                        var str = asset.Dump();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;
@@ -1292,14 +1394,11 @@ namespace AssetStudio
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
                     var gameObjects = new List<GameObject>();
-                    foreach (var assetsFile in assetsfileList)
+                    foreach (var node in treeNodeDictionary.Values)
                     {
-                        foreach (var m_GameObject in assetsFile.GameObjectList.Values)
+                        if (node.Checked || exportAll)
                         {
-                            if (m_GameObject.Checked || exportAll)
-                            {
-                                gameObjects.Add(m_GameObject);
-                            }
+                            gameObjects.Add(node.gameObject);
                         }
                     }
 
@@ -1841,7 +1940,7 @@ namespace AssetStudio
             var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
             if (selectasset.gameObject != null)
             {
-                sceneTreeView.SelectedNode = selectasset.gameObject;
+                sceneTreeView.SelectedNode = treeNodeDictionary[selectasset.gameObject];
                 tabControl1.SelectedTab = tabPage1;
             }
         }

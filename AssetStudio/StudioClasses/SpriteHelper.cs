@@ -11,9 +11,8 @@ namespace AssetStudio
 {
     static class SpriteHelper
     {
-        public static Bitmap GetImageFromSprite(AssetPreloadData asset)
+        public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
-            var m_Sprite = new Sprite(asset, true);
             if (assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
@@ -21,7 +20,6 @@ namespace AssetStudio
 
                 if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
                 {
-                    SpriteInfo(asset, assetPreloadData, m_SpriteAtlas.textureRects[index]);
                     try
                     {
                         if (m_Sprite.m_PhysicsShape.Length > 0)
@@ -40,20 +38,11 @@ namespace AssetStudio
             {
                 if (assetsfileList.TryGetPD(m_Sprite.texture, out assetPreloadData))
                 {
-                    SpriteInfo(asset, assetPreloadData, m_Sprite.textureRect);
                     return CutImage(assetPreloadData, m_Sprite.textureRect);
                 }
             }
 
             return null;
-        }
-
-        private static void SpriteInfo(AssetPreloadData asset, AssetPreloadData texture2DAsset, RectangleF textureRect)
-        {
-            var info = texture2DAsset.InfoText;
-            var start = info.IndexOf("Format");
-            info = info.Substring(start, info.Length - start);
-            asset.InfoText = $"Width: {textureRect.Width}\nHeight: {textureRect.Height}\n" + info;
         }
 
         private static Bitmap CutImage(AssetPreloadData texture2DAsset, RectangleF textureRect)

@@ -5,20 +5,14 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class MonoScript
+    public sealed class MonoScript : NamedObject
     {
-        public string m_Name;
         public string m_ClassName;
         public string m_Namespace = string.Empty;
         public string m_AssemblyName;
 
-        public MonoScript(AssetPreloadData preloadData)
+        public MonoScript(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-            var version = sourceFile.version;
-
-            m_Name = reader.ReadAlignedString();
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 4)) //3.4 and up
             {
                 var m_ExecutionOrder = reader.ReadInt32();

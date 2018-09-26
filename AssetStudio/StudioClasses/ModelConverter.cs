@@ -86,7 +86,7 @@ namespace AssetStudio
             var frameList = new List<ImportedFrame>();
             while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))
             {
-                frameList.Add(ConvertFrames(m_Father));
+                frameList.Add(ConvertFrame(m_Father));
                 rootTransform = m_Father;
             }
             if (frameList.Count > 0)
@@ -192,7 +192,7 @@ namespace AssetStudio
             }
         }
 
-        private ImportedFrame ConvertFrames(Transform trans)
+        private ImportedFrame ConvertFrame(Transform trans)
         {
             var frame = new ImportedFrame();
             assetsfileList.TryGetGameObject(trans.m_GameObject, out var m_GameObject);
@@ -205,21 +205,24 @@ namespace AssetStudio
             return frame;
         }
 
-        private ImportedFrame ConvertFrame(Transform trans, string name)
+        private ImportedFrame ConvertFrame(Vector3 t, Quaternion q, Vector3 s, string name)
         {
             var frame = new ImportedFrame();
             frame.Name = name;
             frame.InitChildren(0);
-            var m_EulerRotation = QuatToEuler(new[] { trans.m_LocalRotation[0], -trans.m_LocalRotation[1], -trans.m_LocalRotation[2], trans.m_LocalRotation[3] });
+            var m_LocalPosition = new[] { t.X, t.Y, t.Z };
+            var m_LocalRotation = new[] { q.X, q.Y, q.Z, q.W };
+            var m_LocalScale = new[] { s.X, s.Y, s.Z };
+            var m_EulerRotation = QuatToEuler(new[] { m_LocalRotation[0], -m_LocalRotation[1], -m_LocalRotation[2], m_LocalRotation[3] });
             frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
-            frame.LocalScale = new[] { trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2] };
-            frame.LocalPosition = new[] { -trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2] };
+            frame.LocalScale = new[] { m_LocalScale[0], m_LocalScale[1], m_LocalScale[2] };
+            frame.LocalPosition = new[] { -m_LocalPosition[0], m_LocalPosition[1], m_LocalPosition[2] };
             return frame;
         }
 
         private void ConvertFrames(Transform trans, ImportedFrame parent)
         {
-            var frame = ConvertFrames(trans);
+            var frame = ConvertFrame(trans);
             if (parent == null)
             {
                 FrameList.Add(frame);
@@ -235,7 +238,7 @@ namespace AssetStudio
             }
         }
 
-        private void ConvertMeshRenderer(MeshRenderer meshR)
+        private void ConvertMeshRenderer(Renderer meshR)
         {
             var mesh = GetMesh(meshR);
             if (mesh == null)
@@ -558,13 +561,13 @@ namespace AssetStudio
             MeshList.Add(iMesh);
         }
 
-        private Mesh GetMesh(MeshRenderer meshR)
+        private Mesh GetMesh(Renderer meshR)
         {
             if (meshR is SkinnedMeshRenderer sMesh)
             {
                 if (assetsfileList.TryGetPD(sMesh.m_Mesh, out var MeshPD))
                 {
-                    return new Mesh(MeshPD, true);
+                    return new Mesh(MeshPD);
                 }
             }
             else
@@ -579,7 +582,7 @@ namespace AssetStudio
                             var m_MeshFilter = new MeshFilter(assetPreloadData);
                             if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
                             {
-                                return new Mesh(MeshPD, true);
+                                return new Mesh(MeshPD);
                             }
                         }
                     }
@@ -1075,8 +1078,7 @@ namespace AssetStudio
                     var v4 = (Vector4)xform.s;
                     s = (Vector3)v4;
                 }
-                var curTransform = new Transform(t, xform.q, s);
-                var frame = ConvertFrame(curTransform, transformName);
+                var frame = ConvertFrame(t, xform.q, s, transformName);
                 parentFrame.AddChild(frame);
             }
         }

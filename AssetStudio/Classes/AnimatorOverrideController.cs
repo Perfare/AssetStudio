@@ -5,19 +5,13 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class AnimatorOverrideController
+    class AnimatorOverrideController : NamedObject
     {
-        public string m_Name;
         public PPtr m_Controller;
         public PPtr[][] m_Clips;
 
-        public AnimatorOverrideController(AssetPreloadData preloadData)
+        public AnimatorOverrideController(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-            reader.Position = preloadData.Offset;
-
-            m_Name = reader.ReadAlignedString();
             m_Controller = sourceFile.ReadPPtr();
 
             int numOverrides = reader.ReadInt32();

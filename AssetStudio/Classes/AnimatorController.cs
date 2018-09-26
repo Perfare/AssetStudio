@@ -526,19 +526,12 @@ namespace AssetStudio
         }
     }
 
-    public class AnimatorController
+    public sealed class AnimatorController : NamedObject
     {
-        public string m_Name;
         public PPtr[] m_AnimationClips;
 
-        public AnimatorController(AssetPreloadData preloadData)
+        public AnimatorController(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var version = preloadData.sourceFile.version;
-            var reader = preloadData.InitReader();
-            reader.Position = preloadData.Offset;
-
-            m_Name = reader.ReadAlignedString();
             var m_ControllerSize = reader.ReadUInt32();
             var m_Controller = new ControllerConstant(reader, version);
 

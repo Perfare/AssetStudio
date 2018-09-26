@@ -6,19 +6,15 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class SpriteAtlas
+    public sealed class SpriteAtlas : NamedObject
     {
         public List<PPtr> textures = new List<PPtr>();
         public List<RectangleF> textureRects = new List<RectangleF>();
         public List<Guid> guids = new List<Guid>();
 
 
-        public SpriteAtlas(AssetPreloadData preloadData)
+        public SpriteAtlas(AssetPreloadData preloadData) : base(preloadData)
         {
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-
-            var m_Name = reader.ReadAlignedString();
             //vector m_PackedSprites
             var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)

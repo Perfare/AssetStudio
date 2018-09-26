@@ -7,11 +7,8 @@ using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
-    class Texture2D
+    public sealed class Texture2D : Texture
     {
-        public AssetPreloadData preloadData;
-
-        public string m_Name;
         public int m_Width;
         public int m_Height;
         public int m_CompleteImageSize;
@@ -37,20 +34,8 @@ namespace AssetStudio
         public uint size;
         public string path;
 
-        public Texture2D(AssetPreloadData preloadData, bool readSwitch)
+        public Texture2D(AssetPreloadData preloadData, bool readData) : base(preloadData)
         {
-            this.preloadData = preloadData;
-            var sourceFile = preloadData.sourceFile;
-            var reader = preloadData.InitReader();
-            var version = sourceFile.version;
-
-            m_Name = reader.ReadAlignedString();
-            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3))//2017.3 and up
-            {
-                var m_ForcedFallbackFormat = reader.ReadInt32();
-                var m_DownscaleFallback = reader.ReadBoolean();
-                reader.AlignStream(4);
-            }
             m_Width = reader.ReadInt32();
             m_Height = reader.ReadInt32();
             m_CompleteImageSize = reader.ReadInt32();
@@ -116,7 +101,7 @@ namespace AssetStudio
                 path = reader.ReadAlignedString();
             }
 
-            if (readSwitch)
+            if (readData)
             {
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -126,29 +111,6 @@ namespace AssetStudio
                 {
                     image_data = reader.ReadBytes(image_data_size);
                 }
-            }
-            else
-            {
-                preloadData.InfoText = $"Width: {m_Width}\nHeight: {m_Height}\nFormat: {m_TextureFormat}";
-
-                switch (m_FilterMode)
-                {
-                    case 0: preloadData.InfoText += "\nFilter Mode: Point "; break;
-                    case 1: preloadData.InfoText += "\nFilter Mode: Bilinear "; break;
-                    case 2: preloadData.InfoText += "\nFilter Mode: Trilinear "; break;
-                }
-
-                preloadData.InfoText += $"\nAnisotropic level: {m_Aniso}\nMip map bias: {m_MipBias}";
-
-                switch (m_WrapMode)
-                {
-                    case 0: preloadData.InfoText += "\nWrap mode: Repeat"; break;
-                    case 1: preloadData.InfoText += "\nWrap mode: Clamp"; break;
-                }
-
-                preloadData.Text = m_Name;
-                if (!string.IsNullOrEmpty(path))
-                    preloadData.fullSize = preloadData.Size + (int)size;
             }
         }
     }
