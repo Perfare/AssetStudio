@@ -95,7 +95,7 @@ namespace AssetStudio
             m_TextureFormat = m_Texture2D.m_TextureFormat;
             var mMipMap = m_Texture2D.m_MipMap;
             version = m_Texture2D.sourceFile.version;
-            var platform = m_Texture2D.sourceFile.platform;
+            var platform = m_Texture2D.sourceFile.m_TargetPlatform;
 
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2))//5.2 down
             {
@@ -587,9 +587,9 @@ namespace AssetStudio
             dwABitMask = -16777216;
         }
 
-        private void SwapBytesForXbox(int platform)
+        private void SwapBytesForXbox(BuildTarget platform)
         {
-            if (platform == 11) //swap bytes for Xbox confirmed, PS3 not encountered
+            if (platform == BuildTarget.XBOX360) //swap bytes for Xbox confirmed, PS3 not encountered
             {
                 for (var i = 0; i < image_data_size / 2; i++)
                 {

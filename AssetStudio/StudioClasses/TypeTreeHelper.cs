@@ -7,9 +7,9 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public static class ClassStructHelper
+    public static class TypeTreeHelper
     {
-        public static void ReadClassString(StringBuilder sb, List<ClassMember> members, EndianBinaryReader reader)
+        public static void ReadTypeString(StringBuilder sb, List<TypeTree> members, EndianBinaryReader reader)
         {
             for (int i = 0; i < members.Count; i++)
             {
@@ -17,15 +17,15 @@ namespace AssetStudio
             }
         }
 
-        private static void ReadStringValue(StringBuilder sb, List<ClassMember> members, EndianBinaryReader reader, ref int i)
+        private static void ReadStringValue(StringBuilder sb, List<TypeTree> members, EndianBinaryReader reader, ref int i)
         {
             var member = members[i];
-            var level = member.Level;
-            var varTypeStr = member.Type;
-            var varNameStr = member.Name;
+            var level = member.m_Depth;
+            var varTypeStr = member.m_Type;
+            var varNameStr = member.m_Name;
             object value = null;
             var append = true;
-            var align = (member.Flag & 0x4000) != 0;
+            var align = (member.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
             {
                 case "SInt8":
@@ -76,7 +76,7 @@ namespace AssetStudio
                     break;
                 case "vector":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         append = false;
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
@@ -96,7 +96,7 @@ namespace AssetStudio
                     }
                 case "map":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         append = false;
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
@@ -106,7 +106,7 @@ namespace AssetStudio
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].Level, 0);
+                        var first = GetMembers(map, map[0].m_Depth, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)
@@ -132,7 +132,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].Type == "Array")
+                        if (i != members.Count && members[i + 1].m_Type == "Array")
                         {
                             goto case "vector";
                         }
@@ -154,26 +154,26 @@ namespace AssetStudio
                 reader.AlignStream(4);
         }
 
-        public static ExpandoObject ReadDynamicClass(List<ClassMember> members, EndianBinaryReader reader)
+        public static ExpandoObject ReadDynamicType(List<TypeTree> members, EndianBinaryReader reader)
         {
             var obj = new ExpandoObject();
             var objdic = (IDictionary<string, object>)obj;
             for (int i = 0; i < members.Count; i++)
             {
                 var member = members[i];
-                var varNameStr = member.Name;
+                var varNameStr = member.m_Name;
                 objdic[varNameStr] = ReadValue(members, reader, ref i);
             }
             return obj;
         }
 
-        private static object ReadValue(List<ClassMember> members, EndianBinaryReader reader, ref int i)
+        private static object ReadValue(List<TypeTree> members, EndianBinaryReader reader, ref int i)
         {
             var member = members[i];
-            var level = member.Level;
-            var varTypeStr = member.Type;
+            var level = member.m_Depth;
+            var varTypeStr = member.m_Type;
             object value;
-            var align = (member.Flag & 0x4000) != 0;
+            var align = (member.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
             {
                 case "SInt8":
@@ -222,7 +222,7 @@ namespace AssetStudio
                     break;
                 case "vector":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         var size = reader.ReadInt32();
                         var list = new List<object>(size);
@@ -239,14 +239,14 @@ namespace AssetStudio
                     }
                 case "map":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         var size = reader.ReadInt32();
                         var dic = new List<KeyValuePair<object, object>>(size);
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].Level, 0);
+                        var first = GetMembers(map, map[0].m_Depth, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)
@@ -267,7 +267,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].Type == "Array")
+                        if (i != members.Count && members[i + 1].m_Type == "Array")
                         {
                             goto case "vector";
                         }
@@ -279,7 +279,7 @@ namespace AssetStudio
                         for (int j = 0; j < @class.Count; j++)
                         {
                             var classmember = @class[j];
-                            var name = classmember.Name;
+                            var name = classmember.m_Name;
                             objdic[name] = ReadValue(@class, reader, ref j);
                         }
                         value = obj;
@@ -291,14 +291,14 @@ namespace AssetStudio
             return value;
         }
 
-        private static List<ClassMember> GetMembers(List<ClassMember> members, int level, int index)
+        private static List<TypeTree> GetMembers(List<TypeTree> members, int level, int index)
         {
-            var member2 = new List<ClassMember>();
+            var member2 = new List<TypeTree>();
             member2.Add(members[0]);
             for (int i = index + 1; i < members.Count; i++)
             {
                 var member = members[i];
-                var level2 = member.Level;
+                var level2 = member.m_Depth;
                 if (level2 <= level)
                 {
                     return member2;
@@ -308,7 +308,7 @@ namespace AssetStudio
             return member2;
         }
 
-        public static byte[] WriteDynamicClass(ExpandoObject obj, List<ClassMember> members)
+        public static byte[] WriteDynamicType(ExpandoObject obj, List<TypeTree> members)
         {
             var stream = new MemoryStream();
             var write = new BinaryWriter(stream);
@@ -316,18 +316,18 @@ namespace AssetStudio
             for (int i = 0; i < members.Count; i++)
             {
                 var member = members[i];
-                var varNameStr = member.Name;
+                var varNameStr = member.m_Name;
                 WriteValue(objdic[varNameStr], members, write, ref i);
             }
             return stream.ToArray();
         }
 
-        private static void WriteValue(object value, List<ClassMember> members, BinaryWriter write, ref int i)
+        private static void WriteValue(object value, List<TypeTree> members, BinaryWriter write, ref int i)
         {
             var member = members[i];
-            var level = member.Level;
-            var varTypeStr = member.Type;
-            var align = (member.Flag & 0x4000) != 0;
+            var level = member.m_Depth;
+            var varTypeStr = member.m_Type;
+            var align = (member.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
             {
                 case "SInt8":
@@ -376,7 +376,7 @@ namespace AssetStudio
                     break;
                 case "vector":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         var list = (List<object>)value;
                         var size = list.Count;
@@ -393,7 +393,7 @@ namespace AssetStudio
                     }
                 case "map":
                     {
-                        if ((members[i + 1].Flag & 0x4000) != 0)
+                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         var dic = (List<KeyValuePair<object, object>>)value;
                         var size = dic.Count;
@@ -401,7 +401,7 @@ namespace AssetStudio
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].Level, 0);
+                        var first = GetMembers(map, map[0].m_Depth, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)
@@ -424,7 +424,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].Type == "Array")
+                        if (i != members.Count && members[i + 1].m_Type == "Array")
                         {
                             goto case "vector";
                         }
@@ -436,7 +436,7 @@ namespace AssetStudio
                         for (int j = 0; j < @class.Count; j++)
                         {
                             var classmember = @class[j];
-                            var name = classmember.Name;
+                            var name = classmember.m_Name;
                             WriteValue(objdic[name], @class, write, ref j);
                         }
                         break;

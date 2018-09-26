@@ -33,10 +33,10 @@ namespace AssetStudio
         public string Dump()
         {
             var reader = InitReader();
-            if (sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure))
+            if (sourceFile.m_Type.TryGetValue(Type1, out var typeTreeList))
             {
                 var sb = new StringBuilder();
-                ClassStructHelper.ReadClassString(sb, classStructure.members, reader);
+                TypeTreeHelper.ReadTypeString(sb, typeTreeList, reader);
                 return sb.ToString();
             }
             return null;
@@ -44,7 +44,7 @@ namespace AssetStudio
 
         public bool HasStructMember(string name)
         {
-            return sourceFile.ClassStructures.TryGetValue(Type1, out var classStructure) && classStructure.members.Any(x => x.Name == name);
+            return sourceFile.m_Type.TryGetValue(Type1, out var typeTreeList) && typeTreeList.Any(x => x.m_Name == name);
         }
     }
 }

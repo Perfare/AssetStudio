@@ -21,7 +21,7 @@ namespace AssetStudio
             reader = preloadData.InitReader();
             version = sourceFile.version;
             buildType = sourceFile.buildType;
-            platform = (BuildTarget)sourceFile.platform;
+            platform = sourceFile.m_TargetPlatform;
 
             if (platform == BuildTarget.NoTarget)
             {

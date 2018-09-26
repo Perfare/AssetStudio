@@ -39,7 +39,7 @@ namespace AssetStudio
                 result.m_FileID = index;
             }
 
-            result.m_PathID = sourceFile.fileGen < 14 ? reader.ReadInt32() : reader.ReadInt64();
+            result.m_PathID = sourceFile.header.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64();
 
             return result;
         }

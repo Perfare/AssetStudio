@@ -595,7 +595,7 @@ namespace AssetStudio
                                         }
                                     }
 
-                                    if (preloadData.sourceFile.platform == 11 && componentByteSize > 1) //swap bytes for Xbox
+                                    if (preloadData.sourceFile.m_TargetPlatform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
                                     {
                                         for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
                                         {
@@ -704,7 +704,7 @@ namespace AssetStudio
                                             }
                                         }
 
-                                        if (preloadData.sourceFile.platform == 11 && componentByteSize > 1) //swap bytes for Xbox
+                                        if (preloadData.sourceFile.m_TargetPlatform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
                                         {
                                             for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
                                             {

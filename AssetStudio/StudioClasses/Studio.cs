@@ -20,7 +20,7 @@ namespace AssetStudio
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> assetsNameHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
-        public static Dictionary<string, SortedDictionary<int, ClassStruct>> AllClassStructures = new Dictionary<string, SortedDictionary<int, ClassStruct>>();
+        public static Dictionary<string, Dictionary<int, TypeItem>> AllTypeMap = new Dictionary<string, Dictionary<int, TypeItem>>();
         public static string mainPath;
         public static string productName = "";
         public static bool moduleLoaded;
@@ -432,16 +432,16 @@ namespace AssetStudio
                 //group class structures by versionv
                 foreach (var assetsFile in assetsfileList)
                 {
-                    if (AllClassStructures.TryGetValue(assetsFile.m_Version, out var curVer))
+                    if (AllTypeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
                     {
-                        foreach (var uClass in assetsFile.ClassStructures)
+                        foreach (var type in assetsFile.m_Type)
                         {
-                            curVer[uClass.Key] = uClass.Value;
+                            curVer[type.Key] = new TypeItem(type.Key, type.Value);
                         }
                     }
                     else
                     {
-                        AllClassStructures.Add(assetsFile.m_Version, assetsFile.ClassStructures);
+                        AllTypeMap.Add(assetsFile.unityVersion, assetsFile.m_Type.ToDictionary(x => x.Key, y => new TypeItem(y.Key, y.Value)));
                     }
                 }
             }

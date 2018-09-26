@@ -178,11 +178,11 @@ namespace AssetStudio
             {
                 if (!string.IsNullOrEmpty(productName))
                 {
-                    Text = $"AssetStudio - {productName} - {assetsfileList[0].m_Version} - {assetsfileList[0].platformStr}";
+                    Text = $"AssetStudio - {productName} - {assetsfileList[0].unityVersion} - {assetsfileList[0].platformStr}";
                 }
                 else if (assetsfileList.Count > 0)
                 {
-                    Text = $"AssetStudio - no productName - {assetsfileList[0].m_Version} - {assetsfileList[0].platformStr}";
+                    Text = $"AssetStudio - no productName - {assetsfileList[0].unityVersion} - {assetsfileList[0].platformStr}";
                 }
                 if (!dontLoadAssetsMenuItem.Checked)
                 {
@@ -203,7 +203,7 @@ namespace AssetStudio
                 if (buildClassStructuresMenuItem.Checked)
                 {
                     classesListView.BeginUpdate();
-                    foreach (var version in AllClassStructures)
+                    foreach (var version in AllTypeMap)
                     {
                         ListViewGroup versionGroup = new ListViewGroup(version.Key);
                         classesListView.Groups.Add(versionGroup);
@@ -311,16 +311,16 @@ namespace AssetStudio
 
         private void exportClassStructuresMenuItem_Click(object sender, EventArgs e)
         {
-            if (AllClassStructures.Count > 0)
+            if (AllTypeMap.Count > 0)
             {
                 var saveFolderDialog1 = new OpenFolderDialog();
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     progressBar1.Value = 0;
-                    progressBar1.Maximum = AllClassStructures.Count;
+                    progressBar1.Maximum = AllTypeMap.Count;
 
                     var savePath = saveFolderDialog1.Folder;
-                    foreach (var version in AllClassStructures)
+                    foreach (var version in AllTypeMap)
                     {
                         if (version.Value.Count > 0)
                         {
@@ -646,7 +646,7 @@ namespace AssetStudio
         {
             if (e.IsSelected)
             {
-                classTextBox.Text = ((ClassStruct)classesListView.SelectedItems[0]).ToString();
+                classTextBox.Text = ((TypeItem)classesListView.SelectedItems[0]).ToString();
             }
         }
 
@@ -836,7 +836,7 @@ namespace AssetStudio
                 case ClassIDReference.MonoBehaviour:
                     {
                         var m_MonoBehaviour = new MonoBehaviour(asset);
-                        if (asset.Type1 != asset.Type2 && asset.sourceFile.ClassStructures.ContainsKey(asset.Type1))
+                        if (asset.Type1 != asset.Type2 && asset.sourceFile.m_Type.ContainsKey(asset.Type1))
                         {
                             textPreviewBox.Text = asset.Dump();
                         }

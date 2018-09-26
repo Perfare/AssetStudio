@@ -174,8 +174,8 @@
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ClassIDReference.cs" />
-    <Compile Include="StudioClasses\ClassMember.cs" />
-    <Compile Include="StudioClasses\ClassStructHelper.cs" />
+    <Compile Include="StudioClasses\TypeTree.cs" />
+    <Compile Include="StudioClasses\TypeTreeHelper.cs" />
     <Compile Include="StudioClasses\ResourcesHelper.cs" />
     <Compile Include="Classes\AssetBundle.cs" />
     <Compile Include="Classes\MovieTexture.cs" />
@@ -186,7 +186,7 @@
     <Compile Include="Classes\AudioClip.cs" />
     <Compile Include="Classes\BuildSettings.cs" />
     <Compile Include="StudioClasses\BundleFile.cs" />
-    <Compile Include="StudioClasses\ClassStruct.cs" />
+    <Compile Include="StudioClasses\TypeItem.cs" />
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\SpriteHelper.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />

@@ -7,8 +7,8 @@ namespace AssetStudio
 {
     public enum EndianType
     {
-        BigEndian,
-        LittleEndian
+        LittleEndian,
+        BigEndian
     }
 
     public class EndianBinaryReader : BinaryReader

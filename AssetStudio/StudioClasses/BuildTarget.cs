@@ -7,6 +7,7 @@ namespace AssetStudio
 {
     public enum BuildTarget
     {
+        UnknownPlatform = 3716,
         DashboardWidget = 1,
         StandaloneOSX = 2,
         StandaloneOSXPPC = 3,

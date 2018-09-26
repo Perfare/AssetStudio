@@ -183,9 +183,6 @@
     <Compile Include="StudioClasses\BinaryReaderExtensions.cs" />
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BundleFile.cs" />
-    <Compile Include="StudioClasses\ClassMember.cs" />
-    <Compile Include="StudioClasses\ClassStruct.cs" />
-    <Compile Include="StudioClasses\ClassStructHelper.cs" />
     <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\GameObjectTreeNode.cs" />
@@ -231,6 +228,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StudioClasses\AssetsFile.cs" />
     <Compile Include="StudioClasses\Texture2DConverter.cs" />
+    <Compile Include="StudioClasses\TypeItem.cs" />
+    <Compile Include="StudioClasses\TypeTree.cs" />
+    <Compile Include="StudioClasses\TypeTreeHelper.cs" />
     <Compile Include="StudioClasses\WebFile.cs" />
     <Compile Include="TreeViewExtensions.cs" />
     <EmbeddedResource Include="AssetStudioForm.resx">

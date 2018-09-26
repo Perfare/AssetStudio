@@ -44,19 +44,19 @@ namespace AssetStudio
                     assetsfileListHash.Add(assetsFile.upperFileName);
 
                     #region for 2.6.x find mainData and get string version
-                    if (assetsFile.fileGen == 6 && fileName != "mainData")
+                    if (assetsFile.header.m_Version == 6 && fileName != "mainData")
                     {
                         var mainDataFile = assetsfileList.Find(aFile => aFile.fileName == "mainData");
                         if (mainDataFile != null)
                         {
-                            assetsFile.m_Version = mainDataFile.m_Version;
+                            assetsFile.unityVersion = mainDataFile.unityVersion;
                             assetsFile.version = mainDataFile.version;
                             assetsFile.buildType = mainDataFile.buildType;
                         }
                         else if (File.Exists(Path.GetDirectoryName(fullName) + "\\mainData"))
                         {
                             mainDataFile = new AssetsFile(Path.GetDirectoryName(fullName) + "\\mainData", new EndianBinaryReader(File.OpenRead(Path.GetDirectoryName(fullName) + "\\mainData")));
-                            assetsFile.m_Version = mainDataFile.m_Version;
+                            assetsFile.unityVersion = mainDataFile.unityVersion;
                             assetsFile.version = mainDataFile.version;
                             assetsFile.buildType = mainDataFile.buildType;
                         }
@@ -112,10 +112,10 @@ namespace AssetStudio
                     {
                         assetsFile.parentPath = parentPath ?? fullName;
 
-                        if (assetsFile.fileGen == 6) //2.6.x and earlier don't have a string version before the preload table
+                        if (assetsFile.header.m_Version == 6) //2.6.x and earlier don't have a string version before the preload table
                         {
                             //make use of the bundle file version
-                            assetsFile.m_Version = bundleFile.versionEngine;
+                            assetsFile.unityVersion = bundleFile.versionEngine;
                             assetsFile.version = Regex.Matches(bundleFile.versionEngine, @"\d").Cast<Match>().Select(m => int.Parse(m.Value)).ToArray();
                             assetsFile.buildType = Regex.Replace(bundleFile.versionEngine, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                         }
