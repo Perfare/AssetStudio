@@ -1819,6 +1819,8 @@ namespace AssetStudio
 
             moduleLoaded = false;
             LoadedModuleDic.Clear();
+            treeNodeCollection.Clear();
+            treeNodeDictionary.Clear();
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)
