@@ -54,30 +54,45 @@
   <PropertyGroup>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="dnlib">
-      <HintPath>Library\dnlib.dll</HintPath>
+      <HintPath>Libraries\dnlib.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Library\OpenTK.dll</HintPath>
+    <Reference Include="OpenTK">
+      <HintPath>Libraries\OpenTK.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Library\OpenTK.GLControl.dll</HintPath>
+    <Reference Include="OpenTK.GLControl">
+      <HintPath>Libraries\OpenTK.GLControl.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Mathematics">
-      <HintPath>Library\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>Libraries\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Half, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Library\System.Half.dll</HintPath>
+    <Reference Include="System.Half">
+      <HintPath>Libraries\System.Half.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Web.Extensions" />
@@ -284,6 +299,9 @@
     <None Include="Resources\preview.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\as.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\AssetStudioFBX\AssetStudioFBX.vcxproj">
       <Project>{4f8ef5ef-732b-49cf-9eb3-b23e19ae6267}</Project>
       <Name>AssetStudioFBX</Name>
@@ -293,13 +311,10 @@
       <Name>AssetStudioUtility</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\as.ico" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y "$(ProjectDir)Library" "$(TargetDir)"
-xcopy /y "$(ProjectDir)Library\$(PlatformName)" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y "$(ProjectDir)Libraries" "$(TargetDir)"
+xcopy /y "$(ProjectDir)Libraries\$(PlatformName)" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

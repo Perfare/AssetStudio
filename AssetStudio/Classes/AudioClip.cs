@@ -8,7 +8,6 @@ namespace AssetStudio
 {
     public sealed class AudioClip : NamedObject
     {
-        public string m_Name;
         public int m_Format;
         public AudioType m_Type;
         public bool m_3D;
