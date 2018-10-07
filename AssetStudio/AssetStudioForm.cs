@@ -1867,7 +1867,7 @@ namespace AssetStudio
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
-            var args = $"/select, {selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}";
+            var args = $"/select, \"{selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}\"";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
         }

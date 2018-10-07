@@ -34,7 +34,6 @@ namespace AssetStudio
                     break;
                 }
             }
-            FixRotation.Checked = (bool)Properties.Settings.Default["FixRotation"];
             EulerFilter.Checked = (bool)Properties.Settings.Default["EulerFilter"];
             filterPrecision.Value = (decimal)Properties.Settings.Default["filterPrecision"];
             allFrames.Checked = (bool)Properties.Settings.Default["allFrames"];
@@ -69,7 +68,6 @@ namespace AssetStudio
                     break;
                 }
             }
-            Properties.Settings.Default["FixRotation"] = FixRotation.Checked;
             Properties.Settings.Default["EulerFilter"] = EulerFilter.Checked;
             Properties.Settings.Default["filterPrecision"] = filterPrecision.Value;
             Properties.Settings.Default["allFrames"] = allFrames.Checked;

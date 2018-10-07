@@ -50,7 +50,6 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.fbxVersion = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.FixRotation = new System.Windows.Forms.CheckBox();
             this.flatInbetween = new System.Windows.Forms.CheckBox();
             this.boneSize = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
@@ -303,7 +302,6 @@
             this.groupBox2.AutoSize = true;
             this.groupBox2.Controls.Add(this.fbxVersion);
             this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.FixRotation);
             this.groupBox2.Controls.Add(this.flatInbetween);
             this.groupBox2.Controls.Add(this.boneSize);
             this.groupBox2.Controls.Add(this.label2);
@@ -315,7 +313,7 @@
             this.groupBox2.Controls.Add(this.EulerFilter);
             this.groupBox2.Location = new System.Drawing.Point(265, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 240);
+            this.groupBox2.Size = new System.Drawing.Size(214, 235);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Fbx Binary";
@@ -329,8 +327,9 @@
             "7.1",
             "7.2",
             "7.3",
-            "7.4"});
-            this.fbxVersion.Location = new System.Drawing.Point(77, 200);
+            "7.4",
+            "7.5"});
+            this.fbxVersion.Location = new System.Drawing.Point(77, 178);
             this.fbxVersion.Name = "fbxVersion";
             this.fbxVersion.Size = new System.Drawing.Size(47, 20);
             this.fbxVersion.TabIndex = 16;
@@ -338,28 +337,16 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 203);
+            this.label3.Location = new System.Drawing.Point(6, 181);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 12);
             this.label3.TabIndex = 15;
             this.label3.Text = "FBXVersion";
             // 
-            // FixRotation
-            // 
-            this.FixRotation.AutoSize = true;
-            this.FixRotation.Checked = true;
-            this.FixRotation.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FixRotation.Location = new System.Drawing.Point(6, 20);
-            this.FixRotation.Name = "FixRotation";
-            this.FixRotation.Size = new System.Drawing.Size(90, 16);
-            this.FixRotation.TabIndex = 14;
-            this.FixRotation.Text = "FixRotation";
-            this.FixRotation.UseVisualStyleBackColor = true;
-            // 
             // flatInbetween
             // 
             this.flatInbetween.AutoSize = true;
-            this.flatInbetween.Location = new System.Drawing.Point(6, 177);
+            this.flatInbetween.Location = new System.Drawing.Point(6, 155);
             this.flatInbetween.Name = "flatInbetween";
             this.flatInbetween.Size = new System.Drawing.Size(102, 16);
             this.flatInbetween.TabIndex = 12;
@@ -368,7 +355,7 @@
             // 
             // boneSize
             // 
-            this.boneSize.Location = new System.Drawing.Point(65, 150);
+            this.boneSize.Location = new System.Drawing.Point(65, 128);
             this.boneSize.Name = "boneSize";
             this.boneSize.Size = new System.Drawing.Size(46, 21);
             this.boneSize.TabIndex = 11;
@@ -381,7 +368,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 152);
+            this.label2.Location = new System.Drawing.Point(6, 130);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 12);
             this.label2.TabIndex = 10;
@@ -392,7 +379,7 @@
             this.skins.AutoSize = true;
             this.skins.Checked = true;
             this.skins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.skins.Location = new System.Drawing.Point(6, 127);
+            this.skins.Location = new System.Drawing.Point(6, 105);
             this.skins.Name = "skins";
             this.skins.Size = new System.Drawing.Size(54, 16);
             this.skins.TabIndex = 8;
@@ -402,7 +389,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(26, 61);
+            this.label1.Location = new System.Drawing.Point(26, 39);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(95, 12);
             this.label1.TabIndex = 7;
@@ -416,7 +403,7 @@
             0,
             0,
             131072});
-            this.filterPrecision.Location = new System.Drawing.Point(127, 59);
+            this.filterPrecision.Location = new System.Drawing.Point(127, 37);
             this.filterPrecision.Name = "filterPrecision";
             this.filterPrecision.Size = new System.Drawing.Size(51, 21);
             this.filterPrecision.TabIndex = 6;
@@ -431,7 +418,7 @@
             this.allBones.AutoSize = true;
             this.allBones.Checked = true;
             this.allBones.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.allBones.Location = new System.Drawing.Point(6, 105);
+            this.allBones.Location = new System.Drawing.Point(6, 83);
             this.allBones.Name = "allBones";
             this.allBones.Size = new System.Drawing.Size(72, 16);
             this.allBones.TabIndex = 5;
@@ -441,7 +428,7 @@
             // allFrames
             // 
             this.allFrames.AutoSize = true;
-            this.allFrames.Location = new System.Drawing.Point(6, 83);
+            this.allFrames.Location = new System.Drawing.Point(6, 61);
             this.allFrames.Name = "allFrames";
             this.allFrames.Size = new System.Drawing.Size(78, 16);
             this.allFrames.TabIndex = 4;
@@ -451,7 +438,9 @@
             // EulerFilter
             // 
             this.EulerFilter.AutoSize = true;
-            this.EulerFilter.Location = new System.Drawing.Point(6, 42);
+            this.EulerFilter.Checked = true;
+            this.EulerFilter.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.EulerFilter.Location = new System.Drawing.Point(6, 20);
             this.EulerFilter.Name = "EulerFilter";
             this.EulerFilter.Size = new System.Drawing.Size(90, 16);
             this.EulerFilter.TabIndex = 3;
@@ -527,7 +516,6 @@
         private System.Windows.Forms.CheckBox allBones;
         private System.Windows.Forms.CheckBox allFrames;
         private System.Windows.Forms.CheckBox EulerFilter;
-        private System.Windows.Forms.CheckBox FixRotation;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox fbxVersion;
     }

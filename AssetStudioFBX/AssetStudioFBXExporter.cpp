@@ -75,11 +75,21 @@ namespace AssetStudio
 
 		cDest = StringToCharArray(path);
 		pExporter = FbxExporter::Create(pScene, "");
-		if (!pExporter->Initialize(cDest, 0, pSdkManager->GetIOSettings()))
+
+		int pFileFormat = 0;
+		if (versionIndex == 0)
+		{
+			pFileFormat = 3;
+		}
+		else
+		{
+			pExporter->SetFileExportVersion(FBXVersion[versionIndex]);
+		}
+
+		if (!pExporter->Initialize(cDest, pFileFormat, pSdkManager->GetIOSettings()))
 		{
 			throw gcnew Exception(gcnew String("Failed to initialize FbxExporter: ") + gcnew String(pExporter->GetStatus().GetErrorString()));
 		}
-		pExporter->SetFileExportVersion(FBXVersion[versionIndex], FbxSceneRenamer::ERenamingMode::eNone);
 
 		frameNames = nullptr;
 		if (!allFrames)
@@ -113,7 +123,7 @@ namespace AssetStudio
 					meshPath = gcnew String(rootNode->GetName()) + "/" + meshPath;
 				}
 				ImportedMesh^ mesh = ImportedHelpers::FindMesh(meshPath, imported->MeshList);
-  				ExportMesh(meshNode, mesh, normals);
+				ExportMesh(meshNode, mesh, normals);
 			}
 		}
 		else
@@ -818,7 +828,6 @@ namespace AssetStudio
 						lCurve[1] = lCurveRY;
 						lCurve[2] = lCurveRZ;
 						EulerFilter->Reset();
-						EulerFilter->SetTestForPath(true);
 						EulerFilter->SetQualityTolerance(filterPrecision);
 						EulerFilter->Apply(lCurve, 3);
 					}

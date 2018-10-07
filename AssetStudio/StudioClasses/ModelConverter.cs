@@ -840,21 +840,6 @@ namespace AssetStudio
                         time2 = animationClip.m_MuscleClip.m_StopTime;
                     }
                 }
-
-                if ((bool)Properties.Settings.Default["FixRotation"])
-                {
-                    foreach (var track in iAnim.TrackList)
-                    {
-                        var prevKey = new Vector3();
-                        foreach (var rotation in track.Rotations)
-                        {
-                            var value = rotation.value;
-                            ReplaceOutOfBound(ref prevKey, ref value);
-                            prevKey = value;
-                            rotation.value = value;
-                        }
-                    }
-                }
             }
         }
 
@@ -997,40 +982,6 @@ namespace AssetStudio
                 if (assetsfileList.TryGetTransform(pptr, out var child))
                     CreateBonePathHash(child);
             }
-        }
-
-        private void ReplaceOutOfBound(ref Vector3 prevKey, ref Vector3 curKey)
-        {
-            curKey.X = ReplaceOutOfBound(prevKey.X, curKey.X);
-            curKey.Y = ReplaceOutOfBound(prevKey.Y, curKey.Y);
-            curKey.Z = ReplaceOutOfBound(prevKey.Z, curKey.Z);
-        }
-
-        private float ReplaceOutOfBound(float prevValue, float curValue)
-        {
-            double prev = prevValue;
-            double cur = curValue;
-
-            double prevAbs = Math.Abs(prev);
-            double prevSign = Math.Sign(prev);
-
-            double prevShift = 180.0 + prevAbs;
-            double count = Math.Floor(prevShift / 360.0) * prevSign;
-            double prevRemain = 180.0 + (prev - count * 360.0);
-
-            double curShift = 180.0 + cur;
-
-            if (prevRemain - curShift > 180)
-            {
-                count++;
-            }
-            else if (prevRemain - curShift < -180)
-            {
-                count--;
-            }
-
-            double newValue = count * 360.0 + cur;
-            return (float)newValue;
         }
 
         private void DeoptimizeTransformHierarchy()

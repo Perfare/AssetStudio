@@ -217,7 +217,7 @@ namespace AssetStudio.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool EulerFilter {
             get {
                 return ((bool)(this["EulerFilter"]));
@@ -308,18 +308,6 @@ namespace AssetStudio.Properties {
             }
             set {
                 this["fbxVersion"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool FixRotation {
-            get {
-                return ((bool)(this["FixRotation"]));
-            }
-            set {
-                this["FixRotation"] = value;
             }
         }
     }
