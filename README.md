@@ -32,18 +32,18 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 ### How to use
 
-Use **File-Load file**, **File-Load folder** to load assets or assetbundles from multiple files or folder  
-Use **File-Extract file**, **File-Extract folder** to export assetbundles to assets from multiple files or folder  
-Export assets: use **Export** menu  
-Export model:  
-* Export model from "Scene Hierarchy" using the **Model** menu  
-* Export Animator from "Asset List" using the **Export** menu  
-* With AnimationClip:
-  * Select model from "Scene Hierarchy" then select the AnimationClip from "Asset List", using **Model-Export selected objects with AnimationClip** to export
-  * Export Animator will export bound AnimationClip or use **Ctrl** to select Animator and AnimationClip from "Asset List", using **Export-Export Animator with selected AnimationClip** to export
+* Use **File-Load file**, **File-Load folder** to load assets or assetbundles from multiple files or folder  
+* Use **File-Extract file**, **File-Extract folder** to export assetbundles to assets from multiple files or folder  
+* Export assets: use **Export** menu  
+* Export model:  
+  * Export model from "Scene Hierarchy" using the **Model** menu  
+  * Export Animator from "Asset List" using the **Export** menu  
+  * With AnimationClip:
+    * Select model from "Scene Hierarchy" then select the AnimationClip from "Asset List", using **Model-Export selected objects with AnimationClip** to export
+    * Export Animator will export bound AnimationClip or use **Ctrl** to select Animator and AnimationClip from "Asset List", using **Export-Export Animator with selected AnimationClip** to export
   
 ## Build
 
 * The project uses some C# 7 syntax, need Visual Studio 2017
-* **AssetStudioFBX** uses FBX SDK 2015.1, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
+* **AssetStudioFBX** uses FBX SDK 2019.0 VS2015, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
 * If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudio/Library/x86/` and `AssetStudio/Library/x64` directory to the new version
