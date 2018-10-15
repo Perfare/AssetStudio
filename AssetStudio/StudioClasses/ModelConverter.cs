@@ -22,7 +22,6 @@ namespace AssetStudio
         private Dictionary<uint, string> morphChannelInfo = new Dictionary<uint, string>();
         private HashSet<AssetPreloadData> animationClipHashSet = new HashSet<AssetPreloadData>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
-        private bool deoptimize;
 
         public ModelConverter(GameObject m_GameObject)
         {
@@ -76,36 +75,46 @@ namespace AssetStudio
                 avatar = new Avatar(m_Avatar);
 
             assetsfileList.TryGetGameObject(m_Animator.m_GameObject, out var m_GameObject);
-            InitWithGameObject(m_GameObject);
+            InitWithGameObject(m_GameObject, m_Animator.m_HasTransformHierarchy);
         }
 
-        private void InitWithGameObject(GameObject m_GameObject)
+        private void InitWithGameObject(GameObject m_GameObject, bool hasTransformHierarchy = true)
         {
             assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform);
             var rootTransform = m_Transform;
-            var frameList = new List<ImportedFrame>();
-            while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))
+            if (!hasTransformHierarchy)
             {
-                frameList.Add(ConvertFrame(m_Father));
-                rootTransform = m_Father;
-            }
-            if (frameList.Count > 0)
-            {
-                FrameList.Add(frameList[frameList.Count - 1]);
-                for (var i = frameList.Count - 2; i >= 0; i--)
-                {
-                    var frame = frameList[i];
-                    var parent = frameList[i + 1];
-                    parent.AddChild(frame);
-                }
-                ConvertFrames(m_Transform, frameList[0]);
+                var rootFrame = ConvertFrame(rootTransform);
+                FrameList.Add(rootFrame);
+                DeoptimizeTransformHierarchy();
             }
             else
             {
-                ConvertFrames(m_Transform, null);
+                var frameList = new List<ImportedFrame>();
+                while (assetsfileList.TryGetTransform(rootTransform.m_Father, out var m_Father))
+                {
+                    frameList.Add(ConvertFrame(m_Father));
+                    rootTransform = m_Father;
+                }
+                if (frameList.Count > 0)
+                {
+                    FrameList.Add(frameList[frameList.Count - 1]);
+                    for (var i = frameList.Count - 2; i >= 0; i--)
+                    {
+                        var frame = frameList[i];
+                        var parent = frameList[i + 1];
+                        parent.AddChild(frame);
+                    }
+                    ConvertFrames(m_Transform, frameList[0]);
+                }
+                else
+                {
+                    ConvertFrames(m_Transform, null);
+                }
+
+                CreateBonePathHash(rootTransform);
             }
 
-            CreateBonePathHash(rootTransform);
             ConvertMeshRenderer(m_Transform);
         }
 
@@ -423,14 +432,9 @@ namespace AssetStudio
                     iMesh.BoneList.Add(bone);
                 }
 
+                //hierarchy has been optimized
                 if (sMesh.m_Bones.Length == 0 && mesh.m_BindPose?.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
                 {
-                    //TODO move to Init method use Animator.m_HasTransformHierarchy to judge
-                    if (!deoptimize)
-                    {
-                        DeoptimizeTransformHierarchy();
-                        deoptimize = true;
-                    }
                     //TODO Repeat code with above
                     for (int i = 0; i < mesh.m_BindPose.Length; i++)
                     {
@@ -596,12 +600,15 @@ namespace AssetStudio
         private string GetTransformPath(Transform meshTransform)
         {
             assetsfileList.TryGetGameObject(meshTransform.m_GameObject, out var m_GameObject);
-            if (assetsfileList.TryGetTransform(meshTransform.m_Father, out var Father))
+            var curFrame = ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
+            var path = curFrame.Name;
+            while (curFrame.Parent != null)
             {
-                return GetTransformPath(Father) + "/" + m_GameObject.m_Name;
+                curFrame = curFrame.Parent;
+                path = curFrame.Name + "/" + path;
             }
 
-            return m_GameObject.m_Name;
+            return path;
         }
 
         private ImportedMaterial ConvertMaterial(Material mat)
@@ -987,7 +994,7 @@ namespace AssetStudio
         private void DeoptimizeTransformHierarchy()
         {
             if (avatar == null)
-                return;
+                throw new Exception("Transform hierarchy has been optimized, but can't find Avatar to deoptimize.");
             // 1. Figure out the skeletonPaths from the unstripped avatar
             var skeletonPaths = new List<string>();
             foreach (var id in avatar.m_Avatar.m_AvatarSkeleton.m_ID)
