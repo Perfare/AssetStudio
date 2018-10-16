@@ -6,21 +6,21 @@ using System.Windows.Forms;
 
 namespace AssetStudio
 {
-    public class TypeItem : ListViewItem
+    public class TypeTreeItem : ListViewItem
     {
-        public List<TypeTreeNode> typeTreeList;
+        public List<TypeTreeNode> m_Nodes;
 
-        public TypeItem(int classID, List<TypeTreeNode> typeTreeList)
+        public TypeTreeItem(int typeID, List<TypeTreeNode> m_Nodes)
         {
-            this.typeTreeList = typeTreeList;
-            Text = typeTreeList[0].m_Type + " " + typeTreeList[0].m_Name;
-            SubItems.Add(classID.ToString());
+            this.m_Nodes = m_Nodes;
+            Text = m_Nodes[0].m_Type + " " + m_Nodes[0].m_Name;
+            SubItems.Add(typeID.ToString());
         }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            foreach (var i in typeTreeList)
+            foreach (var i in m_Nodes)
             {
                 sb.AppendFormat("{0}{1} {2} {3} {4}\r\n", new string('\t', i.m_Level), i.m_Type, i.m_Name, i.m_ByteSize, (i.m_MetaFlag & 0x4000) != 0);
             }

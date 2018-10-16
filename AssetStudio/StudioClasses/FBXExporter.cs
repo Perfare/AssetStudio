@@ -233,7 +233,7 @@ namespace AssetStudio
                                 {
                                     foreach (var asset in exportableAssets)
                                     {
-                                        if (asset.Type == ClassIDReference.Texture2D && asset.Text == texName)
+                                        if (asset.Type == ClassIDType.Texture2D && asset.Text == texName)
                                         {
                                             TexturePD = asset;
                                             break;
@@ -244,7 +244,7 @@ namespace AssetStudio
                         }
                         #endregion
 
-                        if (TexturePD != null && TexturePD.Type == ClassIDReference.Texture2D)
+                        if (TexturePD != null && TexturePD.Type == ClassIDType.Texture2D)
                         {
                             Textures.Add(TexturePD);
 

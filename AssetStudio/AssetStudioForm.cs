@@ -352,8 +352,8 @@ namespace AssetStudio
             {
                 switch (lastLoadedAsset.Type)
                 {
-                    case ClassIDReference.Texture2D:
-                    case ClassIDReference.Sprite:
+                    case ClassIDType.Texture2D:
+                    case ClassIDType.Sprite:
                         {
                             if (enablePreview.Checked && imageTexture != null)
                             {
@@ -366,15 +366,15 @@ namespace AssetStudio
                             }
                         }
                         break;
-                    case ClassIDReference.Shader:
-                    case ClassIDReference.TextAsset:
-                    case ClassIDReference.MonoBehaviour:
+                    case ClassIDType.Shader:
+                    case ClassIDType.TextAsset:
+                    case ClassIDType.MonoBehaviour:
                         textPreviewBox.Visible = !textPreviewBox.Visible;
                         break;
-                    case ClassIDReference.Font:
+                    case ClassIDType.Font:
                         fontPreviewBox.Visible = !fontPreviewBox.Visible;
                         break;
-                    case ClassIDReference.AudioClip:
+                    case ClassIDType.AudioClip:
                         {
                             FMODpanel.Visible = !FMODpanel.Visible;
 
@@ -646,7 +646,7 @@ namespace AssetStudio
         {
             if (e.IsSelected)
             {
-                classTextBox.Text = ((TypeItem)classesListView.SelectedItems[0]).ToString();
+                classTextBox.Text = ((TypeTreeItem)classesListView.SelectedItems[0]).ToString();
             }
         }
 
@@ -654,7 +654,7 @@ namespace AssetStudio
         {
             switch (asset.Type)
             {
-                case ClassIDReference.Texture2D:
+                case ClassIDType.Texture2D:
                     {
                         imageTexture?.Dispose();
                         var m_Texture2D = new Texture2D(asset, true);
@@ -690,7 +690,7 @@ namespace AssetStudio
                         }
                         break;
                     }
-                case ClassIDReference.AudioClip:
+                case ClassIDType.AudioClip:
                     {
                         var m_AudioClip = new AudioClip(asset, true);
 
@@ -812,7 +812,7 @@ namespace AssetStudio
                         FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
                         break;
                     }
-                case ClassIDReference.Shader:
+                case ClassIDType.Shader:
                     {
                         Shader m_TextAsset = new Shader(asset);
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
@@ -822,7 +822,7 @@ namespace AssetStudio
                         textPreviewBox.Visible = true;
                         break;
                     }
-                case ClassIDReference.TextAsset:
+                case ClassIDType.TextAsset:
                     {
                         TextAsset m_TextAsset = new TextAsset(asset);
 
@@ -833,10 +833,10 @@ namespace AssetStudio
 
                         break;
                     }
-                case ClassIDReference.MonoBehaviour:
+                case ClassIDType.MonoBehaviour:
                     {
                         var m_MonoBehaviour = new MonoBehaviour(asset);
-                        if (asset.Type1 != asset.Type2 && asset.sourceFile.m_Type.ContainsKey(asset.Type1))
+                        if (asset.serializedType.m_Nodes != null)
                         {
                             textPreviewBox.Text = asset.Dump();
                         }
@@ -848,7 +848,7 @@ namespace AssetStudio
 
                         break;
                     }
-                case ClassIDReference.Font:
+                case ClassIDType.Font:
                     {
                         Font m_Font = new Font(asset);
                         if (m_Font.m_FontData != null)
@@ -900,7 +900,7 @@ namespace AssetStudio
                         StatusStripUpdate("Unsupported font for preview. Try to export.");
                         break;
                     }
-                case ClassIDReference.Mesh:
+                case ClassIDType.Mesh:
                     {
                         var m_Mesh = new Mesh(asset);
                         if (m_Mesh.m_VertexCount > 0)
@@ -1046,13 +1046,13 @@ namespace AssetStudio
                                         + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
                     }
                     break;
-                case ClassIDReference.VideoClip:
-                case ClassIDReference.MovieTexture:
+                case ClassIDType.VideoClip:
+                case ClassIDType.MovieTexture:
                     {
                         StatusStripUpdate("Only supported export.");
                         break;
                     }
-                case ClassIDReference.Sprite:
+                case ClassIDType.Sprite:
                     {
                         imageTexture?.Dispose();
                         imageTexture = SpriteHelper.GetImageFromSprite(new Sprite(asset));
@@ -1071,12 +1071,12 @@ namespace AssetStudio
                         }
                         break;
                     }
-                case ClassIDReference.Animator:
+                case ClassIDType.Animator:
                     {
                         StatusStripUpdate("Can be exported to FBX file.");
                         break;
                     }
-                case ClassIDReference.AnimationClip:
+                case ClassIDType.AnimationClip:
                     {
                         StatusStripUpdate("Can be exported with Animator or objects");
                         break;
@@ -1840,11 +1840,11 @@ namespace AssetStudio
                 if (assetListView.SelectedIndices.Count >= 1)
                 {
                     var selectedAssets = GetSelectedAssets();
-                    if (selectedAssets.Any(x => x.Type == ClassIDReference.Animator) && selectedAssets.Any(x => x.Type == ClassIDReference.AnimationClip))
+                    if (selectedAssets.Any(x => x.Type == ClassIDType.Animator) && selectedAssets.Any(x => x.Type == ClassIDType.AnimationClip))
                     {
                         exportAnimatorwithselectedAnimationClipMenuItem.Visible = true;
                     }
-                    else if (selectedAssets.All(x => x.Type == ClassIDReference.AnimationClip))
+                    else if (selectedAssets.All(x => x.Type == ClassIDType.AnimationClip))
                     {
                         exportobjectswithselectedAnimationClipMenuItem.Visible = true;
                     }
@@ -1879,11 +1879,11 @@ namespace AssetStudio
             var selectedAssets = GetSelectedAssets();
             foreach (var assetPreloadData in selectedAssets)
             {
-                if (assetPreloadData.Type == ClassIDReference.Animator)
+                if (assetPreloadData.Type == ClassIDType.Animator)
                 {
                     animator = assetPreloadData;
                 }
-                else if (assetPreloadData.Type == ClassIDReference.AnimationClip)
+                else if (assetPreloadData.Type == ClassIDType.AnimationClip)
                 {
                     animationList.Add(assetPreloadData);
                 }
@@ -1927,7 +1927,7 @@ namespace AssetStudio
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDReference.AnimationClip).ToList();
+                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
                     ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList.Count == 0 ? null : animationList);
                 }
             }
@@ -1981,7 +1981,7 @@ namespace AssetStudio
         {
             assetListView.BeginUpdate();
             assetListView.SelectedIndices.Clear();
-            var show = new List<ClassIDReference>();
+            var show = new List<ClassIDType>();
             if (!allToolStripMenuItem.Checked)
             {
                 for (var i = 1; i < filterTypeToolStripMenuItem.DropDownItems.Count; i++)
@@ -1989,7 +1989,7 @@ namespace AssetStudio
                     var item = (ToolStripMenuItem)filterTypeToolStripMenuItem.DropDownItems[i];
                     if (item.Checked)
                     {
-                        show.Add((ClassIDReference)Enum.Parse(typeof(ClassIDReference), item.Text));
+                        show.Add((ClassIDType)Enum.Parse(typeof(ClassIDType), item.Text));
                     }
                 }
                 visibleAssets = exportableAssets.FindAll(x => show.Contains(x.Type));

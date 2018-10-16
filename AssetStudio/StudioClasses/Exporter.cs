@@ -107,7 +107,7 @@ namespace AssetStudio
                 return false;
             var m_MonoBehaviour = new MonoBehaviour(asset);
             string str;
-            if (asset.Type1 != asset.Type2 && asset.sourceFile.m_Type.ContainsKey(asset.Type1))
+            if (asset.serializedType.m_Nodes != null)
             {
                 str = asset.Dump();
             }

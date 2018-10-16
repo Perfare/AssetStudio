@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -11,14 +9,13 @@ namespace AssetStudio
         public long m_PathID;
         public uint Offset;
         public int Size;
-        public ClassIDReference Type;
-        public int Type1;
-        public int Type2;
-
+        public ClassIDType Type;
+        public int typeID;
+        public int classID;
+        public SerializedType serializedType;
         public string TypeString;
         public int fullSize;
         public string InfoText;
-
         public AssetsFile sourceFile;
         public GameObject gameObject;
         public string uniqueID;
@@ -33,10 +30,10 @@ namespace AssetStudio
         public string Dump()
         {
             var reader = InitReader();
-            if (sourceFile.m_Type.TryGetValue(Type1, out var typeTreeList))
+            if (serializedType.m_Nodes != null)
             {
                 var sb = new StringBuilder();
-                TypeTreeHelper.ReadTypeString(sb, typeTreeList, reader);
+                TypeTreeHelper.ReadTypeString(sb, serializedType.m_Nodes, reader);
                 return sb.ToString();
             }
             return null;
@@ -44,7 +41,7 @@ namespace AssetStudio
 
         public bool HasStructMember(string name)
         {
-            return sourceFile.m_Type.TryGetValue(Type1, out var typeTreeList) && typeTreeList.Any(x => x.m_Name == name);
+            return serializedType.m_Nodes != null && serializedType.m_Nodes.Any(x => x.m_Name == name);
         }
     }
 }

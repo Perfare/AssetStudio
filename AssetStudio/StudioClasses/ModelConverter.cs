@@ -127,19 +127,19 @@ namespace AssetStudio
                 {
                     switch (assetPreloadData.Type)
                     {
-                        case ClassIDReference.MeshRenderer:
+                        case ClassIDType.MeshRenderer:
                             {
                                 var m_Renderer = new MeshRenderer(assetPreloadData);
                                 ConvertMeshRenderer(m_Renderer);
                                 break;
                             }
-                        case ClassIDReference.SkinnedMeshRenderer:
+                        case ClassIDType.SkinnedMeshRenderer:
                             {
                                 var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
                                 ConvertMeshRenderer(m_SkinnedMeshRenderer);
                                 break;
                             }
-                        case ClassIDReference.Animation:
+                        case ClassIDType.Animation:
                             {
                                 var m_Animation = new Animation(assetPreloadData);
                                 foreach (var animation in m_Animation.m_Animations)
@@ -165,7 +165,7 @@ namespace AssetStudio
         {
             if (m_Animator.m_Controller.TryGetPD(out var assetPreloadData))
             {
-                if (assetPreloadData.Type == ClassIDReference.AnimatorOverrideController)
+                if (assetPreloadData.Type == ClassIDType.AnimatorOverrideController)
                 {
                     var m_AnimatorOverrideController = new AnimatorOverrideController(assetPreloadData);
                     if (m_AnimatorOverrideController.m_Controller.TryGetPD(out assetPreloadData))
@@ -187,7 +187,7 @@ namespace AssetStudio
                         }
                     }*/
                 }
-                else if (assetPreloadData.Type == ClassIDReference.AnimatorController)
+                else if (assetPreloadData.Type == ClassIDType.AnimatorController)
                 {
                     var m_AnimatorController = new AnimatorController(assetPreloadData);
                     foreach (var m_AnimationClip in m_AnimatorController.m_AnimationClips)
@@ -581,7 +581,7 @@ namespace AssetStudio
                 {
                     if (m_Component.TryGetPD(out var assetPreloadData))
                     {
-                        if (assetPreloadData.Type == ClassIDReference.MeshFilter)
+                        if (assetPreloadData.Type == ClassIDType.MeshFilter)
                         {
                             var m_MeshFilter = new MeshFilter(assetPreloadData);
                             if (m_MeshFilter.m_Mesh.TryGetPD(out var MeshPD))
@@ -667,7 +667,7 @@ namespace AssetStudio
                 foreach (var texEnv in mat.m_TexEnvs)
                 {
                     Texture2D tex2D = null;
-                    if (texEnv.m_Texture.TryGetPD(out var TexturePD) && TexturePD.Type == ClassIDReference.Texture2D)//TODO other Texture
+                    if (texEnv.m_Texture.TryGetPD(out var TexturePD) && TexturePD.Type == ClassIDType.Texture2D)//TODO other Texture
                     {
                         tex2D = new Texture2D(TexturePD, true);
                     }

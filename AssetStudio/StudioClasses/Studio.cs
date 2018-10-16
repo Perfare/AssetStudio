@@ -20,7 +20,7 @@ namespace AssetStudio
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> assetsNameHash = new HashSet<string>(); //avoid the same name asset
         public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
-        public static Dictionary<string, Dictionary<int, TypeItem>> AllTypeMap = new Dictionary<string, Dictionary<int, TypeItem>>();
+        public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> AllTypeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>();
         public static string mainPath;
         public static string productName = "";
         public static bool moduleLoaded;
@@ -178,77 +178,77 @@ namespace AssetStudio
                         var exportable = false;
                         switch (asset.Type)
                         {
-                            case ClassIDReference.GameObject:
+                            case ClassIDType.GameObject:
                                 {
                                     var m_GameObject = new GameObject(asset);
                                     asset.Text = m_GameObject.m_Name;
                                     assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
                                     break;
                                 }
-                            case ClassIDReference.Transform:
+                            case ClassIDType.Transform:
                                 {
                                     var m_Transform = new Transform(asset);
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
                                     break;
                                 }
-                            case ClassIDReference.RectTransform:
+                            case ClassIDType.RectTransform:
                                 {
                                     var m_Rect = new RectTransform(asset);
                                     assetsFile.TransformList.Add(asset.m_PathID, m_Rect);
                                     break;
                                 }
-                            case ClassIDReference.Texture2D:
+                            case ClassIDType.Texture2D:
                                 {
                                     var m_Texture2D = new Texture2D(asset, false);
                                     if (!string.IsNullOrEmpty(m_Texture2D.path))
                                         asset.fullSize = asset.Size + (int)m_Texture2D.size;
-                                    goto case ClassIDReference.NamedObject;
+                                    goto case ClassIDType.NamedObject;
                                 }
-                            case ClassIDReference.AudioClip:
+                            case ClassIDType.AudioClip:
                                 {
                                     var m_AudioClip = new AudioClip(asset, false);
                                     if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
                                         asset.fullSize = asset.Size + (int)m_AudioClip.m_Size;
-                                    goto case ClassIDReference.NamedObject;
+                                    goto case ClassIDType.NamedObject;
                                 }
-                            case ClassIDReference.VideoClip:
+                            case ClassIDType.VideoClip:
                                 {
                                     var m_VideoClip = new VideoClip(asset, false);
                                     if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
                                         asset.fullSize = asset.Size + (int)m_VideoClip.m_Size;
-                                    goto case ClassIDReference.NamedObject;
+                                    goto case ClassIDType.NamedObject;
                                 }
-                            case ClassIDReference.NamedObject:
-                            case ClassIDReference.Mesh:
-                            case ClassIDReference.Shader:
-                            case ClassIDReference.TextAsset:
-                            case ClassIDReference.AnimationClip:
-                            case ClassIDReference.Font:
-                            case ClassIDReference.MovieTexture:
-                            case ClassIDReference.Sprite:
+                            case ClassIDType.NamedObject:
+                            case ClassIDType.Mesh:
+                            case ClassIDType.Shader:
+                            case ClassIDType.TextAsset:
+                            case ClassIDType.AnimationClip:
+                            case ClassIDType.Font:
+                            case ClassIDType.MovieTexture:
+                            case ClassIDType.Sprite:
                                 {
                                     var obj = new NamedObject(asset);
                                     asset.Text = obj.m_Name;
                                     exportable = true;
                                     break;
                                 }
-                            case ClassIDReference.Avatar:
-                            case ClassIDReference.AnimatorController:
-                            case ClassIDReference.AnimatorOverrideController:
-                            case ClassIDReference.Material:
-                            case ClassIDReference.MonoScript:
-                            case ClassIDReference.SpriteAtlas:
+                            case ClassIDType.Avatar:
+                            case ClassIDType.AnimatorController:
+                            case ClassIDType.AnimatorOverrideController:
+                            case ClassIDType.Material:
+                            case ClassIDType.MonoScript:
+                            case ClassIDType.SpriteAtlas:
                                 {
                                     var obj = new NamedObject(asset);
                                     asset.Text = obj.m_Name;
                                     break;
                                 }
-                            case ClassIDReference.Animator:
+                            case ClassIDType.Animator:
                                 {
                                     exportable = true;
                                     break;
                                 }
-                            case ClassIDReference.MonoBehaviour:
+                            case ClassIDType.MonoBehaviour:
                                 {
                                     var m_MonoBehaviour = new MonoBehaviour(asset);
                                     if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGetPD(out var script))
@@ -263,13 +263,13 @@ namespace AssetStudio
                                     exportable = true;
                                     break;
                                 }
-                            case ClassIDReference.PlayerSettings:
+                            case ClassIDType.PlayerSettings:
                                 {
                                     var plSet = new PlayerSettings(asset);
                                     productName = plSet.productName;
                                     break;
                                 }
-                            case ClassIDReference.AssetBundle:
+                            case ClassIDType.AssetBundle:
                                 {
                                     ab = new AssetBundle(asset);
                                     asset.Text = ab.m_Name;
@@ -341,17 +341,17 @@ namespace AssetStudio
                                 {
                                     switch (asset.Type)
                                     {
-                                        case ClassIDReference.Transform:
+                                        case ClassIDType.Transform:
                                             {
                                                 m_GameObject.m_Transform = m_Component;
                                                 break;
                                             }
-                                        case ClassIDReference.MeshRenderer:
+                                        case ClassIDType.MeshRenderer:
                                             {
                                                 m_GameObject.m_MeshRenderer = m_Component;
                                                 break;
                                             }
-                                        case ClassIDReference.MeshFilter:
+                                        case ClassIDType.MeshFilter:
                                             {
                                                 m_GameObject.m_MeshFilter = m_Component;
                                                 if (m_Component.TryGetPD(out var assetPreloadData))
@@ -364,7 +364,7 @@ namespace AssetStudio
                                                 }
                                                 break;
                                             }
-                                        case ClassIDReference.SkinnedMeshRenderer:
+                                        case ClassIDType.SkinnedMeshRenderer:
                                             {
                                                 m_GameObject.m_SkinnedMeshRenderer = m_Component;
                                                 if (m_Component.TryGetPD(out var assetPreloadData))
@@ -377,7 +377,7 @@ namespace AssetStudio
                                                 }
                                                 break;
                                             }
-                                        case ClassIDReference.Animator:
+                                        case ClassIDType.Animator:
                                             {
                                                 m_GameObject.m_Animator = m_Component;
                                                 asset.Text = m_GameObject.preloadData.Text;
@@ -425,19 +425,33 @@ namespace AssetStudio
             #region build list of class strucutres
             if (buildClassStructures)
             {
-                //group class structures by versionv
                 foreach (var assetsFile in assetsfileList)
                 {
                     if (AllTypeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
                     {
-                        foreach (var type in assetsFile.m_Type)
+                        foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
                         {
-                            curVer[type.Key] = new TypeItem(type.Key, type.Value);
+                            var key = type.classID;
+                            if (type.m_ScriptTypeIndex >= 0)
+                            {
+                                key = -1 - type.m_ScriptTypeIndex;
+                            }
+                            curVer[key] = new TypeTreeItem(key, type.m_Nodes);
                         }
                     }
                     else
                     {
-                        AllTypeMap.Add(assetsFile.unityVersion, assetsFile.m_Type.ToDictionary(x => x.Key, y => new TypeItem(y.Key, y.Value)));
+                        var items = new SortedDictionary<int, TypeTreeItem>();
+                        foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
+                        {
+                            var key = type.classID;
+                            if (type.m_ScriptTypeIndex >= 0)
+                            {
+                                key = -1 - type.m_ScriptTypeIndex;
+                            }
+                            items.Add(key, new TypeTreeItem(key, type.m_Nodes));
+                        }
+                        AllTypeMap.Add(assetsFile.unityVersion, items);
                     }
                 }
             }
@@ -494,73 +508,73 @@ namespace AssetStudio
                     {
                         switch (asset.Type)
                         {
-                            case ClassIDReference.Texture2D:
+                            case ClassIDType.Texture2D:
                                 if (ExportTexture2D(asset, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.AudioClip:
+                            case ClassIDType.AudioClip:
                                 if (ExportAudioClip(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.Shader:
+                            case ClassIDType.Shader:
                                 if (ExportShader(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.TextAsset:
+                            case ClassIDType.TextAsset:
                                 if (ExportTextAsset(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.MonoBehaviour:
+                            case ClassIDType.MonoBehaviour:
                                 if (ExportMonoBehaviour(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.Font:
+                            case ClassIDType.Font:
                                 if (ExportFont(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.Mesh:
+                            case ClassIDType.Mesh:
                                 if (ExportMesh(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.VideoClip:
+                            case ClassIDType.VideoClip:
                                 if (ExportVideoClip(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.MovieTexture:
+                            case ClassIDType.MovieTexture:
                                 if (ExportMovieTexture(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.Sprite:
+                            case ClassIDType.Sprite:
                                 if (ExportSprite(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.Animator:
+                            case ClassIDType.Animator:
                                 if (ExportAnimator(asset, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
-                            case ClassIDReference.AnimationClip:
+                            case ClassIDType.AnimationClip:
                                 break;
                             default:
                                 if (ExportRawFile(asset, exportpath))

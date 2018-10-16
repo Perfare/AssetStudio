@@ -1,8 +1,9 @@
 ﻿namespace AssetStudio
 {
-    public enum ClassIDReference
+    public enum ClassIDType
     {
         UnknownType = -1,
+        Object = 0,
         GameObject = 1,
         Component = 2,
         LevelGameManager = 3,
@@ -218,6 +219,8 @@
         VideoPlayer = 328,
         VideoClip = 329,
         OcclusionCullingData = 363,
+        //kLargestRuntimeClassID = 364
+        SmallestEditorClassID = 1000,
         Prefab = 1001,
         EditorExtensionImpl = 1002,
         AssetImporter = 1003,
@@ -251,6 +254,7 @@
         PVRImporter = 1052,
         ASTCImporter = 1053,
         KTXImporter = 1054,
+        IHVImageFormatImporter = 1055,
         AnimatorStateTransition = 1101,
         AnimatorState = 1102,
         HumanTemplate = 1105,
@@ -262,6 +266,16 @@
         SubstanceImporter = 1112,
         LightmapParameters = 1113,
         LightmapSnapshot = 1120,
+        GISRaster = 1121,
+        GISRasterImporter = 1122,
+        CadImporter = 1123,
+        SketchUpImporter = 1124,
+        BuildReport = 1125,
+        PackedAssets = 1126,
+        VideoClipImporter = 1127,
+        ActivationLogComponent = 2000,
+        //kLargestEditorClassID = 2001
+        //kClassIdOutOfHierarchy = 100000
         SubDerived = 367388927,
         SiblingDerived = 334799969,
         SpriteAtlas = 687078895,
