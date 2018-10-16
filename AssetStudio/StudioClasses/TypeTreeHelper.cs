@@ -9,7 +9,7 @@ namespace AssetStudio
 {
     public static class TypeTreeHelper
     {
-        public static void ReadTypeString(StringBuilder sb, List<TypeTree> members, EndianBinaryReader reader)
+        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, EndianBinaryReader reader)
         {
             for (int i = 0; i < members.Count; i++)
             {
@@ -17,10 +17,10 @@ namespace AssetStudio
             }
         }
 
-        private static void ReadStringValue(StringBuilder sb, List<TypeTree> members, EndianBinaryReader reader, ref int i)
+        private static void ReadStringValue(StringBuilder sb, List<TypeTreeNode> members, EndianBinaryReader reader, ref int i)
         {
             var member = members[i];
-            var level = member.m_Depth;
+            var level = member.m_Level;
             var varTypeStr = member.m_Type;
             var varNameStr = member.m_Name;
             object value = null;
@@ -106,7 +106,7 @@ namespace AssetStudio
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Depth, 0);
+                        var first = GetMembers(map, map[0].m_Level, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)
@@ -154,7 +154,7 @@ namespace AssetStudio
                 reader.AlignStream(4);
         }
 
-        public static ExpandoObject ReadDynamicType(List<TypeTree> members, EndianBinaryReader reader)
+        public static ExpandoObject ReadDynamicType(List<TypeTreeNode> members, EndianBinaryReader reader)
         {
             var obj = new ExpandoObject();
             var objdic = (IDictionary<string, object>)obj;
@@ -167,10 +167,10 @@ namespace AssetStudio
             return obj;
         }
 
-        private static object ReadValue(List<TypeTree> members, EndianBinaryReader reader, ref int i)
+        private static object ReadValue(List<TypeTreeNode> members, EndianBinaryReader reader, ref int i)
         {
             var member = members[i];
-            var level = member.m_Depth;
+            var level = member.m_Level;
             var varTypeStr = member.m_Type;
             object value;
             var align = (member.m_MetaFlag & 0x4000) != 0;
@@ -246,7 +246,7 @@ namespace AssetStudio
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Depth, 0);
+                        var first = GetMembers(map, map[0].m_Level, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)
@@ -291,14 +291,14 @@ namespace AssetStudio
             return value;
         }
 
-        private static List<TypeTree> GetMembers(List<TypeTree> members, int level, int index)
+        private static List<TypeTreeNode> GetMembers(List<TypeTreeNode> members, int level, int index)
         {
-            var member2 = new List<TypeTree>();
+            var member2 = new List<TypeTreeNode>();
             member2.Add(members[0]);
             for (int i = index + 1; i < members.Count; i++)
             {
                 var member = members[i];
-                var level2 = member.m_Depth;
+                var level2 = member.m_Level;
                 if (level2 <= level)
                 {
                     return member2;
@@ -308,7 +308,7 @@ namespace AssetStudio
             return member2;
         }
 
-        public static byte[] WriteDynamicType(ExpandoObject obj, List<TypeTree> members)
+        public static byte[] WriteDynamicType(ExpandoObject obj, List<TypeTreeNode> members)
         {
             var stream = new MemoryStream();
             var write = new BinaryWriter(stream);
@@ -322,10 +322,10 @@ namespace AssetStudio
             return stream.ToArray();
         }
 
-        private static void WriteValue(object value, List<TypeTree> members, BinaryWriter write, ref int i)
+        private static void WriteValue(object value, List<TypeTreeNode> members, BinaryWriter write, ref int i)
         {
             var member = members[i];
-            var level = member.m_Depth;
+            var level = member.m_Level;
             var varTypeStr = member.m_Type;
             var align = (member.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
@@ -401,7 +401,7 @@ namespace AssetStudio
                         var map = GetMembers(members, level, i);
                         i += map.Count - 1;
                         map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Depth, 0);
+                        var first = GetMembers(map, map[0].m_Level, 0);
                         map.RemoveRange(0, first.Count);
                         var second = map;
                         for (int j = 0; j < size; j++)

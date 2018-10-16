@@ -1783,7 +1783,7 @@ namespace AssetStudio
                 resourceFileReader.Value.Dispose();
             }
             resourceFileReaders.Clear();
-            sharedFileIndex.Clear();
+            assetsFileIndexCache.Clear();
             productName = "";
 
             sceneTreeView.Nodes.Clear();

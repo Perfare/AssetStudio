@@ -15,7 +15,7 @@ namespace AssetStudio
     internal static class Studio
     {
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
-        public static Dictionary<string, int> sharedFileIndex = new Dictionary<string, int>(); //to improve the loading speed
+        public static Dictionary<string, int> assetsFileIndexCache = new Dictionary<string, int>();
         public static Dictionary<string, EndianBinaryReader> resourceFileReaders = new Dictionary<string, EndianBinaryReader>(); //use for read res files
         public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> assetsNameHash = new HashSet<string>(); //avoid the same name asset
@@ -251,7 +251,7 @@ namespace AssetStudio
                             case ClassIDReference.MonoBehaviour:
                                 {
                                     var m_MonoBehaviour = new MonoBehaviour(asset);
-                                    if (m_MonoBehaviour.m_Name == "" && assetsfileList.TryGetPD(m_MonoBehaviour.m_Script, out var script))
+                                    if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGetPD(out var script))
                                     {
                                         var m_Script = new MonoScript(script);
                                         asset.Text = m_Script.m_ClassName;
@@ -337,67 +337,63 @@ namespace AssetStudio
                         {
                             foreach (var m_Component in m_GameObject.m_Components)
                             {
-                                if (m_Component.m_FileID >= 0 && m_Component.m_FileID < assetsfileList.Count)
+                                if (m_Component.TryGetPD(out var asset))
                                 {
-                                    var sourceFile = assetsfileList[m_Component.m_FileID];
-                                    if (sourceFile.preloadTable.TryGetValue(m_Component.m_PathID, out var asset))
+                                    switch (asset.Type)
                                     {
-                                        switch (asset.Type)
-                                        {
-                                            case ClassIDReference.Transform:
+                                        case ClassIDReference.Transform:
+                                            {
+                                                m_GameObject.m_Transform = m_Component;
+                                                break;
+                                            }
+                                        case ClassIDReference.MeshRenderer:
+                                            {
+                                                m_GameObject.m_MeshRenderer = m_Component;
+                                                break;
+                                            }
+                                        case ClassIDReference.MeshFilter:
+                                            {
+                                                m_GameObject.m_MeshFilter = m_Component;
+                                                if (m_Component.TryGetPD(out var assetPreloadData))
                                                 {
-                                                    m_GameObject.m_Transform = m_Component;
-                                                    break;
-                                                }
-                                            case ClassIDReference.MeshRenderer:
-                                                {
-                                                    m_GameObject.m_MeshRenderer = m_Component;
-                                                    break;
-                                                }
-                                            case ClassIDReference.MeshFilter:
-                                                {
-                                                    m_GameObject.m_MeshFilter = m_Component;
-                                                    if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                    var m_MeshFilter = new MeshFilter(assetPreloadData);
+                                                    if (m_MeshFilter.m_Mesh.TryGetPD(out assetPreloadData))
                                                     {
-                                                        var m_MeshFilter = new MeshFilter(assetPreloadData);
-                                                        if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out assetPreloadData))
-                                                        {
-                                                            assetPreloadData.gameObject = m_GameObject;
-                                                        }
+                                                        assetPreloadData.gameObject = m_GameObject;
                                                     }
-                                                    break;
                                                 }
-                                            case ClassIDReference.SkinnedMeshRenderer:
+                                                break;
+                                            }
+                                        case ClassIDReference.SkinnedMeshRenderer:
+                                            {
+                                                m_GameObject.m_SkinnedMeshRenderer = m_Component;
+                                                if (m_Component.TryGetPD(out var assetPreloadData))
                                                 {
-                                                    m_GameObject.m_SkinnedMeshRenderer = m_Component;
-                                                    if (assetsfileList.TryGetPD(m_Component, out var assetPreloadData))
+                                                    var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
+                                                    if (m_SkinnedMeshRenderer.m_Mesh.TryGetPD(out assetPreloadData))
                                                     {
-                                                        var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
-                                                        if (assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out assetPreloadData))
-                                                        {
-                                                            assetPreloadData.gameObject = m_GameObject;
-                                                        }
+                                                        assetPreloadData.gameObject = m_GameObject;
                                                     }
-                                                    break;
                                                 }
-                                            case ClassIDReference.Animator:
-                                                {
-                                                    m_GameObject.m_Animator = m_Component;
-                                                    asset.Text = m_GameObject.preloadData.Text;
-                                                    break;
-                                                }
-                                        }
+                                                break;
+                                            }
+                                        case ClassIDReference.Animator:
+                                            {
+                                                m_GameObject.m_Animator = m_Component;
+                                                asset.Text = m_GameObject.preloadData.Text;
+                                                break;
+                                            }
                                     }
                                 }
                             }
 
                             var parentNode = fileNode;
 
-                            if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
+                            if (m_GameObject.m_Transform != null && m_GameObject.m_Transform.TryGetTransform(out var m_Transform))
                             {
-                                if (assetsfileList.TryGetTransform(m_Transform.m_Father, out var m_Father))
+                                if (m_Transform.m_Father.TryGetTransform(out var m_Father))
                                 {
-                                    if (assetsfileList.TryGetGameObject(m_Father.m_GameObject, out var parentGameObject))
+                                    if (m_Father.m_GameObject.TryGetGameObject(out var parentGameObject))
                                     {
                                         if (!treeNodeDictionary.TryGetValue(parentGameObject, out parentNode))
                                         {
@@ -811,7 +807,7 @@ namespace AssetStudio
             sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
             sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
             sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
-            if (assetsfileList.TryGetPD(m_MonoBehaviour.m_Script, out var script))
+            if (m_MonoBehaviour.m_Script.TryGetPD(out var script))
             {
                 var m_Script = new MonoScript(script);
                 if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))

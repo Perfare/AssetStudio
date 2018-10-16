@@ -64,7 +64,7 @@ namespace AssetStudio
                     #endregion
 
                     int value = 0;
-                    foreach (var sharedFile in assetsFile.sharedAssetsList)
+                    foreach (var sharedFile in assetsFile.m_Externals)
                     {
                         var sharedFilePath = Path.GetDirectoryName(fullName) + "\\" + sharedFile.fileName;
                         var sharedFileName = sharedFile.fileName;

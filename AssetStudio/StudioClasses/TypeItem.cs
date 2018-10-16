@@ -8,9 +8,9 @@ namespace AssetStudio
 {
     public class TypeItem : ListViewItem
     {
-        public List<TypeTree> typeTreeList;
+        public List<TypeTreeNode> typeTreeList;
 
-        public TypeItem(int classID, List<TypeTree> typeTreeList)
+        public TypeItem(int classID, List<TypeTreeNode> typeTreeList)
         {
             this.typeTreeList = typeTreeList;
             Text = typeTreeList[0].m_Type + " " + typeTreeList[0].m_Name;
@@ -22,7 +22,7 @@ namespace AssetStudio
             var sb = new StringBuilder();
             foreach (var i in typeTreeList)
             {
-                sb.AppendFormat("{0}{1} {2} {3} {4}\r\n", new string('\t', i.m_Depth), i.m_Type, i.m_Name, i.m_ByteSize, (i.m_MetaFlag & 0x4000) != 0);
+                sb.AppendFormat("{0}{1} {2} {3} {4}\r\n", new string('\t', i.m_Level), i.m_Type, i.m_Name, i.m_ByteSize, (i.m_MetaFlag & 0x4000) != 0);
             }
             return sb.ToString();
         }

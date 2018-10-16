@@ -5,7 +5,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
-using static AssetStudio.Studio;
 
 namespace AssetStudio
 {
@@ -13,12 +12,12 @@ namespace AssetStudio
     {
         public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
-            if (assetsfileList.TryGetPD(m_Sprite.m_SpriteAtlas, out var assetPreloadData))
+            if (m_Sprite.m_SpriteAtlas.TryGetPD(out var assetPreloadData))
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
                 var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
 
-                if (index >= 0 && assetsfileList.TryGetPD(m_SpriteAtlas.textures[index], out assetPreloadData))
+                if (index >= 0 && m_SpriteAtlas.textures[index].TryGetPD(out assetPreloadData))
                 {
                     try
                     {
@@ -36,7 +35,7 @@ namespace AssetStudio
             }
             else
             {
-                if (assetsfileList.TryGetPD(m_Sprite.texture, out assetPreloadData))
+                if (m_Sprite.texture.TryGetPD(out assetPreloadData))
                 {
                     return CutImage(assetPreloadData, m_Sprite.textureRect);
                 }

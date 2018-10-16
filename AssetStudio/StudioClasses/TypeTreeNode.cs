@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AssetStudio
 {
-    public class TypeTree
+    public class TypeTreeNode
     {
         public string m_Type;
         public string m_Name;
@@ -14,6 +14,6 @@ namespace AssetStudio
         public int m_IsArray;
         public int m_Version;
         public int m_MetaFlag;
-        public int m_Depth;
+        public int m_Level;
     }
 }

@@ -171,10 +171,16 @@
     <Compile Include="Classes\MonoScript.cs" />
     <Compile Include="Classes\NamedObject.cs" />
     <Compile Include="Classes\Object.cs" />
+    <Compile Include="StudioClasses\PPtr.cs" />
     <Compile Include="Classes\Renderer.cs" />
     <Compile Include="Classes\Texture.cs" />
     <Compile Include="StudioClasses\AudioClipConverter.cs" />
+    <Compile Include="StudioClasses\CommonString.cs" />
+    <Compile Include="StudioClasses\FileIdentifier.cs" />
     <Compile Include="StudioClasses\GameObjectTreeNode.cs" />
+    <Compile Include="StudioClasses\LocalSerializedObjectIdentifier.cs" />
+    <Compile Include="StudioClasses\ObjectInfo.cs" />
+    <Compile Include="StudioClasses\SerializedFileHeader.cs" />
     <Compile Include="StudioClasses\SevenZipHelper.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -189,7 +195,7 @@
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ClassIDReference.cs" />
-    <Compile Include="StudioClasses\TypeTree.cs" />
+    <Compile Include="StudioClasses\TypeTreeNode.cs" />
     <Compile Include="StudioClasses\TypeTreeHelper.cs" />
     <Compile Include="StudioClasses\ResourcesHelper.cs" />
     <Compile Include="Classes\AssetBundle.cs" />
@@ -226,7 +232,6 @@
     <Compile Include="Classes\Material.cs" />
     <Compile Include="Classes\Mesh.cs" />
     <Compile Include="Classes\GameObject.cs" />
-    <Compile Include="StudioClasses\PPtrHelpers.cs" />
     <Compile Include="Classes\MonoBehaviour.cs" />
     <Compile Include="Classes\PlayerSettings.cs" />
     <Compile Include="Classes\RectTransform.cs" />

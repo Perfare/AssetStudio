@@ -61,12 +61,12 @@ namespace AssetStudio
                 {
                     GameObjects.Add(m_GameObject);
 
-                    if (assetsfileList.TryGetPD(m_GameObject.m_MeshFilter, out var MeshFilterPD))
+                    if (m_GameObject.m_MeshFilter != null && m_GameObject.m_MeshFilter.TryGetPD(out var MeshFilterPD))
                     {
                         //MeshFilters are not unique!
                         //MeshFilters.Add(MeshFilterPD);
                         MeshFilter m_MeshFilter = new MeshFilter(MeshFilterPD);
-                        if (assetsfileList.TryGetPD(m_MeshFilter.m_Mesh, out var MeshPD))
+                        if (m_MeshFilter.m_Mesh.TryGetPD(out var MeshPD))
                         {
                             Meshes.Add(MeshPD);
 
@@ -78,13 +78,13 @@ namespace AssetStudio
                     }
 
                     #region get Renderer
-                    if (assetsfileList.TryGetPD(m_GameObject.m_MeshRenderer, out var RendererPD))
+                    if (m_GameObject.m_MeshRenderer != null && m_GameObject.m_MeshRenderer.TryGetPD(out var RendererPD))
                     {
                         MeshRenderer m_Renderer = new MeshRenderer(RendererPD);
 
                         foreach (var MaterialPPtr in m_Renderer.m_Materials)
                         {
-                            if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
+                            if (MaterialPPtr.TryGetPD(out var MaterialPD))
                             {
                                 Materials.Add(MaterialPD);
                                 cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
@@ -96,7 +96,7 @@ namespace AssetStudio
                     #endregion
 
                     #region get SkinnedMeshRenderer
-                    if (assetsfileList.TryGetPD(m_GameObject.m_SkinnedMeshRenderer, out var SkinnedMeshPD))
+                    if (m_GameObject.m_SkinnedMeshRenderer != null && m_GameObject.m_SkinnedMeshRenderer.TryGetPD(out var SkinnedMeshPD))
                     {
                         Skins.Add(SkinnedMeshPD);
 
@@ -104,7 +104,7 @@ namespace AssetStudio
 
                         foreach (var MaterialPPtr in m_SkinnedMeshRenderer.m_Materials)
                         {
-                            if (assetsfileList.TryGetPD(MaterialPPtr, out var MaterialPD))
+                            if (MaterialPPtr.TryGetPD(out var MaterialPD))
                             {
                                 Materials.Add(MaterialPD);
                                 cb2.AppendFormat("\n\n\t;Material::, Model::{0}", m_GameObject.m_Name);
@@ -119,9 +119,9 @@ namespace AssetStudio
                             //collect skeleton dummies to make sure they are exported
                             foreach (var bonePPtr in m_SkinnedMeshRenderer.m_Bones)
                             {
-                                if (assetsfileList.TryGetTransform(bonePPtr, out var b_Transform))
+                                if (bonePPtr.TryGetTransform(out var b_Transform))
                                 {
-                                    if (assetsfileList.TryGetGameObject(b_Transform.m_GameObject, out var m_Bone))
+                                    if (b_Transform.m_GameObject.TryGetGameObject(out var m_Bone))
                                     {
                                         LimbNodes.Add(m_Bone);
                                         //also collect the root bone
@@ -136,9 +136,9 @@ namespace AssetStudio
                                     #region collect children because m_SkinnedMeshRenderer.m_Bones doesn't contain terminations
                                     foreach (var ChildPPtr in b_Transform.m_Children)
                                     {
-                                        if (assetsfileList.TryGetTransform(ChildPPtr, out var ChildTR))
+                                        if (ChildPPtr.TryGetTransform(out var ChildTR))
                                         {
-                                            if (assetsfileList.TryGetGameObject(ChildTR.m_GameObject, out var m_Child))
+                                            if (ChildTR.m_GameObject.TryGetGameObject(out var m_Child))
                                             {
                                                 //check that the Model doesn't contain a Mesh, although this won't ensure it's part of the skeleton
                                                 if (m_Child.m_MeshFilter == null && m_Child.m_SkinnedMeshRenderer == null)
@@ -225,7 +225,7 @@ namespace AssetStudio
                     foreach (var m_TexEnv in m_Material.m_TexEnvs)
                     {
                         #region get Porsche material from json
-                        if (!assetsfileList.TryGetPD(m_TexEnv.m_Texture, out var TexturePD) && jsonMats != null)
+                        if (!m_TexEnv.m_Texture.TryGetPD(out var TexturePD) && jsonMats != null)
                         {
                             if (jsonMats.TryGetValue(m_Material.m_Name, out var matProp))
                             {
@@ -430,7 +430,7 @@ namespace AssetStudio
                     ob.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
                     ob.Append("\n\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",0");
 
-                    if (assetsfileList.TryGetTransform(m_GameObject.m_Transform, out var m_Transform))
+                    if (m_GameObject.m_Transform.TryGetTransform(out var m_Transform))
                     {
                         float[] m_EulerRotation = QuatToEuler(new[] { m_Transform.m_LocalRotation[0], -m_Transform.m_LocalRotation[1], -m_Transform.m_LocalRotation[2], m_Transform.m_LocalRotation[3] });
 
@@ -485,7 +485,7 @@ namespace AssetStudio
                 foreach (var SkinnedMeshPD in Skins)
                 {
                     SkinnedMeshRenderer m_SkinnedMeshRenderer = new SkinnedMeshRenderer(SkinnedMeshPD);
-                    if (assetsfileList.TryGetGameObject(m_SkinnedMeshRenderer.m_GameObject, out var m_GameObject) && assetsfileList.TryGetPD(m_SkinnedMeshRenderer.m_Mesh, out var MeshPD))
+                    if (m_SkinnedMeshRenderer.m_GameObject.TryGetGameObject(out var m_GameObject) && m_SkinnedMeshRenderer.m_Mesh.TryGetPD(out var MeshPD))
                     {
                         //generate unique Geometry ID for instanced mesh objects
                         //instanced skinned geometry is possible in FBX, but all instances are linked to the same skeleton nodes
@@ -537,9 +537,9 @@ namespace AssetStudio
 
                                 for (int b = 0; b < m_SkinnedMeshRenderer.m_Bones.Length; b++)
                                 {
-                                    if (assetsfileList.TryGetTransform(m_SkinnedMeshRenderer.m_Bones[b], out var m_Transform))
+                                    if (m_SkinnedMeshRenderer.m_Bones[b].TryGetTransform(out var m_Transform))
                                     {
-                                        if (assetsfileList.TryGetGameObject(m_Transform.m_GameObject, out var m_Bone))
+                                        if (m_Transform.m_GameObject.TryGetGameObject(out var m_Bone))
                                         {
                                             int influences = 0, ibSplit = 0, wbSplit = 0;
                                             StringBuilder ib = new StringBuilder();//indices (vertex)
