@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -6,19 +7,38 @@ namespace AssetStudio
 {
     public class AssetPreloadData : ListViewItem
     {
+        public AssetsFile sourceFile;
         public long m_PathID;
         public uint Offset;
-        public int Size;
-        public ClassIDType Type;
-        public int typeID;
-        public int classID;
+        public uint Size;
+        public long FullSize;
         public SerializedType serializedType;
+        public ClassIDType Type;
         public string TypeString;
-        public int fullSize;
         public string InfoText;
-        public AssetsFile sourceFile;
-        public GameObject gameObject;
         public string uniqueID;
+        public GameObject gameObject;
+
+        public AssetPreloadData(AssetsFile assetsFile, ObjectInfo objectInfo, string uniqueID)
+        {
+            sourceFile = assetsFile;
+            m_PathID = objectInfo.m_PathID;
+            Offset = objectInfo.byteStart;
+            Size = objectInfo.byteSize;
+            FullSize = objectInfo.byteSize;
+            serializedType = objectInfo.serializedType;
+            if (Enum.IsDefined(typeof(ClassIDType), objectInfo.classID))
+            {
+                Type = (ClassIDType)objectInfo.classID;
+                TypeString = Type.ToString();
+            }
+            else
+            {
+                Type = ClassIDType.UnknownType;
+                TypeString = $"UnknownType {objectInfo.classID}";
+            }
+            this.uniqueID = uniqueID;
+        }
 
         public EndianBinaryReader InitReader()
         {

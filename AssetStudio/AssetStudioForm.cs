@@ -584,7 +584,7 @@ namespace AssetStudio
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.fullSize.CompareTo(b.fullSize);
+                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.FullSize.CompareTo(b.FullSize);
                     });
                     break;
                 case 1:
@@ -592,13 +592,13 @@ namespace AssetStudio
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 2 ? a.fullSize.CompareTo(b.fullSize) : a.Text.CompareTo(b.Text);
+                        return secondSortColumn == 2 ? a.FullSize.CompareTo(b.FullSize) : a.Text.CompareTo(b.Text);
                     });
                     break;
                 case 2:
                     visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
                     {
-                        int xdiff = reverseSort ? b.fullSize.CompareTo(a.fullSize) : a.fullSize.CompareTo(b.fullSize);
+                        int xdiff = reverseSort ? b.FullSize.CompareTo(a.FullSize) : a.FullSize.CompareTo(b.FullSize);
                         if (xdiff != 0) return xdiff;
                         return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
                     });

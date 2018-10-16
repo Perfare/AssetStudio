@@ -201,21 +201,21 @@ namespace AssetStudio
                                 {
                                     var m_Texture2D = new Texture2D(asset, false);
                                     if (!string.IsNullOrEmpty(m_Texture2D.path))
-                                        asset.fullSize = asset.Size + (int)m_Texture2D.size;
+                                        asset.FullSize = asset.Size + m_Texture2D.size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.AudioClip:
                                 {
                                     var m_AudioClip = new AudioClip(asset, false);
                                     if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
-                                        asset.fullSize = asset.Size + (int)m_AudioClip.m_Size;
+                                        asset.FullSize = asset.Size + m_AudioClip.m_Size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.VideoClip:
                                 {
                                     var m_VideoClip = new VideoClip(asset, false);
                                     if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                        asset.fullSize = asset.Size + (int)m_VideoClip.m_Size;
+                                        asset.FullSize = asset.Size + (long)m_VideoClip.m_Size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.NamedObject:
@@ -280,7 +280,7 @@ namespace AssetStudio
                         {
                             asset.Text = asset.TypeString + " #" + asset.uniqueID;
                         }
-                        asset.SubItems.AddRange(new[] { asset.TypeString, asset.fullSize.ToString() });
+                        asset.SubItems.AddRange(new[] { asset.TypeString, asset.FullSize.ToString() });
                         //处理同名文件
                         if (!assetsNameHash.Add((asset.TypeString + asset.Text).ToUpper()))
                         {

@@ -88,7 +88,7 @@ namespace AssetStudio
                 m_Types = new List<SerializedType>(typeCount);
                 for (int i = 0; i < typeCount; i++)
                 {
-                    m_Types.Add(ReadSerializedType());;
+                    m_Types.Add(ReadSerializedType());
                 }
 
                 if (header.m_Version >= 7 && header.m_Version < 14)
@@ -99,66 +99,53 @@ namespace AssetStudio
                 //Read Objects
                 int objectCount = reader.ReadInt32();
 
-                string assetIDfmt = "D" + objectCount.ToString().Length; //format for unique ID
+                var assetIDfmt = "D" + objectCount.ToString().Length; //format for unique ID
 
+                m_Objects = new Dictionary<long, ObjectInfo>(objectCount);
                 for (int i = 0; i < objectCount; i++)
                 {
-                    AssetPreloadData asset = new AssetPreloadData();
-
+                    var objectInfo = new ObjectInfo();
                     if (header.m_Version < 14)
                     {
-                        asset.m_PathID = reader.ReadInt32();
+                        objectInfo.m_PathID = reader.ReadInt32();
                     }
                     else
                     {
                         reader.AlignStream(4);
-                        asset.m_PathID = reader.ReadInt64();
+                        objectInfo.m_PathID = reader.ReadInt64();
                     }
-                    asset.Offset = reader.ReadUInt32();
-                    asset.Offset += header.m_DataOffset;
-                    asset.Size = reader.ReadInt32();
-                    asset.typeID = reader.ReadInt32();
+                    objectInfo.byteStart = reader.ReadUInt32();
+                    objectInfo.byteStart += header.m_DataOffset;
+                    objectInfo.byteSize = reader.ReadUInt32();
+                    objectInfo.typeID = reader.ReadInt32();
                     if (header.m_Version < 16)
                     {
-                        asset.classID = reader.ReadUInt16();
-                        asset.serializedType = m_Types.Find(x => x.classID == asset.typeID);
-                        reader.Position += 2;
+                        objectInfo.classID = reader.ReadUInt16();
+                        objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
+                        objectInfo.isDestroyed = reader.ReadUInt16();
                     }
                     else
                     {
-                        var type = m_Types[asset.typeID];
-                        asset.serializedType = type;
-                        asset.classID = type.classID;
+                        var type = m_Types[objectInfo.typeID];
+                        objectInfo.serializedType = type;
+                        objectInfo.classID = type.classID;
                     }
                     if (header.m_Version == 15 || header.m_Version == 16)
                     {
                         var stripped = reader.ReadByte();
                     }
+                    m_Objects.Add(objectInfo.m_PathID, objectInfo);
 
-                    if (Enum.IsDefined(typeof(ClassIDType), asset.classID))
-                    {
-                        asset.Type = (ClassIDType)asset.classID;
-                        asset.TypeString = asset.Type.ToString();
-                    }
-                    else
-                    {
-                        asset.Type = ClassIDType.UnknownType;
-                        asset.TypeString = $"UnknownType {asset.classID}";
-                    }
-
-                    asset.uniqueID = i.ToString(assetIDfmt);
-
-                    asset.fullSize = asset.Size;
-                    asset.sourceFile = this;
-
+                    //Create AssetPreloadData
+                    var asset = new AssetPreloadData(this, objectInfo, i.ToString(assetIDfmt));
                     preloadTable.Add(asset.m_PathID, asset);
 
                     #region read BuildSettings to get version for version 2.x files
                     if (asset.Type == ClassIDType.BuildSettings && header.m_Version == 6)
                     {
-                        long nextAsset = reader.Position;
+                        var nextAsset = reader.Position;
 
-                        BuildSettings BSettings = new BuildSettings(asset);
+                        var BSettings = new BuildSettings(asset);
                         unityVersion = BSettings.m_Version;
 
                         reader.Position = nextAsset;

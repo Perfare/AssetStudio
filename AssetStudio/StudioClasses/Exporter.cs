@@ -276,7 +276,7 @@ namespace AssetStudio
             var exportFullName = exportPath + asset.Text + ".dat";
             if (ExportFileExists(exportFullName))
                 return false;
-            var bytes = asset.InitReader().ReadBytes(asset.Size);
+            var bytes = asset.InitReader().ReadBytes((int)asset.Size);
             File.WriteAllBytes(exportFullName, bytes);
             return true;
         }
