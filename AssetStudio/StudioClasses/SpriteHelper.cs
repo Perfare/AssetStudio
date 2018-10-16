@@ -12,7 +12,7 @@ namespace AssetStudio
     {
         public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
-            if (m_Sprite.m_SpriteAtlas.TryGetPD(out var assetPreloadData))
+            if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGetPD(out var assetPreloadData))
             {
                 var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
                 var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
