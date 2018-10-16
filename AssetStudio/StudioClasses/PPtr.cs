@@ -20,7 +20,7 @@ namespace AssetStudio
                 return true;
             }
 
-            if (m_FileID > 0)
+            if (m_FileID > 0 && m_FileID - 1 < assetsFile.m_Externals.Count)
             {
                 if (index == -2)
                 {

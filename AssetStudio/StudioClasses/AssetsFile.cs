@@ -113,14 +113,17 @@ namespace AssetStudio
 
                 for (int i = 0; i < objectCount; i++)
                 {
-                    //each table entry is aligned individually, not the whole table
-                    if (header.m_Version >= 14)
+                    AssetPreloadData asset = new AssetPreloadData();
+
+                    if (header.m_Version < 14)
+                    {
+                        asset.m_PathID = reader.ReadInt32();
+                    }
+                    else
                     {
                         reader.AlignStream(4);
+                        asset.m_PathID = reader.ReadInt64();
                     }
-
-                    AssetPreloadData asset = new AssetPreloadData();
-                    asset.m_PathID = header.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64();
                     asset.Offset = reader.ReadUInt32();
                     asset.Offset += header.m_DataOffset;
                     asset.Size = reader.ReadInt32();
@@ -180,7 +183,15 @@ namespace AssetStudio
                     {
                         var m_ScriptType = new LocalSerializedObjectIdentifier();
                         m_ScriptType.localSerializedFileIndex = reader.ReadInt32();
-                        m_ScriptType.localIdentifierInFile = header.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64();
+                        if (header.m_Version < 14)
+                        {
+                            m_ScriptType.localIdentifierInFile = reader.ReadInt32();
+                        }
+                        else
+                        {
+                            reader.AlignStream(4);
+                            m_ScriptType.localIdentifierInFile = reader.ReadInt64();
+                        }
                         m_ScriptTypes.Add(m_ScriptType);
                     }
                 }
@@ -202,6 +213,11 @@ namespace AssetStudio
                     m_External.pathName = reader.ReadStringToNull();
                     m_External.fileName = Path.GetFileName(m_External.pathName);
                     m_Externals.Add(m_External);
+                }
+
+                if (header.m_Version >= 5)
+                {
+                    //var userInformation = reader.ReadStringToNull();
                 }
 
                 buildType = Regex.Replace(unityVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
