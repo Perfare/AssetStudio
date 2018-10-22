@@ -91,10 +91,11 @@ namespace AssetStudio
             else
             {
                 var frameList = new List<ImportedFrame>();
-                while (rootTransform.m_Father.TryGetTransform(out var m_Father))
+                var tempTransform = rootTransform;
+                while (tempTransform.m_Father.TryGetTransform(out var m_Father))
                 {
                     frameList.Add(ConvertFrame(m_Father));
-                    rootTransform = m_Father;
+                    tempTransform = m_Father;
                 }
                 if (frameList.Count > 0)
                 {
@@ -537,28 +538,24 @@ namespace AssetStudio
             if (combine)
             {
                 meshR.m_GameObject.TryGetGameObject(out var m_GameObject);
-                foreach (var root in FrameList)
+                var frame = ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
+                if (frame?.Parent != null)
                 {
-                    var frame = ImportedHelpers.FindFrame(m_GameObject.m_Name, root);
-                    if (frame?.Parent != null)
+                    var parent = frame;
+                    while (true)
                     {
-                        var parent = frame;
-                        while (true)
+                        if (parent.Parent != null)
                         {
-                            if (parent.Parent != null)
-                            {
-                                parent = parent.Parent;
-                            }
-                            else
-                            {
-                                frame.LocalRotation = parent.LocalRotation;
-                                frame.LocalScale = parent.LocalScale;
-                                frame.LocalPosition = parent.LocalPosition;
-                                break;
-                            }
+                            parent = parent.Parent;
+                        }
+                        else
+                        {
+                            frame.LocalRotation = parent.LocalRotation;
+                            frame.LocalScale = parent.LocalScale;
+                            frame.LocalPosition = parent.LocalPosition;
+                            break;
                         }
                     }
-                    break;
                 }
             }
 
@@ -826,7 +823,7 @@ namespace AssetStudio
                     var streamCount = m_Clip.m_StreamedClip.curveCount;
                     for (int frameIndex = 0; frameIndex < m_DenseClip.m_FrameCount; frameIndex++)
                     {
-                        var time = frameIndex / m_DenseClip.m_SampleRate;
+                        var time = m_DenseClip.m_BeginTime + frameIndex / m_DenseClip.m_SampleRate;
                         var frameOffset = frameIndex * m_DenseClip.m_CurveCount;
                         for (int curveIndex = 0; curveIndex < m_DenseClip.m_CurveCount;)
                         {
@@ -834,17 +831,20 @@ namespace AssetStudio
                             ReadCurveData(iAnim, m_ClipBindingConstant, (int)index, time, m_DenseClip.m_SampleArray, (int)frameOffset, ref curveIndex);
                         }
                     }
-                    var m_ConstantClip = m_Clip.m_ConstantClip;
-                    var denseCount = m_Clip.m_DenseClip.m_CurveCount;
-                    var time2 = 0.0f;
-                    for (int i = 0; i < 2; i++)
+                    if (m_Clip.m_ConstantClip != null)
                     {
-                        for (int curveIndex = 0; curveIndex < m_ConstantClip.data.Length;)
+                        var m_ConstantClip = m_Clip.m_ConstantClip;
+                        var denseCount = m_Clip.m_DenseClip.m_CurveCount;
+                        var time2 = 0.0f;
+                        for (int i = 0; i < 2; i++)
                         {
-                            var index = streamCount + denseCount + curveIndex;
-                            ReadCurveData(iAnim, m_ClipBindingConstant, (int)index, time2, m_ConstantClip.data, 0, ref curveIndex);
+                            for (int curveIndex = 0; curveIndex < m_ConstantClip.data.Length;)
+                            {
+                                var index = streamCount + denseCount + curveIndex;
+                                ReadCurveData(iAnim, m_ClipBindingConstant, (int)index, time2, m_ConstantClip.data, 0, ref curveIndex);
+                            }
+                            time2 = animationClip.m_MuscleClip.m_StopTime;
                         }
-                        time2 = animationClip.m_MuscleClip.m_StopTime;
                     }
                 }
             }

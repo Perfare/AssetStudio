@@ -41,29 +41,6 @@ namespace AssetStudio
             obj.Parent = this;
         }
 
-        public void InsertChild(int i, ImportedFrame obj)
-        {
-            children.Insert(i, obj);
-            obj.Parent = this;
-        }
-
-        public void RemoveChild(ImportedFrame obj)
-        {
-            obj.Parent = null;
-            children.Remove(obj);
-        }
-
-        public void RemoveChild(int i)
-        {
-            children[i].Parent = null;
-            children.RemoveAt(i);
-        }
-
-        public int IndexOf(ImportedFrame obj)
-        {
-            return children.IndexOf(obj);
-        }
-
         public void ClearChild()
         {
             children.Clear();
@@ -177,6 +154,8 @@ namespace AssetStudio
     {
         public float time { get; set; }
         public T value { get; set; }
+        public T inSlope { get; set; }
+        public T outSlope { get; set; }
 
         public ImportedKeyframe(float time, T value)
         {

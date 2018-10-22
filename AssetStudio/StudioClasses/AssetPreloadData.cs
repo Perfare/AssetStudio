@@ -61,7 +61,7 @@ namespace AssetStudio
 
         public bool HasStructMember(string name)
         {
-            return serializedType.m_Nodes != null && serializedType.m_Nodes.Any(x => x.m_Name == name);
+            return serializedType?.m_Nodes != null && serializedType.m_Nodes.Any(x => x.m_Name == name);
         }
     }
 }

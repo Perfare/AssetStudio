@@ -477,13 +477,35 @@ namespace AssetStudio
         public class StreamedCurveKey
         {
             public int index { get; set; }
-            public Vector3 tcb { get; set; }
-            public float value { get; set; }
+            public float[] coeff { get; set; }
+
+            public float value;
+            public float outSlope;
+            public float inSlope;
+
             public StreamedCurveKey(BinaryReader reader)
             {
                 index = reader.ReadInt32();
-                tcb = reader.ReadVector3();
-                value = reader.ReadSingle();
+                coeff = reader.ReadSingleArray(4);
+
+                outSlope = coeff[2];
+                value = coeff[3];
+            }
+
+            public float CalculateNextInSlope(float dx, StreamedCurveKey rhs)
+            {
+                //Stepped
+                if (coeff[0] == 0f && coeff[1] == 0f && coeff[2] == 0f)
+                {
+                    return float.PositiveInfinity;
+                }
+
+                dx = Math.Max(dx, 0.0001f);
+                var dy = rhs.value - value;
+                var length = 1.0f / (dx * dx);
+                var d1 = outSlope * dx;
+                var d2 = dy + dy + dy - d1 - d1 - coeff[1] / length;
+                return d2 / dx;
             }
         }
 
@@ -507,7 +529,7 @@ namespace AssetStudio
 
         public List<StreamedFrame> ReadData()
         {
-            List<StreamedFrame> frameList = new List<StreamedFrame>();
+            var frameList = new List<StreamedFrame>();
             using (Stream stream = new MemoryStream())
             {
                 BinaryWriter writer = new BinaryWriter(stream);
@@ -516,6 +538,24 @@ namespace AssetStudio
                 while (stream.Position < stream.Length)
                 {
                     frameList.Add(new StreamedFrame(new BinaryReader(stream)));
+                }
+            }
+
+            for (int frameIndex = 2; frameIndex < frameList.Count - 1; frameIndex++)
+            {
+                var frame = frameList[frameIndex];
+                foreach (var curveKey in frame.keyList)
+                {
+                    for (int i = frameIndex - 1; i >= 0; i--)
+                    {
+                        var preFrame = frameList[i];
+                        var preCurveKey = preFrame.keyList.Find(x => x.index == curveKey.index);
+                        if (preCurveKey != null)
+                        {
+                            curveKey.inSlope = preCurveKey.CalculateNextInSlope(frame.time - preFrame.time, preCurveKey);
+                            break;
+                        }
+                    }
                 }
             }
             return frameList;
