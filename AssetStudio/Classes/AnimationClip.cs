@@ -552,7 +552,7 @@ namespace AssetStudio
                         var preCurveKey = preFrame.keyList.Find(x => x.index == curveKey.index);
                         if (preCurveKey != null)
                         {
-                            curveKey.inSlope = preCurveKey.CalculateNextInSlope(frame.time - preFrame.time, preCurveKey);
+                            curveKey.inSlope = preCurveKey.CalculateNextInSlope(frame.time - preFrame.time, curveKey);
                             break;
                         }
                     }
