@@ -382,34 +382,23 @@ namespace AssetStudio
                 iMesh.SubmeshList.Add(iSubmesh);
             }
 
-            if (meshR is SkinnedMeshRenderer sMesh)
+            //Bone
+            iMesh.BoneList = new List<ImportedBone>();
+            if (mesh.m_BindPose?.Length > 0 && mesh.m_BoneNameHashes?.Length > 0 && mesh.m_BindPose.Length == mesh.m_BoneNameHashes.Length)
             {
-                //Bone
-                iMesh.BoneList = new List<ImportedBone>(sMesh.m_Bones.Length);
-                for (int i = 0; i < sMesh.m_Bones.Length; i++)
+                for (int i = 0; i < mesh.m_BindPose.Length; i++)
                 {
                     var bone = new ImportedBone();
-                    if (sMesh.m_Bones[i].TryGetTransform(out var m_Transform))
-                    {
-                        if (m_Transform.m_GameObject.TryGetGameObject(out var m_GameObject))
-                        {
-                            bone.Name = m_GameObject.m_Name;
-                        }
-                    }
-                    //No first use m_BoneNameHashes, because it may be wrong
+                    var boneHash = mesh.m_BoneNameHashes[i];
+                    bone.Name = GetNameFromBonePathHashes(boneHash);
                     if (string.IsNullOrEmpty(bone.Name))
                     {
-                        var boneHash = mesh.m_BoneNameHashes[i];
-                        bone.Name = GetNameFromBonePathHashes(boneHash);
-                        if (string.IsNullOrEmpty(bone.Name))
-                        {
-                            bone.Name = avatar?.FindBoneName(boneHash);
-                        }
-                        if (string.IsNullOrEmpty(bone.Name))
-                        {
-                            //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
-                            continue;
-                        }
+                        bone.Name = avatar?.FindBoneName(boneHash);
+                    }
+                    if (string.IsNullOrEmpty(bone.Name))
+                    {
+                        //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
+                        continue;
                     }
                     var om = new float[4, 4];
                     var m = mesh.m_BindPose[i];
@@ -432,24 +421,36 @@ namespace AssetStudio
                     bone.Matrix = om;
                     iMesh.BoneList.Add(bone);
                 }
+            }
 
-                //hierarchy has been optimized
-                if (sMesh.m_Bones.Length == 0 && mesh.m_BindPose?.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
+            if (meshR is SkinnedMeshRenderer sMesh)
+            {
+                //Bone for 4.3 down and other
+                if (iMesh.BoneList.Count == 0)
                 {
-                    //TODO Repeat code with above
-                    for (int i = 0; i < mesh.m_BindPose.Length; i++)
+                    for (int i = 0; i < sMesh.m_Bones.Length; i++)
                     {
                         var bone = new ImportedBone();
-                        var boneHash = mesh.m_BoneNameHashes[i];
-                        bone.Name = GetNameFromBonePathHashes(boneHash);
-                        if (string.IsNullOrEmpty(bone.Name))
+                        if (sMesh.m_Bones[i].TryGetTransform(out var m_Transform))
                         {
-                            bone.Name = avatar?.FindBoneName(boneHash);
+                            if (m_Transform.m_GameObject.TryGetGameObject(out var m_GameObject))
+                            {
+                                bone.Name = m_GameObject.m_Name;
+                            }
                         }
                         if (string.IsNullOrEmpty(bone.Name))
                         {
-                            //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
-                            continue;
+                            var boneHash = mesh.m_BoneNameHashes[i];
+                            bone.Name = GetNameFromBonePathHashes(boneHash);
+                            if (string.IsNullOrEmpty(bone.Name))
+                            {
+                                bone.Name = avatar?.FindBoneName(boneHash);
+                            }
+                            if (string.IsNullOrEmpty(bone.Name))
+                            {
+                                //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
+                                continue;
+                            }
                         }
                         var om = new float[4, 4];
                         var m = mesh.m_BindPose[i];

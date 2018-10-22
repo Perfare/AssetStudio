@@ -659,6 +659,7 @@ namespace AssetStudio
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
                     }
                 }
+                StatusStripUpdate("Finished");
             });
         }
 

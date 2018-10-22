@@ -574,6 +574,7 @@ namespace AssetStudio
 					if (hasBones)
 					{
 						FbxSkin* pSkin = FbxSkin::Create(pScene, "");
+						FbxAMatrix lMeshMatrix = pMeshNode->EvaluateGlobalTransform();
 						for (int j = 0; j < boneList->Count; j++)
 						{
 							FbxCluster* pCluster = pClusterArray->GetAt(j);
@@ -588,8 +589,6 @@ namespace AssetStudio
 										lBoneMatrix.mData[m][n] = boneMatrix[m, n];
 									}
 								}
-
-								FbxAMatrix lMeshMatrix = pMeshNode->EvaluateGlobalTransform();
 
 								pCluster->SetTransformMatrix(lMeshMatrix);
 								pCluster->SetTransformLinkMatrix(lMeshMatrix * lBoneMatrix.Inverse());
