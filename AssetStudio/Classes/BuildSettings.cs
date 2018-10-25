@@ -11,34 +11,17 @@ namespace AssetStudio
 
         public BuildSettings(AssetPreloadData preloadData) : base(preloadData)
         {
-            int levels = reader.ReadInt32();
-            for (int l = 0; l < levels; l++)
+            int levelsNum = reader.ReadInt32();
+            for (int i = 0; i < levelsNum; i++)
             {
                 var level = reader.ReadAlignedString();
             }
 
-            if (version[0] >= 5)
-            {
-                int preloadedPlugins = reader.ReadInt32();
-                for (int l = 0; l < preloadedPlugins; l++)
-                {
-                    var preloadedPlugin = reader.ReadAlignedString();
-                }
-            }
+            var hasRenderTexture = reader.ReadBoolean();
+            var hasPROVersion = reader.ReadBoolean();
+            var hasPublishingRights = reader.ReadBoolean();
+            var hasShadows = reader.ReadBoolean();
 
-            reader.Position += 4;
-            if (version[0] >= 3) //3.0 and up
-            {
-                reader.Position += 4;
-            }
-            if (version[0] > 3 || (version[0] == 3 && version[1] >= 5))//3.5 and up
-            {
-                reader.Position += 4;
-            }
-            if (version[0] >= 5 || (version[0] == 4 && (version[1] >= 3 || (version[1] == 2 && buildType[0] != "a"))))
-            {
-                reader.Position += 4;
-            }
             m_Version = reader.ReadAlignedString();
         }
     }

@@ -50,7 +50,7 @@ namespace AssetStudio
         public string Dump()
         {
             var reader = InitReader();
-            if (serializedType.m_Nodes != null)
+            if (serializedType?.m_Nodes != null)
             {
                 var sb = new StringBuilder();
                 TypeTreeHelper.ReadTypeString(sb, serializedType.m_Nodes, reader);

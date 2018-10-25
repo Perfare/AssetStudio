@@ -107,7 +107,7 @@ namespace AssetStudio
                 return false;
             var m_MonoBehaviour = new MonoBehaviour(asset);
             string str;
-            if (asset.serializedType.m_Nodes != null)
+            if (asset.serializedType?.m_Nodes != null)
             {
                 str = asset.Dump();
             }

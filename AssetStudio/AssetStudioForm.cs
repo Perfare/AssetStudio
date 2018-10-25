@@ -836,7 +836,7 @@ namespace AssetStudio
                 case ClassIDType.MonoBehaviour:
                     {
                         var m_MonoBehaviour = new MonoBehaviour(asset);
-                        if (asset.serializedType.m_Nodes != null)
+                        if (asset.serializedType?.m_Nodes != null)
                         {
                             textPreviewBox.Text = asset.Dump();
                         }
