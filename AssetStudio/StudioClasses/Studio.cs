@@ -608,7 +608,7 @@ namespace AssetStudio
             });
         }
 
-        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes, bool isNew = false)
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -643,19 +643,14 @@ namespace AssetStudio
                         Directory.CreateDirectory(targetPath);
                         //导出FBX
                         StatusStripUpdate($"Exporting {filename}.fbx");
-                        if (isNew)
+                        try
                         {
-                            try
-                            {
-                                ExportGameObject(j.gameObject, targetPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
-                            }
+                            ExportGameObject(j.gameObject, targetPath);
                         }
-                        else
-                            FBXExporter.WriteFBX($"{targetPath}{filename}.fbx", gameObjects);
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                        }
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
                     }
                 }

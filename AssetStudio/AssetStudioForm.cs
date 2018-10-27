@@ -1364,68 +1364,6 @@ namespace AssetStudio
             return false;
         }
 
-        private void exportallobjectssplitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
-                {
-                    var savePath = saveFolderDialog1.Folder + "\\";
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = sceneTreeView.Nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count);
-                    ExportSplitObjects(savePath, sceneTreeView.Nodes);
-                }
-            }
-            else
-            {
-                StatusStripUpdate("No Objects available for export");
-            }
-        }
-
-        private void ExportObjects_Click(object sender, EventArgs e)
-        {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var exportAll = ((ToolStripItem)sender).Name == "exportallobjectsMenuItem";
-
-                saveFileDialog1.FileName = productName + DateTime.Now.ToString("_yy_MM_dd__HH_mm_ss");
-
-                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-                {
-                    var gameObjects = new List<GameObject>();
-                    foreach (var node in treeNodeDictionary.Values)
-                    {
-                        if (node.Checked || exportAll)
-                        {
-                            gameObjects.Add(node.gameObject);
-                        }
-                    }
-
-                    progressBar1.Value = 0;
-                    progressBar1.Maximum = 1;
-                    if (gameObjects.Count == 0)
-                    {
-                        progressBar1.PerformStep();
-                        toolStripStatusLabel1.Text = "Nothing exported.";
-                        return;
-                    }
-                    toolStripStatusLabel1.Text = $"Exporting {Path.GetFileName(saveFileDialog1.FileName)}";
-                    FBXExporter.WriteFBX(saveFileDialog1.FileName, gameObjects);
-                    toolStripStatusLabel1.Text = $"Finished exporting {Path.GetFileName(saveFileDialog1.FileName)}";
-                    progressBar1.PerformStep();
-                    if (openAfterExport.Checked && File.Exists(saveFileDialog1.FileName))
-                    {
-                        Process.Start(Path.GetDirectoryName(saveFileDialog1.FileName));
-                    }
-                }
-            }
-            else
-            {
-                toolStripStatusLabel1.Text = "No Objects available for export";
-            }
-        }
-
         private void ExportAssets_Click(object sender, EventArgs e)
         {
             if (exportableAssets.Count > 0)
@@ -1957,7 +1895,7 @@ namespace AssetStudio
                     var savePath = saveFolderDialog1.Folder + "\\";
                     progressBar1.Value = 0;
                     progressBar1.Maximum = sceneTreeView.Nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count); ;
-                    ExportSplitObjects(savePath, sceneTreeView.Nodes, true);
+                    ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
             }
             else

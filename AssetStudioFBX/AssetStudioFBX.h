@@ -48,8 +48,8 @@ namespace AssetStudio {
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex);
-			static void ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex);
+			static void Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex, bool isAscii);
+			static void ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex, bool isAscii);
 
 		private:
 			HashSet<String^>^ frameNames;
@@ -66,7 +66,7 @@ namespace AssetStudio {
 			FbxArray<FbxFileTexture*>* pTextures;
 			FbxArray<FbxNode*>* pMeshNodes;
 
-			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool normals);
+			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool isAscii, bool normals);
 			~Exporter();
 
 			void Exporter::LinkTexture(ImportedMaterial^ mat, int attIndex, FbxFileTexture* pTexture, FbxProperty& prop);

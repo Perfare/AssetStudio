@@ -4,7 +4,7 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -16,7 +16,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, versionIndex, true);
+		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, versionIndex, isAscii, true);
 		exporter->ExportMorphs(imported, false, flatInbetween);
 		exporter->ExportAnimations(EulerFilter, filterPrecision, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
@@ -25,7 +25,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex)
+	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -37,7 +37,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, versionIndex, false);
+		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, versionIndex, isAscii, false);
 		exporter->ExportMorphs(imported, morphMask, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
@@ -45,7 +45,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool normals)
+	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool isAscii, bool normals)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -80,10 +80,18 @@ namespace AssetStudio
 		if (versionIndex == 0)
 		{
 			pFileFormat = 3;
+			if (isAscii)
+			{
+				pFileFormat = 4;
+			}
 		}
 		else
 		{
 			pExporter->SetFileExportVersion(FBXVersion[versionIndex]);
+			if (isAscii)
+			{
+				pFileFormat = 1;
+			}
 		}
 
 		if (!pExporter->Initialize(cDest, pFileFormat, pSdkManager->GetIOSettings()))

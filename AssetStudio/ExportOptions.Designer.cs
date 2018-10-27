@@ -28,18 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.FbxBox = new System.Windows.Forms.GroupBox();
-            this.scaleFactor = new System.Windows.Forms.NumericUpDown();
-            this.convertDummies = new System.Windows.Forms.CheckBox();
-            this.scaleLabel = new System.Windows.Forms.Label();
-            this.exportDeformers = new System.Windows.Forms.CheckBox();
-            this.geometryBox = new System.Windows.Forms.GroupBox();
-            this.exportColors = new System.Windows.Forms.CheckBox();
-            this.exportUVs = new System.Windows.Forms.CheckBox();
-            this.exportTangents = new System.Windows.Forms.CheckBox();
-            this.exportNormals = new System.Windows.Forms.CheckBox();
-            this.fbxOKbutton = new System.Windows.Forms.Button();
-            this.fbxCancel = new System.Windows.Forms.Button();
+            this.OKbutton = new System.Windows.Forms.Button();
+            this.Cancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.convertAudio = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -48,6 +38,8 @@
             this.tobmp = new System.Windows.Forms.RadioButton();
             this.converttexture = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.fbxFormat = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.fbxVersion = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.flatInbetween = new System.Windows.Forms.CheckBox();
@@ -59,9 +51,6 @@
             this.allBones = new System.Windows.Forms.CheckBox();
             this.allFrames = new System.Windows.Forms.CheckBox();
             this.EulerFilter = new System.Windows.Forms.CheckBox();
-            this.FbxBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).BeginInit();
-            this.geometryBox.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -69,154 +58,26 @@
             ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).BeginInit();
             this.SuspendLayout();
             // 
-            // FbxBox
+            // OKbutton
             // 
-            this.FbxBox.AutoSize = true;
-            this.FbxBox.Controls.Add(this.scaleFactor);
-            this.FbxBox.Controls.Add(this.convertDummies);
-            this.FbxBox.Controls.Add(this.scaleLabel);
-            this.FbxBox.Controls.Add(this.exportDeformers);
-            this.FbxBox.Controls.Add(this.geometryBox);
-            this.FbxBox.Location = new System.Drawing.Point(12, 12);
-            this.FbxBox.Name = "FbxBox";
-            this.FbxBox.Size = new System.Drawing.Size(247, 235);
-            this.FbxBox.TabIndex = 0;
-            this.FbxBox.TabStop = false;
-            this.FbxBox.Text = "Fbx Ascii";
+            this.OKbutton.Location = new System.Drawing.Point(321, 240);
+            this.OKbutton.Name = "OKbutton";
+            this.OKbutton.Size = new System.Drawing.Size(75, 21);
+            this.OKbutton.TabIndex = 6;
+            this.OKbutton.Text = "OK";
+            this.OKbutton.UseVisualStyleBackColor = true;
+            this.OKbutton.Click += new System.EventHandler(this.fbxOKbutton_Click);
             // 
-            // scaleFactor
+            // Cancel
             // 
-            this.scaleFactor.DecimalPlaces = 2;
-            this.scaleFactor.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.scaleFactor.Location = new System.Drawing.Point(95, 194);
-            this.scaleFactor.Name = "scaleFactor";
-            this.scaleFactor.Size = new System.Drawing.Size(46, 21);
-            this.scaleFactor.TabIndex = 1;
-            this.scaleFactor.Value = new decimal(new int[] {
-            254,
-            0,
-            0,
-            131072});
-            // 
-            // convertDummies
-            // 
-            this.convertDummies.AutoSize = true;
-            this.convertDummies.Location = new System.Drawing.Point(6, 170);
-            this.convertDummies.Name = "convertDummies";
-            this.convertDummies.Size = new System.Drawing.Size(228, 16);
-            this.convertDummies.TabIndex = 5;
-            this.convertDummies.Text = "Convert Deforming Dummies to Bones";
-            this.convertDummies.UseVisualStyleBackColor = true;
-            this.convertDummies.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // scaleLabel
-            // 
-            this.scaleLabel.AutoSize = true;
-            this.scaleLabel.Location = new System.Drawing.Point(6, 196);
-            this.scaleLabel.Name = "scaleLabel";
-            this.scaleLabel.Size = new System.Drawing.Size(83, 12);
-            this.scaleLabel.TabIndex = 0;
-            this.scaleLabel.Text = "Scale Factor:";
-            // 
-            // exportDeformers
-            // 
-            this.exportDeformers.AutoSize = true;
-            this.exportDeformers.Location = new System.Drawing.Point(6, 148);
-            this.exportDeformers.Name = "exportDeformers";
-            this.exportDeformers.Size = new System.Drawing.Size(108, 16);
-            this.exportDeformers.TabIndex = 1;
-            this.exportDeformers.Text = "Skin Deformers";
-            this.exportDeformers.UseVisualStyleBackColor = true;
-            this.exportDeformers.CheckedChanged += new System.EventHandler(this.exportDeformers_CheckedChanged);
-            // 
-            // geometryBox
-            // 
-            this.geometryBox.AutoSize = true;
-            this.geometryBox.Controls.Add(this.exportColors);
-            this.geometryBox.Controls.Add(this.exportUVs);
-            this.geometryBox.Controls.Add(this.exportTangents);
-            this.geometryBox.Controls.Add(this.exportNormals);
-            this.geometryBox.Location = new System.Drawing.Point(6, 20);
-            this.geometryBox.Name = "geometryBox";
-            this.geometryBox.Size = new System.Drawing.Size(235, 122);
-            this.geometryBox.TabIndex = 0;
-            this.geometryBox.TabStop = false;
-            this.geometryBox.Text = "Geometry";
-            // 
-            // exportColors
-            // 
-            this.exportColors.AutoSize = true;
-            this.exportColors.Checked = true;
-            this.exportColors.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.exportColors.Location = new System.Drawing.Point(6, 86);
-            this.exportColors.Name = "exportColors";
-            this.exportColors.Size = new System.Drawing.Size(102, 16);
-            this.exportColors.TabIndex = 3;
-            this.exportColors.Text = "Vertex Colors";
-            this.exportColors.UseVisualStyleBackColor = true;
-            this.exportColors.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // exportUVs
-            // 
-            this.exportUVs.AutoSize = true;
-            this.exportUVs.Checked = true;
-            this.exportUVs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.exportUVs.Location = new System.Drawing.Point(6, 64);
-            this.exportUVs.Name = "exportUVs";
-            this.exportUVs.Size = new System.Drawing.Size(108, 16);
-            this.exportUVs.TabIndex = 2;
-            this.exportUVs.Text = "UV Coordinates";
-            this.exportUVs.UseVisualStyleBackColor = true;
-            this.exportUVs.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // exportTangents
-            // 
-            this.exportTangents.AutoSize = true;
-            this.exportTangents.Location = new System.Drawing.Point(6, 42);
-            this.exportTangents.Name = "exportTangents";
-            this.exportTangents.Size = new System.Drawing.Size(72, 16);
-            this.exportTangents.TabIndex = 1;
-            this.exportTangents.Text = "Tangents";
-            this.exportTangents.UseVisualStyleBackColor = true;
-            this.exportTangents.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // exportNormals
-            // 
-            this.exportNormals.AutoSize = true;
-            this.exportNormals.Checked = true;
-            this.exportNormals.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.exportNormals.Location = new System.Drawing.Point(6, 20);
-            this.exportNormals.Name = "exportNormals";
-            this.exportNormals.Size = new System.Drawing.Size(66, 16);
-            this.exportNormals.TabIndex = 0;
-            this.exportNormals.Text = "Normals";
-            this.exportNormals.UseVisualStyleBackColor = true;
-            this.exportNormals.CheckedChanged += new System.EventHandler(this.exportOpnions_CheckedChanged);
-            // 
-            // fbxOKbutton
-            // 
-            this.fbxOKbutton.Location = new System.Drawing.Point(323, 346);
-            this.fbxOKbutton.Name = "fbxOKbutton";
-            this.fbxOKbutton.Size = new System.Drawing.Size(75, 21);
-            this.fbxOKbutton.TabIndex = 6;
-            this.fbxOKbutton.Text = "OK";
-            this.fbxOKbutton.UseVisualStyleBackColor = true;
-            this.fbxOKbutton.Click += new System.EventHandler(this.fbxOKbutton_Click);
-            // 
-            // fbxCancel
-            // 
-            this.fbxCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.fbxCancel.Location = new System.Drawing.Point(404, 346);
-            this.fbxCancel.Name = "fbxCancel";
-            this.fbxCancel.Size = new System.Drawing.Size(75, 21);
-            this.fbxCancel.TabIndex = 7;
-            this.fbxCancel.Text = "Cancel";
-            this.fbxCancel.UseVisualStyleBackColor = true;
-            this.fbxCancel.Click += new System.EventHandler(this.fbxCancel_Click);
+            this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.Cancel.Location = new System.Drawing.Point(402, 240);
+            this.Cancel.Name = "Cancel";
+            this.Cancel.Size = new System.Drawing.Size(75, 21);
+            this.Cancel.TabIndex = 7;
+            this.Cancel.Text = "Cancel";
+            this.Cancel.UseVisualStyleBackColor = true;
+            this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
             // 
             // groupBox1
             // 
@@ -224,9 +85,9 @@
             this.groupBox1.Controls.Add(this.convertAudio);
             this.groupBox1.Controls.Add(this.panel1);
             this.groupBox1.Controls.Add(this.converttexture);
-            this.groupBox1.Location = new System.Drawing.Point(12, 253);
+            this.groupBox1.Location = new System.Drawing.Point(232, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(247, 114);
+            this.groupBox1.Size = new System.Drawing.Size(245, 114);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Convert";
@@ -300,6 +161,8 @@
             // groupBox2
             // 
             this.groupBox2.AutoSize = true;
+            this.groupBox2.Controls.Add(this.fbxFormat);
+            this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.fbxVersion);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.flatInbetween);
@@ -311,12 +174,33 @@
             this.groupBox2.Controls.Add(this.allBones);
             this.groupBox2.Controls.Add(this.allFrames);
             this.groupBox2.Controls.Add(this.EulerFilter);
-            this.groupBox2.Location = new System.Drawing.Point(265, 12);
+            this.groupBox2.Location = new System.Drawing.Point(12, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 235);
+            this.groupBox2.Size = new System.Drawing.Size(214, 249);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Fbx Binary";
+            this.groupBox2.Text = "Fbx";
+            // 
+            // fbxFormat
+            // 
+            this.fbxFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.fbxFormat.FormattingEnabled = true;
+            this.fbxFormat.Items.AddRange(new object[] {
+            "Binary",
+            "Ascii"});
+            this.fbxFormat.Location = new System.Drawing.Point(75, 180);
+            this.fbxFormat.Name = "fbxFormat";
+            this.fbxFormat.Size = new System.Drawing.Size(61, 20);
+            this.fbxFormat.TabIndex = 18;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(4, 183);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(59, 12);
+            this.label4.TabIndex = 17;
+            this.label4.Text = "FBXFormat";
             // 
             // fbxVersion
             // 
@@ -329,7 +213,7 @@
             "7.3",
             "7.4",
             "7.5"});
-            this.fbxVersion.Location = new System.Drawing.Point(77, 178);
+            this.fbxVersion.Location = new System.Drawing.Point(75, 209);
             this.fbxVersion.Name = "fbxVersion";
             this.fbxVersion.Size = new System.Drawing.Size(47, 20);
             this.fbxVersion.TabIndex = 16;
@@ -337,7 +221,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 181);
+            this.label3.Location = new System.Drawing.Point(4, 212);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 12);
             this.label3.TabIndex = 15;
@@ -449,16 +333,15 @@
             // 
             // ExportOptions
             // 
-            this.AcceptButton = this.fbxOKbutton;
+            this.AcceptButton = this.OKbutton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.fbxCancel;
-            this.ClientSize = new System.Drawing.Size(493, 382);
+            this.CancelButton = this.Cancel;
+            this.ClientSize = new System.Drawing.Size(490, 275);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.fbxCancel);
-            this.Controls.Add(this.fbxOKbutton);
-            this.Controls.Add(this.FbxBox);
+            this.Controls.Add(this.Cancel);
+            this.Controls.Add(this.OKbutton);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ExportOptions";
@@ -467,11 +350,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Export options";
             this.TopMost = true;
-            this.FbxBox.ResumeLayout(false);
-            this.FbxBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).EndInit();
-            this.geometryBox.ResumeLayout(false);
-            this.geometryBox.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -486,19 +364,8 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox FbxBox;
-        private System.Windows.Forms.NumericUpDown scaleFactor;
-        private System.Windows.Forms.Label scaleLabel;
-        private System.Windows.Forms.CheckBox exportDeformers;
-        private System.Windows.Forms.GroupBox geometryBox;
-        private System.Windows.Forms.CheckBox exportColors;
-        private System.Windows.Forms.CheckBox exportUVs;
-        private System.Windows.Forms.CheckBox exportTangents;
-        private System.Windows.Forms.CheckBox exportNormals;
-        private System.Windows.Forms.Button fbxOKbutton;
-        private System.Windows.Forms.Button fbxCancel;
-        private System.Windows.Forms.CheckBox convertDummies;
+        private System.Windows.Forms.Button OKbutton;
+        private System.Windows.Forms.Button Cancel;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox converttexture;
         private System.Windows.Forms.RadioButton tojpg;
@@ -518,5 +385,7 @@
         private System.Windows.Forms.CheckBox EulerFilter;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox fbxVersion;
+        private System.Windows.Forms.ComboBox fbxFormat;
+        private System.Windows.Forms.Label label4;
     }
 }

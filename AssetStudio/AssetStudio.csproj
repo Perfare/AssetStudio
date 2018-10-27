@@ -209,7 +209,6 @@
     <Compile Include="Classes\BuildSettings.cs" />
     <Compile Include="StudioClasses\BundleFile.cs" />
     <Compile Include="StudioClasses\TypeTreeItem.cs" />
-    <Compile Include="StudioClasses\FBXExporter.cs" />
     <Compile Include="StudioClasses\SpriteHelper.cs" />
     <Compile Include="StudioClasses\Exporter.cs" />
     <Compile Include="StudioClasses\Importer.cs" />
