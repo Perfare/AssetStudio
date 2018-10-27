@@ -185,15 +185,27 @@ namespace AssetStudio
     {
         public static ImportedFrame FindFrame(string name, ImportedFrame root)
         {
-            ImportedFrame frame = root;
-            if ((frame != null) && (frame.Name == name))
+            if (root.Name == name)
             {
-                return frame;
+                return root;
             }
-
-            for (int i = 0; i < root.Count; i++)
+            foreach (var child in root)
             {
-                if ((frame = FindFrame(name, root[i])) != null)
+                var frame = FindFrame(name, child);
+                if (frame != null)
+                {
+                    return frame;
+                }
+            }
+            return null;
+        }
+
+        public static ImportedFrame FindChild(string name, ImportedFrame root)
+        {
+            foreach (var child in root)
+            {
+                var frame = FindFrame(name, child);
+                if (frame != null)
                 {
                     return frame;
                 }

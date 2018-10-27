@@ -256,7 +256,7 @@ namespace AssetStudio
             var iMesh = new ImportedMesh();
             meshR.m_GameObject.TryGetGameObject(out var m_GameObject2);
             m_GameObject2.m_Transform.TryGetTransform(out var meshTransform);
-            iMesh.Name = GetTransformPath(meshTransform);
+            iMesh.Name = GetMeshPath(meshTransform);
             iMesh.SubmeshList = new List<ImportedSubmesh>();
             var subHashSet = new HashSet<int>();
             var combine = false;
@@ -539,7 +539,7 @@ namespace AssetStudio
             if (combine)
             {
                 meshR.m_GameObject.TryGetGameObject(out var m_GameObject);
-                var frame = ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
+                var frame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]);
                 if (frame?.Parent != null)
                 {
                     var parent = frame;
@@ -594,11 +594,10 @@ namespace AssetStudio
             return null;
         }
 
-
-        private string GetTransformPath(Transform meshTransform)
+        private string GetMeshPath(Transform meshTransform)
         {
             meshTransform.m_GameObject.TryGetGameObject(out var m_GameObject);
-            var curFrame = ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
+            var curFrame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]);
             var path = curFrame.Name;
             while (curFrame.Parent != null)
             {
@@ -607,6 +606,17 @@ namespace AssetStudio
             }
 
             return path;
+        }
+
+        private string GetTransformPath(Transform transform)
+        {
+            transform.m_GameObject.TryGetGameObject(out var m_GameObject);
+            if (transform.m_Father.TryGetTransform(out var father))
+            {
+                return GetTransformPath(father) + "/" + m_GameObject.m_Name;
+            }
+
+            return m_GameObject.m_Name;
         }
 
         private ImportedMaterial ConvertMaterial(Material mat)
@@ -1022,7 +1032,7 @@ namespace AssetStudio
                 {
                     transformName = strs.Last();
                     var parentFrameName = strs[strs.Length - 2];
-                    parentFrame = ImportedHelpers.FindFrame(parentFrameName, rootFrame);
+                    parentFrame = ImportedHelpers.FindChild(parentFrameName, rootFrame);
                 }
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
