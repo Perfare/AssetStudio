@@ -36,7 +36,7 @@ namespace AssetStudio
                         format = ImageFormat.Jpeg;
                         break;
                 }
-                var exportFullName = exportPathName + asset.Text + "." + ext.ToLower();
+                var exportFullName = Path.Combine(exportPathName, string.Concat(asset.Text, ".", ext.ToLower()));
                 if (ExportFileExists(exportFullName))
                     return false;
                 bitmap.Save(exportFullName, format);
@@ -45,7 +45,7 @@ namespace AssetStudio
             }
             else
             {
-                var exportFullName = exportPathName + asset.Text + converter.GetExtensionName();
+                var exportFullName = Path.Combine(exportPathName, string.Concat(asset.Text, converter.GetExtensionName()));
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, converter.ConvertToContainer());
@@ -62,7 +62,7 @@ namespace AssetStudio
             var converter = new AudioClipConverter(m_AudioClip);
             if (convertAudio && converter.IsFMODSupport)
             {
-                var exportFullName = exportPath + asset.Text + ".wav";
+                var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".wav"));
                 if (ExportFileExists(exportFullName))
                     return false;
                 var buffer = converter.ConvertToWav();
@@ -83,7 +83,7 @@ namespace AssetStudio
         public static bool ExportShader(AssetPreloadData asset, string exportPath)
         {
             var m_Shader = new Shader(asset);
-            var exportFullName = exportPath + asset.Text + ".shader";
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".shader"));
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_Shader.m_Script);
@@ -93,29 +93,83 @@ namespace AssetStudio
         public static bool ExportTextAsset(AssetPreloadData asset, string exportPath)
         {
             var m_TextAsset = new TextAsset(asset);
-            var exportFullName = exportPath + asset.Text + ".txt";
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".txt"));
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_TextAsset.m_Script);
             return true;
         }
 
+	    public static void WriteMonoText(AssetPreloadData asset, string exportFullPath)
+	    {
+		    string str;
+		    if (asset.serializedType?.m_Nodes != null)
+		    {
+			    str = asset.Dump();
+		    }
+		    else
+		    {
+			    str = Studio.GetScriptString(asset);
+		    }
+		    File.WriteAllText(exportFullPath, str);
+	    }
+
+	    public static string GetExportMonoScriptPath(AssetPreloadData asset, string exportPath, string fileExtension = ".txt")
+	    {
+		    var m_Script = new MonoScript(asset);
+
+		    if (m_Script.m_Namespace == string.Empty)
+		    {
+			    return Path.Combine(exportPath, m_Script.m_ClassName, string.Concat(asset.Text, fileExtension));
+		    }
+
+		    return Path.Combine(exportPath, m_Script.m_Namespace, m_Script.m_ClassName, string.Concat(asset.Text, fileExtension));
+	    }
+
+	    public static string GetExportMonoBehaviourPath(AssetPreloadData asset, string exportPath, string fileExtension = ".txt")
+	    {
+		    var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, fileExtension));
+
+		    var m_MonoBehaviour = new MonoBehaviour(asset);
+
+		    if (m_MonoBehaviour.m_Script.TryGetPD(out var script))
+		    {
+			    var m_Script = new MonoScript(script);
+
+			    if (m_Script.m_Namespace == string.Empty)
+			    {
+				    return Path.Combine(exportPath, m_Script.m_ClassName, string.Concat(asset.Text, fileExtension));
+			    }
+
+			    return Path.Combine(exportPath, m_Script.m_Namespace, m_Script.m_ClassName, string.Concat(asset.Text, fileExtension));
+		    }
+
+		    return exportFullName;
+	    }
+
+	    public static bool ExportMonoScript(AssetPreloadData asset, string exportPath)
+	    {
+		    string exportFullName = GetExportMonoScriptPath(asset, exportPath);
+
+		    if (ExportFileExists(exportFullName))
+		    {
+			    return false;
+		    }
+
+		    WriteMonoText(asset, exportFullName);
+		    return true;
+	    }
+
         public static bool ExportMonoBehaviour(AssetPreloadData asset, string exportPath)
         {
-            var exportFullName = exportPath + asset.Text + ".txt";
-            if (ExportFileExists(exportFullName))
-                return false;
-            var m_MonoBehaviour = new MonoBehaviour(asset);
-            string str;
-            if (asset.serializedType?.m_Nodes != null)
-            {
-                str = asset.Dump();
-            }
-            else
-            {
-                str = Studio.GetScriptString(asset);
-            }
-            File.WriteAllText(exportFullName, str);
+	        var exportFullName = GetExportMonoBehaviourPath(asset, exportPath);
+
+	        if (ExportFileExists(exportFullName))
+	        {
+		        return false;
+	        }
+
+	        WriteMonoText(asset, exportFullName);
             return true;
         }
 
@@ -129,7 +183,7 @@ namespace AssetStudio
                 {
                     extension = ".otf";
                 }
-                var exportFullName = exportPath + asset.Text + extension;
+                var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, extension));
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_Font.m_FontData);
@@ -143,7 +197,7 @@ namespace AssetStudio
             var m_Mesh = new Mesh(asset);
             if (m_Mesh.m_VertexCount <= 0)
                 return false;
-            var exportFullName = exportPath + asset.Text + ".obj";
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".obj"));
             if (ExportFileExists(exportFullName))
                 return false;
             var sb = new StringBuilder();
@@ -224,7 +278,7 @@ namespace AssetStudio
             var m_VideoClip = new VideoClip(asset, true);
             if (m_VideoClip.m_VideoData != null)
             {
-                var exportFullName = exportPath + asset.Text + Path.GetExtension(m_VideoClip.m_OriginalPath);
+                var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, Path.GetExtension(m_VideoClip.m_OriginalPath)));
                 if (ExportFileExists(exportFullName))
                     return false;
                 File.WriteAllBytes(exportFullName, m_VideoClip.m_VideoData);
@@ -236,7 +290,7 @@ namespace AssetStudio
         public static bool ExportMovieTexture(AssetPreloadData asset, string exportPath)
         {
             var m_MovieTexture = new MovieTexture(asset);
-            var exportFullName = exportPath + asset.Text + ".ogv";
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".ogv"));
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_MovieTexture.m_MovieData);
@@ -259,7 +313,7 @@ namespace AssetStudio
                     format = ImageFormat.Jpeg;
                     break;
             }
-            var exportFullName = exportPath + asset.Text + "." + type.ToLower();
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, ".", type.ToLower()));
             if (ExportFileExists(exportFullName))
                 return false;
             var bitmap = SpriteHelper.GetImageFromSprite(new Sprite(asset));
@@ -271,12 +325,26 @@ namespace AssetStudio
             return false;
         }
 
-        public static bool ExportRawFile(AssetPreloadData asset, string exportPath)
+        public static bool ExportRawFile(AssetPreloadData asset, string exportPath, string fileExtension = ".dat")
         {
-            var exportFullName = exportPath + asset.Text + ".dat";
+            var exportFullName = Path.Combine(exportPath, string.Concat(asset.Text, fileExtension));
+
+	        switch (asset.Type)
+	        {
+		        case ClassIDType.MonoBehaviour:
+			        exportFullName = GetExportMonoBehaviourPath(asset, exportPath, fileExtension);
+			        break;
+		        case ClassIDType.MonoScript:
+			        exportFullName = GetExportMonoScriptPath(asset, exportPath, fileExtension);
+			        break;
+	        }
+
             if (ExportFileExists(exportFullName))
-                return false;
-            var bytes = asset.InitReader().ReadBytes((int)asset.Size);
+            {
+	            return false;
+            }
+
+	        var bytes = asset.InitReader().ReadBytes((int)asset.Size);
             File.WriteAllBytes(exportFullName, bytes);
             return true;
         }
@@ -295,14 +363,14 @@ namespace AssetStudio
         {
             var m_Animator = new Animator(animator);
             var convert = animationList != null ? new ModelConverter(m_Animator, animationList) : new ModelConverter(m_Animator);
-            exportPath = exportPath + Studio.FixFileName(animator.Text) + ".fbx";
+            exportPath = Path.Combine(exportPath, string.Concat(Studio.FixFileName(animator.Text), ".fbx"));
             return ModelConverter(convert, exportPath);
         }
 
         public static bool ExportGameObject(GameObject gameObject, string exportPath, List<AssetPreloadData> animationList = null)
         {
             var convert = animationList != null ? new ModelConverter(gameObject, animationList) : new ModelConverter(gameObject);
-            exportPath = exportPath + Studio.FixFileName(gameObject.m_Name) + ".fbx";
+            exportPath = Path.Combine(exportPath, string.Concat(Studio.FixFileName(gameObject.m_Name),  ".fbx"));
             return ModelConverter(convert, exportPath);
         }
 

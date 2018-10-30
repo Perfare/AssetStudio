@@ -503,7 +503,7 @@ namespace AssetStudio
             return selectFile.Distinct().ToArray();
         }
 
-        public static void ExportAssets(string savePath, List<AssetPreloadData> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        public static void ExportAssets(string savePath, List<AssetPreloadData> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport, bool forceRaw = false)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -516,96 +516,112 @@ namespace AssetStudio
                 SetProgressBarMaximum(toExport);
                 foreach (var asset in toExportAssets)
                 {
-                    var exportpath = savePath + "\\";
+                    var exportpath = Path.Combine(savePath, "_export");
                     if (assetGroupSelectedIndex == 1)
                     {
-                        exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) + "_export\\";
+	                    var sourceFileName = Path.GetFileNameWithoutExtension(asset.sourceFile.filePath) ?? throw new InvalidOperationException();
+                        exportpath += Path.Combine(sourceFileName, "_export");
                     }
                     else if (assetGroupSelectedIndex == 0)
                     {
-                        exportpath = savePath + "\\" + asset.TypeString + "\\";
+                        exportpath = Path.Combine(savePath, "_export", asset.TypeString);
                     }
                     StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
-                        switch (asset.Type)
-                        {
-                            case ClassIDType.Texture2D:
-                                if (ExportTexture2D(asset, exportpath, true))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.AudioClip:
-                                if (ExportAudioClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Shader:
-                                if (ExportShader(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.TextAsset:
-                                if (ExportTextAsset(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MonoBehaviour:
-                                if (ExportMonoBehaviour(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Font:
-                                if (ExportFont(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Mesh:
-                                if (ExportMesh(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.VideoClip:
-                                if (ExportVideoClip(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.MovieTexture:
-                                if (ExportMovieTexture(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Sprite:
-                                if (ExportSprite(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.Animator:
-                                if (ExportAnimator(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-                            case ClassIDType.AnimationClip:
-                                break;
-                            default:
-                                if (ExportRawFile(asset, exportpath))
-                                {
-                                    exportedCount++;
-                                }
-                                break;
-
-                        }
+	                    if (forceRaw)
+	                    {
+		                    if (ExportRawFile(asset, exportpath))
+		                    {
+			                    exportedCount++;
+		                    }
+	                    }
+	                    else
+	                    {
+		                    switch (asset.Type)
+		                    {
+			                    case ClassIDType.Texture2D:
+				                    if (ExportTexture2D(asset, exportpath, true))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.AudioClip:
+				                    if (ExportAudioClip(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.Shader:
+				                    if (ExportShader(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.TextAsset:
+				                    if (ExportTextAsset(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.MonoScript:
+				                    if (ExportMonoScript(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.MonoBehaviour:
+				                    if (ExportMonoBehaviour(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.Font:
+				                    if (ExportFont(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.Mesh:
+				                    if (ExportMesh(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.VideoClip:
+				                    if (ExportVideoClip(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.MovieTexture:
+				                    if (ExportMovieTexture(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.Sprite:
+				                    if (ExportSprite(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.Animator:
+				                    if (ExportAnimator(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+			                    case ClassIDType.AnimationClip:
+				                    break;
+			                    default:
+				                    if (ExportRawFile(asset, exportpath))
+				                    {
+					                    exportedCount++;
+				                    }
+				                    break;
+		                    }
+	                    }
                     }
                     catch (Exception ex)
                     {
@@ -799,6 +815,32 @@ namespace AssetStudio
             return new[] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
 
+	    private static void TryToLoadModules()
+	    {
+		    if (moduleLoaded)
+		    {
+			    return;
+		    }
+
+		    var path = Path.Combine(mainPath, "Managed");
+
+		    if (Directory.Exists(path))
+		    {
+			    LoadModules(path);
+		    }
+		    else
+		    {
+			    var openFolderDialog = new OpenFolderDialog { Title = "Select Assembly Folder" };
+
+			    if (openFolderDialog.ShowDialog() == DialogResult.OK)
+			    {
+				    LoadModules(openFolderDialog.Folder);
+			    }
+		    }
+
+		    moduleLoaded = true;
+	    }
+
 	    private static void LoadModules(string path)
 	    {
 		    var files = Directory.GetFiles(path, "*.dll");
@@ -821,72 +863,103 @@ namespace AssetStudio
 		    }
 	    }
 
+	    private static List<string> GetMonoScriptHeader(MonoScript m_MonoScript, ClassIDType classType = ClassIDType.MonoBehaviour)
+	    {
+		    var strings = new List<string>();
+
+		    if (classType == ClassIDType.MonoScript)
+		    {
+			    strings.Add("PPtr<MonoScript> m_Script");
+		    }
+
+		    if (m_MonoScript.version[0] > 3 || (m_MonoScript.version[0] == 3 && m_MonoScript.version[1] >= 4))
+		    {
+			    strings.Add($"\tint32 m_ExecutionOrder = {m_MonoScript.m_ExecutionOrder}");
+		    }
+
+		    strings.Add($"\tstring m_ClassName = {m_MonoScript.m_ClassName}");
+
+		    if (m_MonoScript.version[0] >= 3)
+		    {
+				var ns = m_MonoScript.m_Namespace;
+
+			    if (string.IsNullOrWhiteSpace(ns))
+			    {
+				    ns = "<root>";
+			    }
+
+			    strings.Add($"\tstring m_Namespace = {ns}");
+		    }
+
+		    strings.Add($"\tstring m_AssemblyName = {m_MonoScript.m_AssemblyName}");
+
+		    if (m_MonoScript.version[0] < 2018 || (m_MonoScript.version[0] == 2018 && m_MonoScript.version[1] < 2))
+		    {
+			    strings.Add($"\tbool m_IsEditorScript = {m_MonoScript.m_IsEditorScript}");
+		    }
+
+		    if (classType == ClassIDType.MonoScript)
+		    {
+			    strings.Add("\n");
+		    }
+		    return strings;
+	    }
+
+	    private static List<string> GetMonoBehaviourHeader(MonoBehaviour m_MonoBehaviour)
+	    {
+		    var strings = new List<string>();
+		    strings.Add("PPtr<GameObject> m_GameObject");
+		    strings.Add($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
+		    strings.Add($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
+		    strings.Add($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
+		    strings.Add("PPtr<MonoScript> m_Script");
+		    strings.Add($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
+		    strings.Add($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
+		    strings.Add($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
+			strings.Add("\n");
+		    return strings;
+	    }
+
         public static string GetScriptString(AssetPreloadData assetPreloadData)
         {
-            if (!moduleLoaded)
-            {
-	            try
-	            {
-		            var path = Path.Combine(mainPath, "Managed");
+	        TryToLoadModules();
 
-		            if (Directory.Exists(path))
-		            {
-			            LoadModules(path);
-		            }
-	            }
-	            catch
-	            {
-		            var openFolderDialog = new OpenFolderDialog { Title = "Select Assembly Folder" };
+	        List<string> strings = new List<string>();
 
-		            if (openFolderDialog.ShowDialog() == DialogResult.OK)
-		            {
-			            LoadModules(openFolderDialog.Folder);
-		            }
-	            }
+	        AssetPreloadData script = assetPreloadData;
 
-	            moduleLoaded = true;
-            }
+	        MonoBehaviour m_MonoBehaviour = null;
 
-            var m_MonoBehaviour = new MonoBehaviour(assetPreloadData);
-            var sb = new StringBuilder();
-            sb.AppendLine("PPtr<GameObject> m_GameObject");
-            sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
-            sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
-            sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
-            sb.AppendLine("PPtr<MonoScript> m_Script");
-            sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
-            sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
-            sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
-
-	        if (!m_MonoBehaviour.m_Script.TryGetPD(out var script))
+	        if (assetPreloadData.Type == ClassIDType.MonoBehaviour)
 	        {
-		        return sb.ToString();
+		        m_MonoBehaviour = new MonoBehaviour(assetPreloadData);
+
+		        List<string> monoBehaviourHeader = GetMonoBehaviourHeader(m_MonoBehaviour);
+		        strings.AddRange(monoBehaviourHeader);
+
+		        if (!m_MonoBehaviour.m_Script.TryGetPD(out script))
+		        {
+			        return string.Join(Environment.NewLine, strings);
+		        }
 	        }
 
 	        var m_Script = new MonoScript(script);
+
+	        List<string> scriptHeader = GetMonoScriptHeader(m_Script, assetPreloadData.Type);
+
+	        switch (assetPreloadData.Type)
+	        {
+		        case ClassIDType.MonoBehaviour:
+			        strings.InsertRange(strings.Count > 1 ? strings.Count - 2 : 0, scriptHeader);
+			        break;
+		        case ClassIDType.MonoScript:
+			        strings.AddRange(scriptHeader);
+			        return string.Join(Environment.NewLine, strings);
+	        }
+
 	        if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
 	        {
-//                    using (var openFileDialog = new OpenFileDialog())
-//                    {
-//                        openFileDialog.Title = $"Select {m_Script.m_AssemblyName}";
-//                        openFileDialog.FileName = m_Script.m_AssemblyName;
-//                        openFileDialog.Filter = $"{m_Script.m_AssemblyName}|{m_Script.m_AssemblyName}";
-//                        if (openFileDialog.ShowDialog() == DialogResult.OK)
-//                        {
-//                            var moduleContext = new ModuleContext();
-//                            var asmResolver = new AssemblyResolver(moduleContext, true);
-//                            var resolver = new Resolver(asmResolver);
-//                            moduleContext.AssemblyResolver = asmResolver;
-//                            moduleContext.Resolver = resolver;
-//                            module = ModuleDefMD.Load(openFileDialog.FileName, moduleContext);
-//                            LoadedModule.Add(m_Script.m_AssemblyName, module);
-//                        }
-//                        else
-//                        {
-//                            return sb.ToString();
-//                        }
-//                    }
-				return sb.ToString();
+				return string.Join(Environment.NewLine, strings);
 	        }
 
 	        string sourcePath = m_Script.m_Namespace == string.Empty ? m_Script.m_ClassName : string.Format("{0}.{1}", m_Script.m_Namespace, m_Script.m_ClassName);
@@ -904,28 +977,28 @@ namespace AssetStudio
 
 	        if (typeDef == null)
 	        {
-		        return sb.ToString();
+		        return string.Join(Environment.NewLine, strings);
 	        }
+
+	        var stringBuilder = new StringBuilder();
+	        stringBuilder.Append(string.Join(Environment.NewLine, strings));
 
 	        try
 	        {
 		        TypeSig typeSig = typeDef.ToTypeSig();
-		        DumpType(typeSig, sb, assetPreloadData.sourceFile, null, -1, true);
+		        DumpType(typeSig, stringBuilder, assetPreloadData.sourceFile, null, -1, true);
 	        }
 	        catch
 	        {
-		        sb = new StringBuilder();
-		        sb.AppendLine("PPtr<GameObject> m_GameObject");
-		        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
-		        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
-		        sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
-		        sb.AppendLine("PPtr<MonoScript> m_Script");
-		        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
-		        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
-		        sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
+		        if (assetPreloadData.Type == ClassIDType.MonoBehaviour)
+		        {
+			        stringBuilder.Clear();
+			        strings = GetMonoBehaviourHeader(m_MonoBehaviour);
+			        stringBuilder.Append(string.Join(Environment.NewLine, strings));
+		        }
 	        }
 
-	        return sb.ToString();
+	        return stringBuilder.ToString();
         }
 
         private static void DumpType(TypeSig typeSig, StringBuilder sb, AssetsFile assetsFile, string name, int indent, bool isRoot = false)
@@ -980,7 +1053,8 @@ namespace AssetStudio
             }
             if (typeSig.FullName == "System.String")
             {
-                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = \"{reader.ReadAlignedString()}\"");
+	            var str = reader.ReadAlignedString();
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = \"{str}\"");
                 return;
             }
             if (typeSig.FullName == "System.Object")

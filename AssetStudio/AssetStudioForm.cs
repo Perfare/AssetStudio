@@ -846,16 +846,16 @@ namespace AssetStudio
 
                         break;
                     }
+	            case ClassIDType.MonoScript:
                 case ClassIDType.MonoBehaviour:
                     {
-                        var m_MonoBehaviour = new MonoBehaviour(asset);
                         if (asset.serializedType?.m_Nodes != null)
                         {
                             textPreviewBox.Text = asset.Dump();
                         }
                         else
                         {
-	                    textPreviewBox.Text = GetScriptString(asset);
+							textPreviewBox.Text = GetScriptString(asset);
                         }
                         textPreviewBox.Visible = true;
 
@@ -1816,6 +1816,16 @@ namespace AssetStudio
             }
         }
 
+	    private void exportSelectedAssetsToRawToolStripMenuItem_Click(object sender, EventArgs e)
+	    {
+		    var saveFolderDialog1 = new OpenFolderDialog();
+		    if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+		    {
+			    timer.Stop();
+			    ExportAssets(saveFolderDialog1.Folder, GetSelectedAssets(), assetGroupOptions.SelectedIndex, openAfterExport.Checked, true);
+		    }
+	    }
+
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
@@ -1991,5 +2001,7 @@ namespace AssetStudio
             assetListView.VirtualListSize = visibleAssets.Count;
             assetListView.EndUpdate();
         }
+
+
     }
 }

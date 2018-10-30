@@ -7,15 +7,17 @@ namespace AssetStudio
 {
     public sealed class MonoScript : NamedObject
     {
+	    public int m_ExecutionOrder;
         public string m_ClassName;
         public string m_Namespace = string.Empty;
         public string m_AssemblyName;
+	    public bool m_IsEditorScript;
 
         public MonoScript(AssetPreloadData preloadData) : base(preloadData)
         {
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 4)) //3.4 and up
             {
-                var m_ExecutionOrder = reader.ReadInt32();
+                m_ExecutionOrder = reader.ReadInt32();
             }
             if (version[0] < 5) //5.0 down
             {
@@ -37,7 +39,7 @@ namespace AssetStudio
             m_AssemblyName = reader.ReadAlignedString();
             if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
             {
-                var m_IsEditorScript = reader.ReadBoolean();
+                m_IsEditorScript = reader.ReadBoolean();
             }
         }
     }
