@@ -236,7 +236,6 @@ namespace AssetStudio
                             case ClassIDType.AnimatorController:
                             case ClassIDType.AnimatorOverrideController:
                             case ClassIDType.Material:
-                            case ClassIDType.MonoScript:
                             case ClassIDType.SpriteAtlas:
                                 {
                                     var obj = new NamedObject(asset);
@@ -248,18 +247,41 @@ namespace AssetStudio
                                     exportable = true;
                                     break;
                                 }
+	                        case ClassIDType.MonoScript:
+								{
+									var m_Script = new MonoScript(asset);
+
+									asset.Text = m_Script.m_ClassName;
+									if (m_Script.m_Namespace == string.Empty)
+									{
+										asset.TypeString = string.Format("{0} ({1})", asset.TypeString, m_Script.m_AssemblyName);
+									}
+									else
+									{
+										asset.TypeString = string.Format("{0} : {1} ({2})", asset.TypeString, m_Script.m_Namespace, m_Script.m_AssemblyName);
+									}
+									break;
+								}
                             case ClassIDType.MonoBehaviour:
                                 {
                                     var m_MonoBehaviour = new MonoBehaviour(asset);
-                                    if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGetPD(out var script))
-                                    {
-                                        var m_Script = new MonoScript(script);
-                                        asset.Text = m_Script.m_ClassName;
-                                    }
-                                    else
-                                    {
-                                        asset.Text = m_MonoBehaviour.m_Name;
-                                    }
+
+	                                if (m_MonoBehaviour.m_Name != "")
+	                                {
+		                                asset.Text = m_MonoBehaviour.m_Name;
+	                                }
+
+	                                if (m_MonoBehaviour.m_Script.TryGetPD(out var script))
+	                                {
+		                                var m_Script = new MonoScript(script);
+
+		                                if (m_MonoBehaviour.m_Name == "")
+		                                {
+			                                asset.Text = m_Script.m_ClassName;
+		                                }
+
+		                                asset.TypeString = string.Format("{0} : {1}.{2} ({3})", asset.TypeString, m_Script.m_Namespace, m_Script.m_ClassName, m_Script.m_AssemblyName);
+	                                }
                                     exportable = true;
                                     break;
                                 }
@@ -777,36 +799,54 @@ namespace AssetStudio
             return new[] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
 
+	    private static void LoadModules(string path)
+	    {
+		    var files = Directory.GetFiles(path, "*.dll");
+		    var moduleContext = new ModuleContext();
+		    var asmResolver = new AssemblyResolver(moduleContext, true);
+		    var resolver = new Resolver(asmResolver);
+		    moduleContext.AssemblyResolver = asmResolver;
+		    moduleContext.Resolver = resolver;
+		    try
+		    {
+			    foreach (var file in files)
+			    {
+				    var module = ModuleDefMD.Load(file, moduleContext);
+				    LoadedModuleDic.Add(Path.GetFileName(file), module);
+			    }
+		    }
+		    catch
+		    {
+			    // ignored
+		    }
+	    }
+
         public static string GetScriptString(AssetPreloadData assetPreloadData)
         {
             if (!moduleLoaded)
             {
-                var openFolderDialog = new OpenFolderDialog();
-                openFolderDialog.Title = "Select Assembly Folder";
-                if (openFolderDialog.ShowDialog() == DialogResult.OK)
-                {
-                    var files = Directory.GetFiles(openFolderDialog.Folder, "*.dll");
-                    var moduleContext = new ModuleContext();
-                    var asmResolver = new AssemblyResolver(moduleContext, true);
-                    var resolver = new Resolver(asmResolver);
-                    moduleContext.AssemblyResolver = asmResolver;
-                    moduleContext.Resolver = resolver;
-                    try
-                    {
-                        foreach (var file in files)
-                        {
-                            var module = ModuleDefMD.Load(file, moduleContext);
-                            LoadedModuleDic.Add(Path.GetFileName(file), module);
-                        }
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                }
+	            try
+	            {
+		            var path = Path.Combine(mainPath, "Managed");
 
-                moduleLoaded = true;
+		            if (Directory.Exists(path))
+		            {
+			            LoadModules(path);
+		            }
+	            }
+	            catch
+	            {
+		            var openFolderDialog = new OpenFolderDialog { Title = "Select Assembly Folder" };
+
+		            if (openFolderDialog.ShowDialog() == DialogResult.OK)
+		            {
+			            LoadModules(openFolderDialog.Folder);
+		            }
+	            }
+
+	            moduleLoaded = true;
             }
+
             var m_MonoBehaviour = new MonoBehaviour(assetPreloadData);
             var sb = new StringBuilder();
             sb.AppendLine("PPtr<GameObject> m_GameObject");
@@ -817,55 +857,75 @@ namespace AssetStudio
             sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
             sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
             sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
-            if (m_MonoBehaviour.m_Script.TryGetPD(out var script))
-            {
-                var m_Script = new MonoScript(script);
-                if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
-                {
-                    /*using (var openFileDialog = new OpenFileDialog())
-                    {
-                        openFileDialog.Title = $"Select {m_Script.m_AssemblyName}";
-                        openFileDialog.FileName = m_Script.m_AssemblyName;
-                        openFileDialog.Filter = $"{m_Script.m_AssemblyName}|{m_Script.m_AssemblyName}";
-                        if (openFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            var moduleContext = new ModuleContext();
-                            var asmResolver = new AssemblyResolver(moduleContext, true);
-                            var resolver = new Resolver(asmResolver);
-                            moduleContext.AssemblyResolver = asmResolver;
-                            moduleContext.Resolver = resolver;
-                            module = ModuleDefMD.Load(openFileDialog.FileName, moduleContext);
-                            LoadedModule.Add(m_Script.m_AssemblyName, module);
-                        }
-                        else
-                        {
-                            return sb.ToString();
-                        }
-                    }*/
-                    return sb.ToString();
-                }
-                var typeDef = module.Assembly.Find(m_Script.m_Namespace != "" ? $"{m_Script.m_Namespace}.{m_Script.m_ClassName}" : m_Script.m_ClassName, false);
-                if (typeDef != null)
-                {
-                    try
-                    {
-                        DumpType(typeDef.ToTypeSig(), sb, assetPreloadData.sourceFile, null, -1, true);
-                    }
-                    catch
-                    {
-                        sb = new StringBuilder();
-                        sb.AppendLine("PPtr<GameObject> m_GameObject");
-                        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
-                        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
-                        sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
-                        sb.AppendLine("PPtr<MonoScript> m_Script");
-                        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
-                        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
-                        sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
-                    }
-                }
-            }
-            return sb.ToString();
+
+	        if (!m_MonoBehaviour.m_Script.TryGetPD(out var script))
+	        {
+		        return sb.ToString();
+	        }
+
+	        var m_Script = new MonoScript(script);
+	        if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
+	        {
+//                    using (var openFileDialog = new OpenFileDialog())
+//                    {
+//                        openFileDialog.Title = $"Select {m_Script.m_AssemblyName}";
+//                        openFileDialog.FileName = m_Script.m_AssemblyName;
+//                        openFileDialog.Filter = $"{m_Script.m_AssemblyName}|{m_Script.m_AssemblyName}";
+//                        if (openFileDialog.ShowDialog() == DialogResult.OK)
+//                        {
+//                            var moduleContext = new ModuleContext();
+//                            var asmResolver = new AssemblyResolver(moduleContext, true);
+//                            var resolver = new Resolver(asmResolver);
+//                            moduleContext.AssemblyResolver = asmResolver;
+//                            moduleContext.Resolver = resolver;
+//                            module = ModuleDefMD.Load(openFileDialog.FileName, moduleContext);
+//                            LoadedModule.Add(m_Script.m_AssemblyName, module);
+//                        }
+//                        else
+//                        {
+//                            return sb.ToString();
+//                        }
+//                    }
+				return sb.ToString();
+	        }
+
+	        string sourcePath = m_Script.m_Namespace == string.Empty ? m_Script.m_ClassName : string.Format("{0}.{1}", m_Script.m_Namespace, m_Script.m_ClassName);
+
+	        TypeDef typeDef = module.Assembly.Find(sourcePath, false);
+
+	        if (typeDef == null)
+	        {
+		        foreach (ExportedType moduleExportedType in module.ExportedTypes.Where(moduleExportedType => moduleExportedType.FullName == sourcePath))
+		        {
+			        typeDef = moduleExportedType.Resolve();
+			        break;
+		        }
+	        }
+
+	        if (typeDef == null)
+	        {
+		        return sb.ToString();
+	        }
+
+	        try
+	        {
+		        TypeSig typeSig = typeDef.ToTypeSig();
+		        DumpType(typeSig, sb, assetPreloadData.sourceFile, null, -1, true);
+	        }
+	        catch
+	        {
+		        sb = new StringBuilder();
+		        sb.AppendLine("PPtr<GameObject> m_GameObject");
+		        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
+		        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
+		        sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
+		        sb.AppendLine("PPtr<MonoScript> m_Script");
+		        sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
+		        sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
+		        sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
+	        }
+
+	        return sb.ToString();
         }
 
         private static void DumpType(TypeSig typeSig, StringBuilder sb, AssetsFile assetsFile, string name, int indent, bool isRoot = false)

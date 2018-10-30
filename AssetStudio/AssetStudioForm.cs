@@ -192,29 +192,41 @@ namespace AssetStudio
                 }
                 if (!dontBuildHierarchyMenuItem.Checked)
                 {
-                    sceneTreeView.BeginUpdate();
-                    sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
-                    foreach (TreeNode node in sceneTreeView.Nodes)
-                    {
-                        node.HideCheckBox();
-                    }
-                    sceneTreeView.EndUpdate();
+					if (this.sceneTreeView != null)
+					{
+						sceneTreeView.BeginUpdate();
+						if (treeNodeCollection != null)
+						{
+							TreeNode[] treeNodeArray = treeNodeCollection.ToArray();
+
+							sceneTreeView.Nodes.AddRange(treeNodeArray);
+
+							foreach (TreeNode node in sceneTreeView.Nodes)
+							{
+								node.HideCheckBox();
+							}
+						}
+						sceneTreeView.EndUpdate();
+					}
                 }
                 if (buildClassStructuresMenuItem.Checked)
                 {
-                    classesListView.BeginUpdate();
-                    foreach (var version in AllTypeMap)
-                    {
-                        ListViewGroup versionGroup = new ListViewGroup(version.Key);
-                        classesListView.Groups.Add(versionGroup);
+					if (this.classesListView != null)
+					{
+						classesListView.BeginUpdate();
+						foreach (var version in AllTypeMap)
+						{
+							ListViewGroup versionGroup = new ListViewGroup(version.Key);
+							classesListView.Groups.Add(versionGroup);
 
-                        foreach (var uclass in version.Value)
-                        {
-                            uclass.Value.Group = versionGroup;
-                            classesListView.Items.Add(uclass.Value);
-                        }
-                    }
-                    classesListView.EndUpdate();
+							foreach (var uclass in version.Value)
+							{
+								uclass.Value.Group = versionGroup;
+								classesListView.Items.Add(uclass.Value);
+							}
+						}
+						classesListView.EndUpdate();
+					}
                 }
 
                 var types = exportableAssets.Select(x => x.Type).Distinct().ToArray();
@@ -521,14 +533,15 @@ namespace AssetStudio
 
         private void resizeAssetListColumns()
         {
-            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.HeaderSize);
-            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
-            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.HeaderSize);
-            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
+			assetListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+//            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.HeaderSize);
+//            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
+//            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.HeaderSize);
+//            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
 
-            var vscrollwidth = SystemInformation.VerticalScrollBarWidth;
-            var hasvscroll = (visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
-            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
+//            var vscrollwidth = SystemInformation.VerticalScrollBarWidth;
+//            var hasvscroll = (visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
+//            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
         }
 
         private void tabPage2_Resize(object sender, EventArgs e)
@@ -558,13 +571,13 @@ namespace AssetStudio
 
         private void ListSearchTextChanged(object sender, EventArgs e)
         {
-            if (enableFiltering)
+            if (enableFiltering && enableLiveSearch.Checked)
             {
                 FilterAssetList();
             }
         }
 
-        private void assetListView_ColumnClick(object sender, ColumnClickEventArgs e)
+	    private void assetListView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             if (firstSortColumn != e.Column)
             {
@@ -842,7 +855,7 @@ namespace AssetStudio
                         }
                         else
                         {
-                            textPreviewBox.Text = GetScriptString(asset);
+	                    textPreviewBox.Text = GetScriptString(asset);
                         }
                         textPreviewBox.Visible = true;
 
@@ -1466,6 +1479,7 @@ namespace AssetStudio
             displayOriginalName.Checked = (bool)Properties.Settings.Default["displayOriginalName"];
             displayAll.Checked = (bool)Properties.Settings.Default["displayAll"];
             displayInfo.Checked = (bool)Properties.Settings.Default["displayInfo"];
+	        enableLiveSearch.Checked = (bool)Properties.Settings.Default["enableLiveSearch"];
             enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
             openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
             assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
@@ -1724,7 +1738,7 @@ namespace AssetStudio
             assetsFileIndexCache.Clear();
             productName = "";
 
-            sceneTreeView.Nodes.Clear();
+            sceneTreeView?.Nodes.Clear();
 
             assetListView.VirtualListSize = 0;
             assetListView.Items.Clear();
@@ -1875,7 +1889,26 @@ namespace AssetStudio
             }
         }
 
-        private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
+		private void listSearch_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyData == Keys.Enter)
+			{
+				this.FilterAssetList();
+			}
+		}
+
+		private void liveSearch_CheckedChanged(object sender, EventArgs e)
+		{
+			if (enableLiveSearch.Checked)
+			{
+				FilterAssetList();
+			}
+
+			Properties.Settings.Default["enableLiveSearch"] = enableLiveSearch.Checked;
+			Properties.Settings.Default.Save();
+		}
+
+		private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
             if (selectasset.gameObject != null)
