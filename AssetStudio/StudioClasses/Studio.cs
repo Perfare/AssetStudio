@@ -999,8 +999,13 @@ namespace AssetStudio
                 }
                 var size = reader.ReadInt32();
                 sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
-                sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
+//                sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
                 sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+	            if (typeSig.TypeName == "GUIStyle[]")
+	            {
+		            sb.AppendLine($"{new string('\t', indent + 2)}<truncated>");
+		            return;
+	            }
                 for (int i = 0; i < size; i++)
                 {
                     sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
@@ -1019,11 +1024,16 @@ namespace AssetStudio
                     }
                     var size = reader.ReadInt32();
                     sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
-                    sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
+//                    sb.AppendLine($"{new string('\t', indent + 1)}Array Array");
                     sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+	                if (typeSig.TypeName == "GUIStyle[]")
+	                {
+		                sb.AppendLine($"{new string('\t', indent + 2)}<truncated>");
+		                return;
+	                }
                     for (int i = 0; i < size; i++)
                     {
-                        sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+	                    sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
                         DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "data", indent + 2);
                     }
                 }
