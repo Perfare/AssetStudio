@@ -1948,6 +1948,21 @@ namespace AssetStudio
             return selectedAssets;
         }
 
+	    private static List<AssetPreloadData> ExecuteFilterQuery(string query)
+	    {
+		    if (query.ToLowerInvariant().StartsWith("type:"))
+		    {
+			    var typeQuery = query.Remove(0, 5);
+
+			    if (typeQuery != string.Empty)
+			    {
+				    return visibleAssets.FindAll(x => x.TypeString.IndexOf(typeQuery, StringComparison.CurrentCultureIgnoreCase) >= 0);
+			    }
+		    }
+
+		    return visibleAssets.FindAll(x => x.Text.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0);
+	    }
+
         private void FilterAssetList()
         {
             assetListView.BeginUpdate();
@@ -1971,7 +1986,7 @@ namespace AssetStudio
             }
             if (listSearch.Text != " Filter ")
             {
-                visibleAssets = visibleAssets.FindAll(x => x.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
+	            visibleAssets = ExecuteFilterQuery(listSearch.Text);
             }
             assetListView.VirtualListSize = visibleAssets.Count;
             assetListView.EndUpdate();
