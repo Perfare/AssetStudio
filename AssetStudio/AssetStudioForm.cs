@@ -229,7 +229,7 @@ namespace AssetStudio
 					}
                 }
 
-                var types = exportableAssets.Select(x => x.Type).Distinct().ToArray();
+                var types = exportableAssets.Select(x => x.Type).Distinct().OrderBy(x => x.ToString()).ToArray();
                 foreach (var type in types)
                 {
                     var typeItem = new ToolStripMenuItem
