@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace AssetStudio
 {
@@ -107,10 +108,13 @@ namespace AssetStudio
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exportSelectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-	        this.exportSelectedAssetsToRawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportSelectedAssetsToRawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportobjectswithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			this.jumpToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
@@ -535,6 +539,7 @@ namespace AssetStudio
 			this.assetListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.assetListView_ColumnClick);
 			this.assetListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.selectAsset);
 			this.assetListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.assetListView_RetrieveVirtualItem);
+			this.assetListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.assetListView_KeyDown);
 			this.assetListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.assetListView_MouseClick);
 			//
 			// columnHeaderName
@@ -763,6 +768,7 @@ namespace AssetStudio
 			this.textPreviewBox.TabIndex = 2;
 			this.textPreviewBox.Visible = false;
 			this.textPreviewBox.WordWrap = false;
+			this.textPreviewBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textPreviewBox_KeyDown);
 			//
 			// glControl1
 			//
@@ -880,14 +886,31 @@ namespace AssetStudio
 			//
 			this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
 			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectAllToolStripMenuItem,
+            this.toolStripSeparator1,
             this.exportSelectedAssetsToolStripMenuItem,
-			this.exportSelectedAssetsToRawToolStripMenuItem,
+            this.exportSelectedAssetsToRawToolStripMenuItem,
             this.exportAnimatorwithselectedAnimationClipMenuItem,
             this.exportobjectswithselectedAnimationClipMenuItem,
+            this.toolStripSeparator4,
             this.jumpToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(335, 114);
+			this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+			//
+			// selectAllToolStripMenuItem
+			//
+			this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+			this.selectAllToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+A";
+			this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
+			this.selectAllToolStripMenuItem.Text = "Select all";
+			this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+			//
+			// toolStripSeparator1
+			//
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(309, 6);
 			//
 			// exportSelectedAssetsToolStripMenuItem
 			//
@@ -895,13 +918,13 @@ namespace AssetStudio
             this.exportSelectedAssetsToolStripMenuItem.Size = new System.Drawing.Size(334, 22);
 			this.exportSelectedAssetsToolStripMenuItem.Text = "Export selected assets";
 			this.exportSelectedAssetsToolStripMenuItem.Click += new System.EventHandler(this.exportSelectedAssetsToolStripMenuItem_Click);
-	        //
-	        // exportSelectedAssetsToRawToolStripMenuItem
-	        //
-	        this.exportSelectedAssetsToRawToolStripMenuItem.Name = "exportSelectedAssetsToRawToolStripMenuItem";
-	        this.exportSelectedAssetsToRawToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
-	        this.exportSelectedAssetsToRawToolStripMenuItem.Text = "Export selected assets to raw files";
-	        this.exportSelectedAssetsToRawToolStripMenuItem.Click += new System.EventHandler(this.exportSelectedAssetsToRawToolStripMenuItem_Click);
+			//
+			// exportSelectedAssetsToRawToolStripMenuItem
+			//
+			this.exportSelectedAssetsToRawToolStripMenuItem.Name = "exportSelectedAssetsToRawToolStripMenuItem";
+			this.exportSelectedAssetsToRawToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
+			this.exportSelectedAssetsToRawToolStripMenuItem.Text = "Export selected assets to raw files";
+			this.exportSelectedAssetsToRawToolStripMenuItem.Click += new System.EventHandler(this.exportSelectedAssetsToRawToolStripMenuItem_Click);
 			//
 			// exportAnimatorwithselectedAnimationClipMenuItem
 			//
@@ -918,6 +941,11 @@ namespace AssetStudio
 			this.exportobjectswithselectedAnimationClipMenuItem.Text = "Export objects with selected AnimationClip";
 			this.exportobjectswithselectedAnimationClipMenuItem.Visible = false;
 			this.exportobjectswithselectedAnimationClipMenuItem.Click += new System.EventHandler(this.exportObjectswithAnimationClipMenuItem_Click);
+			//
+			// toolStripSeparator4
+			//
+			this.toolStripSeparator4.Name = "toolStripSeparator4";
+			this.toolStripSeparator4.Size = new System.Drawing.Size(309, 6);
 			//
 			// jumpToSceneHierarchyToolStripMenuItem
 			//
@@ -1063,6 +1091,9 @@ namespace AssetStudio
         private System.Windows.Forms.ToolStripMenuItem exportAllObjectssplitToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem jumpToSceneHierarchyToolStripMenuItem;
 		private ToolStripMenuItem enableLiveSearch;
+		private ToolStripMenuItem selectAllToolStripMenuItem;
+		private ToolStripSeparator toolStripSeparator1;
+		private ToolStripSeparator toolStripSeparator4;
 	}
 }
 

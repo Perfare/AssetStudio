@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
+using AssetStudio.Properties;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using static AssetStudio.Studio;
@@ -1928,7 +1929,49 @@ namespace AssetStudio
             }
         }
 
-        private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
+		private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			StudioClasses.NativeMethods.SelectAllItems(this.assetListView);
+		}
+
+		private void assetListView_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Control && e.KeyCode == Keys.A)
+			{
+				StudioClasses.NativeMethods.SelectAllItems(this.assetListView);
+			}
+		}
+
+	    private void textPreviewBox_KeyDown(object sender, KeyEventArgs e)
+	    {
+		    if (e.Control && e.KeyCode == Keys.A)
+		    {
+				this.textPreviewBox.SelectAll();
+			    this.textPreviewBox.Focus();
+		    }
+	    }
+
+		private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (!this.assetListView.Focused)
+			{
+				return;
+			}
+
+			int selectedCount = assetListView.SelectedIndices.Count;
+
+			this.exportSelectedAssetsToolStripMenuItem.Enabled = selectedCount > 0;
+			this.exportSelectedAssetsToRawToolStripMenuItem.Enabled = selectedCount > 0;
+
+			this.exportSelectedAssetsToolStripMenuItem.Text = selectedCount == 1 ? Resources.ContextMenu_ExportSelectedAsset : Resources.ContextMenu_ExportSelectedAssets;
+			this.exportSelectedAssetsToRawToolStripMenuItem.Text = selectedCount == 1 ? Resources.ContextMenu_ExportSelectedAssetRaw : Resources.ContextMenu_ExportSelectedAssetsRaw;
+
+			string itemSelectedFormat = selectedCount == 1 ? Resources.ContextMenu_ItemSelectedFormat : Resources.ContextMenu_ItemsSelectedFormat;
+
+			this.exportSelectedAssetsToolStripMenuItem.ShortcutKeyDisplayString = string.Format(itemSelectedFormat, selectedCount);
+		}
+
+		private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (sceneTreeView.Nodes.Count > 0)
             {

@@ -171,6 +171,7 @@
     <Compile Include="Classes\MonoScript.cs" />
     <Compile Include="Classes\NamedObject.cs" />
     <Compile Include="Classes\Object.cs" />
+    <Compile Include="StudioClasses\NativeMethods.cs" />
     <Compile Include="StudioClasses\PPtr.cs" />
     <Compile Include="Classes\Renderer.cs" />
     <Compile Include="Classes\Texture.cs" />

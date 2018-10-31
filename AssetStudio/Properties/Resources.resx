@@ -185,4 +185,22 @@ void main()
   <data name="_as" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\as.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ContextMenu_ExportSelectedAsset" xml:space="preserve">
+    <value>Export selected asset</value>
+  </data>
+  <data name="ContextMenu_ExportSelectedAssetRaw" xml:space="preserve">
+    <value>Export selected asset to raw file</value>
+  </data>
+  <data name="ContextMenu_ExportSelectedAssets" xml:space="preserve">
+    <value>Export selected assets</value>
+  </data>
+  <data name="ContextMenu_ExportSelectedAssetsRaw" xml:space="preserve">
+    <value>Export selected assets to raw files </value>
+  </data>
+  <data name="ContextMenu_ItemSelectedFormat" xml:space="preserve">
+    <value>({0} item selected)</value>
+  </data>
+  <data name="ContextMenu_ItemsSelectedFormat" xml:space="preserve">
+    <value>({0} items selected)</value>
+  </data>
 </root>
