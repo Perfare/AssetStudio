@@ -353,7 +353,7 @@ namespace AssetStudio
                         iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
                     }
                     //BoneInfluence
-                    if (mesh.m_Skin.Length > 0)
+                    if (mesh.m_Skin?.Length > 0)
                     {
                         var inf = mesh.m_Skin[j];
                         iVertex.BoneIndices = new byte[inf.Count];

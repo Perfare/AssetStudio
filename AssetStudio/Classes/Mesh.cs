@@ -571,7 +571,6 @@ namespace AssetStudio
                 #region 2018 and up
                 if (version[0] >= 2018)
                 {
-                    InitMSkin();
                     foreach (var m_Channel in m_Channels)
                     {
                         if (m_Channel.dimension > 0)
@@ -639,8 +638,16 @@ namespace AssetStudio
                                         case 7: //kShaderChannelTexCoord3
                                             m_UV4 = componentsFloatArray;
                                             break;
+                                        //kShaderChannelTexCoord4 8
+                                        //kShaderChannelTexCoord5 9
+                                        //kShaderChannelTexCoord6 10
+                                        //kShaderChannelTexCoord7 11
                                         //2018.2 and up
-                                        case 12:
+                                        case 12: //kShaderChannelBlendWeight
+                                            if (m_Skin == null)
+                                            {
+                                                InitMSkin();
+                                            }
                                             for (int i = 0; i < m_VertexCount; i++)
                                             {
                                                 for (int j = 0; j < 4; j++)
@@ -649,7 +656,11 @@ namespace AssetStudio
                                                 }
                                             }
                                             break;
-                                        case 13:
+                                        case 13: //kShaderChannelBlendIndices
+                                            if (m_Skin == null)
+                                            {
+                                                InitMSkin();
+                                            }
                                             for (int i = 0; i < m_VertexCount; i++)
                                             {
                                                 for (int j = 0; j < 4; j++)
