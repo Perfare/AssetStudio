@@ -597,7 +597,7 @@ namespace AssetStudio
         private string GetMeshPath(Transform meshTransform)
         {
             meshTransform.m_GameObject.TryGetGameObject(out var m_GameObject);
-            var curFrame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]);
+            var curFrame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]) ?? ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
             var path = curFrame.Name;
             while (curFrame.Parent != null)
             {
