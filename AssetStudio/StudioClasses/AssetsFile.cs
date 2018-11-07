@@ -199,20 +199,14 @@ namespace AssetStudio
                 }
 
                 buildType = Regex.Replace(unityVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-                var firstVersion = int.Parse(unityVersion.Split('.')[0]);
-                version = Regex.Matches(unityVersion, @"\d").Cast<Match>().Select(m => int.Parse(m.Value)).ToArray();
-                if (firstVersion > 5)//2017 and up
-                {
-                    var nversion = new int[version.Length - 3];
-                    nversion[0] = firstVersion;
-                    Array.Copy(version, 4, nversion, 1, version.Length - 4);
-                    version = nversion;
-                }
+                var versionSplit = Regex.Replace(unityVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                version = versionSplit.Select(int.Parse).ToArray();
 
                 valid = true;
             }
             catch
             {
+                // ignored
             }
         }
 
