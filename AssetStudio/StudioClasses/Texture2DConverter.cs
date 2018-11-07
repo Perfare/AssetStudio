@@ -94,8 +94,8 @@ namespace AssetStudio
             m_Height = m_Texture2D.m_Height;
             m_TextureFormat = m_Texture2D.m_TextureFormat;
             var mMipMap = m_Texture2D.m_MipMap;
-            version = m_Texture2D.sourceFile.version;
-            var platform = m_Texture2D.sourceFile.m_TargetPlatform;
+            version = m_Texture2D.version;
+            var platform = m_Texture2D.platform;
 
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2))//5.2 down
             {

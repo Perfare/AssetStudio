@@ -171,6 +171,7 @@
     <Compile Include="Classes\MonoScript.cs" />
     <Compile Include="Classes\NamedObject.cs" />
     <Compile Include="Classes\Object.cs" />
+    <Compile Include="StudioClasses\ObjectReader.cs" />
     <Compile Include="StudioClasses\PPtr.cs" />
     <Compile Include="Classes\Renderer.cs" />
     <Compile Include="Classes\Texture.cs" />
@@ -204,7 +205,7 @@
     <Compile Include="Classes\Sprite.cs" />
     <Compile Include="Classes\SpriteAtlas.cs" />
     <Compile Include="Classes\VideoClip.cs" />
-    <Compile Include="StudioClasses\AssetPreloadData.cs" />
+    <Compile Include="StudioClasses\AssetItem.cs" />
     <Compile Include="Classes\AudioClip.cs" />
     <Compile Include="Classes\BuildSettings.cs" />
     <Compile Include="StudioClasses\BundleFile.cs" />

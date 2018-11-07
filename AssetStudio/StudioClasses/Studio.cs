@@ -17,9 +17,9 @@ namespace AssetStudio
         public static List<AssetsFile> assetsfileList = new List<AssetsFile>(); //loaded files
         public static Dictionary<string, int> assetsFileIndexCache = new Dictionary<string, int>();
         public static Dictionary<string, EndianBinaryReader> resourceFileReaders = new Dictionary<string, EndianBinaryReader>(); //use for read res files
-        public static List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>(); //used to hold all assets while the ListView is filtered
+        public static List<AssetItem> exportableAssets = new List<AssetItem>(); //used to hold all assets while the ListView is filtered
         private static HashSet<string> assetsNameHash = new HashSet<string>(); //avoid the same name asset
-        public static List<AssetPreloadData> visibleAssets = new List<AssetPreloadData>(); //used to build the ListView from all or filtered assets
+        public static List<AssetItem> visibleAssets = new List<AssetItem>(); //used to build the ListView from all or filtered assets
         public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> AllTypeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>();
         public static string mainPath;
         public static string productName = "";
@@ -157,65 +157,70 @@ namespace AssetStudio
 
         public static void BuildAssetStructures(bool loadAssets, bool displayAll, bool buildHierarchy, bool buildClassStructures, bool displayOriginalName)
         {
-            #region first loop - read asset data & create list
+            var tempDic = new Dictionary<ObjectReader, AssetItem>();
+            // first loop - read asset data & create list
             if (loadAssets)
             {
                 SetProgressBarValue(0);
-                SetProgressBarMaximum(assetsfileList.Sum(x => x.preloadTable.Values.Count));
+                SetProgressBarMaximum(assetsfileList.Sum(x => x.ObjectReaders.Count));
                 StatusStripUpdate("Building asset list...");
 
-                string fileIDfmt = "D" + assetsfileList.Count.ToString().Length;
+                var fileIDfmt = "D" + assetsfileList.Count.ToString().Length;
 
                 for (var i = 0; i < assetsfileList.Count; i++)
                 {
                     var assetsFile = assetsfileList[i];
-
-                    string fileID = i.ToString(fileIDfmt);
+                    var tempExportableAssets = new List<AssetItem>();
+                    var fileID = i.ToString(fileIDfmt);
                     AssetBundle ab = null;
-                    foreach (var asset in assetsFile.preloadTable.Values)
+                    var j = 0;
+                    var assetIDfmt = "D" + assetsFile.m_Objects.Count.ToString().Length;
+                    foreach (var objectReader in assetsFile.ObjectReaders.Values)
                     {
-                        asset.uniqueID = fileID + asset.uniqueID;
+                        var assetItem = new AssetItem(objectReader);
+                        tempDic.Add(objectReader, assetItem);
+                        assetItem.UniqueID = fileID + j.ToString(assetIDfmt);
                         var exportable = false;
-                        switch (asset.Type)
+                        switch (assetItem.Type)
                         {
                             case ClassIDType.GameObject:
                                 {
-                                    var m_GameObject = new GameObject(asset);
-                                    asset.Text = m_GameObject.m_Name;
-                                    assetsFile.GameObjectList.Add(asset.m_PathID, m_GameObject);
+                                    var m_GameObject = new GameObject(objectReader);
+                                    assetItem.Text = m_GameObject.m_Name;
+                                    assetsFile.GameObjects.Add(objectReader.m_PathID, m_GameObject);
                                     break;
                                 }
                             case ClassIDType.Transform:
                                 {
-                                    var m_Transform = new Transform(asset);
-                                    assetsFile.TransformList.Add(asset.m_PathID, m_Transform);
+                                    var m_Transform = new Transform(objectReader);
+                                    assetsFile.Transforms.Add(objectReader.m_PathID, m_Transform);
                                     break;
                                 }
                             case ClassIDType.RectTransform:
                                 {
-                                    var m_Rect = new RectTransform(asset);
-                                    assetsFile.TransformList.Add(asset.m_PathID, m_Rect);
+                                    var m_Rect = new RectTransform(objectReader);
+                                    assetsFile.Transforms.Add(objectReader.m_PathID, m_Rect);
                                     break;
                                 }
                             case ClassIDType.Texture2D:
                                 {
-                                    var m_Texture2D = new Texture2D(asset, false);
+                                    var m_Texture2D = new Texture2D(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_Texture2D.path))
-                                        asset.FullSize = asset.Size + m_Texture2D.size;
+                                        assetItem.FullSize = objectReader.byteSize + m_Texture2D.size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.AudioClip:
                                 {
-                                    var m_AudioClip = new AudioClip(asset, false);
+                                    var m_AudioClip = new AudioClip(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
-                                        asset.FullSize = asset.Size + m_AudioClip.m_Size;
+                                        assetItem.FullSize = objectReader.byteSize + m_AudioClip.m_Size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.VideoClip:
                                 {
-                                    var m_VideoClip = new VideoClip(asset, false);
+                                    var m_VideoClip = new VideoClip(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                        asset.FullSize = asset.Size + (long)m_VideoClip.m_Size;
+                                        assetItem.FullSize = objectReader.byteSize + (long)m_VideoClip.m_Size;
                                     goto case ClassIDType.NamedObject;
                                 }
                             case ClassIDType.NamedObject:
@@ -227,8 +232,8 @@ namespace AssetStudio
                             case ClassIDType.MovieTexture:
                             case ClassIDType.Sprite:
                                 {
-                                    var obj = new NamedObject(asset);
-                                    asset.Text = obj.m_Name;
+                                    var obj = new NamedObject(objectReader);
+                                    assetItem.Text = obj.m_Name;
                                     exportable = true;
                                     break;
                                 }
@@ -239,8 +244,8 @@ namespace AssetStudio
                             case ClassIDType.MonoScript:
                             case ClassIDType.SpriteAtlas:
                                 {
-                                    var obj = new NamedObject(asset);
-                                    asset.Text = obj.m_Name;
+                                    var obj = new NamedObject(objectReader);
+                                    assetItem.Text = obj.m_Name;
                                     break;
                                 }
                             case ClassIDType.Animator:
@@ -250,78 +255,82 @@ namespace AssetStudio
                                 }
                             case ClassIDType.MonoBehaviour:
                                 {
-                                    var m_MonoBehaviour = new MonoBehaviour(asset);
-                                    if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGetPD(out var script))
+                                    var m_MonoBehaviour = new MonoBehaviour(objectReader);
+                                    if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGet(out var script))
                                     {
                                         var m_Script = new MonoScript(script);
-                                        asset.Text = m_Script.m_ClassName;
+                                        assetItem.Text = m_Script.m_ClassName;
                                     }
                                     else
                                     {
-                                        asset.Text = m_MonoBehaviour.m_Name;
+                                        assetItem.Text = m_MonoBehaviour.m_Name;
                                     }
                                     exportable = true;
                                     break;
                                 }
                             case ClassIDType.PlayerSettings:
                                 {
-                                    var plSet = new PlayerSettings(asset);
+                                    var plSet = new PlayerSettings(objectReader);
                                     productName = plSet.productName;
                                     break;
                                 }
                             case ClassIDType.AssetBundle:
                                 {
-                                    ab = new AssetBundle(asset);
-                                    asset.Text = ab.m_Name;
+                                    ab = new AssetBundle(objectReader);
+                                    assetItem.Text = ab.m_Name;
                                     break;
                                 }
                         }
-                        if (asset.Text == "")
+                        if (assetItem.Text == "")
                         {
-                            asset.Text = asset.TypeString + " #" + asset.uniqueID;
+                            assetItem.Text = assetItem.TypeString + " #" + assetItem.UniqueID;
                         }
-                        asset.SubItems.AddRange(new[] { asset.TypeString, asset.FullSize.ToString() });
+                        assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString() });
                         //处理同名文件
-                        if (!assetsNameHash.Add((asset.TypeString + asset.Text).ToUpper()))
+                        if (!assetsNameHash.Add((assetItem.TypeString + assetItem.Text).ToUpper()))
                         {
-                            asset.Text += " #" + asset.uniqueID;
+                            assetItem.Text += " #" + assetItem.UniqueID;
                         }
                         //处理非法文件名
-                        asset.Text = FixFileName(asset.Text);
+                        assetItem.Text = FixFileName(assetItem.Text);
                         if (displayAll)
                         {
                             exportable = true;
                         }
                         if (exportable)
                         {
-                            assetsFile.exportableAssets.Add(asset);
+                            tempExportableAssets.Add(assetItem);
                         }
+                        objectReader.exportName = assetItem.Text;
+
                         ProgressBarPerformStep();
+                        j++;
                     }
                     if (displayOriginalName)
                     {
-                        assetsFile.exportableAssets.ForEach(x =>
+                        foreach (var x in tempExportableAssets)
                         {
-                            var replacename = ab?.m_Container.Find(y => y.second.asset.m_PathID == x.m_PathID)?.first;
+                            var replacename = ab?.m_Container.Find(y => y.second.asset.m_PathID == x.reader.m_PathID)?.first;
                             if (!string.IsNullOrEmpty(replacename))
                             {
                                 var ex = Path.GetExtension(replacename);
                                 x.Text = !string.IsNullOrEmpty(ex) ? replacename.Replace(ex, "") : replacename;
+                                x.reader.exportName = x.Text;
                             }
-                        });
+                        }
                     }
-                    exportableAssets.AddRange(assetsFile.exportableAssets);
+                    exportableAssets.AddRange(tempExportableAssets);
+                    tempExportableAssets.Clear();
                 }
 
                 visibleAssets = exportableAssets;
                 assetsNameHash.Clear();
             }
-            #endregion
 
-            #region second loop - build tree structure
+            // second loop - build tree structure
             if (buildHierarchy)
             {
-                var gameObjectCount = assetsfileList.Sum(x => x.GameObjectList.Values.Count);
+                var gameObjectCount = assetsfileList.Sum(x => x.GameObjects.Count);
                 if (gameObjectCount > 0)
                 {
                     SetProgressBarValue(0);
@@ -333,13 +342,13 @@ namespace AssetStudio
                         var fileNode = new GameObjectTreeNode(null); //RootNode
                         fileNode.Text = assetsFile.fileName;
 
-                        foreach (var m_GameObject in assetsFile.GameObjectList.Values)
+                        foreach (var m_GameObject in assetsFile.GameObjects.Values)
                         {
                             foreach (var m_Component in m_GameObject.m_Components)
                             {
-                                if (m_Component.TryGetPD(out var asset))
+                                if (m_Component.TryGet(out var asset))
                                 {
-                                    switch (asset.Type)
+                                    switch (asset.type)
                                     {
                                         case ClassIDType.Transform:
                                             {
@@ -354,12 +363,13 @@ namespace AssetStudio
                                         case ClassIDType.MeshFilter:
                                             {
                                                 m_GameObject.m_MeshFilter = m_Component;
-                                                if (m_Component.TryGetPD(out var assetPreloadData))
+                                                if (m_Component.TryGet(out var objectReader))
                                                 {
-                                                    var m_MeshFilter = new MeshFilter(assetPreloadData);
-                                                    if (m_MeshFilter.m_Mesh.TryGetPD(out assetPreloadData))
+                                                    var m_MeshFilter = new MeshFilter(objectReader);
+                                                    if (m_MeshFilter.m_Mesh.TryGet(out objectReader))
                                                     {
-                                                        assetPreloadData.gameObject = m_GameObject;
+                                                        var item = tempDic[objectReader];
+                                                        item.gameObject = m_GameObject;
                                                     }
                                                 }
                                                 break;
@@ -367,12 +377,13 @@ namespace AssetStudio
                                         case ClassIDType.SkinnedMeshRenderer:
                                             {
                                                 m_GameObject.m_SkinnedMeshRenderer = m_Component;
-                                                if (m_Component.TryGetPD(out var assetPreloadData))
+                                                if (m_Component.TryGet(out var objectReader))
                                                 {
-                                                    var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(assetPreloadData);
-                                                    if (m_SkinnedMeshRenderer.m_Mesh.TryGetPD(out assetPreloadData))
+                                                    var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(objectReader);
+                                                    if (m_SkinnedMeshRenderer.m_Mesh.TryGet(out objectReader))
                                                     {
-                                                        assetPreloadData.gameObject = m_GameObject;
+                                                        var item = tempDic[objectReader];
+                                                        item.gameObject = m_GameObject;
                                                     }
                                                 }
                                                 break;
@@ -380,7 +391,9 @@ namespace AssetStudio
                                         case ClassIDType.Animator:
                                             {
                                                 m_GameObject.m_Animator = m_Component;
-                                                asset.Text = m_GameObject.preloadData.Text;
+                                                var item = tempDic[asset];
+                                                item.Text = m_GameObject.reader.exportName;
+                                                asset.exportName = m_GameObject.reader.exportName;
                                                 break;
                                             }
                                     }
@@ -410,6 +423,7 @@ namespace AssetStudio
                                 treeNodeDictionary.Add(m_GameObject, currentNode);
                             }
                             parentNode.Nodes.Add(currentNode);
+
                             ProgressBarPerformStep();
                         }
 
@@ -420,9 +434,9 @@ namespace AssetStudio
                     }
                 }
             }
-            #endregion
+            tempDic.Clear();
 
-            #region build list of class strucutres
+            // build list of class strucutres
             if (buildClassStructures)
             {
                 foreach (var assetsFile in assetsfileList)
@@ -455,7 +469,6 @@ namespace AssetStudio
                     }
                 }
             }
-            #endregion
         }
 
         public static string FixFileName(string str)
@@ -481,7 +494,7 @@ namespace AssetStudio
             return selectFile.Distinct().ToArray();
         }
 
-        public static void ExportAssets(string savePath, List<AssetPreloadData> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -504,72 +517,73 @@ namespace AssetStudio
                         exportpath = savePath + "\\" + asset.TypeString + "\\";
                     }
                     StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
+                    var reader = asset.reader;
                     try
                     {
                         switch (asset.Type)
                         {
                             case ClassIDType.Texture2D:
-                                if (ExportTexture2D(asset, exportpath, true))
+                                if (ExportTexture2D(reader, exportpath, true))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.AudioClip:
-                                if (ExportAudioClip(asset, exportpath))
+                                if (ExportAudioClip(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.Shader:
-                                if (ExportShader(asset, exportpath))
+                                if (ExportShader(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.TextAsset:
-                                if (ExportTextAsset(asset, exportpath))
+                                if (ExportTextAsset(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.MonoBehaviour:
-                                if (ExportMonoBehaviour(asset, exportpath))
+                                if (ExportMonoBehaviour(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.Font:
-                                if (ExportFont(asset, exportpath))
+                                if (ExportFont(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.Mesh:
-                                if (ExportMesh(asset, exportpath))
+                                if (ExportMesh(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.VideoClip:
-                                if (ExportVideoClip(asset, exportpath))
+                                if (ExportVideoClip(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.MovieTexture:
-                                if (ExportMovieTexture(asset, exportpath))
+                                if (ExportMovieTexture(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.Sprite:
-                                if (ExportSprite(asset, exportpath))
+                                if (ExportSprite(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ClassIDType.Animator:
-                                if (ExportAnimator(asset, exportpath))
+                                if (ExportAnimator(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
@@ -577,7 +591,7 @@ namespace AssetStudio
                             case ClassIDType.AnimationClip:
                                 break;
                             default:
-                                if (ExportRawFile(asset, exportpath))
+                                if (ExportRawFile(reader, exportpath))
                                 {
                                     exportedCount++;
                                 }
@@ -667,14 +681,14 @@ namespace AssetStudio
             }
         }
 
-        public static void ExportAnimatorWithAnimationClip(AssetPreloadData animator, List<AssetPreloadData> animationList, string exportPath)
+        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
                 StatusStripUpdate($"Exporting {animator.Text}");
                 try
                 {
-                    ExportAnimator(animator, exportPath, animationList);
+                    ExportAnimator(animator.reader, exportPath, animationList);
                     StatusStripUpdate($"Finished exporting {animator.Text}");
                 }
                 catch (Exception ex)
@@ -686,7 +700,7 @@ namespace AssetStudio
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetPreloadData> animationList = null)
+        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetItem> animationList = null)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -777,7 +791,7 @@ namespace AssetStudio
             return new[] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
 
-        public static string GetScriptString(AssetPreloadData assetPreloadData)
+        public static string GetScriptString(ObjectReader reader)
         {
             if (!moduleLoaded)
             {
@@ -807,7 +821,7 @@ namespace AssetStudio
 
                 moduleLoaded = true;
             }
-            var m_MonoBehaviour = new MonoBehaviour(assetPreloadData);
+            var m_MonoBehaviour = new MonoBehaviour(reader);
             var sb = new StringBuilder();
             sb.AppendLine("PPtr<GameObject> m_GameObject");
             sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_GameObject.m_FileID}");
@@ -817,7 +831,7 @@ namespace AssetStudio
             sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
             sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
             sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");
-            if (m_MonoBehaviour.m_Script.TryGetPD(out var script))
+            if (m_MonoBehaviour.m_Script.TryGet(out var script))
             {
                 var m_Script = new MonoScript(script);
                 if (!LoadedModuleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
@@ -849,7 +863,7 @@ namespace AssetStudio
                 {
                     try
                     {
-                        DumpType(typeDef.ToTypeSig(), sb, assetPreloadData.sourceFile, null, -1, true);
+                        DumpType(typeDef.ToTypeSig(), sb, reader, null, -1, true);
                     }
                     catch
                     {
@@ -868,10 +882,9 @@ namespace AssetStudio
             return sb.ToString();
         }
 
-        private static void DumpType(TypeSig typeSig, StringBuilder sb, AssetsFile assetsFile, string name, int indent, bool isRoot = false)
+        private static void DumpType(TypeSig typeSig, StringBuilder sb, ObjectReader reader, string name, int indent, bool isRoot = false)
         {
             var typeDef = typeSig.ToTypeDefOrRef().ResolveTypeDefThrow();
-            var reader = assetsFile.reader;
             if (typeSig.IsPrimitive)
             {
                 object value = null;
@@ -944,7 +957,7 @@ namespace AssetStudio
                 for (int i = 0; i < size; i++)
                 {
                     sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
-                    DumpType(typeDef.ToTypeSig(), sb, assetsFile, "data", indent + 2);
+                    DumpType(typeDef.ToTypeSig(), sb, reader, "data", indent + 2);
                 }
                 return;
             }
@@ -964,14 +977,14 @@ namespace AssetStudio
                     for (int i = 0; i < size; i++)
                     {
                         sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
-                        DumpType(genericInstSig.GenericArguments[0], sb, assetsFile, "data", indent + 2);
+                        DumpType(genericInstSig.GenericArguments[0], sb, reader, "data", indent + 2);
                     }
                 }
                 return;
             }
             if (indent != -1 && IsAssignFromUnityObject(typeDef))
             {
-                var pptr = assetsFile.ReadPPtr();
+                var pptr = reader.ReadPPtr();
                 sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
                 return;
             }
@@ -999,15 +1012,15 @@ namespace AssetStudio
             if (typeDef.FullName == "UnityEngine.AnimationCurve")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var animationCurve = new AnimationCurve<float>(reader, reader.ReadSingle, assetsFile.version);
+                var animationCurve = new AnimationCurve<float>(reader, reader.ReadSingle);
                 return;
             }
             if (typeDef.FullName == "UnityEngine.Gradient")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                if (assetsFile.version[0] == 5 && assetsFile.version[1] < 5)
+                if (reader.version[0] == 5 && reader.version[1] < 5)
                     reader.Position += 68;
-                else if (assetsFile.version[0] == 5 && assetsFile.version[1] < 6)
+                else if (reader.version[0] == 5 && reader.version[1] < 6)
                     reader.Position += 72;
                 else
                     reader.Position += 168;
@@ -1034,11 +1047,11 @@ namespace AssetStudio
                 }
                 if (indent == -1 && typeDef.BaseType.FullName != "UnityEngine.Object")
                 {
-                    DumpType(typeDef.BaseType.ToTypeSig(), sb, assetsFile, null, indent, true);
+                    DumpType(typeDef.BaseType.ToTypeSig(), sb, reader, null, indent, true);
                 }
                 if (indent != -1 && typeDef.BaseType.FullName != "System.Object")
                 {
-                    DumpType(typeDef.BaseType.ToTypeSig(), sb, assetsFile, null, indent, true);
+                    DumpType(typeDef.BaseType.ToTypeSig(), sb, reader, null, indent, true);
                 }
                 foreach (var fieldDef in typeDef.Fields)
                 {
@@ -1047,12 +1060,12 @@ namespace AssetStudio
                     {
                         if (fieldDef.CustomAttributes.Any(x => x.TypeFullName.Contains("SerializeField")))
                         {
-                            DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
+                            DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
                         }
                     }
                     else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0 && (fieldDef.Attributes & FieldAttributes.NotSerialized) == 0)
                     {
-                        DumpType(fieldDef.FieldType, sb, assetsFile, fieldDef.Name, indent + 1);
+                        DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
                     }
                 }
             }

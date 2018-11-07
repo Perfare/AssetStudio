@@ -13,14 +13,14 @@ namespace AssetStudio
         public string m_Source;
         public ulong m_Size;
 
-        public VideoClip(AssetPreloadData preloadData, bool readData) : base(preloadData)
+        public VideoClip(ObjectReader reader, bool readData) : base(reader)
         {
             m_OriginalPath = reader.ReadAlignedString();
             var m_ProxyWidth = reader.ReadUInt32();
             var m_ProxyHeight = reader.ReadUInt32();
             var Width = reader.ReadUInt32();
             var Height = reader.ReadUInt32();
-            if (sourceFile.version[0] >= 2017)//2017.x and up
+            if (version[0] >= 2017)//2017.x and up
             {
                 var m_PixelAspecRatioNum = reader.ReadUInt32();
                 var m_PixelAspecRatioDen = reader.ReadUInt32();

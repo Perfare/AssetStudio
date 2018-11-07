@@ -20,8 +20,8 @@ namespace AssetStudio
 {
     partial class AssetStudioForm : Form
     {
-        private AssetPreloadData lastSelectedItem;
-        private AssetPreloadData lastLoadedAsset;
+        private AssetItem lastSelectedItem;
+        private AssetItem lastLoadedAsset;
 
         private FMOD.System system;
         private FMOD.Sound sound;
@@ -194,6 +194,7 @@ namespace AssetStudio
                 {
                     sceneTreeView.BeginUpdate();
                     sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
+                    treeNodeCollection.Clear();
                     foreach (TreeNode node in sceneTreeView.Nodes)
                     {
                         node.HideCheckBox();
@@ -580,7 +581,7 @@ namespace AssetStudio
             switch (e.Column)
             {
                 case 0:
-                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
                     {
                         int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
                         if (xdiff != 0) return xdiff;
@@ -588,7 +589,7 @@ namespace AssetStudio
                     });
                     break;
                 case 1:
-                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
                     {
                         int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
                         if (xdiff != 0) return xdiff;
@@ -596,7 +597,7 @@ namespace AssetStudio
                     });
                     break;
                 case 2:
-                    visibleAssets.Sort(delegate (AssetPreloadData a, AssetPreloadData b)
+                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
                     {
                         int xdiff = reverseSort ? b.FullSize.CompareTo(a.FullSize) : a.FullSize.CompareTo(b.FullSize);
                         if (xdiff != 0) return xdiff;
@@ -625,7 +626,7 @@ namespace AssetStudio
 
             FMODreset();
 
-            lastSelectedItem = (AssetPreloadData)e.Item;
+            lastSelectedItem = (AssetItem)e.Item;
 
             if (e.IsSelected)
             {
@@ -650,14 +651,15 @@ namespace AssetStudio
             }
         }
 
-        private void PreviewAsset(AssetPreloadData asset)
+        private void PreviewAsset(AssetItem asset)
         {
+            var reader = asset.reader;
             switch (asset.Type)
             {
                 case ClassIDType.Texture2D:
                     {
                         imageTexture?.Dispose();
-                        var m_Texture2D = new Texture2D(asset, true);
+                        var m_Texture2D = new Texture2D(reader, true);
 
                         //Info
                         asset.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
@@ -692,7 +694,7 @@ namespace AssetStudio
                     }
                 case ClassIDType.AudioClip:
                     {
-                        var m_AudioClip = new AudioClip(asset, true);
+                        var m_AudioClip = new AudioClip(reader, true);
 
                         //Info
                         asset.InfoText = "Compression format: ";
@@ -814,7 +816,7 @@ namespace AssetStudio
                     }
                 case ClassIDType.Shader:
                     {
-                        Shader m_TextAsset = new Shader(asset);
+                        Shader m_TextAsset = new Shader(reader);
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
                         m_Script_Text = m_Script_Text.Replace("\0", "\\0");
@@ -824,7 +826,7 @@ namespace AssetStudio
                     }
                 case ClassIDType.TextAsset:
                     {
-                        TextAsset m_TextAsset = new TextAsset(asset);
+                        TextAsset m_TextAsset = new TextAsset(reader);
 
                         string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
                         m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
@@ -835,14 +837,13 @@ namespace AssetStudio
                     }
                 case ClassIDType.MonoBehaviour:
                     {
-                        var m_MonoBehaviour = new MonoBehaviour(asset);
-                        if (asset.serializedType?.m_Nodes != null)
+                        if (reader.serializedType?.m_Nodes != null)
                         {
-                            textPreviewBox.Text = asset.Dump();
+                            textPreviewBox.Text = reader.Dump();
                         }
                         else
                         {
-                            textPreviewBox.Text = GetScriptString(asset);
+                            textPreviewBox.Text = GetScriptString(reader);
                         }
                         textPreviewBox.Visible = true;
 
@@ -850,7 +851,7 @@ namespace AssetStudio
                     }
                 case ClassIDType.Font:
                     {
-                        Font m_Font = new Font(asset);
+                        Font m_Font = new Font(reader);
                         if (m_Font.m_FontData != null)
                         {
                             IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
@@ -902,7 +903,7 @@ namespace AssetStudio
                     }
                 case ClassIDType.Mesh:
                     {
-                        var m_Mesh = new Mesh(asset);
+                        var m_Mesh = new Mesh(reader);
                         if (m_Mesh.m_VertexCount > 0)
                         {
                             viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
@@ -1055,7 +1056,7 @@ namespace AssetStudio
                 case ClassIDType.Sprite:
                     {
                         imageTexture?.Dispose();
-                        imageTexture = SpriteHelper.GetImageFromSprite(new Sprite(asset));
+                        imageTexture = SpriteHelper.GetImageFromSprite(new Sprite(reader));
                         if (imageTexture != null)
                         {
                             asset.InfoText = $"Width: {imageTexture.Width}\nHeight: {imageTexture.Height}\n";
@@ -1083,7 +1084,7 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        var str = asset.Dump();
+                        var str = reader.Dump();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;
@@ -1373,7 +1374,7 @@ namespace AssetStudio
                 {
                     timer.Stop();
 
-                    List<AssetPreloadData> toExportAssets = null;
+                    List<AssetItem> toExportAssets = null;
                     switch (((ToolStripItem)sender).Name)
                     {
                         case "exportAllAssetsMenuItem":
@@ -1383,10 +1384,10 @@ namespace AssetStudio
                             toExportAssets = visibleAssets;
                             break;
                         case "exportSelectedAssetsMenuItem":
-                            toExportAssets = new List<AssetPreloadData>(assetListView.SelectedIndices.Count);
+                            toExportAssets = new List<AssetItem>(assetListView.SelectedIndices.Count);
                             foreach (int i in assetListView.SelectedIndices)
                             {
-                                toExportAssets.Add((AssetPreloadData)assetListView.Items[i]);
+                                toExportAssets.Add((AssetItem)assetListView.Items[i]);
                             }
                             break;
                     }
@@ -1804,7 +1805,7 @@ namespace AssetStudio
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
+            var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
             var args = $"/select, \"{selectasset.sourceFile.parentPath ?? selectasset.sourceFile.filePath}\"";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
@@ -1812,8 +1813,8 @@ namespace AssetStudio
 
         private void exportAnimatorwithAnimationClipMenuItem_Click(object sender, EventArgs e)
         {
-            AssetPreloadData animator = null;
-            List<AssetPreloadData> animationList = new List<AssetPreloadData>();
+            AssetItem animator = null;
+            List<AssetItem> animationList = new List<AssetItem>();
             var selectedAssets = GetSelectedAssets();
             foreach (var assetPreloadData in selectedAssets)
             {
@@ -1877,7 +1878,7 @@ namespace AssetStudio
 
         private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var selectasset = (AssetPreloadData)assetListView.Items[assetListView.SelectedIndices[0]];
+            var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
             if (selectasset.gameObject != null)
             {
                 sceneTreeView.SelectedNode = treeNodeDictionary[selectasset.gameObject];
@@ -1904,12 +1905,12 @@ namespace AssetStudio
             }
         }
 
-        private List<AssetPreloadData> GetSelectedAssets()
+        private List<AssetItem> GetSelectedAssets()
         {
-            var selectedAssets = new List<AssetPreloadData>();
+            var selectedAssets = new List<AssetItem>();
             foreach (int index in assetListView.SelectedIndices)
             {
-                selectedAssets.Add((AssetPreloadData)assetListView.Items[index]);
+                selectedAssets.Add((AssetItem)assetListView.Items[index]);
             }
 
             return selectedAssets;

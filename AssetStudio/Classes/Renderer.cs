@@ -17,7 +17,7 @@ namespace AssetStudio
         public StaticBatchInfo m_StaticBatchInfo;
         public uint[] m_SubsetIndices;
 
-        protected Renderer(AssetPreloadData preloadData) : base(preloadData)
+        protected Renderer(ObjectReader reader) : base(reader)
         {
             if (version[0] < 5)
             {
@@ -54,7 +54,7 @@ namespace AssetStudio
             m_Materials = new PPtr[reader.ReadInt32()];
             for (int m = 0; m < m_Materials.Length; m++)
             {
-                m_Materials[m] = sourceFile.ReadPPtr();
+                m_Materials[m] = reader.ReadPPtr();
             }
 
             if (version[0] < 3)
@@ -63,7 +63,7 @@ namespace AssetStudio
             }
             else
             {
-                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
+                if ((version[0] == 5 && version[1] >= 5) || version[0] > 5)//5.5.0 and up
                 {
                     m_StaticBatchInfo = new StaticBatchInfo
                     {
@@ -77,12 +77,12 @@ namespace AssetStudio
                     m_SubsetIndices = reader.ReadUInt32Array(numSubsetIndices);
                 }
 
-                var m_StaticBatchRoot = sourceFile.ReadPPtr();
+                var m_StaticBatchRoot = reader.ReadPPtr();
 
-                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 4) || sourceFile.version[0] > 5)//5.4.0 and up
+                if ((version[0] == 5 && version[1] >= 4) || version[0] > 5)//5.4.0 and up
                 {
-                    var m_ProbeAnchor = sourceFile.ReadPPtr();
-                    var m_LightProbeVolumeOverride = sourceFile.ReadPPtr();
+                    var m_ProbeAnchor = reader.ReadPPtr();
+                    var m_LightProbeVolumeOverride = reader.ReadPPtr();
                 }
                 else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))//3.5 - 5.3
                 {
@@ -92,7 +92,7 @@ namespace AssetStudio
                     {
                         int m_ReflectionProbeUsage = reader.ReadInt32();
                     }
-                    var m_LightProbeAnchor = sourceFile.ReadPPtr();
+                    var m_LightProbeAnchor = reader.ReadPPtr();
                 }
 
                 if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))//4.3 and up

@@ -71,7 +71,7 @@ namespace AssetStudio
                 public Vector3 tangent { get; set; }
                 public uint index { get; set; }
 
-                public BlendShapeVertex(EndianBinaryReader reader)
+                public BlendShapeVertex(ObjectReader reader)
                 {
                     vertex = reader.ReadVector3();
                     normal = reader.ReadVector3();
@@ -87,7 +87,7 @@ namespace AssetStudio
                 public bool hasNormals { get; set; }
                 public bool hasTangents { get; set; }
 
-                public MeshBlendShape(EndianBinaryReader reader)
+                public MeshBlendShape(ObjectReader reader)
                 {
                     firstVertex = reader.ReadUInt32();
                     vertexCount = reader.ReadUInt32();
@@ -104,7 +104,7 @@ namespace AssetStudio
                 public int frameIndex { get; set; }
                 public int frameCount { get; set; }
 
-                public MeshBlendShapeChannel(EndianBinaryReader reader)
+                public MeshBlendShapeChannel(ObjectReader reader)
                 {
                     name = reader.ReadAlignedString();
                     nameHash = reader.ReadUInt32();
@@ -118,7 +118,7 @@ namespace AssetStudio
             public List<MeshBlendShapeChannel> channels { get; set; }
             public List<float> fullWeights { get; set; }
 
-            public BlendShapeData(EndianBinaryReader reader)
+            public BlendShapeData(ObjectReader reader)
             {
                 int numVerts = reader.ReadInt32();
                 vertices = new List<BlendShapeVertex>(numVerts);
@@ -150,10 +150,13 @@ namespace AssetStudio
             }
         }
 
-        private float BytesToFloat(byte[] inputBytes)
+        private float BytesToFloat(byte[] inputBytes, EndianType endian)
         {
             float result = 0;
-            if (reader.endian == EndianType.BigEndian) { Array.Reverse(inputBytes); }
+            if (endian == EndianType.BigEndian)
+            {
+                Array.Reverse(inputBytes);
+            }
 
             switch (inputBytes.Length)
             {
@@ -236,7 +239,7 @@ namespace AssetStudio
             }
         }
 
-        public Mesh(AssetPreloadData preloadData) : base(preloadData)
+        public Mesh(ObjectReader reader) : base(reader)
         {
             bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices
             uint m_MeshCompression = 0;
@@ -292,7 +295,7 @@ namespace AssetStudio
             #endregion
 
             #region BlendShapeData for 4.1.0 to 4.2.x, excluding 4.1.0 alpha
-            if (version[0] == 4 && ((version[1] == 1 && preloadData.sourceFile.buildType[0] != "a") || (version[1] > 1 && version[1] <= 2)))
+            if (version[0] == 4 && ((version[1] == 1 && buildType[0] != "a") || (version[1] > 1 && version[1] <= 2)))
             {
                 int m_Shapes_size = reader.ReadInt32();
                 if (m_Shapes_size > 0)
@@ -348,7 +351,7 @@ namespace AssetStudio
                     bool m_IsReadable = reader.ReadBoolean();
                     bool m_KeepVertices = reader.ReadBoolean();
                     bool m_KeepIndices = reader.ReadBoolean();
-                    if (preloadData.HasStructMember("m_UsedForStaticMeshColliderOnly"))
+                    if (reader.HasStructMember("m_UsedForStaticMeshColliderOnly"))
                     {
                         var m_UsedForStaticMeshColliderOnly = reader.ReadBoolean();
                     }
@@ -356,7 +359,7 @@ namespace AssetStudio
                 reader.AlignStream(4);
                 //This is a bug fixed in 2017.3.1p1 and later versions
                 if ((version[0] > 2017 || (version[0] == 2017 && version[1] >= 4)) || //2017.4
-                    ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && preloadData.sourceFile.buildType[0] == "p") || //fixed after 2017.3.1px
+                    ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && buildType[0] == "p") || //fixed after 2017.3.1px
                     ((version[0] == 2017 && version[1] == 3) && m_MeshCompression == 0))//2017.3.xfx with no compression
                 {
                     var m_IndexFormat = reader.ReadInt32();
@@ -594,7 +597,7 @@ namespace AssetStudio
                                         }
                                     }
 
-                                    if (preloadData.sourceFile.m_TargetPlatform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
+                                    if (platform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
                                     {
                                         for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
                                         {
@@ -715,7 +718,7 @@ namespace AssetStudio
                                             }
                                         }
 
-                                        if (preloadData.sourceFile.m_TargetPlatform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
+                                        if (platform == BuildTarget.XBOX360 && componentByteSize > 1) //swap bytes for Xbox
                                         {
                                             for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
                                             {
@@ -818,7 +821,7 @@ namespace AssetStudio
                                         {
                                             int m_DataSizeOffset = vertexOffset + componentByteSize * d;
                                             Buffer.BlockCopy(m_DataSize, m_DataSizeOffset, componentBytes, 0, componentByteSize);
-                                            componentsArray[v * m_Channel.dimension + d] = BytesToFloat(componentBytes);
+                                            componentsArray[v * m_Channel.dimension + d] = BytesToFloat(componentBytes, reader.endian);
                                         }
                                     }
 

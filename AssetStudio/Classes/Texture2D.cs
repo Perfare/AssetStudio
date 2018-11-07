@@ -34,7 +34,7 @@ namespace AssetStudio
         public uint size;
         public string path;
 
-        public Texture2D(AssetPreloadData preloadData, bool readData) : base(preloadData)
+        public Texture2D(ObjectReader reader, bool readData) : base(reader)
         {
             m_Width = reader.ReadInt32();
             m_Height = reader.ReadInt32();
@@ -58,11 +58,11 @@ namespace AssetStudio
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }
-            else if (preloadData.HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
+            else if (reader.HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }
-            if (preloadData.HasStructMember("m_StreamingGroupID")) //What the hell is this?
+            if (reader.HasStructMember("m_StreamingGroupID")) //What the hell is this?
             {
                 var m_StreamingGroupID = reader.ReadUInt32();
             }

@@ -14,7 +14,7 @@ namespace AssetStudio
         public List<PPtr> m_Children;
         public PPtr m_Father;
 
-        public Transform(AssetPreloadData preloadData) : base(preloadData)
+        public Transform(ObjectReader reader) : base(reader)
         {
             m_LocalRotation = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
             m_LocalPosition = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
@@ -23,9 +23,9 @@ namespace AssetStudio
             m_Children = new List<PPtr>(m_ChildrenCount);
             for (int j = 0; j < m_ChildrenCount; j++)
             {
-                m_Children.Add(sourceFile.ReadPPtr());
+                m_Children.Add(reader.ReadPPtr());
             }
-            m_Father = sourceFile.ReadPPtr();
+            m_Father = reader.ReadPPtr();
         }
     }
 }

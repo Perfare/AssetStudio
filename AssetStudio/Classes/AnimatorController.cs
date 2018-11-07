@@ -12,11 +12,11 @@ namespace AssetStudio
         public uint word1 { get; set; }
         public uint word2 { get; set; }
 
-        public HumanPoseMask(EndianBinaryReader reader, int[] version)
+        public HumanPoseMask(ObjectReader reader)
         {
             word0 = reader.ReadUInt32();
             word1 = reader.ReadUInt32();
-            if (version[0] >= 5) //5.0 and up
+            if (reader.version[0] >= 5) //5.0 and up
             {
                 word2 = reader.ReadUInt32();
             }
@@ -28,7 +28,7 @@ namespace AssetStudio
         public uint m_PathHash { get; set; }
         public float m_Weight { get; set; }
 
-        public SkeletonMaskElement(EndianBinaryReader reader)
+        public SkeletonMaskElement(ObjectReader reader)
         {
             m_PathHash = reader.ReadUInt32();
             m_Weight = reader.ReadSingle();
@@ -39,7 +39,7 @@ namespace AssetStudio
     {
         public SkeletonMaskElement[] m_Data { get; set; }
 
-        public SkeletonMask(EndianBinaryReader reader)
+        public SkeletonMask(ObjectReader reader)
         {
             int numElements = reader.ReadInt32();
             m_Data = new SkeletonMaskElement[numElements];
@@ -62,11 +62,11 @@ namespace AssetStudio
         public bool m_IKPass { get; set; }
         public bool m_SyncedLayerAffectsTiming { get; set; }
 
-        public LayerConstant(EndianBinaryReader reader, int[] version)
+        public LayerConstant(ObjectReader reader)
         {
             m_StateMachineIndex = reader.ReadUInt32();
             m_StateMachineMotionSetIndex = reader.ReadUInt32();
-            m_BodyMask = new HumanPoseMask(reader, version);
+            m_BodyMask = new HumanPoseMask(reader);
             m_SkeletonMask = new SkeletonMask(reader);
             m_Binding = reader.ReadUInt32();
             m_LayerBlendingMode = reader.ReadInt32();
@@ -84,7 +84,7 @@ namespace AssetStudio
         public float m_EventThreshold { get; set; }
         public float m_ExitTime { get; set; }
 
-        public ConditionConstant(EndianBinaryReader reader)
+        public ConditionConstant(ObjectReader reader)
         {
             m_ConditionMode = reader.ReadUInt32();
             m_EventID = reader.ReadUInt32();
@@ -110,8 +110,9 @@ namespace AssetStudio
         public bool m_Atomic { get; set; }
         public bool m_CanTransitionToSelf { get; set; }
 
-        public TransitionConstant(EndianBinaryReader reader, int[] version)
+        public TransitionConstant(ObjectReader reader)
         {
+            var version = reader.version;
             int numConditions = reader.ReadInt32();
             m_ConditionConstantArray = new ConditionConstant[numConditions];
             for (int i = 0; i < numConditions; i++)
@@ -153,7 +154,7 @@ namespace AssetStudio
         public uint[] m_IDArray { get; set; }
         public uint m_IndexOffset { get; set; }
 
-        public LeafInfoConstant(EndianBinaryReader reader)
+        public LeafInfoConstant(ObjectReader reader)
         {
             m_IDArray = reader.ReadUInt32Array(reader.ReadInt32());
             m_IndexOffset = reader.ReadUInt32();
@@ -164,7 +165,7 @@ namespace AssetStudio
     {
         public uint[] m_NeighborArray { get; set; }
 
-        public MotionNeighborList(EndianBinaryReader reader)
+        public MotionNeighborList(ObjectReader reader)
         {
             m_NeighborArray = reader.ReadUInt32Array(reader.ReadInt32());
         }
@@ -178,7 +179,7 @@ namespace AssetStudio
         public float[] m_ChildPairAvgMagInvArray { get; set; }
         public MotionNeighborList[] m_ChildNeighborListArray { get; set; }
 
-        public Blend2dDataConstant(EndianBinaryReader reader)
+        public Blend2dDataConstant(ObjectReader reader)
         {
             m_ChildPositionArray = reader.ReadVector2Array(reader.ReadInt32());
             m_ChildMagnitudeArray = reader.ReadSingleArray(reader.ReadInt32());
@@ -198,7 +199,7 @@ namespace AssetStudio
     {
         public float[] m_ChildThresholdArray { get; set; }
 
-        public Blend1dDataConstant(EndianBinaryReader reader)
+        public Blend1dDataConstant(ObjectReader reader)
         {
             m_ChildThresholdArray = reader.ReadSingleArray(reader.ReadInt32());
         }
@@ -209,7 +210,7 @@ namespace AssetStudio
         public uint[] m_ChildBlendEventIDArray { get; set; }
         public bool m_NormalizedBlendValues { get; set; }
 
-        public BlendDirectDataConstant(EndianBinaryReader reader)
+        public BlendDirectDataConstant(ObjectReader reader)
         {
             m_ChildBlendEventIDArray = reader.ReadUInt32Array(reader.ReadInt32());
             m_NormalizedBlendValues = reader.ReadBoolean();
@@ -232,8 +233,9 @@ namespace AssetStudio
         public float m_CycleOffset { get; set; }
         public bool m_Mirror { get; set; }
 
-        public BlendTreeNodeConstant(EndianBinaryReader reader, int[] version)
+        public BlendTreeNodeConstant(ObjectReader reader)
         {
+            var version = reader.version;
             m_BlendType = reader.ReadUInt32();
             m_BlendEventID = reader.ReadUInt32();
             m_BlendEventYID = reader.ReadUInt32();
@@ -262,13 +264,13 @@ namespace AssetStudio
     {
         public BlendTreeNodeConstant[] m_NodeArray { get; set; }
 
-        public BlendTreeConstant(EndianBinaryReader reader, int[] version)
+        public BlendTreeConstant(ObjectReader reader)
         {
             int numNodes = reader.ReadInt32();
             m_NodeArray = new BlendTreeNodeConstant[numNodes];
             for (int i = 0; i < numNodes; i++)
             {
-                m_NodeArray[i] = new BlendTreeNodeConstant(reader, version);
+                m_NodeArray[i] = new BlendTreeNodeConstant(reader);
             }
         }
     }
@@ -294,13 +296,14 @@ namespace AssetStudio
         public bool m_Loop { get; set; }
         public bool m_Mirror { get; set; }
 
-        public StateConstant(EndianBinaryReader reader, int[] version)
+        public StateConstant(ObjectReader reader)
         {
+            var version = reader.version;
             int numTransistions = reader.ReadInt32();
             m_TransitionConstantArray = new TransitionConstant[numTransistions];
             for (int i = 0; i < numTransistions; i++)
             {
-                m_TransitionConstantArray[i] = new TransitionConstant(reader, version);
+                m_TransitionConstantArray[i] = new TransitionConstant(reader);
             }
 
             int numBlendIndices = reader.ReadInt32();
@@ -324,7 +327,7 @@ namespace AssetStudio
             m_BlendTreeConstantArray = new BlendTreeConstant[numBlends];
             for (int i = 0; i < numBlends; i++)
             {
-                m_BlendTreeConstantArray[i] = new BlendTreeConstant(reader, version);
+                m_BlendTreeConstantArray[i] = new BlendTreeConstant(reader);
             }
 
             m_NameID = reader.ReadUInt32();
@@ -366,7 +369,7 @@ namespace AssetStudio
         public uint m_Destination { get; set; }
         public ConditionConstant[] m_ConditionConstantArray { get; set; }
 
-        public SelectorTransitionConstant(EndianBinaryReader reader)
+        public SelectorTransitionConstant(ObjectReader reader)
         {
             m_Destination = reader.ReadUInt32();
 
@@ -385,7 +388,7 @@ namespace AssetStudio
         public uint m_FullPathID { get; set; }
         public bool m_isEntry { get; set; }
 
-        public SelectorStateConstant(EndianBinaryReader reader)
+        public SelectorStateConstant(ObjectReader reader)
         {
             int numTransitions = reader.ReadInt32();
             m_TransitionConstantArray = new SelectorTransitionConstant[numTransitions];
@@ -408,20 +411,21 @@ namespace AssetStudio
         public uint m_DefaultState { get; set; }
         public uint m_MotionSetCount { get; set; }
 
-        public StateMachineConstant(EndianBinaryReader reader, int[] version)
+        public StateMachineConstant(ObjectReader reader)
         {
+            var version = reader.version;
             int numStates = reader.ReadInt32();
             m_StateConstantArray = new StateConstant[numStates];
             for (int i = 0; i < numStates; i++)
             {
-                m_StateConstantArray[i] = new StateConstant(reader, version);
+                m_StateConstantArray[i] = new StateConstant(reader);
             }
 
             int numAnyStates = reader.ReadInt32();
             m_AnyStateTransitionConstantArray = new TransitionConstant[numAnyStates];
             for (int i = 0; i < numAnyStates; i++)
             {
-                m_AnyStateTransitionConstantArray[i] = new TransitionConstant(reader, version);
+                m_AnyStateTransitionConstantArray[i] = new TransitionConstant(reader);
             }
 
             if (version[0] >= 5) //5.0 and up
@@ -448,8 +452,9 @@ namespace AssetStudio
         public Vector4[] m_QuaternionValues { get; set; }
         public object[] m_ScaleValues { get; set; }
 
-        public ValueArray(EndianBinaryReader reader, int[] version)
+        public ValueArray(ObjectReader reader)
         {
+            var version = reader.version;
             if (version[0] < 5 || (version[0] == 5 && version[1] < 5)) //5.5 down
             {
                 int numBools = reader.ReadInt32();
@@ -505,24 +510,24 @@ namespace AssetStudio
         public ValueArrayConstant m_Values { get; set; }
         public ValueArray m_DefaultValues { get; set; }
 
-        public ControllerConstant(EndianBinaryReader reader, int[] version)
+        public ControllerConstant(ObjectReader reader)
         {
             int numLayers = reader.ReadInt32();
             m_LayerArray = new LayerConstant[numLayers];
             for (int i = 0; i < numLayers; i++)
             {
-                m_LayerArray[i] = new LayerConstant(reader, version);
+                m_LayerArray[i] = new LayerConstant(reader);
             }
 
             int numStates = reader.ReadInt32();
             m_StateMachineArray = new StateMachineConstant[numStates];
             for (int i = 0; i < numStates; i++)
             {
-                m_StateMachineArray[i] = new StateMachineConstant(reader, version);
+                m_StateMachineArray[i] = new StateMachineConstant(reader);
             }
 
-            m_Values = new ValueArrayConstant(reader, version);
-            m_DefaultValues = new ValueArray(reader, version);
+            m_Values = new ValueArrayConstant(reader);
+            m_DefaultValues = new ValueArray(reader);
         }
     }
 
@@ -530,10 +535,10 @@ namespace AssetStudio
     {
         public PPtr[] m_AnimationClips;
 
-        public AnimatorController(AssetPreloadData preloadData) : base(preloadData)
+        public AnimatorController(ObjectReader reader) : base(reader)
         {
             var m_ControllerSize = reader.ReadUInt32();
-            var m_Controller = new ControllerConstant(reader, version);
+            var m_Controller = new ControllerConstant(reader);
 
             int tosSize = reader.ReadInt32();
             var m_TOS = new List<KeyValuePair<uint, string>>(tosSize);
@@ -546,7 +551,7 @@ namespace AssetStudio
             m_AnimationClips = new PPtr[numClips];
             for (int i = 0; i < numClips; i++)
             {
-                m_AnimationClips[i] = sourceFile.ReadPPtr();
+                m_AnimationClips[i] = reader.ReadPPtr();
             }
         }
     }

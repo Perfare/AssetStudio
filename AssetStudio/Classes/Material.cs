@@ -34,11 +34,11 @@ namespace AssetStudio
         public strFloatPair[] m_Floats;
         public strColorPair[] m_Colors;
 
-        public Material(AssetPreloadData preloadData) : base(preloadData)
+        public Material(ObjectReader reader) : base(reader)
         {
-            m_Shader = sourceFile.ReadPPtr();
+            m_Shader = reader.ReadPPtr();
 
-            if (sourceFile.version[0] == 4 && (sourceFile.version[1] >= 2 || (sourceFile.version[1] == 1 && sourceFile.buildType[0] != "a")))
+            if (version[0] == 4 && (version[1] >= 2 || (version[1] == 1 && buildType[0] != "a")))
             {
                 m_ShaderKeywords = new string[reader.ReadInt32()];
                 for (int i = 0; i < m_ShaderKeywords.Length; i++)
@@ -46,11 +46,11 @@ namespace AssetStudio
                     m_ShaderKeywords[i] = reader.ReadAlignedString();
                 }
             }
-            else if (sourceFile.version[0] >= 5)//5.0 and up
+            else if (version[0] >= 5)//5.0 and up
             {
                 m_ShaderKeywords = new[] { reader.ReadAlignedString() };
                 uint m_LightmapFlags = reader.ReadUInt32();
-                if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 6 || sourceFile.version[0] > 5)//5.6.0 and up
+                if (version[0] == 5 && version[1] >= 6 || version[0] > 5)//5.6.0 and up
                 {
                     var m_EnableInstancingVariants = reader.ReadBoolean();
                     //var m_DoubleSidedGI = a_Stream.ReadBoolean();//2017.x
@@ -58,9 +58,9 @@ namespace AssetStudio
                 }
             }
 
-            if (sourceFile.version[0] > 4 || sourceFile.version[0] == 4 && sourceFile.version[1] >= 3) { m_CustomRenderQueue = reader.ReadInt32(); }
+            if (version[0] > 4 || version[0] == 4 && version[1] >= 3) { m_CustomRenderQueue = reader.ReadInt32(); }
 
-            if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 1 || sourceFile.version[0] > 5)//5.1 and up
+            if (version[0] == 5 && version[1] >= 1 || version[0] > 5)//5.1 and up
             {
                 string[][] stringTagMap = new string[reader.ReadInt32()][];
                 for (int i = 0; i < stringTagMap.Length; i++)
@@ -69,7 +69,7 @@ namespace AssetStudio
                 }
             }
             //disabledShaderPasses
-            if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 6) || sourceFile.version[0] > 5)//5.6.0 and up
+            if ((version[0] == 5 && version[1] >= 6) || version[0] > 5)//5.6.0 and up
             {
                 var size = reader.ReadInt32();
                 for (int i = 0; i < size; i++)
@@ -84,7 +84,7 @@ namespace AssetStudio
                 TexEnv m_TexEnv = new TexEnv()
                 {
                     name = reader.ReadAlignedString(),
-                    m_Texture = sourceFile.ReadPPtr(),
+                    m_Texture = reader.ReadPPtr(),
                     m_Scale = new[] { reader.ReadSingle(), reader.ReadSingle() },
                     m_Offset = new[] { reader.ReadSingle(), reader.ReadSingle() }
                 };

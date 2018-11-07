@@ -11,7 +11,7 @@ namespace AssetStudio
         public PPtr[] m_Bones;
         public List<float> m_BlendShapeWeights;
 
-        public SkinnedMeshRenderer(AssetPreloadData preloadData) : base(preloadData)
+        public SkinnedMeshRenderer(ObjectReader reader) : base(reader)
         {
             int m_Quality = reader.ReadInt32();
             var m_UpdateWhenOffscreen = reader.ReadBoolean();
@@ -20,15 +20,15 @@ namespace AssetStudio
 
             if (version[0] == 2 && version[1] < 6)//2.6 down
             {
-                var m_DisableAnimationWhenOffscreen = sourceFile.ReadPPtr();
+                var m_DisableAnimationWhenOffscreen = reader.ReadPPtr();
             }
 
-            m_Mesh = sourceFile.ReadPPtr();
+            m_Mesh = reader.ReadPPtr();
 
             m_Bones = new PPtr[reader.ReadInt32()];
             for (int b = 0; b < m_Bones.Length; b++)
             {
-                m_Bones[b] = sourceFile.ReadPPtr();
+                m_Bones[b] = reader.ReadPPtr();
             }
 
             if (version[0] < 3)

@@ -9,14 +9,14 @@ namespace AssetStudio
     {
         public List<PPtr> m_Animations;
 
-        public Animation(AssetPreloadData preloadData) : base(preloadData)
+        public Animation(ObjectReader reader) : base(reader)
         {
-            var m_Animation = sourceFile.ReadPPtr();
+            var m_Animation = reader.ReadPPtr();
             int numAnimations = reader.ReadInt32();
             m_Animations = new List<PPtr>(numAnimations);
             for (int i = 0; i < numAnimations; i++)
             {
-                m_Animations.Add(sourceFile.ReadPPtr());
+                m_Animations.Add(reader.ReadPPtr());
             }
         }
     }

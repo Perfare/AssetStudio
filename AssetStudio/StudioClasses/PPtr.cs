@@ -11,7 +11,7 @@ namespace AssetStudio
         public AssetsFile assetsFile;
         public int index = -2; //-2 - Prepare, -1 - Missing
 
-        private bool TryGet(out AssetsFile result)
+        private bool TryGetAssetsFile(out AssetsFile result)
         {
             result = null;
             if (m_FileID == 0)
@@ -43,12 +43,12 @@ namespace AssetStudio
             return false;
         }
 
-        public bool TryGetPD(out AssetPreloadData result)
+        public bool TryGet(out ObjectReader result)
         {
             result = null;
-            if (TryGet(out var sourceFile))
+            if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.preloadTable.TryGetValue(m_PathID, out result))
+                if (sourceFile.ObjectReaders.TryGetValue(m_PathID, out result))
                 {
                     return true;
                 }
@@ -59,9 +59,9 @@ namespace AssetStudio
 
         public bool TryGetTransform(out Transform m_Transform)
         {
-            if (TryGet(out var sourceFile))
+            if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.TransformList.TryGetValue(m_PathID, out m_Transform))
+                if (sourceFile.Transforms.TryGetValue(m_PathID, out m_Transform))
                 {
                     return true;
                 }
@@ -73,9 +73,9 @@ namespace AssetStudio
 
         public bool TryGetGameObject(out GameObject m_GameObject)
         {
-            if (TryGet(out var sourceFile))
+            if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.GameObjectList.TryGetValue(m_PathID, out m_GameObject))
+                if (sourceFile.GameObjects.TryGetValue(m_PathID, out m_GameObject))
                 {
                     return true;
                 }

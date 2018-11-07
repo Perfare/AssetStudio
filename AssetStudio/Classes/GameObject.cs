@@ -16,30 +16,25 @@ namespace AssetStudio
         public PPtr m_SkinnedMeshRenderer;
         public PPtr m_Animator;
 
-        public GameObject(AssetPreloadData preloadData) : base(preloadData)
+        public GameObject(ObjectReader reader) : base(reader)
         {
             int m_Component_size = reader.ReadInt32();
             m_Components = new List<PPtr>(m_Component_size);
             for (int j = 0; j < m_Component_size; j++)
             {
-                if ((sourceFile.version[0] == 5 && sourceFile.version[1] >= 5) || sourceFile.version[0] > 5)//5.5.0 and up
+                if ((version[0] == 5 && version[1] >= 5) || version[0] > 5)//5.5.0 and up
                 {
-                    m_Components.Add(sourceFile.ReadPPtr());
+                    m_Components.Add(reader.ReadPPtr());
                 }
                 else
                 {
                     int first = reader.ReadInt32();
-                    m_Components.Add(sourceFile.ReadPPtr());
+                    m_Components.Add(reader.ReadPPtr());
                 }
             }
 
             var m_Layer = reader.ReadInt32();
             m_Name = reader.ReadAlignedString();
-
-            if (m_Name == "")
-            {
-                m_Name = "GameObject #" + preloadData.uniqueID;
-            }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace AssetStudio
         public long m_Size;
         public byte[] m_AudioData;
 
-        public AudioClip(AssetPreloadData preloadData, bool readData) : base(preloadData)
+        public AudioClip(ObjectReader reader, bool readData) : base(reader)
         {
             if (version[0] < 5)
             {
@@ -46,7 +46,7 @@ namespace AssetStudio
                     int m_Stream = reader.ReadInt32();
                     m_Size = reader.ReadInt32();
                     var tsize = m_Size % 4 != 0 ? m_Size + 4 - m_Size % 4 : m_Size;
-                    if (preloadData.Size + preloadData.Offset - reader.Position != tsize)
+                    if (reader.byteSize + reader.byteStart - reader.Position != tsize)
                     {
                         m_Offset = reader.ReadInt32();
                         m_Source = sourceFile.filePath + ".resS";

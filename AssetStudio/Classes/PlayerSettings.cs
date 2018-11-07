@@ -10,7 +10,7 @@ namespace AssetStudio
         public string companyName;
         public string productName;
 
-        public PlayerSettings(AssetPreloadData preloadData) : base(preloadData)
+        public PlayerSettings(ObjectReader reader) : base(reader)
         {
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 4)) //5.4.0 nad up
             {

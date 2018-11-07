@@ -10,9 +10,9 @@ namespace AssetStudio
         public long preloadIndex;
         public PPtr m_Mesh;
 
-        public MeshFilter(AssetPreloadData preloadData) : base(preloadData)
+        public MeshFilter(ObjectReader reader) : base(reader)
         {
-            m_Mesh = sourceFile.ReadPPtr();
+            m_Mesh = reader.ReadPPtr();
         }
     }
 }

@@ -11,10 +11,10 @@ namespace AssetStudio
         public PPtr m_Controller;
         public bool m_HasTransformHierarchy;
 
-        public Animator(AssetPreloadData preloadData) : base(preloadData)
+        public Animator(ObjectReader reader) : base(reader)
         {
-            m_Avatar = sourceFile.ReadPPtr();
-            m_Controller = sourceFile.ReadPPtr();
+            m_Avatar = reader.ReadPPtr();
+            m_Controller = reader.ReadPPtr();
             var m_CullingMode = reader.ReadInt32();
 
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up

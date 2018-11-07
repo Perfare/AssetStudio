@@ -9,12 +9,12 @@ namespace AssetStudio
     {
         public byte[] m_MovieData;
 
-        public MovieTexture(AssetPreloadData preloadData) : base(preloadData)
+        public MovieTexture(ObjectReader reader) : base(reader)
         {
             var m_Loop = reader.ReadBoolean();
             reader.AlignStream(4);
             //PPtr<AudioClip>
-            sourceFile.ReadPPtr();
+            reader.ReadPPtr();
             m_MovieData = reader.ReadBytes(reader.ReadInt32());
         }
     }

@@ -7,12 +7,12 @@ namespace AssetStudio
 {
     public abstract class EditorExtension : Object
     {
-        protected EditorExtension(AssetPreloadData preloadData) : base(preloadData)
+        protected EditorExtension(ObjectReader reader) : base(reader)
         {
             if (platform == BuildTarget.NoTarget)
             {
-                var m_PrefabParentObject = sourceFile.ReadPPtr();
-                var m_PrefabInternal = sourceFile.ReadPPtr();
+                var m_PrefabParentObject = reader.ReadPPtr();
+                var m_PrefabInternal = reader.ReadPPtr();
             }
         }
     }

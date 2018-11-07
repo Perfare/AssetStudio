@@ -12,17 +12,17 @@ namespace AssetStudio
     {
         public byte[] m_Script;
 
-        public Shader(AssetPreloadData preloadData) : base(preloadData)
+        public Shader(ObjectReader reader) : base(reader)
         {
-            if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 5 || sourceFile.version[0] > 5) //5.5.0 and up
+            if (version[0] == 5 && version[1] >= 5 || version[0] > 5) //5.5.0 and up
             {
-                var str = preloadData.Dump();
+                var str = reader.Dump();
                 m_Script = Encoding.UTF8.GetBytes(str ?? "Serialized Shader can't be read");
             }
             else
             {
                 m_Script = reader.ReadBytes(reader.ReadInt32());
-                if (sourceFile.version[0] == 5 && sourceFile.version[1] >= 3) //5.3 - 5.4
+                if (version[0] == 5 && version[1] >= 3) //5.3 - 5.4
                 {
                     reader.AlignStream(4);
                     var m_PathName = reader.ReadAlignedString();

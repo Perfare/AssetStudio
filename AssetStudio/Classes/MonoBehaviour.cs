@@ -10,9 +10,9 @@ namespace AssetStudio
         public PPtr m_Script;
         public string m_Name;
 
-        public MonoBehaviour(AssetPreloadData preloadData) : base(preloadData)
+        public MonoBehaviour(ObjectReader reader) : base(reader)
         {
-            m_Script = sourceFile.ReadPPtr();
+            m_Script = reader.ReadPPtr();
             m_Name = reader.ReadAlignedString();
         }
     }

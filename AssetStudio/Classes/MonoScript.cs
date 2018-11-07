@@ -11,7 +11,7 @@ namespace AssetStudio
         public string m_Namespace = string.Empty;
         public string m_AssemblyName;
 
-        public MonoScript(AssetPreloadData preloadData) : base(preloadData)
+        public MonoScript(ObjectReader reader) : base(reader)
         {
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 4)) //3.4 and up
             {

@@ -13,14 +13,14 @@ namespace AssetStudio
         public List<Guid> guids = new List<Guid>();
 
 
-        public SpriteAtlas(AssetPreloadData preloadData) : base(preloadData)
+        public SpriteAtlas(ObjectReader reader) : base(reader)
         {
             //vector m_PackedSprites
             var size = reader.ReadInt32();
             for (int i = 0; i < size; i++)
             {
                 //PPtr<Sprite> data
-                sourceFile.ReadPPtr();
+                reader.ReadPPtr();
             }
             //vector m_PackedSpriteNamesToIndex
             size = reader.ReadInt32();
@@ -37,14 +37,14 @@ namespace AssetStudio
                 var second = reader.ReadInt64();
                 //SpriteAtlasData second
                 //  PPtr<Texture2D> texture
-                textures.Add(sourceFile.ReadPPtr());
+                textures.Add(reader.ReadPPtr());
                 // PPtr<Texture2D> alphaTexture
-                var alphaTexture = sourceFile.ReadPPtr();
+                var alphaTexture = reader.ReadPPtr();
                 //  Rectf textureRect
                 textureRects.Add(new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
                 //  Vector2f textureRectOffset
                 reader.Position += 8;
-                if (sourceFile.version[0] > 2017 || (sourceFile.version[0] == 2017 && sourceFile.version[1] >= 2))//2017.2 and up
+                if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2))//2017.2 and up
                 {
                     //  Vector2f atlasRectOffset
                     reader.Position += 8;

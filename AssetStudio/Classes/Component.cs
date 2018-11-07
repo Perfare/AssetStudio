@@ -9,9 +9,9 @@ namespace AssetStudio
     {
         public PPtr m_GameObject;
 
-        protected Component(AssetPreloadData preloadData) : base(preloadData)
+        protected Component(ObjectReader reader) : base(reader)
         {
-            m_GameObject = sourceFile.ReadPPtr();
+            m_GameObject = reader.ReadPPtr();
         }
     }
 }

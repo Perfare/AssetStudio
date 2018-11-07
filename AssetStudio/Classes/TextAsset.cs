@@ -10,7 +10,7 @@ namespace AssetStudio
     {
         public byte[] m_Script;
 
-        public TextAsset(AssetPreloadData preloadData) : base(preloadData)
+        public TextAsset(ObjectReader reader) : base(reader)
         {
             m_Script = reader.ReadBytes(reader.ReadInt32());
         }

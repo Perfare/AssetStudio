@@ -7,21 +7,20 @@ namespace AssetStudio
 {
     public abstract class Object
     {
-        public AssetPreloadData preloadData;
-        public AssetsFile sourceFile;
-        protected EndianBinaryReader reader;
+        protected AssetsFile sourceFile;
+        public ObjectReader reader;
         public int[] version;
         protected string[] buildType;
-        protected BuildTarget platform;
+        public BuildTarget platform;
 
-        protected Object(AssetPreloadData preloadData)
+        protected Object(ObjectReader reader)
         {
-            this.preloadData = preloadData;
-            sourceFile = preloadData.sourceFile;
-            reader = preloadData.InitReader();
-            version = sourceFile.version;
-            buildType = sourceFile.buildType;
-            platform = sourceFile.m_TargetPlatform;
+            this.reader = reader;
+            reader.Reset();
+            sourceFile = reader.assetsFile;
+            version = reader.version;
+            buildType = reader.buildType;
+            platform = reader.platform;
 
             if (platform == BuildTarget.NoTarget)
             {

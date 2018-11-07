@@ -12,39 +12,39 @@ namespace AssetStudio
     {
         public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
-            if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGetPD(out var assetPreloadData))
+            if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var objectReader))
             {
-                var m_SpriteAtlas = new SpriteAtlas(assetPreloadData);
+                var m_SpriteAtlas = new SpriteAtlas(objectReader);
                 var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
 
-                if (index >= 0 && m_SpriteAtlas.textures[index].TryGetPD(out assetPreloadData))
+                if (index >= 0 && m_SpriteAtlas.textures[index].TryGet(out objectReader))
                 {
                     try
                     {
                         if (m_Sprite.m_PhysicsShape.Length > 0)
                         {
-                            return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index], m_Sprite);
+                            return CutImage(objectReader, m_SpriteAtlas.textureRects[index], m_Sprite);
                         }
-                        return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                        return CutImage(objectReader, m_SpriteAtlas.textureRects[index]);
                     }
                     catch
                     {
-                        return CutImage(assetPreloadData, m_SpriteAtlas.textureRects[index]);
+                        return CutImage(objectReader, m_SpriteAtlas.textureRects[index]);
                     }
                 }
             }
             else
             {
-                if (m_Sprite.texture.TryGetPD(out assetPreloadData))
+                if (m_Sprite.texture.TryGet(out objectReader))
                 {
-                    return CutImage(assetPreloadData, m_Sprite.textureRect);
+                    return CutImage(objectReader, m_Sprite.textureRect);
                 }
             }
 
             return null;
         }
 
-        private static Bitmap CutImage(AssetPreloadData texture2DAsset, RectangleF textureRect)
+        private static Bitmap CutImage(ObjectReader texture2DAsset, RectangleF textureRect)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
@@ -60,7 +60,7 @@ namespace AssetStudio
             return null;
         }
 
-        private static Bitmap CutImage(AssetPreloadData texture2DAsset, RectangleF textureRect, Sprite sprite)
+        private static Bitmap CutImage(ObjectReader texture2DAsset, RectangleF textureRect, Sprite sprite)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))

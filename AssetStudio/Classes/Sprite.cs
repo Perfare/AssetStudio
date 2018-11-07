@@ -17,7 +17,7 @@ namespace AssetStudio
         public RectangleF textureRect;
         public PointF[][] m_PhysicsShape;
 
-        public Sprite(AssetPreloadData preloadData) : base(preloadData)
+        public Sprite(ObjectReader reader) : base(reader)
         {
             //Rectf m_Rect
             m_Rect = new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
@@ -58,16 +58,16 @@ namespace AssetStudio
                 }
 
                 //PPtr<SpriteAtlas> m_SpriteAtlas
-                m_SpriteAtlas = sourceFile.ReadPPtr();
+                m_SpriteAtlas = reader.ReadPPtr();
             }
 
             //SpriteRenderData m_RD
             //  PPtr<Texture2D> texture
-            texture = sourceFile.ReadPPtr();
+            texture = reader.ReadPPtr();
             //  PPtr<Texture2D> alphaTexture
             if (version[0] >= 5) //5.0 and up
             {
-                var alphaTexture = sourceFile.ReadPPtr();
+                var alphaTexture = reader.ReadPPtr();
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up

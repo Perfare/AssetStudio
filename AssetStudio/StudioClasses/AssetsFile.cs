@@ -17,10 +17,9 @@ namespace AssetStudio
         public string[] buildType;
         public string platformStr;
         public bool valid;
-        public Dictionary<long, AssetPreloadData> preloadTable = new Dictionary<long, AssetPreloadData>();
-        public Dictionary<long, GameObject> GameObjectList = new Dictionary<long, GameObject>();
-        public Dictionary<long, Transform> TransformList = new Dictionary<long, Transform>();
-        public List<AssetPreloadData> exportableAssets = new List<AssetPreloadData>();
+        public Dictionary<long, ObjectReader> ObjectReaders = new Dictionary<long, ObjectReader>();
+        public Dictionary<long, GameObject> GameObjects = new Dictionary<long, GameObject>();
+        public Dictionary<long, Transform> Transforms = new Dictionary<long, Transform>();
 
         //class SerializedFile
         public SerializedFileHeader header;
@@ -98,9 +97,6 @@ namespace AssetStudio
 
                 //Read Objects
                 int objectCount = reader.ReadInt32();
-
-                var assetIDfmt = "D" + objectCount.ToString().Length; //format for unique ID
-
                 m_Objects = new Dictionary<long, ObjectInfo>(objectCount);
                 for (int i = 0; i < objectCount; i++)
                 {
@@ -136,17 +132,17 @@ namespace AssetStudio
                     }
                     m_Objects.Add(objectInfo.m_PathID, objectInfo);
 
-                    //Create AssetPreloadData
-                    var asset = new AssetPreloadData(this, objectInfo, i.ToString(assetIDfmt));
-                    preloadTable.Add(asset.m_PathID, asset);
+                    //Create Reader
+                    var objectReader = new ObjectReader(reader, this, objectInfo);
+                    ObjectReaders.Add(objectInfo.m_PathID, objectReader);
 
                     #region read BuildSettings to get version for version 2.x files
-                    if (asset.Type == ClassIDType.BuildSettings && header.m_Version == 6)
+                    if (objectReader.type == ClassIDType.BuildSettings && header.m_Version == 6)
                     {
                         var nextAsset = reader.Position;
 
-                        var BSettings = new BuildSettings(asset);
-                        unityVersion = BSettings.m_Version;
+                        var buildSettings = new BuildSettings(objectReader);
+                        unityVersion = buildSettings.m_Version;
 
                         reader.Position = nextAsset;
                     }
@@ -330,17 +326,6 @@ namespace AssetStudio
                 }
                 reader.Position += stringBufferSize;
             }
-        }
-
-        public PPtr ReadPPtr()
-        {
-            var result = new PPtr
-            {
-                m_FileID = reader.ReadInt32(),
-                m_PathID = header.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64(),
-                assetsFile = this
-            };
-            return result;
         }
     }
 }

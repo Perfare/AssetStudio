@@ -9,7 +9,7 @@ namespace AssetStudio
     {
         public byte m_Enabled;
 
-        protected Behaviour(AssetPreloadData preloadData) : base(preloadData)
+        protected Behaviour(ObjectReader reader) : base(reader)
         {
             m_Enabled = reader.ReadByte();
             reader.AlignStream(4);
