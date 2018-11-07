@@ -181,6 +181,7 @@
     <Compile Include="StudioClasses\GameObjectTreeNode.cs" />
     <Compile Include="StudioClasses\LocalSerializedObjectIdentifier.cs" />
     <Compile Include="StudioClasses\ObjectInfo.cs" />
+    <Compile Include="StudioClasses\ScriptHelper.cs" />
     <Compile Include="StudioClasses\SerializedFileHeader.cs" />
     <Compile Include="StudioClasses\SerializedType.cs" />
     <Compile Include="StudioClasses\SevenZipHelper.cs">

@@ -113,7 +113,7 @@ namespace AssetStudio
             }
             else
             {
-                str = Studio.GetScriptString(reader);
+                str = ScriptHelper.GetScriptString(reader);
             }
             File.WriteAllText(exportFullName, str);
             return true;

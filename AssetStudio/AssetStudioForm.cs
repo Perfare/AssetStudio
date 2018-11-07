@@ -76,7 +76,7 @@ namespace AssetStudio
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                resetForm();
+                ResetForm();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     mainPath = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
@@ -107,7 +107,7 @@ namespace AssetStudio
             var openFolderDialog1 = new OpenFolderDialog();
             if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                resetForm();
+                ResetForm();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     mainPath = openFolderDialog1.Folder;
@@ -180,7 +180,7 @@ namespace AssetStudio
                 {
                     Text = $"AssetStudio - {productName} - {assetsfileList[0].unityVersion} - {assetsfileList[0].platformStr}";
                 }
-                else if (assetsfileList.Count > 0)
+                else
                 {
                     Text = $"AssetStudio - no productName - {assetsfileList[0].unityVersion} - {assetsfileList[0].platformStr}";
                 }
@@ -843,7 +843,7 @@ namespace AssetStudio
                         }
                         else
                         {
-                            textPreviewBox.Text = GetScriptString(reader);
+                            textPreviewBox.Text = ScriptHelper.GetScriptString(reader);
                         }
                         textPreviewBox.Visible = true;
 
@@ -1705,7 +1705,7 @@ namespace AssetStudio
             }
         }
 
-        private void resetForm()
+        private void ResetForm()
         {
             Text = "AssetStudio";
 
@@ -1723,7 +1723,7 @@ namespace AssetStudio
             }
             resourceFileReaders.Clear();
             assetsFileIndexCache.Clear();
-            productName = "";
+            productName = string.Empty;
 
             sceneTreeView.Nodes.Clear();
 
@@ -1756,8 +1756,8 @@ namespace AssetStudio
 
             FMODreset();
 
-            moduleLoaded = false;
-            LoadedModuleDic.Clear();
+            ScriptHelper.moduleLoaded = false;
+            ScriptHelper.LoadedModuleDic.Clear();
             treeNodeCollection.Clear();
             treeNodeDictionary.Clear();
         }

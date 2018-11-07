@@ -35,9 +35,9 @@ namespace AssetStudio
                     gs.CopyTo(stream);
                 }
                 stream.Position = 0;
-                using (reader = new EndianBinaryReader(stream, EndianType.LittleEndian))
+                using (var binaryReader = new BinaryReader(stream))
                 {
-                    ReadWebData(reader);
+                    ReadWebData(binaryReader);
                 }
             }
             else
@@ -51,9 +51,9 @@ namespace AssetStudio
                     var stream = new MemoryStream();
                     brotliStream.CopyTo(stream);
                     stream.Position = 0;
-                    using (reader = new EndianBinaryReader(stream, EndianType.LittleEndian))
+                    using (var binaryReader = new BinaryReader(stream))
                     {
-                        ReadWebData(reader);
+                        ReadWebData(binaryReader);
                     }
                 }
                 else
@@ -64,14 +64,14 @@ namespace AssetStudio
             }
         }
 
-        private void ReadWebData(EndianBinaryReader reader)
+        private void ReadWebData(BinaryReader reader)
         {
             var signature = reader.ReadStringToNull();
             if (signature != "UnityWebData1.0")
                 return;
             var headLength = reader.ReadInt32();
             var dataList = new List<WebData>();
-            while (reader.Position < headLength)
+            while (reader.BaseStream.Position < headLength)
             {
                 var data = new WebData();
                 data.dataOffset = reader.ReadInt32();
@@ -85,7 +85,7 @@ namespace AssetStudio
             {
                 var file = new StreamFile();
                 file.fileName = Path.GetFileName(data.path);
-                reader.Position = data.dataOffset;
+                reader.BaseStream.Position = data.dataOffset;
                 file.stream = new MemoryStream(reader.ReadBytes(data.dataLength));
                 fileList.Add(file);
             }
