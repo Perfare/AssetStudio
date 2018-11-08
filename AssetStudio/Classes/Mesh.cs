@@ -568,6 +568,7 @@ namespace AssetStudio
 
                 //actual Vertex Buffer
                 var m_DataSize = reader.ReadBytes(reader.ReadInt32());
+                reader.AlignStream(4);
                 #endregion
 
                 #region compute FvF
