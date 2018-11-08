@@ -266,6 +266,7 @@ namespace AssetStudio
             if (bitmap != null)
             {
                 bitmap.Save(exportFullName, format);
+                bitmap.Dispose();
                 return true;
             }
             return false;

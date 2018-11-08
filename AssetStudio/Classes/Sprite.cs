@@ -6,6 +6,40 @@ using System.Text;
 
 namespace AssetStudio
 {
+    public enum SpritePackingRotation
+    {
+        kSPRNone = 0,
+        kSPRFlipHorizontal = 1,
+        kSPRFlipVertical = 2,
+        kSPRRotate180 = 3,
+        kSPRRotate90 = 4
+    };
+
+    public enum SpritePackingMode
+    {
+        kSPMTight = 0,
+        kSPMRectangle
+    };
+
+    public class SpriteSettings
+    {
+        public uint settingsRaw;
+
+        public uint packed => settingsRaw & 1; //1
+        public SpritePackingMode packingMode => (SpritePackingMode)((settingsRaw >> 1) & 1); //1
+        public SpritePackingRotation packingRotation => (SpritePackingRotation)((settingsRaw >> 2) & 0xf); //4
+        public uint reserved => settingsRaw >> 6; //26
+        /*
+         *public uint meshType => (settingsRaw >> 6) & 1; //1
+         *public uint reserved => settingsRaw >> 7; //25
+         */
+
+        public SpriteSettings(ObjectReader reader)
+        {
+            settingsRaw = reader.ReadUInt32();
+        }
+    }
+
     public sealed class Sprite : NamedObject
     {
         public RectangleF m_Rect;
@@ -15,6 +49,7 @@ namespace AssetStudio
         public PPtr texture;
         public PPtr m_SpriteAtlas;
         public RectangleF textureRect;
+        public SpriteSettings settingsRaw;
         public PointF[][] m_PhysicsShape;
 
         public Sprite(ObjectReader reader) : base(reader)
@@ -145,7 +180,7 @@ namespace AssetStudio
                 reader.Position += 8;
             }
             //  unsigned int settingsRaw
-            reader.Position += 4;
+            settingsRaw = new SpriteSettings(reader);
             //  Vector4f uvTransform - 4.5 and up
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
             {

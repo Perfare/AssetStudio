@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,53 +7,60 @@ using System.Text;
 
 namespace AssetStudio
 {
+    public class SpriteAtlasData
+    {
+        public PPtr texture;
+        public PPtr alphaTexture;
+        public System.Drawing.RectangleF textureRect;
+        public Vector2 textureRectOffset;
+        public Vector2 atlasRectOffset;
+        public Vector4 uvTransform;
+        public float downscaleMultiplier;
+        public SpriteSettings settingsRaw;
+
+        public SpriteAtlasData(ObjectReader reader)
+        {
+            var version = reader.version;
+            texture = reader.ReadPPtr();
+            alphaTexture = reader.ReadPPtr();
+            textureRect = reader.ReadRectangleF();
+            textureRectOffset = reader.ReadVector2();
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
+            {
+                atlasRectOffset = reader.ReadVector2();
+            }
+            uvTransform = reader.ReadVector4();
+            downscaleMultiplier = reader.ReadSingle();
+            settingsRaw = new SpriteSettings(reader);
+        }
+    }
+
     public sealed class SpriteAtlas : NamedObject
     {
-        public List<PPtr> textures = new List<PPtr>();
-        public List<RectangleF> textureRects = new List<RectangleF>();
-        public List<Guid> guids = new List<Guid>();
-
+        public Dictionary<Tuple<Guid, long>, SpriteAtlasData> m_RenderDataMap;
 
         public SpriteAtlas(ObjectReader reader) : base(reader)
         {
-            //vector m_PackedSprites
-            var size = reader.ReadInt32();
-            for (int i = 0; i < size; i++)
+            var m_PackedSpritesSize = reader.ReadInt32();
+            for (int i = 0; i < m_PackedSpritesSize; i++)
             {
-                //PPtr<Sprite> data
-                reader.ReadPPtr();
+                reader.ReadPPtr(); //PPtr<Sprite> data
             }
-            //vector m_PackedSpriteNamesToIndex
-            size = reader.ReadInt32();
-            for (int i = 0; i < size; i++)
+
+            var m_PackedSpriteNamesToIndexSize = reader.ReadInt32();
+            for (int i = 0; i < m_PackedSpriteNamesToIndexSize; i++)
             {
-                var data = reader.ReadAlignedString();
+                reader.ReadAlignedString();
             }
-            //map m_RenderDataMap
-            size = reader.ReadInt32();
-            for (int i = 0; i < size; i++)
+
+            var m_RenderDataMapSize = reader.ReadInt32();
+            m_RenderDataMap = new Dictionary<Tuple<Guid, long>, SpriteAtlasData>(m_RenderDataMapSize);
+            for (int i = 0; i < m_RenderDataMapSize; i++)
             {
-                //pair first
-                guids.Add(new Guid(reader.ReadBytes(16)));
+                var first = new Guid(reader.ReadBytes(16));
                 var second = reader.ReadInt64();
-                //SpriteAtlasData second
-                //  PPtr<Texture2D> texture
-                textures.Add(reader.ReadPPtr());
-                // PPtr<Texture2D> alphaTexture
-                var alphaTexture = reader.ReadPPtr();
-                //  Rectf textureRect
-                textureRects.Add(new RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
-                //  Vector2f textureRectOffset
-                reader.Position += 8;
-                if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2))//2017.2 and up
-                {
-                    //  Vector2f atlasRectOffset
-                    reader.Position += 8;
-                }
-                //  Vector4f uvTransform
-                //  float downscaleMultiplier
-                //  unsigned int settingsRaw
-                reader.Position += 24;
+                var value = new SpriteAtlasData(reader);
+                m_RenderDataMap.Add(new Tuple<Guid, long>(first, second), value);
             }
             //string m_Tag
             //bool m_IsVariant

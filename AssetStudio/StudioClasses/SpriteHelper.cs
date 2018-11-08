@@ -12,39 +12,50 @@ namespace AssetStudio
     {
         public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
+            Bitmap bitmap = null;
+            SpriteSettings settingsRaw = null;
             if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var objectReader))
             {
                 var m_SpriteAtlas = new SpriteAtlas(objectReader);
-                var index = m_SpriteAtlas.guids.FindIndex(x => x == m_Sprite.first);
-
-                if (index >= 0 && m_SpriteAtlas.textures[index].TryGet(out objectReader))
+                var spriteAtlasData = m_SpriteAtlas.m_RenderDataMap.FirstOrDefault(x => x.Key.Item1 == m_Sprite.first).Value;
+                if (spriteAtlasData != null && spriteAtlasData.texture.TryGet(out objectReader))
                 {
+                    settingsRaw = spriteAtlasData.settingsRaw;
                     try
                     {
-                        if (m_Sprite.m_PhysicsShape.Length > 0)
+                        if (settingsRaw.packingMode == SpritePackingMode.kSPMTight && m_Sprite.m_PhysicsShape.Length > 0) //Tight
                         {
-                            return CutImage(objectReader, m_SpriteAtlas.textureRects[index], m_Sprite);
+                            bitmap = CutTightImage(objectReader, spriteAtlasData.textureRect, m_Sprite);
                         }
-                        return CutImage(objectReader, m_SpriteAtlas.textureRects[index]);
+                        else
+                        {
+                            bitmap = CutRectangleImage(objectReader, spriteAtlasData.textureRect);
+                        }
                     }
                     catch
                     {
-                        return CutImage(objectReader, m_SpriteAtlas.textureRects[index]);
+                        bitmap = CutRectangleImage(objectReader, spriteAtlasData.textureRect);
                     }
                 }
             }
             else
             {
+                //TODO Tight
                 if (m_Sprite.texture.TryGet(out objectReader))
                 {
-                    return CutImage(objectReader, m_Sprite.textureRect);
+                    settingsRaw = m_Sprite.settingsRaw;
+                    bitmap = CutRectangleImage(objectReader, m_Sprite.textureRect);
                 }
             }
-
+            if (bitmap != null)
+            {
+                RotateAndFlip(bitmap, settingsRaw.packingRotation);
+                return bitmap;
+            }
             return null;
         }
 
-        private static Bitmap CutImage(ObjectReader texture2DAsset, RectangleF textureRect)
+        private static Bitmap CutRectangleImage(ObjectReader texture2DAsset, RectangleF textureRect)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
@@ -60,7 +71,7 @@ namespace AssetStudio
             return null;
         }
 
-        private static Bitmap CutImage(ObjectReader texture2DAsset, RectangleF textureRect, Sprite sprite)
+        private static Bitmap CutTightImage(ObjectReader texture2DAsset, RectangleF textureRect, Sprite sprite)
         {
             var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
             using (var originalImage = texture2D.ConvertToBitmap(false))
@@ -93,6 +104,25 @@ namespace AssetStudio
             }
 
             return null;
+        }
+
+        private static void RotateAndFlip(Bitmap bitmap, SpritePackingRotation packingRotation)
+        {
+            switch (packingRotation)
+            {
+                case SpritePackingRotation.kSPRFlipHorizontal:
+                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    break;
+                case SpritePackingRotation.kSPRFlipVertical:
+                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    break;
+                case SpritePackingRotation.kSPRRotate180:
+                    bitmap.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                    break;
+                case SpritePackingRotation.kSPRRotate90:
+                    bitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    break;
+            }
         }
     }
 }

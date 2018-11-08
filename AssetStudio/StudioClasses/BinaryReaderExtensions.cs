@@ -21,11 +21,7 @@ namespace AssetStudio
 
         public static string ReadAlignedString(this BinaryReader reader)
         {
-            return ReadAlignedString(reader, reader.ReadInt32());
-        }
-
-        public static string ReadAlignedString(this BinaryReader reader, int length)
-        {
+            var length = reader.ReadInt32();
             if (length > 0 && length < (reader.BaseStream.Length - reader.BaseStream.Position))
             {
                 var stringData = reader.ReadBytes(length);
@@ -47,47 +43,27 @@ namespace AssetStudio
 
         public static Quaternion ReadQuaternion(this BinaryReader reader)
         {
-            var q = new Quaternion
-            {
-                X = reader.ReadSingle(),
-                Y = reader.ReadSingle(),
-                Z = reader.ReadSingle(),
-                W = reader.ReadSingle()
-            };
-            return q;
+            return new Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
         public static Vector2 ReadVector2(this BinaryReader reader)
         {
-            Vector2 v = new Vector2
-            {
-                X = reader.ReadSingle(),
-                Y = reader.ReadSingle()
-            };
-            return v;
+            return new Vector2(reader.ReadSingle(), reader.ReadSingle());
         }
 
         public static Vector3 ReadVector3(this BinaryReader reader)
         {
-            var v = new Vector3
-            {
-                X = reader.ReadSingle(),
-                Y = reader.ReadSingle(),
-                Z = reader.ReadSingle()
-            };
-            return v;
+            return new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
         public static Vector4 ReadVector4(this BinaryReader reader)
         {
-            var v = new Vector4
-            {
-                X = reader.ReadSingle(),
-                Y = reader.ReadSingle(),
-                Z = reader.ReadSingle(),
-                W = reader.ReadSingle()
-            };
-            return v;
+            return new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
+
+        public static System.Drawing.RectangleF ReadRectangleF(this BinaryReader reader)
+        {
+            return new System.Drawing.RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
         private static T[] ReadArray<T>(Func<T> del, int length)
