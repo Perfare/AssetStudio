@@ -4,7 +4,7 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool EulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, bool flatInbetween, int versionIndex, bool isAscii)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, bool flatInbetween, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -16,16 +16,16 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, versionIndex, isAscii, true);
+		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii, true);
 		exporter->ExportMorphs(imported, false, flatInbetween);
-		exporter->ExportAnimations(EulerFilter, filterPrecision, flatInbetween);
+		exporter->ExportAnimations(eulerFilter, filterPrecision, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
 
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, int versionIndex, bool isAscii)
+	void Fbx::Exporter::ExportMorph(String^ path, IImported^ imported, bool morphMask, bool flatInbetween, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -37,7 +37,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		path = Path::GetFileName(path);
 
-		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, versionIndex, isAscii, false);
+		Exporter^ exporter = gcnew Exporter(path, imported, false, true, skins, boneSize, scaleFactor, versionIndex, isAscii, false);
 		exporter->ExportMorphs(imported, morphMask, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
@@ -45,7 +45,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, int versionIndex, bool isAscii, bool normals)
+	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii, bool normals)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -72,6 +72,7 @@ namespace AssetStudio
 		IOS_REF.SetBoolProp(EXP_FBX_GLOBAL_SETTINGS, true);
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
+		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
 
 		cDest = StringToCharArray(path);
 		pExporter = FbxExporter::Create(pScene, "");
@@ -707,7 +708,7 @@ namespace AssetStudio
 		prop.ConnectSrcObject(pTexture);
 	}
 
-	void Fbx::Exporter::ExportAnimations(bool EulerFilter, float filterPrecision, bool flatInbetween)
+	void Fbx::Exporter::ExportAnimations(bool eulerFilter, float filterPrecision, bool flatInbetween)
 	{
 		auto importedAnimationList = imported->AnimationList;
 		if (importedAnimationList == nullptr)
@@ -715,7 +716,7 @@ namespace AssetStudio
 			return;
 		}
 
-		FbxAnimCurveFilterUnroll* lFilter = EulerFilter ? new FbxAnimCurveFilterUnroll() : NULL;
+		FbxAnimCurveFilterUnroll* lFilter = eulerFilter ? new FbxAnimCurveFilterUnroll() : NULL;
 
 		for (int i = 0; i < importedAnimationList->Count; i++)
 		{
@@ -738,7 +739,7 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* EulerFilter, float filterPrecision, bool flatInbetween)
+	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision, bool flatInbetween)
 	{
 		List<ImportedAnimationKeyframedTrack^>^ pAnimationList = parser->TrackList;
 
@@ -828,15 +829,15 @@ namespace AssetStudio
 					lCurveTY->KeyModifyEnd();
 					lCurveTZ->KeyModifyEnd();
 
-					if (EulerFilter)
+					if (eulerFilter)
 					{
 						FbxAnimCurve* lCurve[3];
 						lCurve[0] = lCurveRX;
 						lCurve[1] = lCurveRY;
 						lCurve[2] = lCurveRZ;
-						EulerFilter->Reset();
-						EulerFilter->SetQualityTolerance(filterPrecision);
-						EulerFilter->Apply(lCurve, 3);
+						eulerFilter->Reset();
+						eulerFilter->SetQualityTolerance(filterPrecision);
+						eulerFilter->Apply(lCurve, 3);
 					}
 
 					if (keyframeList->Curve->Count > 0)

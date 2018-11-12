@@ -38,6 +38,8 @@
             this.tobmp = new System.Windows.Forms.RadioButton();
             this.converttexture = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.scaleFactor = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
             this.fbxFormat = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.fbxVersion = new System.Windows.Forms.ComboBox();
@@ -50,17 +52,18 @@
             this.filterPrecision = new System.Windows.Forms.NumericUpDown();
             this.allBones = new System.Windows.Forms.CheckBox();
             this.allFrames = new System.Windows.Forms.CheckBox();
-            this.EulerFilter = new System.Windows.Forms.CheckBox();
+            this.eulerFilter = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.boneSize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).BeginInit();
             this.SuspendLayout();
             // 
             // OKbutton
             // 
-            this.OKbutton.Location = new System.Drawing.Point(321, 240);
+            this.OKbutton.Location = new System.Drawing.Point(321, 267);
             this.OKbutton.Name = "OKbutton";
             this.OKbutton.Size = new System.Drawing.Size(75, 21);
             this.OKbutton.TabIndex = 6;
@@ -71,7 +74,7 @@
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(402, 240);
+            this.Cancel.Location = new System.Drawing.Point(402, 267);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 21);
             this.Cancel.TabIndex = 7;
@@ -161,6 +164,8 @@
             // groupBox2
             // 
             this.groupBox2.AutoSize = true;
+            this.groupBox2.Controls.Add(this.scaleFactor);
+            this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.fbxFormat);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.fbxVersion);
@@ -173,13 +178,41 @@
             this.groupBox2.Controls.Add(this.filterPrecision);
             this.groupBox2.Controls.Add(this.allBones);
             this.groupBox2.Controls.Add(this.allFrames);
-            this.groupBox2.Controls.Add(this.EulerFilter);
+            this.groupBox2.Controls.Add(this.eulerFilter);
             this.groupBox2.Location = new System.Drawing.Point(12, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 249);
+            this.groupBox2.Size = new System.Drawing.Size(214, 276);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Fbx";
+            // 
+            // scaleFactor
+            // 
+            this.scaleFactor.DecimalPlaces = 2;
+            this.scaleFactor.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.scaleFactor.Location = new System.Drawing.Point(83, 155);
+            this.scaleFactor.Name = "scaleFactor";
+            this.scaleFactor.Size = new System.Drawing.Size(60, 21);
+            this.scaleFactor.TabIndex = 20;
+            this.scaleFactor.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.scaleFactor.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 157);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(71, 12);
+            this.label5.TabIndex = 19;
+            this.label5.Text = "ScaleFactor";
             // 
             // fbxFormat
             // 
@@ -188,7 +221,7 @@
             this.fbxFormat.Items.AddRange(new object[] {
             "Binary",
             "Ascii"});
-            this.fbxFormat.Location = new System.Drawing.Point(75, 180);
+            this.fbxFormat.Location = new System.Drawing.Point(75, 207);
             this.fbxFormat.Name = "fbxFormat";
             this.fbxFormat.Size = new System.Drawing.Size(61, 20);
             this.fbxFormat.TabIndex = 18;
@@ -196,7 +229,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 183);
+            this.label4.Location = new System.Drawing.Point(4, 210);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(59, 12);
             this.label4.TabIndex = 17;
@@ -213,7 +246,7 @@
             "7.3",
             "7.4",
             "7.5"});
-            this.fbxVersion.Location = new System.Drawing.Point(75, 209);
+            this.fbxVersion.Location = new System.Drawing.Point(75, 236);
             this.fbxVersion.Name = "fbxVersion";
             this.fbxVersion.Size = new System.Drawing.Size(47, 20);
             this.fbxVersion.TabIndex = 16;
@@ -221,7 +254,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(4, 212);
+            this.label3.Location = new System.Drawing.Point(4, 239);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 12);
             this.label3.TabIndex = 15;
@@ -230,7 +263,7 @@
             // flatInbetween
             // 
             this.flatInbetween.AutoSize = true;
-            this.flatInbetween.Location = new System.Drawing.Point(6, 155);
+            this.flatInbetween.Location = new System.Drawing.Point(6, 182);
             this.flatInbetween.Name = "flatInbetween";
             this.flatInbetween.Size = new System.Drawing.Size(102, 16);
             this.flatInbetween.TabIndex = 12;
@@ -319,17 +352,17 @@
             this.allFrames.Text = "AllFrames";
             this.allFrames.UseVisualStyleBackColor = true;
             // 
-            // EulerFilter
+            // eulerFilter
             // 
-            this.EulerFilter.AutoSize = true;
-            this.EulerFilter.Checked = true;
-            this.EulerFilter.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.EulerFilter.Location = new System.Drawing.Point(6, 20);
-            this.EulerFilter.Name = "EulerFilter";
-            this.EulerFilter.Size = new System.Drawing.Size(90, 16);
-            this.EulerFilter.TabIndex = 3;
-            this.EulerFilter.Text = "EulerFilter";
-            this.EulerFilter.UseVisualStyleBackColor = true;
+            this.eulerFilter.AutoSize = true;
+            this.eulerFilter.Checked = true;
+            this.eulerFilter.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.eulerFilter.Location = new System.Drawing.Point(6, 20);
+            this.eulerFilter.Name = "eulerFilter";
+            this.eulerFilter.Size = new System.Drawing.Size(90, 16);
+            this.eulerFilter.TabIndex = 3;
+            this.eulerFilter.Text = "EulerFilter";
+            this.eulerFilter.UseVisualStyleBackColor = true;
             // 
             // ExportOptions
             // 
@@ -337,7 +370,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(490, 275);
+            this.ClientSize = new System.Drawing.Size(490, 301);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.Cancel);
@@ -356,6 +389,7 @@
             this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scaleFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.boneSize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.filterPrecision)).EndInit();
             this.ResumeLayout(false);
@@ -382,10 +416,12 @@
         private System.Windows.Forms.NumericUpDown filterPrecision;
         private System.Windows.Forms.CheckBox allBones;
         private System.Windows.Forms.CheckBox allFrames;
-        private System.Windows.Forms.CheckBox EulerFilter;
+        private System.Windows.Forms.CheckBox eulerFilter;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox fbxVersion;
         private System.Windows.Forms.ComboBox fbxFormat;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown scaleFactor;
+        private System.Windows.Forms.Label label5;
     }
 }

@@ -26,12 +26,13 @@ namespace AssetStudio
                     break;
                 }
             }
-            EulerFilter.Checked = (bool)Properties.Settings.Default["EulerFilter"];
+            eulerFilter.Checked = (bool)Properties.Settings.Default["eulerFilter"];
             filterPrecision.Value = (decimal)Properties.Settings.Default["filterPrecision"];
             allFrames.Checked = (bool)Properties.Settings.Default["allFrames"];
             allBones.Checked = (bool)Properties.Settings.Default["allBones"];
             skins.Checked = (bool)Properties.Settings.Default["skins"];
             boneSize.Value = (decimal)Properties.Settings.Default["boneSize"];
+            scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             flatInbetween.Checked = (bool)Properties.Settings.Default["flatInbetween"];
             fbxVersion.SelectedIndex = (int)Properties.Settings.Default["fbxVersion"];
             fbxFormat.SelectedIndex = (int)Properties.Settings.Default["fbxFormat"];
@@ -55,12 +56,13 @@ namespace AssetStudio
                     break;
                 }
             }
-            Properties.Settings.Default["EulerFilter"] = EulerFilter.Checked;
+            Properties.Settings.Default["eulerFilter"] = eulerFilter.Checked;
             Properties.Settings.Default["filterPrecision"] = filterPrecision.Value;
             Properties.Settings.Default["allFrames"] = allFrames.Checked;
             Properties.Settings.Default["allBones"] = allBones.Checked;
             Properties.Settings.Default["skins"] = skins.Checked;
             Properties.Settings.Default["boneSize"] = boneSize.Value;
+            Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
             Properties.Settings.Default["flatInbetween"] = flatInbetween.Checked;
             Properties.Settings.Default["fbxVersion"] = fbxVersion.SelectedIndex;
             Properties.Settings.Default["fbxFormat"] = fbxFormat.SelectedIndex;

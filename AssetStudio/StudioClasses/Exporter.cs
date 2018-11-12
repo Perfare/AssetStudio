@@ -308,16 +308,17 @@ namespace AssetStudio
 
         private static bool ModelConverter(ModelConverter convert, string exportPath)
         {
-            var EulerFilter = (bool)Properties.Settings.Default["EulerFilter"];
+            var eulerFilter = (bool)Properties.Settings.Default["eulerFilter"];
             var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
             var allFrames = (bool)Properties.Settings.Default["allFrames"];
             var allBones = (bool)Properties.Settings.Default["allBones"];
             var skins = (bool)Properties.Settings.Default["skins"];
             var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
+            var scaleFactor = (float)(decimal)Properties.Settings.Default["scaleFactor"];
             var flatInbetween = (bool)Properties.Settings.Default["flatInbetween"];
             var fbxVersion = (int)Properties.Settings.Default["fbxVersion"];
             var fbxFormat = (int)Properties.Settings.Default["fbxFormat"];
-            Fbx.Exporter.Export(exportPath, convert, EulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, flatInbetween, fbxVersion, fbxFormat == 1);
+            Fbx.Exporter.Export(exportPath, convert, eulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, scaleFactor, flatInbetween, fbxVersion, fbxFormat == 1);
             return true;
         }
     }

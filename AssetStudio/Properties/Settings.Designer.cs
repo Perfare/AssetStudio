@@ -134,12 +134,12 @@ namespace AssetStudio.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool EulerFilter {
+        public bool eulerFilter {
             get {
-                return ((bool)(this["EulerFilter"]));
+                return ((bool)(this["eulerFilter"]));
             }
             set {
-                this["EulerFilter"] = value;
+                this["eulerFilter"] = value;
             }
         }
         
@@ -236,6 +236,18 @@ namespace AssetStudio.Properties {
             }
             set {
                 this["fbxFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public decimal scaleFactor {
+            get {
+                return ((decimal)(this["scaleFactor"]));
+            }
+            set {
+                this["scaleFactor"] = value;
             }
         }
     }
