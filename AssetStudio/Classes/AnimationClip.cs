@@ -762,7 +762,7 @@ namespace AssetStudio
         public uint path;
         public uint attribute;
         public PPtr script;
-        public int typeID;
+        public ClassIDType typeID;
         public byte customType;
         public byte isPPtrCurve;
 
@@ -774,11 +774,11 @@ namespace AssetStudio
             script = reader.ReadPPtr();
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
             {
-                typeID = reader.ReadInt32();
+                typeID = (ClassIDType)reader.ReadInt32();
             }
             else
             {
-                typeID = reader.ReadUInt16();
+                typeID = (ClassIDType)reader.ReadUInt16();
             }
             customType = reader.ReadByte();
             isPPtrCurve = reader.ReadByte();
@@ -813,7 +813,27 @@ namespace AssetStudio
             int curves = 0;
             foreach (var b in genericBindings)
             {
-                curves += b.attribute == 2 ? 4 : b.attribute <= 4 ? 3 : 1;
+                if (b.typeID == ClassIDType.Transform)
+                {
+                    switch (b.attribute)
+                    {
+                        case 1: //kBindTransformPosition
+                        case 3: //kBindTransformScale
+                        case 4: //kBindTransformEuler
+                            curves += 3;
+                            break;
+                        case 2: //kBindTransformRotation
+                            curves += 4;
+                            break;
+                        default:
+                            curves += 1;
+                            break;
+                    }
+                }
+                else
+                {
+                    curves += 1;
+                }
                 if (curves > index)
                 {
                     return b;
