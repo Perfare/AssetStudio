@@ -538,7 +538,7 @@ namespace AssetStudio
             if (combine)
             {
                 meshR.m_GameObject.TryGetGameObject(out var m_GameObject);
-                var frame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]);
+                var frame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
                 if (frame?.Parent != null)
                 {
                     var parent = frame;
@@ -596,7 +596,7 @@ namespace AssetStudio
         private string GetMeshPath(Transform meshTransform)
         {
             meshTransform.m_GameObject.TryGetGameObject(out var m_GameObject);
-            var curFrame = ImportedHelpers.FindChild(m_GameObject.m_Name, FrameList[0]) ?? ImportedHelpers.FindFrame(m_GameObject.m_Name, FrameList[0]);
+            var curFrame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
             var path = curFrame.Name;
             while (curFrame.Parent != null)
             {
@@ -1031,7 +1031,7 @@ namespace AssetStudio
                 {
                     transformName = strs.Last();
                     var parentFrameName = strs[strs.Length - 2];
-                    parentFrame = ImportedHelpers.FindChild(parentFrameName, rootFrame);
+                    parentFrame = ImportedHelpers.FindChildOrRoot(parentFrameName, rootFrame);
                 }
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;

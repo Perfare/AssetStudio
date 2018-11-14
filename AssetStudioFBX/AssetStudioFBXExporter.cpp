@@ -230,7 +230,7 @@ namespace AssetStudio
 				{
 					if (!exportFrames->Contains(boneList[i]->Name))
 					{
-						ImportedFrame^ boneParent = ImportedHelpers::FindFrame(boneList[i]->Name, imported->FrameList[0]);
+						ImportedFrame^ boneParent = ImportedHelpers::FindChildOrRoot(boneList[i]->Name, imported->FrameList[0]);
 						while (boneParent != nullptr)
 						{
 							exportFrames->Add(boneParent->Name);
@@ -754,7 +754,7 @@ namespace AssetStudio
 			ImportedAnimationKeyframedTrack^ keyframeList = pAnimationList[j];
 			String^ name = keyframeList->Name;
 			int dotPos = name->IndexOf('.');
-			if (dotPos >= 0 && !ImportedHelpers::FindFrame(name, imported->FrameList[0]))
+			if (dotPos >= 0 && !ImportedHelpers::FindChildOrRoot(name, imported->FrameList[0]))
 			{
 				name = name->Substring(0, dotPos);
 			}

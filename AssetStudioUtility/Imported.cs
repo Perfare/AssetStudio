@@ -200,7 +200,7 @@ namespace AssetStudio
             return null;
         }
 
-        public static ImportedFrame FindChild(string name, ImportedFrame root)
+        public static ImportedFrame FindChildOrRoot(string name, ImportedFrame root)
         {
             foreach (var child in root)
             {
@@ -210,7 +210,10 @@ namespace AssetStudio
                     return frame;
                 }
             }
-
+            if (root.Name == name)
+            {
+                return root;
+            }
             return null;
         }
 
