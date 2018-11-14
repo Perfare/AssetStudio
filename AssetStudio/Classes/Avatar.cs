@@ -5,8 +5,8 @@ namespace AssetStudio
 {
     public class Node
     {
-        public int m_ParentId { get; set; }
-        public int m_AxesId { get; set; }
+        public int m_ParentId;
+        public int m_AxesId;
 
         public Node(ObjectReader reader)
         {
@@ -17,8 +17,8 @@ namespace AssetStudio
 
     public class Limit
     {
-        public object m_Min { get; set; }
-        public object m_Max { get; set; }
+        public object m_Min;
+        public object m_Max;
 
         public Limit(ObjectReader reader)
         {
@@ -38,12 +38,12 @@ namespace AssetStudio
 
     public class Axes
     {
-        public Vector4 m_PreQ { get; set; }
-        public Vector4 m_PostQ { get; set; }
-        public object m_Sgn { get; set; }
-        public Limit m_Limit { get; set; }
-        public float m_Length { get; set; }
-        public uint m_Type { get; set; }
+        public Vector4 m_PreQ;
+        public Vector4 m_PostQ;
+        public object m_Sgn;
+        public Limit m_Limit;
+        public float m_Length;
+        public uint m_Type;
 
         public Axes(ObjectReader reader)
         {
@@ -66,9 +66,9 @@ namespace AssetStudio
 
     public class Skeleton
     {
-        public List<Node> m_Node { get; set; }
-        public List<uint> m_ID { get; set; }
-        public List<Axes> m_AxesArray { get; set; }
+        public List<Node> m_Node;
+        public List<uint> m_ID;
+        public List<Axes> m_AxesArray;
 
 
         public Skeleton(ObjectReader reader)
@@ -98,7 +98,7 @@ namespace AssetStudio
 
     public class SkeletonPose
     {
-        public List<xform> m_X { get; set; }
+        public List<xform> m_X;
 
         public SkeletonPose()
         {
@@ -118,7 +118,7 @@ namespace AssetStudio
 
     public class Hand
     {
-        public List<int> m_HandBoneIndex { get; set; }
+        public List<int> m_HandBoneIndex;
 
         public Hand(ObjectReader reader)
         {
@@ -133,9 +133,9 @@ namespace AssetStudio
 
     public class Handle
     {
-        public xform m_X { get; set; }
-        public uint m_ParentHumanIndex { get; set; }
-        public uint m_ID { get; set; }
+        public xform m_X;
+        public uint m_ParentHumanIndex;
+        public uint m_ID;
 
         public Handle(ObjectReader reader)
         {
@@ -147,15 +147,15 @@ namespace AssetStudio
 
     public class Collider
     {
-        public xform m_X { get; set; }
-        public uint m_Type { get; set; }
-        public uint m_XMotionType { get; set; }
-        public uint m_YMotionType { get; set; }
-        public uint m_ZMotionType { get; set; }
-        public float m_MinLimitX { get; set; }
-        public float m_MaxLimitX { get; set; }
-        public float m_MaxLimitY { get; set; }
-        public float m_MaxLimitZ { get; set; }
+        public xform m_X;
+        public uint m_Type;
+        public uint m_XMotionType;
+        public uint m_YMotionType;
+        public uint m_ZMotionType;
+        public float m_MinLimitX;
+        public float m_MaxLimitX;
+        public float m_MaxLimitY;
+        public float m_MaxLimitZ;
 
         public Collider(ObjectReader reader)
         {
@@ -173,27 +173,27 @@ namespace AssetStudio
 
     public class Human
     {
-        public xform m_RootX { get; set; }
-        public Skeleton m_Skeleton { get; set; }
-        public SkeletonPose m_SkeletonPose { get; set; }
-        public Hand m_LeftHand { get; set; }
-        public Hand m_RightHand { get; set; }
-        public List<Handle> m_Handles { get; set; }
-        public List<Collider> m_ColliderArray { get; set; }
-        public List<int> m_HumanBoneIndex { get; set; }
-        public List<float> m_HumanBoneMass { get; set; }
-        public List<int> m_ColliderIndex { get; set; }
-        public float m_Scale { get; set; }
-        public float m_ArmTwist { get; set; }
-        public float m_ForeArmTwist { get; set; }
-        public float m_UpperLegTwist { get; set; }
-        public float m_LegTwist { get; set; }
-        public float m_ArmStretch { get; set; }
-        public float m_LegStretch { get; set; }
-        public float m_FeetSpacing { get; set; }
-        public bool m_HasLeftHand { get; set; }
-        public bool m_HasRightHand { get; set; }
-        public bool m_HasTDoF { get; set; }
+        public xform m_RootX;
+        public Skeleton m_Skeleton;
+        public SkeletonPose m_SkeletonPose;
+        public Hand m_LeftHand;
+        public Hand m_RightHand;
+        public List<Handle> m_Handles;
+        public List<Collider> m_ColliderArray;
+        public List<int> m_HumanBoneIndex;
+        public List<float> m_HumanBoneMass;
+        public List<int> m_ColliderIndex;
+        public float m_Scale;
+        public float m_ArmTwist;
+        public float m_ForeArmTwist;
+        public float m_UpperLegTwist;
+        public float m_LegTwist;
+        public float m_ArmStretch;
+        public float m_LegStretch;
+        public float m_FeetSpacing;
+        public bool m_HasLeftHand;
+        public bool m_HasRightHand;
+        public bool m_HasTDoF;
 
         public Human(ObjectReader reader)
         {
@@ -262,18 +262,18 @@ namespace AssetStudio
 
     public class AvatarConstant
     {
-        public Skeleton m_AvatarSkeleton { get; set; }
-        public SkeletonPose m_AvatarSkeletonPose { get; set; }
-        public SkeletonPose m_DefaultPose { get; set; }
-        public List<uint> m_SkeletonNameIDArray { get; set; }
-        public Human m_Human { get; set; }
-        public List<int> m_HumanSkeletonIndexArray { get; set; }
-        public List<int> m_HumanSkeletonReverseIndexArray { get; set; }
-        public int m_RootMotionBoneIndex { get; set; }
-        public xform m_RootMotionBoneX { get; set; }
-        public Skeleton m_RootMotionSkeleton { get; set; }
-        public SkeletonPose m_RootMotionSkeletonPose { get; set; }
-        public List<int> m_RootMotionSkeletonIndexArray { get; set; }
+        public Skeleton m_AvatarSkeleton;
+        public SkeletonPose m_AvatarSkeletonPose;
+        public SkeletonPose m_DefaultPose;
+        public List<uint> m_SkeletonNameIDArray;
+        public Human m_Human;
+        public List<int> m_HumanSkeletonIndexArray;
+        public List<int> m_HumanSkeletonReverseIndexArray;
+        public int m_RootMotionBoneIndex;
+        public xform m_RootMotionBoneX;
+        public Skeleton m_RootMotionSkeleton;
+        public SkeletonPose m_RootMotionSkeletonPose;
+        public List<int> m_RootMotionSkeletonIndexArray;
 
         public AvatarConstant(ObjectReader reader)
         {
@@ -331,9 +331,9 @@ namespace AssetStudio
 
     public sealed class Avatar : NamedObject
     {
-        public uint m_AvatarSize { get; set; }
-        public AvatarConstant m_Avatar { get; set; }
-        public List<KeyValuePair<uint, string>> m_TOS { get; set; }
+        public uint m_AvatarSize;
+        public AvatarConstant m_Avatar;
+        public List<KeyValuePair<uint, string>> m_TOS;
 
         public Avatar(ObjectReader reader) : base(reader)
         {

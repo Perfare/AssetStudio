@@ -66,10 +66,10 @@ namespace AssetStudio
         {
             public class BlendShapeVertex
             {
-                public Vector3 vertex { get; set; }
-                public Vector3 normal { get; set; }
-                public Vector3 tangent { get; set; }
-                public uint index { get; set; }
+                public Vector3 vertex;
+                public Vector3 normal;
+                public Vector3 tangent;
+                public uint index;
 
                 public BlendShapeVertex(ObjectReader reader)
                 {
@@ -82,10 +82,10 @@ namespace AssetStudio
 
             public class MeshBlendShape
             {
-                public uint firstVertex { get; set; }
-                public uint vertexCount { get; set; }
-                public bool hasNormals { get; set; }
-                public bool hasTangents { get; set; }
+                public uint firstVertex;
+                public uint vertexCount;
+                public bool hasNormals;
+                public bool hasTangents;
 
                 public MeshBlendShape(ObjectReader reader)
                 {
@@ -99,10 +99,10 @@ namespace AssetStudio
 
             public class MeshBlendShapeChannel
             {
-                public string name { get; set; }
-                public uint nameHash { get; set; }
-                public int frameIndex { get; set; }
-                public int frameCount { get; set; }
+                public string name;
+                public uint nameHash;
+                public int frameIndex;
+                public int frameCount;
 
                 public MeshBlendShapeChannel(ObjectReader reader)
                 {
@@ -113,10 +113,10 @@ namespace AssetStudio
                 }
             }
 
-            public List<BlendShapeVertex> vertices { get; set; }
-            public List<MeshBlendShape> shapes { get; set; }
-            public List<MeshBlendShapeChannel> channels { get; set; }
-            public List<float> fullWeights { get; set; }
+            public List<BlendShapeVertex> vertices;
+            public List<MeshBlendShape> shapes;
+            public List<MeshBlendShapeChannel> channels;
+            public List<float> fullWeights;
 
             public BlendShapeData(ObjectReader reader)
             {

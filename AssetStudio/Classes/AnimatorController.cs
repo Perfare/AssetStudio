@@ -8,9 +8,9 @@ namespace AssetStudio
 {
     public class HumanPoseMask
     {
-        public uint word0 { get; set; }
-        public uint word1 { get; set; }
-        public uint word2 { get; set; }
+        public uint word0;
+        public uint word1;
+        public uint word2;
 
         public HumanPoseMask(ObjectReader reader)
         {
@@ -25,8 +25,8 @@ namespace AssetStudio
 
     public class SkeletonMaskElement
     {
-        public uint m_PathHash { get; set; }
-        public float m_Weight { get; set; }
+        public uint m_PathHash;
+        public float m_Weight;
 
         public SkeletonMaskElement(ObjectReader reader)
         {
@@ -37,7 +37,7 @@ namespace AssetStudio
 
     public class SkeletonMask
     {
-        public SkeletonMaskElement[] m_Data { get; set; }
+        public SkeletonMaskElement[] m_Data;
 
         public SkeletonMask(ObjectReader reader)
         {
@@ -52,15 +52,15 @@ namespace AssetStudio
 
     public class LayerConstant
     {
-        public uint m_StateMachineIndex { get; set; }
-        public uint m_StateMachineMotionSetIndex { get; set; }
-        public HumanPoseMask m_BodyMask { get; set; }
-        public SkeletonMask m_SkeletonMask { get; set; }
-        public uint m_Binding { get; set; }
-        public int m_LayerBlendingMode { get; set; }
-        public float m_DefaultWeight { get; set; }
-        public bool m_IKPass { get; set; }
-        public bool m_SyncedLayerAffectsTiming { get; set; }
+        public uint m_StateMachineIndex;
+        public uint m_StateMachineMotionSetIndex;
+        public HumanPoseMask m_BodyMask;
+        public SkeletonMask m_SkeletonMask;
+        public uint m_Binding;
+        public int m_LayerBlendingMode;
+        public float m_DefaultWeight;
+        public bool m_IKPass;
+        public bool m_SyncedLayerAffectsTiming;
 
         public LayerConstant(ObjectReader reader)
         {
@@ -79,10 +79,10 @@ namespace AssetStudio
 
     public class ConditionConstant
     {
-        public uint m_ConditionMode { get; set; }
-        public uint m_EventID { get; set; }
-        public float m_EventThreshold { get; set; }
-        public float m_ExitTime { get; set; }
+        public uint m_ConditionMode;
+        public uint m_EventID;
+        public float m_EventThreshold;
+        public float m_ExitTime;
 
         public ConditionConstant(ObjectReader reader)
         {
@@ -95,20 +95,20 @@ namespace AssetStudio
 
     public class TransitionConstant
     {
-        public ConditionConstant[] m_ConditionConstantArray { get; set; }
-        public uint m_DestinationState { get; set; }
-        public uint m_FullPathID { get; set; }
-        public uint m_ID { get; set; }
-        public uint m_UserID { get; set; }
-        public float m_TransitionDuration { get; set; }
-        public float m_TransitionOffset { get; set; }
-        public float m_ExitTime { get; set; }
-        public bool m_HasExitTime { get; set; }
-        public bool m_HasFixedDuration { get; set; }
-        public int m_InterruptionSource { get; set; }
-        public bool m_OrderedInterruption { get; set; }
-        public bool m_Atomic { get; set; }
-        public bool m_CanTransitionToSelf { get; set; }
+        public ConditionConstant[] m_ConditionConstantArray;
+        public uint m_DestinationState;
+        public uint m_FullPathID;
+        public uint m_ID;
+        public uint m_UserID;
+        public float m_TransitionDuration;
+        public float m_TransitionOffset;
+        public float m_ExitTime;
+        public bool m_HasExitTime;
+        public bool m_HasFixedDuration;
+        public int m_InterruptionSource;
+        public bool m_OrderedInterruption;
+        public bool m_Atomic;
+        public bool m_CanTransitionToSelf;
 
         public TransitionConstant(ObjectReader reader)
         {
@@ -151,8 +151,8 @@ namespace AssetStudio
 
     public class LeafInfoConstant
     {
-        public uint[] m_IDArray { get; set; }
-        public uint m_IndexOffset { get; set; }
+        public uint[] m_IDArray;
+        public uint m_IndexOffset;
 
         public LeafInfoConstant(ObjectReader reader)
         {
@@ -163,7 +163,7 @@ namespace AssetStudio
 
     public class MotionNeighborList
     {
-        public uint[] m_NeighborArray { get; set; }
+        public uint[] m_NeighborArray;
 
         public MotionNeighborList(ObjectReader reader)
         {
@@ -173,11 +173,11 @@ namespace AssetStudio
 
     public class Blend2dDataConstant
     {
-        public Vector2[] m_ChildPositionArray { get; set; }
-        public float[] m_ChildMagnitudeArray { get; set; }
-        public Vector2[] m_ChildPairVectorArray { get; set; }
-        public float[] m_ChildPairAvgMagInvArray { get; set; }
-        public MotionNeighborList[] m_ChildNeighborListArray { get; set; }
+        public Vector2[] m_ChildPositionArray;
+        public float[] m_ChildMagnitudeArray;
+        public Vector2[] m_ChildPairVectorArray;
+        public float[] m_ChildPairAvgMagInvArray;
+        public MotionNeighborList[] m_ChildNeighborListArray;
 
         public Blend2dDataConstant(ObjectReader reader)
         {
@@ -197,7 +197,7 @@ namespace AssetStudio
 
     public class Blend1dDataConstant // wrong labeled
     {
-        public float[] m_ChildThresholdArray { get; set; }
+        public float[] m_ChildThresholdArray;
 
         public Blend1dDataConstant(ObjectReader reader)
         {
@@ -207,8 +207,8 @@ namespace AssetStudio
 
     public class BlendDirectDataConstant
     {
-        public uint[] m_ChildBlendEventIDArray { get; set; }
-        public bool m_NormalizedBlendValues { get; set; }
+        public uint[] m_ChildBlendEventIDArray;
+        public bool m_NormalizedBlendValues;
 
         public BlendDirectDataConstant(ObjectReader reader)
         {
@@ -220,18 +220,18 @@ namespace AssetStudio
 
     public class BlendTreeNodeConstant
     {
-        public uint m_BlendType { get; set; }
-        public uint m_BlendEventID { get; set; }
-        public uint m_BlendEventYID { get; set; }
-        public uint[] m_ChildIndices { get; set; }
-        public Blend1dDataConstant m_Blend1dData { get; set; }
-        public Blend2dDataConstant m_Blend2dData { get; set; }
-        public BlendDirectDataConstant m_BlendDirectData { get; set; }
-        public uint m_ClipID { get; set; }
-        public uint m_ClipIndex { get; set; }
-        public float m_Duration { get; set; }
-        public float m_CycleOffset { get; set; }
-        public bool m_Mirror { get; set; }
+        public uint m_BlendType;
+        public uint m_BlendEventID;
+        public uint m_BlendEventYID;
+        public uint[] m_ChildIndices;
+        public Blend1dDataConstant m_Blend1dData;
+        public Blend2dDataConstant m_Blend2dData;
+        public BlendDirectDataConstant m_BlendDirectData;
+        public uint m_ClipID;
+        public uint m_ClipIndex;
+        public float m_Duration;
+        public float m_CycleOffset;
+        public bool m_Mirror;
 
         public BlendTreeNodeConstant(ObjectReader reader)
         {
@@ -262,7 +262,7 @@ namespace AssetStudio
 
     public class BlendTreeConstant
     {
-        public BlendTreeNodeConstant[] m_NodeArray { get; set; }
+        public BlendTreeNodeConstant[] m_NodeArray;
 
         public BlendTreeConstant(ObjectReader reader)
         {
@@ -278,23 +278,23 @@ namespace AssetStudio
 
     public class StateConstant
     {
-        public TransitionConstant[] m_TransitionConstantArray { get; set; }
-        public int[] m_BlendTreeConstantIndexArray { get; set; }
-        public LeafInfoConstant[] m_LeafInfoArray { get; set; }
-        public BlendTreeConstant[] m_BlendTreeConstantArray { get; set; }
-        public uint m_NameID { get; set; }
-        public uint m_PathID { get; set; }
-        public uint m_FullPathID { get; set; }
-        public uint m_TagID { get; set; }
-        public uint m_SpeedParamID { get; set; }
-        public uint m_MirrorParamID { get; set; }
-        public uint m_CycleOffsetParamID { get; set; }
-        public float m_Speed { get; set; }
-        public float m_CycleOffset { get; set; }
-        public bool m_IKOnFeet { get; set; }
-        public bool m_WriteDefaultValues { get; set; }
-        public bool m_Loop { get; set; }
-        public bool m_Mirror { get; set; }
+        public TransitionConstant[] m_TransitionConstantArray;
+        public int[] m_BlendTreeConstantIndexArray;
+        public LeafInfoConstant[] m_LeafInfoArray;
+        public BlendTreeConstant[] m_BlendTreeConstantArray;
+        public uint m_NameID;
+        public uint m_PathID;
+        public uint m_FullPathID;
+        public uint m_TagID;
+        public uint m_SpeedParamID;
+        public uint m_MirrorParamID;
+        public uint m_CycleOffsetParamID;
+        public float m_Speed;
+        public float m_CycleOffset;
+        public bool m_IKOnFeet;
+        public bool m_WriteDefaultValues;
+        public bool m_Loop;
+        public bool m_Mirror;
 
         public StateConstant(ObjectReader reader)
         {
@@ -366,8 +366,8 @@ namespace AssetStudio
 
     public class SelectorTransitionConstant
     {
-        public uint m_Destination { get; set; }
-        public ConditionConstant[] m_ConditionConstantArray { get; set; }
+        public uint m_Destination;
+        public ConditionConstant[] m_ConditionConstantArray;
 
         public SelectorTransitionConstant(ObjectReader reader)
         {
@@ -384,9 +384,9 @@ namespace AssetStudio
 
     public class SelectorStateConstant
     {
-        public SelectorTransitionConstant[] m_TransitionConstantArray { get; set; }
-        public uint m_FullPathID { get; set; }
-        public bool m_isEntry { get; set; }
+        public SelectorTransitionConstant[] m_TransitionConstantArray;
+        public uint m_FullPathID;
+        public bool m_isEntry;
 
         public SelectorStateConstant(ObjectReader reader)
         {
@@ -405,11 +405,11 @@ namespace AssetStudio
 
     public class StateMachineConstant
     {
-        public StateConstant[] m_StateConstantArray { get; set; }
-        public TransitionConstant[] m_AnyStateTransitionConstantArray { get; set; }
-        public SelectorStateConstant[] m_SelectorStateConstantArray { get; set; }
-        public uint m_DefaultState { get; set; }
-        public uint m_MotionSetCount { get; set; }
+        public StateConstant[] m_StateConstantArray;
+        public TransitionConstant[] m_AnyStateTransitionConstantArray;
+        public SelectorStateConstant[] m_SelectorStateConstantArray;
+        public uint m_DefaultState;
+        public uint m_MotionSetCount;
 
         public StateMachineConstant(ObjectReader reader)
         {
@@ -445,12 +445,12 @@ namespace AssetStudio
 
     public class ValueArray
     {
-        public bool[] m_BoolValues { get; set; }
-        public int[] m_IntValues { get; set; }
-        public float[] m_FloatValues { get; set; }
-        public object[] m_PositionValues { get; set; }
-        public Vector4[] m_QuaternionValues { get; set; }
-        public object[] m_ScaleValues { get; set; }
+        public bool[] m_BoolValues;
+        public int[] m_IntValues;
+        public float[] m_FloatValues;
+        public object[] m_PositionValues;
+        public Vector4[] m_QuaternionValues;
+        public object[] m_ScaleValues;
 
         public ValueArray(ObjectReader reader)
         {
@@ -505,10 +505,10 @@ namespace AssetStudio
 
     public class ControllerConstant
     {
-        public LayerConstant[] m_LayerArray { get; set; }
-        public StateMachineConstant[] m_StateMachineArray { get; set; }
-        public ValueArrayConstant m_Values { get; set; }
-        public ValueArray m_DefaultValues { get; set; }
+        public LayerConstant[] m_LayerArray;
+        public StateMachineConstant[] m_StateMachineArray;
+        public ValueArrayConstant m_Values;
+        public ValueArray m_DefaultValues;
 
         public ControllerConstant(ObjectReader reader)
         {

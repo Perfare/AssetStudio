@@ -6,8 +6,8 @@ namespace AssetStudio
 {
     public class StructParameter
     {
-        public List<MatrixParameter> m_MatrixParams { get; set; }
-        public List<VectorParameter> m_VectorParams { get; set; }
+        public List<MatrixParameter> m_MatrixParams;
+        public List<VectorParameter> m_VectorParams;
 
         public StructParameter(BinaryReader reader)
         {
@@ -34,8 +34,8 @@ namespace AssetStudio
 
     public class SamplerParameter
     {
-        public uint sampler { get; set; }
-        public int bindPoint { get; set; }
+        public uint sampler;
+        public int bindPoint;
 
         public SamplerParameter(BinaryReader reader)
         {
@@ -43,28 +43,49 @@ namespace AssetStudio
             bindPoint = reader.ReadInt32();
         }
     }
+    public enum TextureDimension
+    {
+        kTexDimUnknown = -1,
+        kTexDimNone = 0,
+        kTexDimAny = 1,
+        kTexDim2D = 2,
+        kTexDim3D = 3,
+        kTexDimCUBE = 4,
+        kTexDim2DArray = 5,
+        kTexDimCubeArray = 6,
+        kTexDimForce32Bit = 2147483647
+    };
 
     public class SerializedTextureProperty
     {
-        public string m_DefaultName { get; set; }
-        public int m_TexDim { get; set; }
+        public string m_DefaultName;
+        public TextureDimension m_TexDim;
 
         public SerializedTextureProperty(BinaryReader reader)
         {
             m_DefaultName = reader.ReadAlignedString();
-            m_TexDim = reader.ReadInt32();
+            m_TexDim = (TextureDimension)reader.ReadInt32();
         }
     }
 
+    public enum SerializedPropertyType
+    {
+        kColor = 0,
+        kVector = 1,
+        kFloat = 2,
+        kRange = 3,
+        kTexture = 4
+    };
+
     public class SerializedProperty
     {
-        public string m_Name { get; set; }
-        public string m_Description { get; set; }
-        public List<string> m_Attributes { get; set; }
-        public int m_Type { get; set; }
-        public uint m_Flags { get; set; }
-        public List<float> m_DefValue { get; set; }
-        public SerializedTextureProperty m_DefTexture { get; set; }
+        public string m_Name;
+        public string m_Description;
+        public List<string> m_Attributes;
+        public SerializedPropertyType m_Type;
+        public uint m_Flags;
+        public List<float> m_DefValue;
+        public SerializedTextureProperty m_DefTexture;
 
         public SerializedProperty(BinaryReader reader)
         {
@@ -78,7 +99,7 @@ namespace AssetStudio
                 m_Attributes.Add(reader.ReadAlignedString());
             }
 
-            m_Type = reader.ReadInt32();
+            m_Type = (SerializedPropertyType)reader.ReadInt32();
             m_Flags = reader.ReadUInt32();
 
             int numValues = 4;
@@ -94,7 +115,7 @@ namespace AssetStudio
 
     public class SerializedProperties
     {
-        public List<SerializedProperty> m_Props { get; set; }
+        public List<SerializedProperty> m_Props;
 
         public SerializedProperties(BinaryReader reader)
         {
@@ -109,8 +130,8 @@ namespace AssetStudio
 
     public class SerializedShaderFloatValue
     {
-        public float val { get; set; }
-        public string name { get; set; }
+        public float val;
+        public string name;
 
         public SerializedShaderFloatValue(BinaryReader reader)
         {
@@ -121,13 +142,13 @@ namespace AssetStudio
 
     public class SerializedShaderRTBlendState
     {
-        public SerializedShaderFloatValue srcBlend { get; set; }
-        public SerializedShaderFloatValue destBlend { get; set; }
-        public SerializedShaderFloatValue srcBlendAlpha { get; set; }
-        public SerializedShaderFloatValue destBlendAlpha { get; set; }
-        public SerializedShaderFloatValue blendOp { get; set; }
-        public SerializedShaderFloatValue blendOpAlpha { get; set; }
-        public SerializedShaderFloatValue colMask { get; set; }
+        public SerializedShaderFloatValue srcBlend;
+        public SerializedShaderFloatValue destBlend;
+        public SerializedShaderFloatValue srcBlendAlpha;
+        public SerializedShaderFloatValue destBlendAlpha;
+        public SerializedShaderFloatValue blendOp;
+        public SerializedShaderFloatValue blendOpAlpha;
+        public SerializedShaderFloatValue colMask;
 
         public SerializedShaderRTBlendState(BinaryReader reader)
         {
@@ -143,10 +164,10 @@ namespace AssetStudio
 
     public class SerializedStencilOp
     {
-        public SerializedShaderFloatValue pass { get; set; }
-        public SerializedShaderFloatValue fail { get; set; }
-        public SerializedShaderFloatValue zFail { get; set; }
-        public SerializedShaderFloatValue comp { get; set; }
+        public SerializedShaderFloatValue pass;
+        public SerializedShaderFloatValue fail;
+        public SerializedShaderFloatValue zFail;
+        public SerializedShaderFloatValue comp;
 
         public SerializedStencilOp(BinaryReader reader)
         {
@@ -159,11 +180,11 @@ namespace AssetStudio
 
     public class SerializedShaderVectorValue
     {
-        public SerializedShaderFloatValue x { get; set; }
-        public SerializedShaderFloatValue y { get; set; }
-        public SerializedShaderFloatValue z { get; set; }
-        public SerializedShaderFloatValue w { get; set; }
-        public string name { get; set; }
+        public SerializedShaderFloatValue x;
+        public SerializedShaderFloatValue y;
+        public SerializedShaderFloatValue z;
+        public SerializedShaderFloatValue w;
+        public string name;
 
         public SerializedShaderVectorValue(BinaryReader reader)
         {
@@ -175,40 +196,50 @@ namespace AssetStudio
         }
     }
 
+    public enum FogMode
+    {
+        kFogUnknown = -1,
+        kFogDisabled = 0,
+        kFogLinear = 1,
+        kFogExp = 2,
+        kFogExp2 = 3,
+        kFogModeCount = 4
+    };
+
     public class SerializedShaderState
     {
-        public string m_Name { get; set; }
-        public SerializedShaderRTBlendState rtBlend0 { get; set; }
-        public SerializedShaderRTBlendState rtBlend1 { get; set; }
-        public SerializedShaderRTBlendState rtBlend2 { get; set; }
-        public SerializedShaderRTBlendState rtBlend3 { get; set; }
-        public SerializedShaderRTBlendState rtBlend4 { get; set; }
-        public SerializedShaderRTBlendState rtBlend5 { get; set; }
-        public SerializedShaderRTBlendState rtBlend6 { get; set; }
-        public SerializedShaderRTBlendState rtBlend7 { get; set; }
-        public bool rtSeparateBlend { get; set; }
-        public SerializedShaderFloatValue zClip { get; set; }
-        public SerializedShaderFloatValue zTest { get; set; }
-        public SerializedShaderFloatValue zWrite { get; set; }
-        public SerializedShaderFloatValue culling { get; set; }
-        public SerializedShaderFloatValue offsetFactor { get; set; }
-        public SerializedShaderFloatValue offsetUnits { get; set; }
-        public SerializedShaderFloatValue alphaToMask { get; set; }
-        public SerializedStencilOp stencilOp { get; set; }
-        public SerializedStencilOp stencilOpFront { get; set; }
-        public SerializedStencilOp stencilOpBack { get; set; }
-        public SerializedShaderFloatValue stencilReadMask { get; set; }
-        public SerializedShaderFloatValue stencilWriteMask { get; set; }
-        public SerializedShaderFloatValue stencilRef { get; set; }
-        public SerializedShaderFloatValue fogStart { get; set; }
-        public SerializedShaderFloatValue fogEnd { get; set; }
-        public SerializedShaderFloatValue fogDensity { get; set; }
-        public SerializedShaderVectorValue fogColor { get; set; }
-        public int fogMode { get; set; }
-        public int gpuProgramID { get; set; }
-        public SerializedTagMap m_Tags { get; set; }
-        public int m_LOD { get; set; }
-        public bool lighting { get; set; }
+        public string m_Name;
+        public SerializedShaderRTBlendState rtBlend0;
+        public SerializedShaderRTBlendState rtBlend1;
+        public SerializedShaderRTBlendState rtBlend2;
+        public SerializedShaderRTBlendState rtBlend3;
+        public SerializedShaderRTBlendState rtBlend4;
+        public SerializedShaderRTBlendState rtBlend5;
+        public SerializedShaderRTBlendState rtBlend6;
+        public SerializedShaderRTBlendState rtBlend7;
+        public bool rtSeparateBlend;
+        public SerializedShaderFloatValue zClip;
+        public SerializedShaderFloatValue zTest;
+        public SerializedShaderFloatValue zWrite;
+        public SerializedShaderFloatValue culling;
+        public SerializedShaderFloatValue offsetFactor;
+        public SerializedShaderFloatValue offsetUnits;
+        public SerializedShaderFloatValue alphaToMask;
+        public SerializedStencilOp stencilOp;
+        public SerializedStencilOp stencilOpFront;
+        public SerializedStencilOp stencilOpBack;
+        public SerializedShaderFloatValue stencilReadMask;
+        public SerializedShaderFloatValue stencilWriteMask;
+        public SerializedShaderFloatValue stencilRef;
+        public SerializedShaderFloatValue fogStart;
+        public SerializedShaderFloatValue fogEnd;
+        public SerializedShaderFloatValue fogDensity;
+        public SerializedShaderVectorValue fogColor;
+        public FogMode fogMode;
+        public int gpuProgramID;
+        public SerializedTagMap m_Tags;
+        public int m_LOD;
+        public bool lighting;
 
         public SerializedShaderState(ObjectReader reader)
         {
@@ -245,7 +276,7 @@ namespace AssetStudio
             fogEnd = new SerializedShaderFloatValue(reader);
             fogDensity = new SerializedShaderFloatValue(reader);
             fogColor = new SerializedShaderVectorValue(reader);
-            fogMode = reader.ReadInt32();
+            fogMode = (FogMode)reader.ReadInt32();
             gpuProgramID = reader.ReadInt32();
             m_Tags = new SerializedTagMap(reader);
             m_LOD = reader.ReadInt32();
@@ -256,8 +287,8 @@ namespace AssetStudio
 
     public class ShaderBindChannel
     {
-        public sbyte source { get; set; }
-        public sbyte target { get; set; }
+        public sbyte source;
+        public sbyte target;
 
         public ShaderBindChannel(BinaryReader reader)
         {
@@ -268,8 +299,8 @@ namespace AssetStudio
 
     public class ParserBindChannels
     {
-        public List<ShaderBindChannel> m_Channels { get; set; }
-        public uint m_SourceMap { get; set; }
+        public List<ShaderBindChannel> m_Channels;
+        public uint m_SourceMap;
 
         public ParserBindChannels(BinaryReader reader)
         {
@@ -287,11 +318,11 @@ namespace AssetStudio
 
     public class VectorParameter
     {
-        public int m_NameIndex { get; set; }
-        public int m_Index { get; set; }
-        public int m_ArraySize { get; set; }
-        public sbyte m_Type { get; set; }
-        public sbyte m_Dim { get; set; }
+        public int m_NameIndex;
+        public int m_Index;
+        public int m_ArraySize;
+        public sbyte m_Type;
+        public sbyte m_Dim;
 
         public VectorParameter(BinaryReader reader)
         {
@@ -306,11 +337,11 @@ namespace AssetStudio
 
     public class MatrixParameter
     {
-        public int m_NameIndex { get; set; }
-        public int m_Index { get; set; }
-        public int m_ArraySize { get; set; }
-        public sbyte m_Type { get; set; }
-        public sbyte m_RowCount { get; set; }
+        public int m_NameIndex;
+        public int m_Index;
+        public int m_ArraySize;
+        public sbyte m_Type;
+        public sbyte m_RowCount;
 
         public MatrixParameter(BinaryReader reader)
         {
@@ -325,10 +356,10 @@ namespace AssetStudio
 
     public class TextureParameter
     {
-        public int m_NameIndex { get; set; }
-        public int m_Index { get; set; }
-        public int m_SamplerIndex { get; set; }
-        public sbyte m_Dim { get; set; }
+        public int m_NameIndex;
+        public int m_Index;
+        public int m_SamplerIndex;
+        public sbyte m_Dim;
 
         public TextureParameter(ObjectReader reader)
         {
@@ -348,8 +379,8 @@ namespace AssetStudio
 
     public class BufferBinding
     {
-        public int m_NameIndex { get; set; }
-        public int m_Index { get; set; }
+        public int m_NameIndex;
+        public int m_Index;
 
         public BufferBinding(BinaryReader reader)
         {
@@ -360,11 +391,11 @@ namespace AssetStudio
 
     public class ConstantBuffer
     {
-        public int m_NameIndex { get; set; }
-        public List<MatrixParameter> m_MatrixParams { get; set; }
-        public List<VectorParameter> m_VectorParams { get; set; }
-        public List<StructParameter> m_StructParams { get; set; }
-        public int m_Size { get; set; }
+        public int m_NameIndex;
+        public List<MatrixParameter> m_MatrixParams;
+        public List<VectorParameter> m_VectorParams;
+        public List<StructParameter> m_StructParams;
+        public int m_Size;
 
         public ConstantBuffer(ObjectReader reader)
         {
@@ -400,9 +431,9 @@ namespace AssetStudio
 
     public class UAVParameter
     {
-        public int m_NameIndex { get; set; }
-        public int m_Index { get; set; }
-        public int m_OriginalIndex { get; set; }
+        public int m_NameIndex;
+        public int m_Index;
+        public int m_OriginalIndex;
 
         public UAVParameter(BinaryReader reader)
         {
@@ -412,21 +443,52 @@ namespace AssetStudio
         }
     }
 
+    public enum ShaderGpuProgramType
+    {
+        kShaderGpuProgramUnknown = 0,
+        kShaderGpuProgramGLLegacy = 1,
+        kShaderGpuProgramGLES31AEP = 2,
+        kShaderGpuProgramGLES31 = 3,
+        kShaderGpuProgramGLES3 = 4,
+        kShaderGpuProgramGLES = 5,
+        kShaderGpuProgramGLCore32 = 6,
+        kShaderGpuProgramGLCore41 = 7,
+        kShaderGpuProgramGLCore43 = 8,
+        kShaderGpuProgramDX9VertexSM20 = 9,
+        kShaderGpuProgramDX9VertexSM30 = 10,
+        kShaderGpuProgramDX9PixelSM20 = 11,
+        kShaderGpuProgramDX9PixelSM30 = 12,
+        kShaderGpuProgramDX10Level9Vertex = 13,
+        kShaderGpuProgramDX10Level9Pixel = 14,
+        kShaderGpuProgramDX11VertexSM40 = 15,
+        kShaderGpuProgramDX11VertexSM50 = 16,
+        kShaderGpuProgramDX11PixelSM40 = 17,
+        kShaderGpuProgramDX11PixelSM50 = 18,
+        kShaderGpuProgramDX11GeometrySM40 = 19,
+        kShaderGpuProgramDX11GeometrySM50 = 20,
+        kShaderGpuProgramDX11HullSM50 = 21,
+        kShaderGpuProgramDX11DomainSM50 = 22,
+        kShaderGpuProgramMetalVS = 23,
+        kShaderGpuProgramMetalFS = 24,
+        kShaderGpuProgramSPIRV = 25,
+        kShaderGpuProgramConsole = 26,
+    };
+
     public class SerializedSubProgram
     {
-        public uint m_BlobIndex { get; set; }
-        public ParserBindChannels m_Channels { get; set; }
-        public List<ushort> m_KeywordIndices { get; set; }
-        public sbyte m_ShaderHardwareTier { get; set; }
-        public sbyte m_GpuProgramType { get; set; }
-        public List<VectorParameter> m_VectorParams { get; set; }
-        public List<MatrixParameter> m_MatrixParams { get; set; }
-        public List<TextureParameter> m_TextureParams { get; set; }
-        public List<BufferBinding> m_BufferParams { get; set; }
-        public List<ConstantBuffer> m_ConstantBuffers { get; set; }
-        public List<BufferBinding> m_ConstantBufferBindings { get; set; }
-        public List<UAVParameter> m_UAVParams { get; set; }
-        public List<SamplerParameter> m_Samplers { get; set; }
+        public uint m_BlobIndex;
+        public ParserBindChannels m_Channels;
+        public List<ushort> m_KeywordIndices;
+        public sbyte m_ShaderHardwareTier;
+        public ShaderGpuProgramType m_GpuProgramType;
+        public List<VectorParameter> m_VectorParams;
+        public List<MatrixParameter> m_MatrixParams;
+        public List<TextureParameter> m_TextureParams;
+        public List<BufferBinding> m_BufferParams;
+        public List<ConstantBuffer> m_ConstantBuffers;
+        public List<BufferBinding> m_ConstantBufferBindings;
+        public List<UAVParameter> m_UAVParams;
+        public List<SamplerParameter> m_Samplers;
 
         public SerializedSubProgram(ObjectReader reader)
         {
@@ -446,7 +508,7 @@ namespace AssetStudio
                 reader.AlignStream(4);
             }
             m_ShaderHardwareTier = reader.ReadSByte();
-            m_GpuProgramType = reader.ReadSByte();
+            m_GpuProgramType = (ShaderGpuProgramType)reader.ReadSByte();
             reader.AlignStream(4);
 
             int numVectorParams = reader.ReadInt32();
@@ -516,7 +578,7 @@ namespace AssetStudio
 
     public class SerializedProgram
     {
-        public List<SerializedSubProgram> m_SubPrograms { get; set; }
+        public List<SerializedSubProgram> m_SubPrograms;
 
         public SerializedProgram(ObjectReader reader)
         {
@@ -529,22 +591,29 @@ namespace AssetStudio
         }
     }
 
+    public enum PassType
+    {
+        kPassTypeNormal = 0,
+        kPassTypeUse = 1,
+        kPassTypeGrab = 2
+    };
+
     public class SerializedPass
     {
-        public List<KeyValuePair<string, int>> m_NameIndices { get; set; }
-        public int m_Type { get; set; }
-        public SerializedShaderState m_State { get; set; }
-        public uint m_ProgramMask { get; set; }
-        public SerializedProgram progVertex { get; set; }
-        public SerializedProgram progFragment { get; set; }
-        public SerializedProgram progGeometry { get; set; }
-        public SerializedProgram progHull { get; set; }
-        public SerializedProgram progDomain { get; set; }
-        public bool m_HasInstancingVariant { get; set; }
-        public string m_UseName { get; set; }
-        public string m_Name { get; set; }
-        public string m_TextureName { get; set; }
-        public SerializedTagMap m_Tags { get; set; }
+        public List<KeyValuePair<string, int>> m_NameIndices;
+        public PassType m_Type;
+        public SerializedShaderState m_State;
+        public uint m_ProgramMask;
+        public SerializedProgram progVertex;
+        public SerializedProgram progFragment;
+        public SerializedProgram progGeometry;
+        public SerializedProgram progHull;
+        public SerializedProgram progDomain;
+        public bool m_HasInstancingVariant;
+        public string m_UseName;
+        public string m_Name;
+        public string m_TextureName;
+        public SerializedTagMap m_Tags;
 
         public SerializedPass(ObjectReader reader)
         {
@@ -557,7 +626,7 @@ namespace AssetStudio
                 m_NameIndices.Add(new KeyValuePair<string, int>(reader.ReadAlignedString(), reader.ReadInt32()));
             }
 
-            m_Type = reader.ReadInt32();
+            m_Type = (PassType)reader.ReadInt32();
             m_State = new SerializedShaderState(reader);
             m_ProgramMask = reader.ReadUInt32();
             progVertex = new SerializedProgram(reader);
@@ -580,7 +649,7 @@ namespace AssetStudio
 
     public class SerializedTagMap
     {
-        public List<KeyValuePair<string, string>> tags { get; set; }
+        public List<KeyValuePair<string, string>> tags;
 
         public SerializedTagMap(BinaryReader reader)
         {
@@ -595,9 +664,9 @@ namespace AssetStudio
 
     public class SerializedSubShader
     {
-        public List<SerializedPass> m_Passes { get; set; }
-        public SerializedTagMap m_Tags { get; set; }
-        public int m_LOD { get; set; }
+        public List<SerializedPass> m_Passes;
+        public SerializedTagMap m_Tags;
+        public int m_LOD;
 
         public SerializedSubShader(ObjectReader reader)
         {
@@ -615,8 +684,8 @@ namespace AssetStudio
 
     public class SerializedShaderDependency
     {
-        public string from { get; set; }
-        public string to { get; set; }
+        public string from;
+        public string to;
 
         public SerializedShaderDependency(BinaryReader reader)
         {
@@ -627,13 +696,13 @@ namespace AssetStudio
 
     public class SerializedShader
     {
-        public SerializedProperties m_PropInfo { get; set; }
-        public List<SerializedSubShader> m_SubShaders { get; set; }
-        public string m_Name { get; set; }
-        public string m_CustomEditorName { get; set; }
-        public string m_FallbackName { get; set; }
-        public List<SerializedShaderDependency> m_Dependencies { get; set; }
-        public bool m_DisableNoSubshadersMessage { get; set; }
+        public SerializedProperties m_PropInfo;
+        public List<SerializedSubShader> m_SubShaders;
+        public string m_Name;
+        public string m_CustomEditorName;
+        public string m_FallbackName;
+        public List<SerializedShaderDependency> m_Dependencies;
+        public bool m_DisableNoSubshadersMessage;
 
         public SerializedShader(ObjectReader reader)
         {
