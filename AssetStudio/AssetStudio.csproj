@@ -85,6 +85,14 @@
       <HintPath>Libraries\OpenTK.GLControl.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>Libraries\SharpDX.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>Libraries\SharpDX.D3DCompiler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="SharpDX.Mathematics">
       <HintPath>Libraries\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
@@ -198,6 +206,7 @@
     <Compile Include="StudioClasses\BinaryWriterExtensions.cs" />
     <Compile Include="StudioClasses\BuildTarget.cs" />
     <Compile Include="StudioClasses\ClassIDType.cs" />
+    <Compile Include="StudioClasses\ShaderConverter.cs" />
     <Compile Include="StudioClasses\TypeTreeNode.cs" />
     <Compile Include="StudioClasses\TypeTreeHelper.cs" />
     <Compile Include="StudioClasses\ResourcesHelper.cs" />

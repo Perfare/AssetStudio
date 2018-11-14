@@ -816,11 +816,9 @@ namespace AssetStudio
                     }
                 case ClassIDType.Shader:
                     {
-                        Shader m_TextAsset = new Shader(reader);
-                        string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
-                        m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
-                        m_Script_Text = m_Script_Text.Replace("\0", "\\0");
-                        textPreviewBox.Text = m_Script_Text;
+                        var m_Shader = new Shader(reader);
+                        var str = ShaderConverter.Convert(m_Shader);
+                        textPreviewBox.Text = str == null ? "Serialized Shader can't be read" : str.Replace("\n", "\r\n");
                         textPreviewBox.Visible = true;
                         break;
                     }

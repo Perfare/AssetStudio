@@ -86,7 +86,8 @@ namespace AssetStudio
             var exportFullName = exportPath + reader.exportName + ".shader";
             if (ExportFileExists(exportFullName))
                 return false;
-            File.WriteAllBytes(exportFullName, m_Shader.m_Script);
+            var str = ShaderConverter.Convert(m_Shader);
+            File.WriteAllText(exportFullName, str ?? "Serialized Shader can't be read");
             return true;
         }
 

@@ -203,25 +203,36 @@ namespace AssetStudio
                                     var m_Texture2D = new Texture2D(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_Texture2D.path))
                                         assetItem.FullSize = objectReader.byteSize + m_Texture2D.size;
-                                    goto case ClassIDType.NamedObject;
+                                    assetItem.Text = m_Texture2D.m_Name;
+                                    exportable = true;
+                                    break;
                                 }
                             case ClassIDType.AudioClip:
                                 {
                                     var m_AudioClip = new AudioClip(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
                                         assetItem.FullSize = objectReader.byteSize + m_AudioClip.m_Size;
-                                    goto case ClassIDType.NamedObject;
+                                    assetItem.Text = m_AudioClip.m_Name;
+                                    exportable = true;
+                                    break;
                                 }
                             case ClassIDType.VideoClip:
                                 {
                                     var m_VideoClip = new VideoClip(objectReader, false);
                                     if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
                                         assetItem.FullSize = objectReader.byteSize + (long)m_VideoClip.m_Size;
-                                    goto case ClassIDType.NamedObject;
+                                    assetItem.Text = m_VideoClip.m_Name;
+                                    exportable = true;
+                                    break;
                                 }
-                            case ClassIDType.NamedObject:
-                            case ClassIDType.Mesh:
                             case ClassIDType.Shader:
+                                {
+                                    var m_Shader = new Shader(objectReader);
+                                    assetItem.Text = m_Shader.m_ParsedForm?.m_Name ?? m_Shader.m_Name;
+                                    exportable = true;
+                                    break;
+                                }
+                            case ClassIDType.Mesh:
                             case ClassIDType.TextAsset:
                             case ClassIDType.AnimationClip:
                             case ClassIDType.Font:
