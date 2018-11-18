@@ -7,10 +7,10 @@ namespace AssetStudio
 {
     public abstract class Object
     {
-        protected AssetsFile sourceFile;
+        protected SerializedFile sourceFile;
         public ObjectReader reader;
         public int[] version;
-        protected string[] buildType;
+        protected BuildType buildType;
         public BuildTarget platform;
 
         protected Object(ObjectReader reader)

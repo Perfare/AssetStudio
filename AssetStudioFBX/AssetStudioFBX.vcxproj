@@ -150,8 +150,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssetStudioUtility\AssetStudioUtility.csproj">
-      <Project>{9131c403-7fe8-444d-9af5-5fe5df76ff24}</Project>
+    <ProjectReference Include="..\AssetStudio\AssetStudio.csproj">
+      <Project>{af56b63c-1764-41b7-9e60-8d485422ac3b}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

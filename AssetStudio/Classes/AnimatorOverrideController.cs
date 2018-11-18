@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AssetStudio
 {
-    class AnimatorOverrideController : NamedObject
+    public class AnimatorOverrideController : NamedObject
     {
         public PPtr m_Controller;
         public PPtr[][] m_Clips;

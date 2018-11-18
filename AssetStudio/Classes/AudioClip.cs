@@ -49,7 +49,7 @@ namespace AssetStudio
                     if (reader.byteSize + reader.byteStart - reader.Position != tsize)
                     {
                         m_Offset = reader.ReadInt32();
-                        m_Source = sourceFile.filePath + ".resS";
+                        m_Source = sourceFile.fullName + ".resS";
                     }
                 }
                 else
@@ -83,7 +83,7 @@ namespace AssetStudio
             {
                 if (!string.IsNullOrEmpty(m_Source))
                 {
-                    m_AudioData = ResourcesHelper.GetData(m_Source, sourceFile.filePath, m_Offset, (int)m_Size);
+                    m_AudioData = ResourcesHelper.GetData(m_Source, sourceFile, m_Offset, (int)m_Size);
                 }
                 else
                 {

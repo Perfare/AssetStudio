@@ -487,42 +487,39 @@ namespace AssetStudio
 							pMeshNode->AddMaterial(pMat);
 
 							bool hasTexture = false;
-							FbxFileTexture* pTextureDiffuse = ExportTexture(ImportedHelpers::FindTexture((String^)mat->Textures[0], imported->TextureList), pMesh);
+							FbxFileTexture* pTextureDiffuse = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[0], imported->TextureList), pMesh);
 							if (pTextureDiffuse != NULL)
 							{
 								LinkTexture(mat, 0, pTextureDiffuse, pMat->Diffuse);
 								hasTexture = true;
 							}
 
-							FbxFileTexture* pTextureAmbient = ExportTexture(ImportedHelpers::FindTexture((String^)mat->Textures[1], imported->TextureList), pMesh);
+							FbxFileTexture* pTextureAmbient = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[1], imported->TextureList), pMesh);
 							if (pTextureAmbient != NULL)
 							{
 								LinkTexture(mat, 1, pTextureAmbient, pMat->Ambient);
 								hasTexture = true;
 							}
 
-							FbxFileTexture* pTextureEmissive = ExportTexture(ImportedHelpers::FindTexture((String^)mat->Textures[2], imported->TextureList), pMesh);
+							FbxFileTexture* pTextureEmissive = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[2], imported->TextureList), pMesh);
 							if (pTextureEmissive != NULL)
 							{
 								LinkTexture(mat, 2, pTextureEmissive, pMat->Emissive);
 								hasTexture = true;
 							}
 
-							FbxFileTexture* pTextureSpecular = ExportTexture(ImportedHelpers::FindTexture((String^)mat->Textures[3], imported->TextureList), pMesh);
+							FbxFileTexture* pTextureSpecular = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[3], imported->TextureList), pMesh);
 							if (pTextureSpecular != NULL)
 							{
 								LinkTexture(mat, 3, pTextureSpecular, pMat->Specular);
 								hasTexture = true;
 							}
 
-							if (mat->Textures->Length > 4)
+							FbxFileTexture* pTextureBump = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[4], imported->TextureList), pMesh);
+							if (pTextureBump != NULL)
 							{
-								FbxFileTexture* pTextureBump = ExportTexture(ImportedHelpers::FindTexture((String^)mat->Textures[4], imported->TextureList), pMesh);
-								if (pTextureBump != NULL)
-								{
-									LinkTexture(mat, 4, pTextureBump, pMat->Bump);
-									hasTexture = true;
-								}
+								LinkTexture(mat, 4, pTextureBump, pMat->Bump);
+								hasTexture = true;
 							}
 
 							if (hasTexture)

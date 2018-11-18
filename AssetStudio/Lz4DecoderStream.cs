@@ -14,7 +14,7 @@ namespace Lz4
             Reset(input, inputLength);
         }
 
-        public void Reset(Stream input, long inputLength = long.MaxValue)
+        private void Reset(Stream input, long inputLength = long.MaxValue)
         {
             this.inputLength = inputLength;
             this.input = input;
@@ -40,6 +40,7 @@ namespace Lz4
                     input.Close();
                 }
                 input = null;
+                decodeBuffer = null;
             }
             finally
             {

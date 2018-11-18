@@ -20,10 +20,10 @@ namespace AssetStudio
         public float[] m_Vertices;
         public float[] m_Normals;
         public float[] m_Colors;
+        public float[] m_UV0;
         public float[] m_UV1;
         public float[] m_UV2;
         public float[] m_UV3;
-        public float[] m_UV4;
         public float[] m_Tangents;
         public uint[] m_BoneNameHashes;
         public BlendShapeData m_Shapes;
@@ -295,7 +295,7 @@ namespace AssetStudio
             #endregion
 
             #region BlendShapeData for 4.1.0 to 4.2.x, excluding 4.1.0 alpha
-            if (version[0] == 4 && ((version[1] == 1 && buildType[0] != "a") || (version[1] > 1 && version[1] <= 2)))
+            if (version[0] == 4 && ((version[1] == 1 && !buildType.IsAlpha) || (version[1] > 1 && version[1] <= 2)))
             {
                 int m_Shapes_size = reader.ReadInt32();
                 if (m_Shapes_size > 0)
@@ -359,7 +359,7 @@ namespace AssetStudio
                 reader.AlignStream(4);
                 //This is a bug fixed in 2017.3.1p1 and later versions
                 if ((version[0] > 2017 || (version[0] == 2017 && version[1] >= 4)) || //2017.4
-                    ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && buildType[0] == "p") || //fixed after 2017.3.1px
+                    ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && buildType.IsPatch) || //fixed after 2017.3.1px
                     ((version[0] == 2017 && version[1] == 3) && m_MeshCompression == 0))//2017.3.xfx with no compression
                 {
                     var m_IndexFormat = reader.ReadInt32();
@@ -407,12 +407,12 @@ namespace AssetStudio
                 }
 
                 int m_UV1_size = reader.ReadInt32();
-                m_UV1 = new float[m_UV1_size * 2];
-                for (int v = 0; v < m_UV1_size * 2; v++) { m_UV1[v] = reader.ReadSingle(); }
+                m_UV0 = new float[m_UV1_size * 2];
+                for (int v = 0; v < m_UV1_size * 2; v++) { m_UV0[v] = reader.ReadSingle(); }
 
                 int m_UV2_size = reader.ReadInt32();
-                m_UV2 = new float[m_UV2_size * 2];
-                for (int v = 0; v < m_UV2_size * 2; v++) { m_UV2[v] = reader.ReadSingle(); }
+                m_UV1 = new float[m_UV2_size * 2];
+                for (int v = 0; v < m_UV2_size * 2; v++) { m_UV1[v] = reader.ReadSingle(); }
 
                 if (version[0] == 2 && version[1] <= 5)
                 {
@@ -631,16 +631,16 @@ namespace AssetStudio
                                             m_Colors = componentsFloatArray;
                                             break;
                                         case 4: //kShaderChannelTexCoord0
-                                            m_UV1 = componentsFloatArray;
+                                            m_UV0 = componentsFloatArray;
                                             break;
                                         case 5: //kShaderChannelTexCoord1
-                                            m_UV2 = componentsFloatArray;
+                                            m_UV1 = componentsFloatArray;
                                             break;
                                         case 6: //kShaderChannelTexCoord2
-                                            m_UV3 = componentsFloatArray;
+                                            m_UV2 = componentsFloatArray;
                                             break;
                                         case 7: //kShaderChannelTexCoord3
-                                            m_UV4 = componentsFloatArray;
+                                            m_UV3 = componentsFloatArray;
                                             break;
                                         //kShaderChannelTexCoord4 8
                                         //kShaderChannelTexCoord5 9
@@ -744,15 +744,15 @@ namespace AssetStudio
                                                 m_Colors = componentsFloatArray;
                                                 break;
                                             case 3: //kShaderChannelTexCoord0
-                                                m_UV1 = componentsFloatArray;
+                                                m_UV0 = componentsFloatArray;
                                                 break;
                                             case 4: //kShaderChannelTexCoord1
-                                                m_UV2 = componentsFloatArray;
+                                                m_UV1 = componentsFloatArray;
                                                 break;
                                             case 5: //kShaderChannelTangent & kShaderChannelTexCoord2
                                                 if (version[0] >= 5)
                                                 {
-                                                    m_UV3 = componentsFloatArray;
+                                                    m_UV2 = componentsFloatArray;
                                                 }
                                                 else
                                                 {
@@ -760,7 +760,7 @@ namespace AssetStudio
                                                 }
                                                 break;
                                             case 6: //kShaderChannelTexCoord3
-                                                m_UV4 = componentsFloatArray;
+                                                m_UV3 = componentsFloatArray;
                                                 break;
                                             case 7: //kShaderChannelTangent
                                                 m_Tangents = componentsFloatArray;
@@ -831,8 +831,8 @@ namespace AssetStudio
                                         case 0: m_Vertices = componentsArray; break;
                                         case 1: m_Normals = componentsArray; break;
                                         case 2: m_Colors = componentsArray; break;
-                                        case 3: m_UV1 = componentsArray; break;
-                                        case 4: m_UV2 = componentsArray; break;
+                                        case 3: m_UV0 = componentsArray; break;
+                                        case 4: m_UV1 = componentsArray; break;
                                         case 5: m_Tangents = componentsArray; break;
                                     }
 
@@ -864,18 +864,18 @@ namespace AssetStudio
                 var m_UV_Packed = new PackedFloatVector(reader);
                 if (m_UV_Packed.m_NumItems > 0)
                 {
-                    m_UV1 = m_UV_Packed.UnpackFloats(2, 4, 0, m_VertexCount);
+                    m_UV0 = m_UV_Packed.UnpackFloats(2, 4, 0, m_VertexCount);
                     if (m_UV_Packed.m_NumItems >= m_VertexCount * 4)
                     {
-                        m_UV2 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 2, m_VertexCount);
+                        m_UV1 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 2, m_VertexCount);
                     }
                     if (m_UV_Packed.m_NumItems >= m_VertexCount * 6)
                     {
-                        m_UV3 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 4, m_VertexCount);
+                        m_UV2 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 4, m_VertexCount);
                     }
                     if (m_UV_Packed.m_NumItems >= m_VertexCount * 8)
                     {
-                        m_UV4 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 6, m_VertexCount);
+                        m_UV3 = m_UV_Packed.UnpackFloats(2, 4, m_VertexCount * 6, m_VertexCount);
                     }
                 }
                 #endregion

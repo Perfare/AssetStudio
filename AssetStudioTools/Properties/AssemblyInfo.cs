@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("AssetStudio")]
+[assembly: AssemblyTitle("AssetStudioTools")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AssetStudio")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyProduct("AssetStudioTools")]
+[assembly: AssemblyCopyright("Copyright © Perfare 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("af56b63c-1764-41b7-9e60-8d485422ac3b")]
+[assembly: Guid("9131c403-7fe8-444d-9af5-5fe5df76ff24")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

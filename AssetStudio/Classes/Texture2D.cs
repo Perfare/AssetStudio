@@ -105,7 +105,7 @@ namespace AssetStudio
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    image_data = ResourcesHelper.GetData(path, sourceFile.filePath, offset, image_data_size);
+                    image_data = ResourcesHelper.GetData(path, sourceFile, offset, image_data_size);
                 }
                 else
                 {

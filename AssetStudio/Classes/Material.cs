@@ -38,7 +38,7 @@ namespace AssetStudio
         {
             m_Shader = reader.ReadPPtr();
 
-            if (version[0] == 4 && (version[1] >= 2 || (version[1] == 1 && buildType[0] != "a")))
+            if (version[0] == 4 && (version[1] >= 2 || (version[1] == 1 && !buildType.IsAlpha)))
             {
                 m_ShaderKeywords = new string[reader.ReadInt32()];
                 for (int i = 0; i < m_ShaderKeywords.Length; i++)

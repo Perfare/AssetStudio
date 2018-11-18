@@ -51,7 +51,7 @@ namespace AssetStudio
             {
                 if (!string.IsNullOrEmpty(m_Source))
                 {
-                    m_VideoData = ResourcesHelper.GetData(m_Source, sourceFile.filePath, (long)m_Offset, (int)m_Size);
+                    m_VideoData = ResourcesHelper.GetData(m_Source, sourceFile, (long)m_Offset, (int)m_Size);
                 }
                 else
                 {

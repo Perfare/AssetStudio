@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{24551E2D-E9B6-4CD6-8F2A-D9F4A13E7853}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioGUI", "AssetStudioGUI\AssetStudioGUI.csproj", "{24551E2D-E9B6-4CD6-8F2A-D9F4A13E7853}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetStudioFBX", "AssetStudioFBX\AssetStudioFBX.vcxproj", "{4F8EF5EF-732B-49CF-9EB3-B23E19AE6267}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioUtility", "AssetStudioUtility\AssetStudioUtility.csproj", "{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioTools", "AssetStudioTools\AssetStudioTools.csproj", "{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{AF56B63C-1764-41B7-9E60-8D485422AC3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +35,22 @@ Global
 		{4F8EF5EF-732B-49CF-9EB3-B23E19AE6267}.Release|x64.Build.0 = Release|x64
 		{4F8EF5EF-732B-49CF-9EB3-B23E19AE6267}.Release|x86.ActiveCfg = Release|Win32
 		{4F8EF5EF-732B-49CF-9EB3-B23E19AE6267}.Release|x86.Build.0 = Release|Win32
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x64.Build.0 = Debug|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x86.Build.0 = Debug|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x64.ActiveCfg = Release|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x64.Build.0 = Release|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x86.ActiveCfg = Release|Any CPU
-		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x86.Build.0 = Release|Any CPU
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x64.ActiveCfg = Debug|x64
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x64.Build.0 = Debug|x64
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x86.ActiveCfg = Debug|x86
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Debug|x86.Build.0 = Debug|x86
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x64.ActiveCfg = Release|x64
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x64.Build.0 = Release|x64
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x86.ActiveCfg = Release|x86
+		{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}.Release|x86.Build.0 = Release|x86
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Debug|x64.Build.0 = Debug|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Debug|x86.Build.0 = Debug|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x64.ActiveCfg = Release|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x64.Build.0 = Release|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x86.ActiveCfg = Release|Any CPU
+		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
