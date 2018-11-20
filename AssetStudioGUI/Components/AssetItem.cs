@@ -12,7 +12,7 @@ namespace AssetStudioGUI
         public string TypeString;
         public string InfoText;
         public string UniqueID;
-        public GameObject gameObject;
+        public GameObjectTreeNode TreeNode;
 
         public AssetItem(ObjectReader reader)
         {

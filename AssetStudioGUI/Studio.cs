@@ -15,11 +15,9 @@ namespace AssetStudioGUI
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
-        private static HashSet<string> assetsNameHash = new HashSet<string>();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
-        public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> AllTypeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>();
-        public static Dictionary<GameObject, GameObjectTreeNode> treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
+        public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> AllTypeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>(); //TODO Delete it
         public static bool ModuleLoaded;
         public static Dictionary<string, ModuleDef> LoadedModuleDic = new Dictionary<string, ModuleDef>();
 
@@ -96,9 +94,10 @@ namespace AssetStudioGUI
 
         public static void BuildAssetList(Dictionary<ObjectReader, AssetItem> tempDic, bool displayAll, bool displayOriginalName, out string productName)
         {
-            productName = string.Empty;
             Logger.Info("Building asset list...");
 
+            productName = string.Empty;
+            var assetsNameHash = new HashSet<string>();
             var progressCount = assetsManager.assetsFileList.Sum(x => x.ObjectReaders.Count);
             int j = 0;
             Progress.Reset();
@@ -248,17 +247,18 @@ namespace AssetStudioGUI
                 }
                 if (displayOriginalName && ab != null)
                 {
-                    foreach (var x in tempExportableAssets)
+                    foreach (var asset in tempExportableAssets)
                     {
-                        var replacename = ab.m_Container.Find(y => y.second.asset.m_PathID == x.reader.m_PathID)?.first;
-                        if (!string.IsNullOrEmpty(replacename))
+                        var originalPath = ab.m_Container.Find(y => y.Value.asset.m_PathID == asset.reader.m_PathID).Key;
+                        if (!string.IsNullOrEmpty(originalPath))
                         {
-                            var ex = Path.GetExtension(replacename);
-                            x.Text = !string.IsNullOrEmpty(ex) ? replacename.Replace(ex, "") : replacename;
-                            if (!assetsNameHash.Add((x.TypeString + x.Text).ToUpper()))
+                            var extension = Path.GetExtension(originalPath);
+                            if (!string.IsNullOrEmpty(extension) && asset.Type == ClassIDType.TextAsset)
                             {
-                                x.Text = Path.GetDirectoryName(replacename) + "\\" + Path.GetFileNameWithoutExtension(replacename) + x.UniqueID;
+                                //asset.Extension = extension; //TODO
                             }
+
+                            asset.Text = Path.GetDirectoryName(originalPath) + "\\" + asset.Text;
                         }
                     }
                 }
@@ -277,6 +277,7 @@ namespace AssetStudioGUI
             if (gameObjectCount > 0)
             {
                 Logger.Info("Building tree structure...");
+                var treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
                 int i = 0;
                 Progress.Reset();
                 foreach (var assetsFile in assetsManager.assetsFileList)
@@ -285,6 +286,12 @@ namespace AssetStudioGUI
 
                     foreach (var m_GameObject in assetsFile.GameObjects.Values)
                     {
+                        if (!treeNodeDictionary.TryGetValue(m_GameObject, out var currentNode))
+                        {
+                            currentNode = new GameObjectTreeNode(m_GameObject);
+                            treeNodeDictionary.Add(m_GameObject, currentNode);
+                        }
+
                         foreach (var m_Component in m_GameObject.m_Components)
                         {
                             if (m_Component.TryGet(out var asset))
@@ -310,7 +317,7 @@ namespace AssetStudioGUI
                                                 if (m_MeshFilter.m_Mesh.TryGet(out objectReader))
                                                 {
                                                     var item = tempDic[objectReader];
-                                                    item.gameObject = m_GameObject;
+                                                    item.TreeNode = currentNode;
                                                 }
                                             }
                                             break;
@@ -324,7 +331,7 @@ namespace AssetStudioGUI
                                                 if (m_SkinnedMeshRenderer.m_Mesh.TryGet(out objectReader))
                                                 {
                                                     var item = tempDic[objectReader];
-                                                    item.gameObject = m_GameObject;
+                                                    item.TreeNode = currentNode;
                                                 }
                                             }
                                             break;
@@ -357,11 +364,6 @@ namespace AssetStudioGUI
                             }
                         }
 
-                        if (!treeNodeDictionary.TryGetValue(m_GameObject, out var currentNode))
-                        {
-                            currentNode = new GameObjectTreeNode(m_GameObject);
-                            treeNodeDictionary.Add(m_GameObject, currentNode);
-                        }
                         parentNode.Nodes.Add(currentNode);
 
                         Progress.Report(++i, gameObjectCount);
@@ -372,6 +374,8 @@ namespace AssetStudioGUI
                         treeNodeCollection.Add(fileNode);
                     }
                 }
+
+                treeNodeDictionary.Clear();
             }
 
             return treeNodeCollection;

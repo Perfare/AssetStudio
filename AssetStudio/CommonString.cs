@@ -110,7 +110,7 @@ namespace AssetStudio
             {1057, "int2_storage"},
             {1070, "int3_storage"},
             {1083, "BoundsInt"},
-            {1092, "m_CorrespondingSourceObject"}
+            {1093, "m_CorrespondingSourceObject"}
         };
     }
 }

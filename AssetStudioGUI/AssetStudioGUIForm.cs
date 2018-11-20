@@ -66,7 +66,7 @@ namespace AssetStudioGUI
 
         //tree search
         private int nextGObject;
-        private List<GameObjectTreeNode> treeSrcResults = new List<GameObjectTreeNode>();
+        private List<TreeNode> treeSrcResults = new List<TreeNode>();
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
@@ -481,12 +481,9 @@ namespace AssetStudioGUI
             {
                 if (treeSrcResults.Count == 0)
                 {
-                    foreach (var node in treeNodeDictionary.Values)
+                    foreach (TreeNode node in sceneTreeView.Nodes)
                     {
-                        if (node.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                        {
-                            treeSrcResults.Add(node);
-                        }
+                        TreeNodeSearch(node);
                     }
                 }
                 if (treeSrcResults.Count > 0)
@@ -499,6 +496,19 @@ namespace AssetStudioGUI
                     sceneTreeView.SelectedNode = treeSrcResults[nextGObject];
                     nextGObject++;
                 }
+            }
+        }
+
+        private void TreeNodeSearch(TreeNode treeNode)
+        {
+            if (treeNode.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
+            {
+                treeSrcResults.Add(treeNode);
+            }
+
+            foreach (TreeNode node in treeNode.Nodes)
+            {
+                TreeNodeSearch(node);
             }
         }
 
@@ -1701,8 +1711,6 @@ namespace AssetStudioGUI
                 pair.Value.Dispose();
             }
             LoadedModuleDic.Clear();
-
-            treeNodeDictionary.Clear();
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)
@@ -1820,9 +1828,9 @@ namespace AssetStudioGUI
         private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
-            if (selectasset.gameObject != null)
+            if (selectasset.TreeNode != null)
             {
-                sceneTreeView.SelectedNode = treeNodeDictionary[selectasset.gameObject];
+                sceneTreeView.SelectedNode = selectasset.TreeNode;
                 tabControl1.SelectedTab = tabPage1;
             }
         }

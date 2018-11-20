@@ -14,11 +14,6 @@ namespace AssetStudio
             }
         }
 
-        public static void Write(this BinaryWriter writer, uint[] array)
-        {
-            WriteArray(writer.Write, array);
-        }
-
         public static void AlignStream(this BinaryWriter writer, int alignment)
         {
             var pos = writer.BaseStream.Position;

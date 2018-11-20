@@ -527,14 +527,13 @@ namespace AssetStudio
         public List<StreamedFrame> ReadData()
         {
             var frameList = new List<StreamedFrame>();
-            using (Stream stream = new MemoryStream())
+            var buffer = new byte[data.Length * 4];
+            Buffer.BlockCopy(data, 0, buffer, 0, buffer.Length);
+            using (var reader = new BinaryReader(new MemoryStream(buffer)))
             {
-                BinaryWriter writer = new BinaryWriter(stream);
-                writer.Write(data);
-                stream.Position = 0;
-                while (stream.Position < stream.Length)
+                while (reader.BaseStream.Position < reader.BaseStream.Length)
                 {
-                    frameList.Add(new StreamedFrame(new BinaryReader(stream)));
+                    frameList.Add(new StreamedFrame(reader));
                 }
             }
 
