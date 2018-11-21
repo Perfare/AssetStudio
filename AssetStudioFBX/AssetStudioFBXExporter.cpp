@@ -552,7 +552,7 @@ namespace AssetStudio
 							lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, -tangent.W));
 						}
 
-						if (hasBones)
+						if (hasBones && vertex->BoneIndices != nullptr)
 						{
 							array<unsigned char>^ boneIndices = vertex->BoneIndices;
 							array<float>^ weights4 = vertex->Weights;

@@ -509,7 +509,7 @@ namespace AssetStudioGUI
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                            MessageBox.Show($"Export GameObject:{j.Text} error\r\n{ex.Message}\r\n{ex.StackTrace}");
                         }
 
                         Progress.Report(++k, count);
@@ -541,7 +541,7 @@ namespace AssetStudioGUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                    MessageBox.Show($"Export Animator:{animator.Text} error\r\n{ex.Message}\r\n{ex.StackTrace}");
                     Logger.Info("Error in export");
                 }
             });
@@ -568,7 +568,7 @@ namespace AssetStudioGUI
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace}");
+                            MessageBox.Show($"Export GameObject:{gameObject.m_Name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
                             Logger.Info("Error in export");
                         }
 
