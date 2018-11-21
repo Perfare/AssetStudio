@@ -15,7 +15,7 @@ namespace AssetStudio
         public ClassIDType type;
         public SerializedType serializedType;
         public BuildTarget platform;
-        private uint m_Version;
+        public uint m_Version;
 
         public int[] version => assetsFile.version;
         public BuildType buildType => assetsFile.buildType;
@@ -42,39 +42,6 @@ namespace AssetStudio
         public void Reset()
         {
             Position = byteStart;
-        }
-
-        public string Dump()
-        {
-            Reset();
-            if (serializedType?.m_Nodes != null)
-            {
-                var sb = new StringBuilder();
-                TypeTreeHelper.ReadTypeString(sb, serializedType.m_Nodes, this);
-                return sb.ToString();
-            }
-            return null;
-        }
-
-        public bool HasStructMember(string name)
-        {
-            return serializedType?.m_Nodes != null && serializedType.m_Nodes.Any(x => x.m_Name == name);
-        }
-
-        public PPtr ReadPPtr()
-        {
-            return new PPtr
-            {
-                m_FileID = ReadInt32(),
-                m_PathID = m_Version < 14 ? ReadInt32() : ReadInt64(),
-                assetsFile = assetsFile
-            };
-        }
-
-        public byte[] GetRawData()
-        {
-            Reset();
-            return ReadBytes((int)byteSize);
         }
     }
 }

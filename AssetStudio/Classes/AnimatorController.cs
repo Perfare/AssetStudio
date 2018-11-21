@@ -531,9 +531,9 @@ namespace AssetStudio
         }
     }
 
-    public sealed class AnimatorController : NamedObject
+    public sealed class AnimatorController : RuntimeAnimatorController
     {
-        public PPtr[] m_AnimationClips;
+        public PPtr<AnimationClip>[] m_AnimationClips;
 
         public AnimatorController(ObjectReader reader) : base(reader)
         {
@@ -548,10 +548,10 @@ namespace AssetStudio
             }
 
             int numClips = reader.ReadInt32();
-            m_AnimationClips = new PPtr[numClips];
+            m_AnimationClips = new PPtr<AnimationClip>[numClips];
             for (int i = 0; i < numClips; i++)
             {
-                m_AnimationClips[i] = reader.ReadPPtr();
+                m_AnimationClips[i] = new PPtr<AnimationClip>(reader);
             }
         }
     }

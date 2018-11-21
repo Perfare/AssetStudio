@@ -11,9 +11,7 @@ namespace AssetStudio
         public uint byteSize;
         public int typeID;
         public int classID;
-        public ushort isDestroyed;
 
-        //custom
         public long m_PathID;
         public SerializedType serializedType;
     }

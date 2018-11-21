@@ -8,27 +8,26 @@ namespace AssetStudio
     {
         public static Bitmap GetImageFromSprite(Sprite m_Sprite)
         {
-            if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var objectReader))
+            if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var m_SpriteAtlas))
             {
-                var m_SpriteAtlas = new SpriteAtlas(objectReader);
-                if (m_SpriteAtlas.m_RenderDataMap.TryGetValue(m_Sprite.m_RenderDataKey, out var spriteAtlasData) && spriteAtlasData.texture.TryGet(out objectReader))
+                if (m_SpriteAtlas.m_RenderDataMap.TryGetValue(m_Sprite.m_RenderDataKey, out var spriteAtlasData) && spriteAtlasData.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(objectReader, spriteAtlasData.textureRect, m_Sprite, spriteAtlasData.settingsRaw);
+                    return CutImage(m_Texture2D, spriteAtlasData.textureRect, m_Sprite, spriteAtlasData.settingsRaw);
                 }
             }
             else
             {
-                if (m_Sprite.texture.TryGet(out objectReader))
+                if (m_Sprite.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(objectReader, m_Sprite.textureRect, m_Sprite, m_Sprite.settingsRaw);
+                    return CutImage(m_Texture2D, m_Sprite.textureRect, m_Sprite, m_Sprite.settingsRaw);
                 }
             }
             return null;
         }
 
-        private static Bitmap CutImage(ObjectReader texture2DAsset, RectangleF textureRect, Sprite m_Sprite, SpriteSettings settingsRaw)
+        private static Bitmap CutImage(Texture2D m_Texture2D, RectangleF textureRect, Sprite m_Sprite, SpriteSettings settingsRaw)
         {
-            var texture2D = new Texture2DConverter(new Texture2D(texture2DAsset, true));
+            var texture2D = new Texture2DConverter(m_Texture2D);
             var originalImage = texture2D.ConvertToBitmap(false);
             if (originalImage != null)
             {

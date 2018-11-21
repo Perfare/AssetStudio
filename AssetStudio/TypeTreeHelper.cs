@@ -8,7 +8,7 @@ namespace AssetStudio
 {
     public static class TypeTreeHelper
     {
-        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, EndianBinaryReader reader)
+        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, BinaryReader reader)
         {
             for (int i = 0; i < members.Count; i++)
             {
@@ -16,7 +16,7 @@ namespace AssetStudio
             }
         }
 
-        private static void ReadStringValue(StringBuilder sb, List<TypeTreeNode> members, EndianBinaryReader reader, ref int i)
+        private static void ReadStringValue(StringBuilder sb, List<TypeTreeNode> members, BinaryReader reader, ref int i)
         {
             var member = members[i];
             var level = member.m_Level;
@@ -153,7 +153,7 @@ namespace AssetStudio
                 reader.AlignStream(4);
         }
 
-        public static Dictionary<string, object> ReadBoxingType(List<TypeTreeNode> members, EndianBinaryReader reader)
+        public static Dictionary<string, object> ReadBoxingType(List<TypeTreeNode> members, BinaryReader reader)
         {
             var obj = new Dictionary<string, object>();
             for (int i = 0; i < members.Count; i++)
@@ -165,7 +165,7 @@ namespace AssetStudio
             return obj;
         }
 
-        private static object ReadValue(List<TypeTreeNode> members, EndianBinaryReader reader, ref int i)
+        private static object ReadValue(List<TypeTreeNode> members, BinaryReader reader, ref int i)
         {
             var member = members[i];
             var level = member.m_Level;

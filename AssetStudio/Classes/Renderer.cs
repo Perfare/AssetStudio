@@ -13,7 +13,7 @@ namespace AssetStudio
 
     public abstract class Renderer : Component
     {
-        public PPtr[] m_Materials;
+        public PPtr<Material>[] m_Materials;
         public StaticBatchInfo m_StaticBatchInfo;
         public uint[] m_SubsetIndices;
 
@@ -51,10 +51,10 @@ namespace AssetStudio
                 reader.Position += 16;//Vector4f m_LightmapTilingOffsetDynamic
             }
 
-            m_Materials = new PPtr[reader.ReadInt32()];
+            m_Materials = new PPtr<Material>[reader.ReadInt32()];
             for (int m = 0; m < m_Materials.Length; m++)
             {
-                m_Materials[m] = reader.ReadPPtr();
+                m_Materials[m] = new PPtr<Material>(reader);
             }
 
             if (version[0] < 3)
@@ -77,12 +77,12 @@ namespace AssetStudio
                     m_SubsetIndices = reader.ReadUInt32Array(numSubsetIndices);
                 }
 
-                var m_StaticBatchRoot = reader.ReadPPtr();
+                var m_StaticBatchRoot = new PPtr<Transform>(reader);
 
                 if ((version[0] == 5 && version[1] >= 4) || version[0] > 5)//5.4.0 and up
                 {
-                    var m_ProbeAnchor = reader.ReadPPtr();
-                    var m_LightProbeVolumeOverride = reader.ReadPPtr();
+                    var m_ProbeAnchor = new PPtr<Transform>(reader);
+                    var m_LightProbeVolumeOverride = new PPtr<GameObject>(reader);
                 }
                 else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))//3.5 - 5.3
                 {
@@ -92,7 +92,7 @@ namespace AssetStudio
                     {
                         int m_ReflectionProbeUsage = reader.ReadInt32();
                     }
-                    var m_LightProbeAnchor = reader.ReadPPtr();
+                    var m_LightProbeAnchor = new PPtr<Transform>(reader);
                 }
 
                 if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))//4.3 and up

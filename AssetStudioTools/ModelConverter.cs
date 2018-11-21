@@ -19,29 +19,27 @@ namespace AssetStudio
 
         private Avatar avatar;
         private Dictionary<uint, string> morphChannelInfo = new Dictionary<uint, string>();
-        private HashSet<ObjectReader> animationClipHashSet = new HashSet<ObjectReader>();
+        private HashSet<AnimationClip> animationClipHashSet = new HashSet<AnimationClip>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
-        private Dictionary<ObjectReader, string> textureNameDictionary = new Dictionary<ObjectReader, string>();
+        private Dictionary<Texture2D, string> textureNameDictionary = new Dictionary<Texture2D, string>();
 
         public ModelConverter(GameObject m_GameObject)
         {
-            if (m_GameObject.m_Animator != null && m_GameObject.m_Animator.TryGet(out var m_Animator))
+            if (m_GameObject.m_Animator != null)
             {
-                var animator = new Animator(m_Animator);
-                InitWithAnimator(animator);
-                CollectAnimationClip(animator);
+                InitWithAnimator(m_GameObject.m_Animator);
+                CollectAnimationClip(m_GameObject.m_Animator);
             }
             else
                 InitWithGameObject(m_GameObject);
             ConvertAnimations();
         }
 
-        public ModelConverter(GameObject m_GameObject, ObjectReader[] animationList)
+        public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList)
         {
-            if (m_GameObject.m_Animator != null && m_GameObject.m_Animator.TryGet(out var m_Animator))
+            if (m_GameObject.m_Animator != null)
             {
-                var animator = new Animator(m_Animator);
-                InitWithAnimator(animator);
+                InitWithAnimator(m_GameObject.m_Animator);
             }
             else
                 InitWithGameObject(m_GameObject);
@@ -59,7 +57,7 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
-        public ModelConverter(Animator m_Animator, ObjectReader[] animationList)
+        public ModelConverter(Animator m_Animator, AnimationClip[] animationList)
         {
             InitWithAnimator(m_Animator);
             foreach (var animationClip in animationList)
@@ -72,27 +70,26 @@ namespace AssetStudio
         private void InitWithAnimator(Animator m_Animator)
         {
             if (m_Animator.m_Avatar.TryGet(out var m_Avatar))
-                avatar = new Avatar(m_Avatar);
+                avatar = m_Avatar;
 
-            m_Animator.m_GameObject.TryGetGameObject(out var m_GameObject);
+            m_Animator.m_GameObject.TryGet(out var m_GameObject);
             InitWithGameObject(m_GameObject, m_Animator.m_HasTransformHierarchy);
         }
 
         private void InitWithGameObject(GameObject m_GameObject, bool hasTransformHierarchy = true)
         {
-            m_GameObject.m_Transform.TryGetTransform(out var m_Transform);
-            var rootTransform = m_Transform;
+            var m_Transform = m_GameObject.m_Transform;
             if (!hasTransformHierarchy)
             {
-                var rootFrame = ConvertFrame(rootTransform);
+                var rootFrame = ConvertFrame(m_Transform);
                 FrameList.Add(rootFrame);
                 DeoptimizeTransformHierarchy();
             }
             else
             {
                 var frameList = new List<ImportedFrame>();
-                var tempTransform = rootTransform;
-                while (tempTransform.m_Father.TryGetTransform(out var m_Father))
+                var tempTransform = m_Transform;
+                while (tempTransform.m_Father.TryGet(out var m_Father))
                 {
                     frameList.Add(ConvertFrame(m_Father));
                     tempTransform = m_Father;
@@ -113,7 +110,7 @@ namespace AssetStudio
                     ConvertFrames(m_Transform, null);
                 }
 
-                CreateBonePathHash(rootTransform);
+                CreateBonePathHash(m_Transform);
             }
 
             ConvertMeshRenderer(m_Transform);
@@ -121,83 +118,68 @@ namespace AssetStudio
 
         private void ConvertMeshRenderer(Transform m_Transform)
         {
-            m_Transform.m_GameObject.TryGetGameObject(out var m_GameObject);
-            foreach (var m_Component in m_GameObject.m_Components)
+            m_Transform.m_GameObject.TryGet(out var m_GameObject);
+
+            if (m_GameObject.m_MeshRenderer != null)
             {
-                if (m_Component.TryGet(out var objectReader))
+                ConvertMeshRenderer(m_GameObject.m_MeshRenderer);
+            }
+
+            if (m_GameObject.m_SkinnedMeshRenderer != null)
+            {
+                ConvertMeshRenderer(m_GameObject.m_SkinnedMeshRenderer);
+            }
+
+            if (m_GameObject.m_Animation != null)
+            {
+                foreach (var animation in m_GameObject.m_Animation.m_Animations)
                 {
-                    switch (objectReader.type)
+                    if (animation.TryGet(out var animationClip))
                     {
-                        case ClassIDType.MeshRenderer:
-                            {
-                                var m_Renderer = new MeshRenderer(objectReader);
-                                ConvertMeshRenderer(m_Renderer);
-                                break;
-                            }
-                        case ClassIDType.SkinnedMeshRenderer:
-                            {
-                                var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(objectReader);
-                                ConvertMeshRenderer(m_SkinnedMeshRenderer);
-                                break;
-                            }
-                        case ClassIDType.Animation:
-                            {
-                                var m_Animation = new Animation(objectReader);
-                                foreach (var animation in m_Animation.m_Animations)
-                                {
-                                    if (animation.TryGet(out var animationClip))
-                                    {
-                                        animationClipHashSet.Add(animationClip);
-                                    }
-                                }
-                                break;
-                            }
+                        animationClipHashSet.Add(animationClip);
                     }
                 }
             }
+
             foreach (var pptr in m_Transform.m_Children)
             {
-                if (pptr.TryGetTransform(out var child))
+                if (pptr.TryGet(out var child))
                     ConvertMeshRenderer(child);
             }
         }
 
         private void CollectAnimationClip(Animator m_Animator)
         {
-            if (m_Animator.m_Controller.TryGet(out var objectReader))
+            if (m_Animator.m_Controller.TryGet(out var m_Controller))
             {
-                if (objectReader.type == ClassIDType.AnimatorOverrideController)
+                switch (m_Controller)
                 {
-                    var m_AnimatorOverrideController = new AnimatorOverrideController(objectReader);
-                    if (m_AnimatorOverrideController.m_Controller.TryGet(out objectReader))
-                    {
-                        var m_AnimatorController = new AnimatorController(objectReader);
-                        foreach (var m_AnimationClip in m_AnimatorController.m_AnimationClips)
+                    case AnimatorOverrideController m_AnimatorOverrideController:
                         {
-                            if (m_AnimationClip.TryGet(out objectReader))
+                            if (m_AnimatorOverrideController.m_Controller.TryGet<AnimatorController>(out var m_AnimatorController))
                             {
-                                animationClipHashSet.Add(objectReader);
+                                foreach (var pptr in m_AnimatorController.m_AnimationClips)
+                                {
+                                    if (pptr.TryGet(out var m_AnimationClip))
+                                    {
+                                        animationClipHashSet.Add(m_AnimationClip);
+                                    }
+                                }
                             }
+                            break;
                         }
-                    }
-                    /*foreach (var clip in m_AnimatorOverrideController.m_Clips)
-                    {
-                        if (assetsfileList.TryGetPD(clip[1], out assetPreloadData))
+
+                    case AnimatorController m_AnimatorController:
                         {
-                            animationList.Add(new AnimationClip(assetPreloadData));
+                            foreach (var pptr in m_AnimatorController.m_AnimationClips)
+                            {
+                                if (pptr.TryGet(out var m_AnimationClip))
+                                {
+                                    animationClipHashSet.Add(m_AnimationClip);
+                                }
+                            }
+                            break;
                         }
-                    }*/
-                }
-                else if (objectReader.type == ClassIDType.AnimatorController)
-                {
-                    var m_AnimatorController = new AnimatorController(objectReader);
-                    foreach (var m_AnimationClip in m_AnimatorController.m_AnimationClips)
-                    {
-                        if (m_AnimationClip.TryGet(out objectReader))
-                        {
-                            animationClipHashSet.Add(objectReader);
-                        }
-                    }
                 }
             }
         }
@@ -205,7 +187,7 @@ namespace AssetStudio
         private ImportedFrame ConvertFrame(Transform trans)
         {
             var frame = new ImportedFrame();
-            trans.m_GameObject.TryGetGameObject(out var m_GameObject);
+            trans.m_GameObject.TryGet(out var m_GameObject);
             frame.Name = m_GameObject.m_Name;
             frame.InitChildren(trans.m_Children.Count);
             var m_EulerRotation = QuatToEuler(new[] { trans.m_LocalRotation[0], -trans.m_LocalRotation[1], -trans.m_LocalRotation[2], trans.m_LocalRotation[3] });
@@ -243,7 +225,7 @@ namespace AssetStudio
             }
             foreach (var pptr in trans.m_Children)
             {
-                if (pptr.TryGetTransform(out var child))
+                if (pptr.TryGet(out var child))
                     ConvertFrames(child, frame);
             }
         }
@@ -254,9 +236,8 @@ namespace AssetStudio
             if (mesh == null)
                 return;
             var iMesh = new ImportedMesh();
-            meshR.m_GameObject.TryGetGameObject(out var m_GameObject2);
-            m_GameObject2.m_Transform.TryGetTransform(out var meshTransform);
-            iMesh.Name = GetMeshPath(meshTransform);
+            meshR.m_GameObject.TryGet(out var m_GameObject2);
+            iMesh.Name = GetMeshPath(m_GameObject2.m_Transform);
             iMesh.SubmeshList = new List<ImportedSubmesh>();
             var subHashSet = new HashSet<int>();
             var combine = false;
@@ -294,9 +275,9 @@ namespace AssetStudio
                 Material mat = null;
                 if (i - firstSubMesh < meshR.m_Materials.Length)
                 {
-                    if (meshR.m_Materials[i - firstSubMesh].TryGet(out var MaterialPD))
+                    if (meshR.m_Materials[i - firstSubMesh].TryGet(out var m_Material))
                     {
-                        mat = new Material(MaterialPD);
+                        mat = m_Material;
                     }
                 }
                 ImportedMaterial iMat = ConvertMaterial(mat);
@@ -431,9 +412,9 @@ namespace AssetStudio
                     for (int i = 0; i < sMesh.m_Bones.Length; i++)
                     {
                         var bone = new ImportedBone();
-                        if (sMesh.m_Bones[i].TryGetTransform(out var m_Transform))
+                        if (sMesh.m_Bones[i].TryGet(out var m_Transform))
                         {
-                            if (m_Transform.m_GameObject.TryGetGameObject(out var m_GameObject))
+                            if (m_Transform.m_GameObject.TryGet(out var m_GameObject))
                             {
                                 bone.Name = m_GameObject.m_Name;
                             }
@@ -538,7 +519,7 @@ namespace AssetStudio
             //TODO combine mesh
             if (combine)
             {
-                meshR.m_GameObject.TryGetGameObject(out var m_GameObject);
+                meshR.m_GameObject.TryGet(out var m_GameObject);
                 var frame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
                 if (frame?.Parent != null)
                 {
@@ -567,26 +548,19 @@ namespace AssetStudio
         {
             if (meshR is SkinnedMeshRenderer sMesh)
             {
-                if (sMesh.m_Mesh.TryGet(out var MeshPD))
+                if (sMesh.m_Mesh.TryGet(out var m_Mesh))
                 {
-                    return new Mesh(MeshPD);
+                    return m_Mesh;
                 }
             }
             else
             {
-                meshR.m_GameObject.TryGetGameObject(out var m_GameObject);
-                foreach (var m_Component in m_GameObject.m_Components)
+                meshR.m_GameObject.TryGet(out var m_GameObject);
+                if (m_GameObject.m_MeshFilter != null)
                 {
-                    if (m_Component.TryGet(out var objectReader))
+                    if (m_GameObject.m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
                     {
-                        if (objectReader.type == ClassIDType.MeshFilter)
-                        {
-                            var m_MeshFilter = new MeshFilter(objectReader);
-                            if (m_MeshFilter.m_Mesh.TryGet(out var MeshPD))
-                            {
-                                return new Mesh(MeshPD);
-                            }
-                        }
+                        return m_Mesh;
                     }
                 }
             }
@@ -596,7 +570,7 @@ namespace AssetStudio
 
         private string GetMeshPath(Transform meshTransform)
         {
-            meshTransform.m_GameObject.TryGetGameObject(out var m_GameObject);
+            meshTransform.m_GameObject.TryGet(out var m_GameObject);
             var curFrame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
             var path = curFrame.Name;
             while (curFrame.Parent != null)
@@ -610,8 +584,8 @@ namespace AssetStudio
 
         private string GetTransformPath(Transform transform)
         {
-            transform.m_GameObject.TryGetGameObject(out var m_GameObject);
-            if (transform.m_Father.TryGetTransform(out var father))
+            transform.m_GameObject.TryGet(out var m_GameObject);
+            if (transform.m_Father.TryGet(out var father))
             {
                 return GetTransformPath(father) + "/" + m_GameObject.m_Name;
             }
@@ -675,9 +649,9 @@ namespace AssetStudio
                 foreach (var texEnv in mat.m_TexEnvs)
                 {
                     Texture2D m_Texture2D = null;
-                    if (texEnv.m_Texture.TryGet(out var m_Texture) && m_Texture.type == ClassIDType.Texture2D) //TODO other Texture
+                    if (texEnv.m_Texture.TryGet<Texture2D>(out var m_Texture)) //TODO other Texture
                     {
-                        m_Texture2D = new Texture2D(m_Texture, true);
+                        m_Texture2D = m_Texture;
                     }
 
                     if (m_Texture2D == null)
@@ -758,9 +732,8 @@ namespace AssetStudio
 
         private void ConvertAnimations()
         {
-            foreach (var assetPreloadData in animationClipHashSet)
+            foreach (var animationClip in animationClipHashSet)
             {
-                var animationClip = new AnimationClip(assetPreloadData);
                 var iAnim = new ImportedKeyframedAnimation();
                 AnimationList.Add(iAnim);
                 iAnim.Name = animationClip.m_Name;
@@ -1027,7 +1000,7 @@ namespace AssetStudio
             }
             foreach (var pptr in m_Transform.m_Children)
             {
-                if (pptr.TryGetTransform(out var child))
+                if (pptr.TryGet(out var child))
                     CreateBonePathHash(child);
             }
         }

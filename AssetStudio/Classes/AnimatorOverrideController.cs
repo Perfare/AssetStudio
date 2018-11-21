@@ -7,24 +7,24 @@ namespace AssetStudio
 {
     public class AnimationClipOverride
     {
-        public PPtr m_OriginalClip;
-        public PPtr m_OverrideClip;
+        public PPtr<AnimationClip> m_OriginalClip;
+        public PPtr<AnimationClip> m_OverrideClip;
 
         public AnimationClipOverride(ObjectReader reader)
         {
-            m_OriginalClip = reader.ReadPPtr();
-            m_OverrideClip = reader.ReadPPtr();
+            m_OriginalClip = new PPtr<AnimationClip>(reader);
+            m_OverrideClip = new PPtr<AnimationClip>(reader);
         }
     }
 
-    public class AnimatorOverrideController : NamedObject
+    public sealed class AnimatorOverrideController : RuntimeAnimatorController
     {
-        public PPtr m_Controller;
+        public PPtr<RuntimeAnimatorController> m_Controller;
         public List<AnimationClipOverride> m_Clips;
 
         public AnimatorOverrideController(ObjectReader reader) : base(reader)
         {
-            m_Controller = reader.ReadPPtr();
+            m_Controller = new PPtr<RuntimeAnimatorController>(reader);
 
             int numOverrides = reader.ReadInt32();
             m_Clips = new List<AnimationClipOverride>(numOverrides);

@@ -351,7 +351,7 @@ namespace AssetStudio
                     bool m_IsReadable = reader.ReadBoolean();
                     bool m_KeepVertices = reader.ReadBoolean();
                     bool m_KeepIndices = reader.ReadBoolean();
-                    if (reader.HasStructMember("m_UsedForStaticMeshColliderOnly"))
+                    if (HasStructMember("m_UsedForStaticMeshColliderOnly"))
                     {
                         var m_UsedForStaticMeshColliderOnly = reader.ReadBoolean();
                     }

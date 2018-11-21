@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using AssetStudio;
 using dnlib.DotNet;
 using static AssetStudioGUI.Exporter;
+using Object = AssetStudio.Object;
 
 namespace AssetStudioGUI
 {
@@ -92,135 +93,89 @@ namespace AssetStudioGUI
             return extractedCount;
         }
 
-        public static void BuildAssetList(Dictionary<ObjectReader, AssetItem> tempDic, bool displayAll, bool displayOriginalName, out string productName)
+        public static void BuildAssetList(Dictionary<Object, AssetItem> tempDic, bool displayAll, bool displayOriginalName, out string productName)
         {
             Logger.Info("Building asset list...");
 
             productName = string.Empty;
             var assetsNameHash = new HashSet<string>();
-            var progressCount = assetsManager.assetsFileList.Sum(x => x.ObjectReaders.Count);
+            var progressCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
             int j = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
                 var tempExportableAssets = new List<AssetItem>();
                 AssetBundle ab = null;
-                foreach (var objectReader in assetsFile.ObjectReaders.Values)
+                foreach (var asset in assetsFile.Objects.Values)
                 {
-                    var assetItem = new AssetItem(objectReader);
-                    tempDic.Add(objectReader, assetItem);
+                    var assetItem = new AssetItem(asset);
+                    tempDic.Add(asset, assetItem);
                     assetItem.UniqueID = " #" + j;
                     var exportable = false;
-                    switch (assetItem.Type)
+                    switch (asset)
                     {
-                        case ClassIDType.GameObject:
+                        case GameObject m_GameObject:
+                            assetItem.Text = m_GameObject.m_Name;
+                            break;
+                        case Texture2D m_Texture2D:
+                            if (!string.IsNullOrEmpty(m_Texture2D.path))
+                                assetItem.FullSize = asset.byteSize + m_Texture2D.size;
+                            assetItem.Text = m_Texture2D.m_Name;
+                            exportable = true;
+                            break;
+                        case AudioClip m_AudioClip:
+                            if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
+                                assetItem.FullSize = asset.byteSize + m_AudioClip.m_Size;
+                            assetItem.Text = m_AudioClip.m_Name;
+                            exportable = true;
+                            break;
+                        case VideoClip m_VideoClip:
+                            if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
+                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_Size;
+                            assetItem.Text = m_VideoClip.m_Name;
+                            exportable = true;
+                            break;
+                        case Shader m_Shader:
+                            assetItem.Text = m_Shader.m_ParsedForm?.m_Name ?? m_Shader.m_Name;
+                            exportable = true;
+                            break;
+                        case Mesh _:
+                        case TextAsset _:
+                        case AnimationClip _:
+                        case Font _:
+                        case MovieTexture _:
+                        case Sprite _:
+                            assetItem.Text = ((NamedObject)asset).m_Name;
+                            exportable = true;
+                            break;
+                        case Animator m_Animator:
+                            if (m_Animator.m_GameObject.TryGet(out var gameObject))
                             {
-                                var m_GameObject = new GameObject(objectReader);
-                                assetItem.Text = m_GameObject.m_Name;
-                                assetsFile.GameObjects.Add(objectReader.m_PathID, m_GameObject);
-                                break;
+                                assetItem.Text = gameObject.m_Name;
                             }
-                        case ClassIDType.Transform:
+                            exportable = true;
+                            break;
+                        case MonoBehaviour m_MonoBehaviour:
+                            if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGet(out var m_Script))
                             {
-                                var m_Transform = new Transform(objectReader);
-                                assetsFile.Transforms.Add(objectReader.m_PathID, m_Transform);
-                                break;
+                                assetItem.Text = m_Script.m_ClassName;
                             }
-                        case ClassIDType.RectTransform:
+                            else
                             {
-                                var m_Rect = new RectTransform(objectReader);
-                                assetsFile.Transforms.Add(objectReader.m_PathID, m_Rect);
-                                break;
+                                assetItem.Text = m_MonoBehaviour.m_Name;
                             }
-                        case ClassIDType.Texture2D:
-                            {
-                                var m_Texture2D = new Texture2D(objectReader, false);
-                                if (!string.IsNullOrEmpty(m_Texture2D.path))
-                                    assetItem.FullSize = objectReader.byteSize + m_Texture2D.size;
-                                assetItem.Text = m_Texture2D.m_Name;
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.AudioClip:
-                            {
-                                var m_AudioClip = new AudioClip(objectReader, false);
-                                if (!string.IsNullOrEmpty(m_AudioClip.m_Source))
-                                    assetItem.FullSize = objectReader.byteSize + m_AudioClip.m_Size;
-                                assetItem.Text = m_AudioClip.m_Name;
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.VideoClip:
-                            {
-                                var m_VideoClip = new VideoClip(objectReader, false);
-                                if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                    assetItem.FullSize = objectReader.byteSize + (long)m_VideoClip.m_Size;
-                                assetItem.Text = m_VideoClip.m_Name;
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.Shader:
-                            {
-                                var m_Shader = new Shader(objectReader);
-                                assetItem.Text = m_Shader.m_ParsedForm?.m_Name ?? m_Shader.m_Name;
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.Mesh:
-                        case ClassIDType.TextAsset:
-                        case ClassIDType.AnimationClip:
-                        case ClassIDType.Font:
-                        case ClassIDType.MovieTexture:
-                        case ClassIDType.Sprite:
-                            {
-                                var obj = new NamedObject(objectReader);
-                                assetItem.Text = obj.m_Name;
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.Avatar:
-                        case ClassIDType.AnimatorController:
-                        case ClassIDType.AnimatorOverrideController:
-                        case ClassIDType.Material:
-                        case ClassIDType.MonoScript:
-                        case ClassIDType.SpriteAtlas:
-                            {
-                                var obj = new NamedObject(objectReader);
-                                assetItem.Text = obj.m_Name;
-                                break;
-                            }
-                        case ClassIDType.Animator:
-                            {
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.MonoBehaviour:
-                            {
-                                var m_MonoBehaviour = new MonoBehaviour(objectReader);
-                                if (m_MonoBehaviour.m_Name == "" && m_MonoBehaviour.m_Script.TryGet(out var script))
-                                {
-                                    var m_Script = new MonoScript(script);
-                                    assetItem.Text = m_Script.m_ClassName;
-                                }
-                                else
-                                {
-                                    assetItem.Text = m_MonoBehaviour.m_Name;
-                                }
-                                exportable = true;
-                                break;
-                            }
-                        case ClassIDType.PlayerSettings:
-                            {
-                                var plSet = new PlayerSettings(objectReader);
-                                productName = plSet.productName;
-                                break;
-                            }
-                        case ClassIDType.AssetBundle:
-                            {
-                                ab = new AssetBundle(objectReader);
-                                assetItem.Text = ab.m_Name;
-                                break;
-                            }
+                            exportable = true;
+                            break;
+                        case PlayerSettings m_PlayerSettings:
+                            productName = m_PlayerSettings.productName;
+                            break;
+                        case AssetBundle m_AssetBundle:
+                            ab = m_AssetBundle;
+                            assetItem.Text = ab.m_Name;
+                            break;
+                        case NamedObject m_NamedObject:
+                            assetItem.Text = m_NamedObject.m_Name;
+                            break;
                     }
                     if (assetItem.Text == "")
                     {
@@ -247,18 +202,18 @@ namespace AssetStudioGUI
                 }
                 if (displayOriginalName && ab != null)
                 {
-                    foreach (var asset in tempExportableAssets)
+                    foreach (var item in tempExportableAssets)
                     {
-                        var originalPath = ab.m_Container.Find(y => y.Value.asset.m_PathID == asset.reader.m_PathID).Key;
+                        var originalPath = ab.m_Container.Find(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
                         if (!string.IsNullOrEmpty(originalPath))
                         {
                             var extension = Path.GetExtension(originalPath);
-                            if (!string.IsNullOrEmpty(extension) && asset.Type == ClassIDType.TextAsset)
+                            if (!string.IsNullOrEmpty(extension) && item.Type == ClassIDType.TextAsset)
                             {
                                 //asset.Extension = extension; //TODO
                             }
 
-                            asset.Text = Path.GetDirectoryName(originalPath) + "\\" + asset.Text;
+                            item.Text = Path.GetDirectoryName(originalPath) + "\\" + item.Text;
                         }
                     }
                 }
@@ -270,21 +225,22 @@ namespace AssetStudioGUI
             assetsNameHash.Clear();
         }
 
-        public static List<GameObjectTreeNode> BuildTreeStructure(Dictionary<ObjectReader, AssetItem> tempDic)
+        public static List<TreeNode> BuildTreeStructure(Dictionary<Object, AssetItem> tempDic)
         {
-            var treeNodeCollection = new List<GameObjectTreeNode>();
-            var gameObjectCount = assetsManager.assetsFileList.Sum(x => x.GameObjects.Count);
-            if (gameObjectCount > 0)
-            {
-                Logger.Info("Building tree structure...");
-                var treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
-                int i = 0;
-                Progress.Reset();
-                foreach (var assetsFile in assetsManager.assetsFileList)
-                {
-                    var fileNode = new GameObjectTreeNode(assetsFile.fileName); //RootNode
+            Logger.Info("Building tree structure...");
 
-                    foreach (var m_GameObject in assetsFile.GameObjects.Values)
+            var treeNodeCollection = new List<TreeNode>();
+            var treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
+            var progressCount = assetsManager.assetsFileList.Count;
+            int i = 0;
+            Progress.Reset();
+            foreach (var assetsFile in assetsManager.assetsFileList)
+            {
+                var fileNode = new GameObjectTreeNode(assetsFile.fileName); //RootNode
+
+                foreach (var obj in assetsFile.Objects.Values)
+                {
+                    if (obj is GameObject m_GameObject)
                     {
                         if (!treeNodeDictionary.TryGetValue(m_GameObject, out var currentNode))
                         {
@@ -292,68 +248,31 @@ namespace AssetStudioGUI
                             treeNodeDictionary.Add(m_GameObject, currentNode);
                         }
 
-                        foreach (var m_Component in m_GameObject.m_Components)
+                        if (m_GameObject.m_MeshFilter != null)
                         {
-                            if (m_Component.TryGet(out var asset))
+                            if (m_GameObject.m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
                             {
-                                switch (asset.type)
-                                {
-                                    case ClassIDType.Transform:
-                                        {
-                                            m_GameObject.m_Transform = m_Component;
-                                            break;
-                                        }
-                                    case ClassIDType.MeshRenderer:
-                                        {
-                                            m_GameObject.m_MeshRenderer = m_Component;
-                                            break;
-                                        }
-                                    case ClassIDType.MeshFilter:
-                                        {
-                                            m_GameObject.m_MeshFilter = m_Component;
-                                            if (m_Component.TryGet(out var objectReader))
-                                            {
-                                                var m_MeshFilter = new MeshFilter(objectReader);
-                                                if (m_MeshFilter.m_Mesh.TryGet(out objectReader))
-                                                {
-                                                    var item = tempDic[objectReader];
-                                                    item.TreeNode = currentNode;
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    case ClassIDType.SkinnedMeshRenderer:
-                                        {
-                                            m_GameObject.m_SkinnedMeshRenderer = m_Component;
-                                            if (m_Component.TryGet(out var objectReader))
-                                            {
-                                                var m_SkinnedMeshRenderer = new SkinnedMeshRenderer(objectReader);
-                                                if (m_SkinnedMeshRenderer.m_Mesh.TryGet(out objectReader))
-                                                {
-                                                    var item = tempDic[objectReader];
-                                                    item.TreeNode = currentNode;
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    case ClassIDType.Animator:
-                                        {
-                                            m_GameObject.m_Animator = m_Component;
-                                            var item = tempDic[asset];
-                                            item.Text = tempDic[m_GameObject.reader].Text;
-                                            break;
-                                        }
-                                }
+                                var item = tempDic[m_Mesh];
+                                item.TreeNode = currentNode;
+                            }
+                        }
+
+                        if (m_GameObject.m_SkinnedMeshRenderer != null)
+                        {
+                            if (m_GameObject.m_SkinnedMeshRenderer.m_Mesh.TryGet(out var m_Mesh))
+                            {
+                                var item = tempDic[m_Mesh];
+                                item.TreeNode = currentNode;
                             }
                         }
 
                         var parentNode = fileNode;
 
-                        if (m_GameObject.m_Transform != null && m_GameObject.m_Transform.TryGetTransform(out var m_Transform))
+                        if (m_GameObject.m_Transform != null)
                         {
-                            if (m_Transform.m_Father.TryGetTransform(out var m_Father))
+                            if (m_GameObject.m_Transform.m_Father.TryGet(out var m_Father))
                             {
-                                if (m_Father.m_GameObject.TryGetGameObject(out var parentGameObject))
+                                if (m_Father.m_GameObject.TryGet(out var parentGameObject))
                                 {
                                     if (!treeNodeDictionary.TryGetValue(parentGameObject, out parentNode))
                                     {
@@ -365,18 +284,18 @@ namespace AssetStudioGUI
                         }
 
                         parentNode.Nodes.Add(currentNode);
-
-                        Progress.Report(++i, gameObjectCount);
-                    }
-
-                    if (fileNode.Nodes.Count > 0)
-                    {
-                        treeNodeCollection.Add(fileNode);
                     }
                 }
 
-                treeNodeDictionary.Clear();
+                if (fileNode.Nodes.Count > 0)
+                {
+                    treeNodeCollection.Add(fileNode);
+                }
+
+                Progress.Report(++i, progressCount);
             }
+
+            treeNodeDictionary.Clear();
 
             return treeNodeCollection;
         }
@@ -435,7 +354,7 @@ namespace AssetStudioGUI
                     var exportpath = savePath + "\\";
                     if (assetGroupSelectedIndex == 1)
                     {
-                        exportpath += Path.GetFileNameWithoutExtension(asset.sourceFile.fullName) + "_export\\";
+                        exportpath += Path.GetFileNameWithoutExtension(asset.SourceFile.fullName) + "_export\\";
                     }
                     else if (assetGroupSelectedIndex == 0)
                     {

@@ -15,6 +15,8 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using AssetStudio;
 using static AssetStudioGUI.Studio;
+using Object = AssetStudio.Object;
+using Font = AssetStudio.Font;
 
 namespace AssetStudioGUI
 {
@@ -134,13 +136,13 @@ namespace AssetStudioGUI
             }
 
             var productName = string.Empty;
-            var tempDic = new Dictionary<ObjectReader, AssetItem>();
+            var tempDic = new Dictionary<Object, AssetItem>();
             if (!dontLoadAssetsMenuItem.Checked)
             {
                 BuildAssetList(tempDic, displayAll.Checked, displayOriginalName.Checked, out productName);
             }
 
-            List<GameObjectTreeNode> treeNodeCollection = null;
+            List<TreeNode> treeNodeCollection = null;
             if (!dontBuildHierarchyMenuItem.Checked)
             {
                 treeNodeCollection = BuildTreeStructure(tempDic);
@@ -651,455 +653,457 @@ namespace AssetStudioGUI
             }
         }
 
-        private void PreviewAsset(AssetItem asset)
+        private void PreviewAsset(AssetItem assetItem)
         {
-            var reader = asset.reader;
             try
             {
-                switch (asset.Type)
+                switch (assetItem.Asset)
                 {
-                    case ClassIDType.Texture2D:
+                    case Texture2D m_Texture2D:
+                        PreviewTexture2D(assetItem, m_Texture2D);
+                        break;
+                    case AudioClip m_AudioClip:
+                        PreviewAudioClip(assetItem, m_AudioClip);
+                        break;
+                    case Shader m_Shader:
+                        PreviewShader(m_Shader);
+                        break;
+                    case TextAsset m_TextAsset:
+                        PreviewTextAsset(m_TextAsset);
+                        break;
+                    case MonoBehaviour m_MonoBehaviour:
+                        PreviewMonoBehaviour(m_MonoBehaviour);
+                        break;
+                    case Font m_Font:
+                        PreviewFont(m_Font);
+                        break;
+                    case Mesh m_Mesh:
+                        PreviewMesh(m_Mesh);
+                        break;
+                    case VideoClip _:
+                    case MovieTexture _:
+                        StatusStripUpdate("Only supported export.");
+                        break;
+                    case Sprite m_Sprite:
+                        PreviewSprite(assetItem, m_Sprite);
+                        break;
+                    case Animator _:
+                        StatusStripUpdate("Can be exported to FBX file.");
+                        break;
+                    case AnimationClip _:
+                        StatusStripUpdate("Can be exported with Animator or Objects");
+                        break;
+                    default:
+                        var str = assetItem.Asset.Dump();
+                        if (str != null)
                         {
-                            imageTexture?.Dispose();
-                            var m_Texture2D = new Texture2D(reader, true);
-
-                            //Info
-                            asset.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
-                            switch (m_Texture2D.m_FilterMode)
-                            {
-                                case 0: asset.InfoText += "\nFilter Mode: Point "; break;
-                                case 1: asset.InfoText += "\nFilter Mode: Bilinear "; break;
-                                case 2: asset.InfoText += "\nFilter Mode: Trilinear "; break;
-                            }
-                            asset.InfoText += $"\nAnisotropic level: {m_Texture2D.m_Aniso}\nMip map bias: {m_Texture2D.m_MipBias}";
-                            switch (m_Texture2D.m_WrapMode)
-                            {
-                                case 0: asset.InfoText += "\nWrap mode: Repeat"; break;
-                                case 1: asset.InfoText += "\nWrap mode: Clamp"; break;
-                            }
-
-                            var converter = new Texture2DConverter(m_Texture2D);
-                            imageTexture = converter.ConvertToBitmap(true);
-                            if (imageTexture != null)
-                            {
-                                previewPanel.BackgroundImage = imageTexture;
-                                if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
-                                    previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
-                                else
-                                    previewPanel.BackgroundImageLayout = ImageLayout.Center;
-                            }
-                            else
-                            {
-                                StatusStripUpdate("Unsupported image for preview");
-                            }
-                            break;
-                        }
-                    case ClassIDType.AudioClip:
-                        {
-                            var m_AudioClip = new AudioClip(reader, true);
-
-                            //Info
-                            asset.InfoText = "Compression format: ";
-                            if (m_AudioClip.version[0] < 5)
-                            {
-                                switch (m_AudioClip.m_Type)
-                                {
-                                    case AudioType.ACC:
-                                        asset.InfoText += "Acc";
-                                        break;
-                                    case AudioType.AIFF:
-                                        asset.InfoText += "AIFF";
-                                        break;
-                                    case AudioType.IT:
-                                        asset.InfoText += "Impulse tracker";
-                                        break;
-                                    case AudioType.MOD:
-                                        asset.InfoText += "Protracker / Fasttracker MOD";
-                                        break;
-                                    case AudioType.MPEG:
-                                        asset.InfoText += "MP2/MP3 MPEG";
-                                        break;
-                                    case AudioType.OGGVORBIS:
-                                        asset.InfoText += "Ogg vorbis";
-                                        break;
-                                    case AudioType.S3M:
-                                        asset.InfoText += "ScreamTracker 3";
-                                        break;
-                                    case AudioType.WAV:
-                                        asset.InfoText += "Microsoft WAV";
-                                        break;
-                                    case AudioType.XM:
-                                        asset.InfoText += "FastTracker 2 XM";
-                                        break;
-                                    case AudioType.XMA:
-                                        asset.InfoText += "Xbox360 XMA";
-                                        break;
-                                    case AudioType.VAG:
-                                        asset.InfoText += "PlayStation Portable ADPCM";
-                                        break;
-                                    case AudioType.AUDIOQUEUE:
-                                        asset.InfoText += "iPhone";
-                                        break;
-                                    default:
-                                        asset.InfoText += "Unknown";
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                switch (m_AudioClip.m_CompressionFormat)
-                                {
-                                    case AudioCompressionFormat.PCM:
-                                        asset.InfoText += "PCM";
-                                        break;
-                                    case AudioCompressionFormat.Vorbis:
-                                        asset.InfoText += "Vorbis";
-                                        break;
-                                    case AudioCompressionFormat.ADPCM:
-                                        asset.InfoText += "ADPCM";
-                                        break;
-                                    case AudioCompressionFormat.MP3:
-                                        asset.InfoText += "MP3";
-                                        break;
-                                    case AudioCompressionFormat.VAG:
-                                        asset.InfoText += "PlayStation Portable ADPCM";
-                                        break;
-                                    case AudioCompressionFormat.HEVAG:
-                                        asset.InfoText += "PSVita ADPCM";
-                                        break;
-                                    case AudioCompressionFormat.XMA:
-                                        asset.InfoText += "Xbox360 XMA";
-                                        break;
-                                    case AudioCompressionFormat.AAC:
-                                        asset.InfoText += "AAC";
-                                        break;
-                                    case AudioCompressionFormat.GCADPCM:
-                                        asset.InfoText += "Nintendo 3DS/Wii DSP";
-                                        break;
-                                    case AudioCompressionFormat.ATRAC9:
-                                        asset.InfoText += "PSVita ATRAC9";
-                                        break;
-                                    default:
-                                        asset.InfoText += "Unknown";
-                                        break;
-                                }
-                            }
-
-                            if (m_AudioClip.m_AudioData == null)
-                                break;
-                            FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
-
-                            exinfo.cbsize = Marshal.SizeOf(exinfo);
-                            exinfo.length = (uint)m_AudioClip.m_Size;
-
-                            var result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY | loopMode, ref exinfo, out sound);
-                            if (ERRCHECK(result)) { break; }
-
-                            result = sound.getSubSound(0, out var subsound);
-                            if (result == FMOD.RESULT.OK)
-                            {
-                                sound = subsound;
-                            }
-
-                            result = sound.getLength(out FMODlenms, FMOD.TIMEUNIT.MS);
-                            if (ERRCHECK(result)) { break; }
-
-                            result = system.playSound(sound, null, true, out channel);
-                            if (ERRCHECK(result)) { break; }
-
-                            FMODpanel.Visible = true;
-
-                            result = channel.getFrequency(out var frequency);
-                            if (ERRCHECK(result)) { break; }
-
-                            FMODinfoLabel.Text = frequency + " Hz";
-                            FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
-                            break;
-                        }
-                    case ClassIDType.Shader:
-                        {
-                            var m_Shader = new Shader(reader);
-                            var str = ShaderConverter.Convert(m_Shader);
-                            textPreviewBox.Text = str == null ? "Serialized Shader can't be read" : str.Replace("\n", "\r\n");
+                            textPreviewBox.Text = str;
                             textPreviewBox.Visible = true;
-                            break;
                         }
-                    case ClassIDType.TextAsset:
+                        else
                         {
-                            TextAsset m_TextAsset = new TextAsset(reader);
-
-                            string m_Script_Text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
-                            m_Script_Text = Regex.Replace(m_Script_Text, "(?<!\r)\n", "\r\n");
-                            textPreviewBox.Text = m_Script_Text;
-                            textPreviewBox.Visible = true;
-
-                            break;
-                        }
-                    case ClassIDType.MonoBehaviour:
-                        {
-                            if (reader.serializedType?.m_Nodes != null)
-                            {
-                                textPreviewBox.Text = reader.Dump();
-                            }
-                            else
-                            {
-                                textPreviewBox.Text = GetScriptString(reader);
-                            }
-                            textPreviewBox.Visible = true;
-
-                            break;
-                        }
-                    case ClassIDType.Font:
-                        {
-                            var m_Font = new AssetStudio.Font(reader);
-                            if (m_Font.m_FontData != null)
-                            {
-                                IntPtr data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
-                                Marshal.Copy(m_Font.m_FontData, 0, data, m_Font.m_FontData.Length);
-
-                                // We HAVE to do this to register the font to the system (Weird .NET bug !)
-                                uint cFonts = 0;
-                                var re = AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
-                                if (re != IntPtr.Zero)
-                                {
-                                    using (var pfc = new PrivateFontCollection())
-                                    {
-                                        pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
-                                        Marshal.FreeCoTaskMem(data);
-                                        if (pfc.Families.Length > 0)
-                                        {
-                                            fontPreviewBox.SelectionStart = 0;
-                                            fontPreviewBox.SelectionLength = 80;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 16, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 81;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 12, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 138;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 18, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 195;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 24, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 252;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 36, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 309;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 48, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 366;
-                                            fontPreviewBox.SelectionLength = 56;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 60, FontStyle.Regular);
-                                            fontPreviewBox.SelectionStart = 423;
-                                            fontPreviewBox.SelectionLength = 55;
-                                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 72, FontStyle.Regular);
-                                            fontPreviewBox.Visible = true;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                            StatusStripUpdate("Unsupported font for preview. Try to export.");
-                            break;
-                        }
-                    case ClassIDType.Mesh:
-                        {
-                            var m_Mesh = new Mesh(reader);
-                            if (m_Mesh.m_VertexCount > 0)
-                            {
-                                viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
-                                #region Vertices
-                                if (m_Mesh.m_Vertices == null || m_Mesh.m_Vertices.Length == 0)
-                                {
-                                    StatusStripUpdate("Mesh can't be previewed.");
-                                    return;
-                                }
-                                int count = 3;
-                                if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
-                                {
-                                    count = 4;
-                                }
-                                vertexData = new Vector3[m_Mesh.m_VertexCount];
-                                // Calculate Bounding
-                                float[] min = new float[3];
-                                float[] max = new float[3];
-                                for (int i = 0; i < 3; i++)
-                                {
-                                    min[i] = m_Mesh.m_Vertices[i];
-                                    max[i] = m_Mesh.m_Vertices[i];
-                                }
-                                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
-                                {
-                                    for (int i = 0; i < 3; i++)
-                                    {
-                                        min[i] = Math.Min(min[i], m_Mesh.m_Vertices[v * count + i]);
-                                        max[i] = Math.Max(max[i], m_Mesh.m_Vertices[v * count + i]);
-                                    }
-                                    vertexData[v] = new Vector3(
-                                        m_Mesh.m_Vertices[v * count],
-                                        m_Mesh.m_Vertices[v * count + 1],
-                                        m_Mesh.m_Vertices[v * count + 2]);
-                                }
-
-                                // Calculate modelMatrix
-                                Vector3 dist = Vector3.One, offset = Vector3.Zero;
-                                for (int i = 0; i < 3; i++)
-                                {
-                                    dist[i] = max[i] - min[i];
-                                    offset[i] = (max[i] + min[i]) / 2;
-                                }
-                                float d = Math.Max(1e-5f, dist.Length);
-                                modelMatrixData = Matrix4.CreateTranslation(-offset) * Matrix4.CreateScale(2f / d);
-                                #endregion
-                                #region Indicies
-                                indiceData = new int[m_Mesh.m_Indices.Count];
-                                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
-                                {
-                                    indiceData[i] = (int)m_Mesh.m_Indices[i];
-                                    indiceData[i + 1] = (int)m_Mesh.m_Indices[i + 1];
-                                    indiceData[i + 2] = (int)m_Mesh.m_Indices[i + 2];
-                                }
-                                #endregion
-                                #region Normals
-                                if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
-                                {
-                                    if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
-                                        count = 3;
-                                    else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
-                                        count = 4;
-                                    normalData = new Vector3[m_Mesh.m_VertexCount];
-                                    for (int n = 0; n < m_Mesh.m_VertexCount; n++)
-                                    {
-                                        normalData[n] = new Vector3(
-                                            m_Mesh.m_Normals[n * count],
-                                            m_Mesh.m_Normals[n * count + 1],
-                                            m_Mesh.m_Normals[n * count + 2]);
-                                    }
-                                }
-                                else
-                                    normalData = null;
-                                // calculate normal by ourself
-                                normal2Data = new Vector3[m_Mesh.m_VertexCount];
-                                int[] normalCalculatedCount = new int[m_Mesh.m_VertexCount];
-                                for (int i = 0; i < m_Mesh.m_VertexCount; i++)
-                                {
-                                    normal2Data[i] = Vector3.Zero;
-                                    normalCalculatedCount[i] = 0;
-                                }
-                                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
-                                {
-                                    Vector3 dir1 = vertexData[indiceData[i + 1]] - vertexData[indiceData[i]];
-                                    Vector3 dir2 = vertexData[indiceData[i + 2]] - vertexData[indiceData[i]];
-                                    Vector3 normal = Vector3.Cross(dir1, dir2);
-                                    normal.Normalize();
-                                    for (int j = 0; j < 3; j++)
-                                    {
-                                        normal2Data[indiceData[i + j]] += normal;
-                                        normalCalculatedCount[indiceData[i + j]]++;
-                                    }
-                                }
-                                for (int i = 0; i < m_Mesh.m_VertexCount; i++)
-                                {
-                                    if (normalCalculatedCount[i] == 0)
-                                        normal2Data[i] = new Vector3(0, 1, 0);
-                                    else
-                                        normal2Data[i] /= normalCalculatedCount[i];
-                                }
-                                #endregion
-                                #region Colors
-                                if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
-                                {
-                                    colorData = new Vector4[m_Mesh.m_VertexCount];
-                                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                                    {
-                                        colorData[c] = new Vector4(
-                                            m_Mesh.m_Colors[c * 3],
-                                            m_Mesh.m_Colors[c * 3 + 1],
-                                            m_Mesh.m_Colors[c * 3 + 2],
-                                            1.0f);
-                                    }
-                                }
-                                else if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 4)
-                                {
-                                    colorData = new Vector4[m_Mesh.m_VertexCount];
-                                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                                    {
-                                        colorData[c] = new Vector4(
-                                        m_Mesh.m_Colors[c * 4],
-                                        m_Mesh.m_Colors[c * 4 + 1],
-                                        m_Mesh.m_Colors[c * 4 + 2],
-                                        m_Mesh.m_Colors[c * 4 + 3]);
-                                    }
-                                }
-                                else
-                                {
-                                    colorData = new Vector4[m_Mesh.m_VertexCount];
-                                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
-                                    {
-                                        colorData[c] = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
-                                    }
-                                }
-                                #endregion
-                                glControl1.Visible = true;
-                                createVAO();
-                            }
-                            StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
-                                            + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
-                                            + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
+                            StatusStripUpdate("Only supported export the raw file.");
                         }
                         break;
-                    case ClassIDType.VideoClip:
-                    case ClassIDType.MovieTexture:
-                        {
-                            StatusStripUpdate("Only supported export.");
-                            break;
-                        }
-                    case ClassIDType.Sprite:
-                        {
-                            imageTexture?.Dispose();
-                            imageTexture = SpriteHelper.GetImageFromSprite(new Sprite(reader));
-                            if (imageTexture != null)
-                            {
-                                asset.InfoText = $"Width: {imageTexture.Width}\nHeight: {imageTexture.Height}\n";
-                                previewPanel.BackgroundImage = imageTexture;
-                                if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
-                                    previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
-                                else
-                                    previewPanel.BackgroundImageLayout = ImageLayout.Center;
-                            }
-                            else
-                            {
-                                StatusStripUpdate("Unsupported sprite for preview.");
-                            }
-                            break;
-                        }
-                    case ClassIDType.Animator:
-                        {
-                            StatusStripUpdate("Can be exported to FBX file.");
-                            break;
-                        }
-                    case ClassIDType.AnimationClip:
-                        {
-                            StatusStripUpdate("Can be exported with Animator or objects");
-                            break;
-                        }
-                    default:
-                        {
-                            var str = reader.Dump();
-                            if (str != null)
-                            {
-                                textPreviewBox.Text = str;
-                                textPreviewBox.Visible = true;
-                            }
-                            else
-                                StatusStripUpdate("Only supported export the raw file.");
-                            break;
-                        }
                 }
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Preview {asset.Type}:{asset.Text} error\r\n{e.Message}\r\n{e.StackTrace}");
+                MessageBox.Show($"Preview {assetItem.Type}:{assetItem.Text} error\r\n{e.Message}\r\n{e.StackTrace}");
             }
+        }
+
+        private void PreviewTexture2D(AssetItem assetItem, Texture2D m_Texture2D)
+        {
+            var converter = new Texture2DConverter(m_Texture2D);
+            var bitmap = converter.ConvertToBitmap(true);
+            if (bitmap != null)
+            {
+                assetItem.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
+                switch (m_Texture2D.m_FilterMode)
+                {
+                    case 0: assetItem.InfoText += "\nFilter Mode: Point "; break;
+                    case 1: assetItem.InfoText += "\nFilter Mode: Bilinear "; break;
+                    case 2: assetItem.InfoText += "\nFilter Mode: Trilinear "; break;
+                }
+                assetItem.InfoText += $"\nAnisotropic level: {m_Texture2D.m_Aniso}\nMip map bias: {m_Texture2D.m_MipBias}";
+                switch (m_Texture2D.m_WrapMode)
+                {
+                    case 0: assetItem.InfoText += "\nWrap mode: Repeat"; break;
+                    case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
+                }
+
+                PreviewTexture(bitmap);
+            }
+            else
+            {
+                StatusStripUpdate("Unsupported image for preview");
+            }
+        }
+
+        private void PreviewAudioClip(AssetItem assetItem, AudioClip m_AudioClip)
+        {
+            //Info
+            assetItem.InfoText = "Compression format: ";
+            if (m_AudioClip.version[0] < 5)
+            {
+                switch (m_AudioClip.m_Type)
+                {
+                    case AudioType.ACC:
+                        assetItem.InfoText += "Acc";
+                        break;
+                    case AudioType.AIFF:
+                        assetItem.InfoText += "AIFF";
+                        break;
+                    case AudioType.IT:
+                        assetItem.InfoText += "Impulse tracker";
+                        break;
+                    case AudioType.MOD:
+                        assetItem.InfoText += "Protracker / Fasttracker MOD";
+                        break;
+                    case AudioType.MPEG:
+                        assetItem.InfoText += "MP2/MP3 MPEG";
+                        break;
+                    case AudioType.OGGVORBIS:
+                        assetItem.InfoText += "Ogg vorbis";
+                        break;
+                    case AudioType.S3M:
+                        assetItem.InfoText += "ScreamTracker 3";
+                        break;
+                    case AudioType.WAV:
+                        assetItem.InfoText += "Microsoft WAV";
+                        break;
+                    case AudioType.XM:
+                        assetItem.InfoText += "FastTracker 2 XM";
+                        break;
+                    case AudioType.XMA:
+                        assetItem.InfoText += "Xbox360 XMA";
+                        break;
+                    case AudioType.VAG:
+                        assetItem.InfoText += "PlayStation Portable ADPCM";
+                        break;
+                    case AudioType.AUDIOQUEUE:
+                        assetItem.InfoText += "iPhone";
+                        break;
+                    default:
+                        assetItem.InfoText += "Unknown";
+                        break;
+                }
+            }
+            else
+            {
+                switch (m_AudioClip.m_CompressionFormat)
+                {
+                    case AudioCompressionFormat.PCM:
+                        assetItem.InfoText += "PCM";
+                        break;
+                    case AudioCompressionFormat.Vorbis:
+                        assetItem.InfoText += "Vorbis";
+                        break;
+                    case AudioCompressionFormat.ADPCM:
+                        assetItem.InfoText += "ADPCM";
+                        break;
+                    case AudioCompressionFormat.MP3:
+                        assetItem.InfoText += "MP3";
+                        break;
+                    case AudioCompressionFormat.VAG:
+                        assetItem.InfoText += "PlayStation Portable ADPCM";
+                        break;
+                    case AudioCompressionFormat.HEVAG:
+                        assetItem.InfoText += "PSVita ADPCM";
+                        break;
+                    case AudioCompressionFormat.XMA:
+                        assetItem.InfoText += "Xbox360 XMA";
+                        break;
+                    case AudioCompressionFormat.AAC:
+                        assetItem.InfoText += "AAC";
+                        break;
+                    case AudioCompressionFormat.GCADPCM:
+                        assetItem.InfoText += "Nintendo 3DS/Wii DSP";
+                        break;
+                    case AudioCompressionFormat.ATRAC9:
+                        assetItem.InfoText += "PSVita ATRAC9";
+                        break;
+                    default:
+                        assetItem.InfoText += "Unknown";
+                        break;
+                }
+            }
+
+            var m_AudioData = m_AudioClip.m_AudioData.Value;
+            if (m_AudioData == null || m_AudioData.Length == 0)
+                return;
+            FMOD.CREATESOUNDEXINFO exinfo = new FMOD.CREATESOUNDEXINFO();
+
+            exinfo.cbsize = Marshal.SizeOf(exinfo);
+            exinfo.length = (uint)m_AudioClip.m_Size;
+
+            var result = system.createSound(m_AudioData, FMOD.MODE.OPENMEMORY | loopMode, ref exinfo, out sound);
+            if (ERRCHECK(result)) return;
+
+            result = sound.getSubSound(0, out var subsound);
+            if (result == FMOD.RESULT.OK)
+            {
+                sound = subsound;
+            }
+
+            result = sound.getLength(out FMODlenms, FMOD.TIMEUNIT.MS);
+            if (ERRCHECK(result)) return;
+
+            result = system.playSound(sound, null, true, out channel);
+            if (ERRCHECK(result)) return;
+
+            FMODpanel.Visible = true;
+
+            result = channel.getFrequency(out var frequency);
+            if (ERRCHECK(result)) return;
+
+            FMODinfoLabel.Text = frequency + " Hz";
+            FMODtimerLabel.Text = $"0:0.0 / {FMODlenms / 1000 / 60}:{FMODlenms / 1000 % 60}.{FMODlenms / 10 % 100}";
+        }
+
+        private void PreviewShader(Shader m_Shader)
+        {
+            var str = ShaderConverter.Convert(m_Shader);
+            PreviewText(str == null ? "Serialized Shader can't be read" : str.Replace("\n", "\r\n"));
+        }
+
+        private void PreviewTextAsset(TextAsset m_TextAsset)
+        {
+            var text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
+            PreviewText(text.Replace("\n", "\r\n"));
+        }
+
+        private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
+        {
+            PreviewText(m_MonoBehaviour.Dump() ?? GetScriptString(m_MonoBehaviour.reader));
+        }
+
+        private void PreviewFont(Font m_Font)
+        {
+            if (m_Font.m_FontData != null)
+            {
+                var data = Marshal.AllocCoTaskMem(m_Font.m_FontData.Length);
+                Marshal.Copy(m_Font.m_FontData, 0, data, m_Font.m_FontData.Length);
+
+                uint cFonts = 0;
+                var re = AddFontMemResourceEx(data, (uint)m_Font.m_FontData.Length, IntPtr.Zero, ref cFonts);
+                if (re != IntPtr.Zero)
+                {
+                    using (var pfc = new PrivateFontCollection())
+                    {
+                        pfc.AddMemoryFont(data, m_Font.m_FontData.Length);
+                        Marshal.FreeCoTaskMem(data);
+                        if (pfc.Families.Length > 0)
+                        {
+                            fontPreviewBox.SelectionStart = 0;
+                            fontPreviewBox.SelectionLength = 80;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 16, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 81;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 12, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 138;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 18, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 195;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 24, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 252;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 36, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 309;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 48, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 366;
+                            fontPreviewBox.SelectionLength = 56;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 60, FontStyle.Regular);
+                            fontPreviewBox.SelectionStart = 423;
+                            fontPreviewBox.SelectionLength = 55;
+                            fontPreviewBox.SelectionFont = new System.Drawing.Font(pfc.Families[0], 72, FontStyle.Regular);
+                            fontPreviewBox.Visible = true;
+                        }
+                    }
+                    return;
+                }
+            }
+            StatusStripUpdate("Unsupported font for preview. Try to export.");
+        }
+
+        private void PreviewMesh(Mesh m_Mesh)
+        {
+            if (m_Mesh.m_VertexCount > 0)
+            {
+                viewMatrixData = Matrix4.CreateRotationY(-(float)Math.PI / 4) * Matrix4.CreateRotationX(-(float)Math.PI / 6);
+                #region Vertices
+                if (m_Mesh.m_Vertices == null || m_Mesh.m_Vertices.Length == 0)
+                {
+                    StatusStripUpdate("Mesh can't be previewed.");
+                    return;
+                }
+                int count = 3;
+                if (m_Mesh.m_Vertices.Length == m_Mesh.m_VertexCount * 4)
+                {
+                    count = 4;
+                }
+                vertexData = new Vector3[m_Mesh.m_VertexCount];
+                // Calculate Bounding
+                float[] min = new float[3];
+                float[] max = new float[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    min[i] = m_Mesh.m_Vertices[i];
+                    max[i] = m_Mesh.m_Vertices[i];
+                }
+                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        min[i] = Math.Min(min[i], m_Mesh.m_Vertices[v * count + i]);
+                        max[i] = Math.Max(max[i], m_Mesh.m_Vertices[v * count + i]);
+                    }
+                    vertexData[v] = new Vector3(
+                        m_Mesh.m_Vertices[v * count],
+                        m_Mesh.m_Vertices[v * count + 1],
+                        m_Mesh.m_Vertices[v * count + 2]);
+                }
+
+                // Calculate modelMatrix
+                Vector3 dist = Vector3.One, offset = Vector3.Zero;
+                for (int i = 0; i < 3; i++)
+                {
+                    dist[i] = max[i] - min[i];
+                    offset[i] = (max[i] + min[i]) / 2;
+                }
+                float d = Math.Max(1e-5f, dist.Length);
+                modelMatrixData = Matrix4.CreateTranslation(-offset) * Matrix4.CreateScale(2f / d);
+                #endregion
+                #region Indicies
+                indiceData = new int[m_Mesh.m_Indices.Count];
+                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                {
+                    indiceData[i] = (int)m_Mesh.m_Indices[i];
+                    indiceData[i + 1] = (int)m_Mesh.m_Indices[i + 1];
+                    indiceData[i + 2] = (int)m_Mesh.m_Indices[i + 2];
+                }
+                #endregion
+                #region Normals
+                if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
+                {
+                    if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
+                        count = 3;
+                    else if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 4)
+                        count = 4;
+                    normalData = new Vector3[m_Mesh.m_VertexCount];
+                    for (int n = 0; n < m_Mesh.m_VertexCount; n++)
+                    {
+                        normalData[n] = new Vector3(
+                            m_Mesh.m_Normals[n * count],
+                            m_Mesh.m_Normals[n * count + 1],
+                            m_Mesh.m_Normals[n * count + 2]);
+                    }
+                }
+                else
+                    normalData = null;
+                // calculate normal by ourself
+                normal2Data = new Vector3[m_Mesh.m_VertexCount];
+                int[] normalCalculatedCount = new int[m_Mesh.m_VertexCount];
+                for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                {
+                    normal2Data[i] = Vector3.Zero;
+                    normalCalculatedCount[i] = 0;
+                }
+                for (int i = 0; i < m_Mesh.m_Indices.Count; i = i + 3)
+                {
+                    Vector3 dir1 = vertexData[indiceData[i + 1]] - vertexData[indiceData[i]];
+                    Vector3 dir2 = vertexData[indiceData[i + 2]] - vertexData[indiceData[i]];
+                    Vector3 normal = Vector3.Cross(dir1, dir2);
+                    normal.Normalize();
+                    for (int j = 0; j < 3; j++)
+                    {
+                        normal2Data[indiceData[i + j]] += normal;
+                        normalCalculatedCount[indiceData[i + j]]++;
+                    }
+                }
+                for (int i = 0; i < m_Mesh.m_VertexCount; i++)
+                {
+                    if (normalCalculatedCount[i] == 0)
+                        normal2Data[i] = new Vector3(0, 1, 0);
+                    else
+                        normal2Data[i] /= normalCalculatedCount[i];
+                }
+                #endregion
+                #region Colors
+                if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 3)
+                {
+                    colorData = new Vector4[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colorData[c] = new Vector4(
+                            m_Mesh.m_Colors[c * 3],
+                            m_Mesh.m_Colors[c * 3 + 1],
+                            m_Mesh.m_Colors[c * 3 + 2],
+                            1.0f);
+                    }
+                }
+                else if (m_Mesh.m_Colors != null && m_Mesh.m_Colors.Length == m_Mesh.m_VertexCount * 4)
+                {
+                    colorData = new Vector4[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colorData[c] = new Vector4(
+                        m_Mesh.m_Colors[c * 4],
+                        m_Mesh.m_Colors[c * 4 + 1],
+                        m_Mesh.m_Colors[c * 4 + 2],
+                        m_Mesh.m_Colors[c * 4 + 3]);
+                    }
+                }
+                else
+                {
+                    colorData = new Vector4[m_Mesh.m_VertexCount];
+                    for (int c = 0; c < m_Mesh.m_VertexCount; c++)
+                    {
+                        colorData[c] = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
+                    }
+                }
+                #endregion
+                glControl1.Visible = true;
+                createVAO();
+            }
+            StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
+                            + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
+                            + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
+        }
+
+        private void PreviewSprite(AssetItem assetItem, Sprite m_Sprite)
+        {
+            var bitmap = SpriteHelper.GetImageFromSprite(m_Sprite);
+            if (bitmap != null)
+            {
+                assetItem.InfoText = $"Width: {imageTexture.Width}\nHeight: {imageTexture.Height}\n";
+
+                PreviewTexture(bitmap);
+            }
+            else
+            {
+                StatusStripUpdate("Unsupported sprite for preview.");
+            }
+        }
+
+        private void PreviewTexture(Bitmap bitmap)
+        {
+            imageTexture?.Dispose();
+            imageTexture = bitmap;
+            previewPanel.BackgroundImage = imageTexture;
+            if (imageTexture.Width > previewPanel.Width || imageTexture.Height > previewPanel.Height)
+                previewPanel.BackgroundImageLayout = ImageLayout.Zoom;
+            else
+                previewPanel.BackgroundImageLayout = ImageLayout.Center;
+        }
+
+        private void PreviewText(string text)
+        {
+            textPreviewBox.Text = text;
+            textPreviewBox.Visible = true;
         }
 
         private void FMODinit()
@@ -1683,6 +1687,7 @@ namespace AssetStudioGUI
             classesListView.Items.Clear();
             classesListView.Groups.Clear();
             previewPanel.BackgroundImage = Properties.Resources.preview;
+            imageTexture?.Dispose();
             previewPanel.BackgroundImageLayout = ImageLayout.Center;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
@@ -1757,7 +1762,7 @@ namespace AssetStudioGUI
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
-            var args = $"/select, \"{selectasset.sourceFile.originalPath ?? selectasset.sourceFile.fullName}\"";
+            var args = $"/select, \"{selectasset.SourceFile.originalPath ?? selectasset.SourceFile.fullName}\"";
             var pfi = new ProcessStartInfo("explorer.exe", args);
             Process.Start(pfi);
         }

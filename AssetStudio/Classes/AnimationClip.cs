@@ -293,7 +293,7 @@ namespace AssetStudio
         public string attribute;
         public string path;
         public int classID;
-        public PPtr script;
+        public PPtr<MonoScript> script;
 
 
         public FloatCurve(ObjectReader reader)
@@ -302,20 +302,20 @@ namespace AssetStudio
             attribute = reader.ReadAlignedString();
             path = reader.ReadAlignedString();
             classID = reader.ReadInt32();
-            script = reader.ReadPPtr();
+            script = new PPtr<MonoScript>(reader);
         }
     }
 
     public class PPtrKeyframe
     {
         public float time;
-        public PPtr value;
+        public PPtr<Object> value;
 
 
         public PPtrKeyframe(ObjectReader reader)
         {
             time = reader.ReadSingle();
-            value = reader.ReadPPtr();
+            value = new PPtr<Object>(reader);
         }
     }
 
@@ -325,7 +325,7 @@ namespace AssetStudio
         public string attribute;
         public string path;
         public int classID;
-        public PPtr script;
+        public PPtr<MonoScript> script;
 
 
         public PPtrCurve(ObjectReader reader)
@@ -340,7 +340,7 @@ namespace AssetStudio
             attribute = reader.ReadAlignedString();
             path = reader.ReadAlignedString();
             classID = reader.ReadInt32();
-            script = reader.ReadPPtr();
+            script = new PPtr<MonoScript>(reader);
         }
     }
 
@@ -757,7 +757,7 @@ namespace AssetStudio
     {
         public uint path;
         public uint attribute;
-        public PPtr script;
+        public PPtr<Object> script;
         public ClassIDType typeID;
         public byte customType;
         public byte isPPtrCurve;
@@ -767,7 +767,7 @@ namespace AssetStudio
             var version = reader.version;
             path = reader.ReadUInt32();
             attribute = reader.ReadUInt32();
-            script = reader.ReadPPtr();
+            script = new PPtr<Object>(reader);
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
             {
                 typeID = (ClassIDType)reader.ReadInt32();
@@ -785,7 +785,7 @@ namespace AssetStudio
     public class AnimationClipBindingConstant
     {
         public List<GenericBinding> genericBindings;
-        public List<PPtr> pptrCurveMapping;
+        public List<PPtr<Object>> pptrCurveMapping;
 
         public AnimationClipBindingConstant(ObjectReader reader)
         {
@@ -797,10 +797,10 @@ namespace AssetStudio
             }
 
             int numMappings = reader.ReadInt32();
-            pptrCurveMapping = new List<PPtr>(numMappings);
+            pptrCurveMapping = new List<PPtr<Object>>(numMappings);
             for (int i = 0; i < numMappings; i++)
             {
-                pptrCurveMapping.Add(reader.ReadPPtr());
+                pptrCurveMapping.Add(new PPtr<Object>(reader));
             }
         }
 

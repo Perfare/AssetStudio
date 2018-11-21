@@ -42,7 +42,7 @@ namespace AssetStudio
                         new ShaderProgram(blobReader);
                     }
                 }*/
-                return shader.reader.Dump();
+                return shader.Dump();
             }
             return Encoding.UTF8.GetString(shader.m_Script);
         }

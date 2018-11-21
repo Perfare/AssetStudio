@@ -5,21 +5,22 @@ namespace AssetStudioGUI
 {
     internal class AssetItem : ListViewItem
     {
-        public SerializedFile sourceFile;
-        public ObjectReader reader;
+        public Object Asset;
+        public SerializedFile SourceFile;
         public long FullSize;
         public ClassIDType Type;
         public string TypeString;
+
         public string InfoText;
         public string UniqueID;
         public GameObjectTreeNode TreeNode;
 
-        public AssetItem(ObjectReader reader)
+        public AssetItem(Object asset)
         {
-            sourceFile = reader.assetsFile;
-            this.reader = reader;
-            FullSize = reader.byteSize;
-            Type = reader.type;
+            Asset = asset;
+            SourceFile = asset.assetsFile;
+            FullSize = asset.byteSize;
+            Type = asset.type;
             TypeString = Type.ToString();
         }
     }

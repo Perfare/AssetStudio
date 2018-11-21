@@ -8,12 +8,12 @@ namespace AssetStudio
 {
     public sealed class VideoClip : NamedObject
     {
-        public byte[] m_VideoData;
+        public Lazy<byte[]> m_VideoData;
         public string m_OriginalPath;
         public string m_Source;
         public ulong m_Size;
 
-        public VideoClip(ObjectReader reader, bool readData) : base(reader)
+        public VideoClip(ObjectReader reader) : base(reader)
         {
             m_OriginalPath = reader.ReadAlignedString();
             var m_ProxyWidth = reader.ReadUInt32();
@@ -47,18 +47,16 @@ namespace AssetStudio
             m_Size = reader.ReadUInt64();
             var m_HasSplitAlpha = reader.ReadBoolean();
 
-            if (readData)
+            ResourceReader resourceReader;
+            if (!string.IsNullOrEmpty(m_Source))
             {
-                if (!string.IsNullOrEmpty(m_Source))
-                {
-                    m_VideoData = ResourcesHelper.GetData(m_Source, sourceFile, (long)m_Offset, (int)m_Size);
-                }
-                else
-                {
-                    if (m_Size > 0)
-                        m_VideoData = reader.ReadBytes((int)m_Size);
-                }
+                resourceReader = new ResourceReader(m_Source, assetsFile, (long)m_Offset, (int)m_Size);
             }
+            else
+            {
+                resourceReader = new ResourceReader(reader, reader.BaseStream.Position, (int)m_Size);
+            }
+            m_VideoData = new Lazy<byte[]>(resourceReader.GetData);
         }
     }
 }

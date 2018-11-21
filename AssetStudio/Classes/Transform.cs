@@ -11,8 +11,8 @@ namespace AssetStudio
         public float[] m_LocalRotation;
         public float[] m_LocalPosition;
         public float[] m_LocalScale;
-        public List<PPtr> m_Children;
-        public PPtr m_Father;
+        public List<PPtr<Transform>> m_Children;
+        public PPtr<Transform> m_Father;
 
         public Transform(ObjectReader reader) : base(reader)
         {
@@ -20,12 +20,12 @@ namespace AssetStudio
             m_LocalPosition = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
             m_LocalScale = new[] { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() };
             int m_ChildrenCount = reader.ReadInt32();
-            m_Children = new List<PPtr>(m_ChildrenCount);
+            m_Children = new List<PPtr<Transform>>(m_ChildrenCount);
             for (int j = 0; j < m_ChildrenCount; j++)
             {
-                m_Children.Add(reader.ReadPPtr());
+                m_Children.Add(new PPtr<Transform>(reader));
             }
-            m_Father = reader.ReadPPtr();
+            m_Father = new PPtr<Transform>(reader);
         }
     }
 }

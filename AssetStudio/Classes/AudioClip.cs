@@ -29,9 +29,9 @@ namespace AssetStudio
         public string m_Source;
         public long m_Offset;
         public long m_Size;
-        public byte[] m_AudioData;
+        public Lazy<byte[]> m_AudioData;
 
-        public AudioClip(ObjectReader reader, bool readData) : base(reader)
+        public AudioClip(ObjectReader reader) : base(reader)
         {
             if (version[0] < 5)
             {
@@ -49,7 +49,7 @@ namespace AssetStudio
                     if (reader.byteSize + reader.byteStart - reader.Position != tsize)
                     {
                         m_Offset = reader.ReadInt32();
-                        m_Source = sourceFile.fullName + ".resS";
+                        m_Source = assetsFile.fullName + ".resS";
                     }
                 }
                 else
@@ -79,18 +79,16 @@ namespace AssetStudio
                 m_CompressionFormat = (AudioCompressionFormat)reader.ReadInt32();
             }
 
-            if (readData)
+            ResourceReader resourceReader;
+            if (!string.IsNullOrEmpty(m_Source))
             {
-                if (!string.IsNullOrEmpty(m_Source))
-                {
-                    m_AudioData = ResourcesHelper.GetData(m_Source, sourceFile, m_Offset, (int)m_Size);
-                }
-                else
-                {
-                    if (m_Size > 0)
-                        m_AudioData = reader.ReadBytes((int)m_Size);
-                }
+                resourceReader = new ResourceReader(m_Source, assetsFile, m_Offset, (int)m_Size);
             }
+            else
+            {
+                resourceReader = new ResourceReader(reader, reader.BaseStream.Position, (int)m_Size);
+            }
+            m_AudioData = new Lazy<byte[]>(resourceReader.GetData);
         }
     }
 

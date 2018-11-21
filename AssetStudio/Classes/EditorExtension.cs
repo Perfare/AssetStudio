@@ -11,8 +11,8 @@ namespace AssetStudio
         {
             if (platform == BuildTarget.NoTarget)
             {
-                var m_PrefabParentObject = reader.ReadPPtr();
-                var m_PrefabInternal = reader.ReadPPtr();
+                var m_PrefabParentObject = new PPtr<EditorExtension>(reader);
+                var m_PrefabInternal = new PPtr<Object>(reader); //PPtr<Prefab>
             }
         }
     }

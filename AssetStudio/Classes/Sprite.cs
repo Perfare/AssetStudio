@@ -50,8 +50,8 @@ namespace AssetStudio
         public float m_PixelsToUnits;
         public Vector2 m_Pivot;
         public Tuple<Guid, long> m_RenderDataKey;
-        public PPtr texture;
-        public PPtr m_SpriteAtlas;
+        public PPtr<Texture2D> texture;
+        public PPtr<SpriteAtlas> m_SpriteAtlas;
         public RectangleF textureRect;
         public SpriteSettings settingsRaw;
         public PointF[][] m_PhysicsShape; //Vector2[][]
@@ -98,16 +98,16 @@ namespace AssetStudio
                 }
 
                 //PPtr<SpriteAtlas> m_SpriteAtlas
-                m_SpriteAtlas = reader.ReadPPtr();
+                m_SpriteAtlas = new PPtr<SpriteAtlas>(reader);
             }
 
             //SpriteRenderData m_RD
             //  PPtr<Texture2D> texture
-            texture = reader.ReadPPtr();
+            texture = new PPtr<Texture2D>(reader);
             //  PPtr<Texture2D> alphaTexture
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
             {
-                var alphaTexture = reader.ReadPPtr();
+                var alphaTexture = new PPtr<Texture2D>(reader);
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up

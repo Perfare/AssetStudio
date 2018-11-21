@@ -8,11 +8,11 @@ namespace AssetStudio
     public sealed class MeshFilter : Component
     {
         public long preloadIndex;
-        public PPtr m_Mesh;
+        public PPtr<Mesh> m_Mesh;
 
         public MeshFilter(ObjectReader reader) : base(reader)
         {
-            m_Mesh = reader.ReadPPtr();
+            m_Mesh = new PPtr<Mesh>(reader);
         }
     }
 }

@@ -9,8 +9,8 @@ namespace AssetStudio
 {
     public class SpriteAtlasData
     {
-        public PPtr texture;
-        public PPtr alphaTexture;
+        public PPtr<Texture2D> texture;
+        public PPtr<Texture2D> alphaTexture;
         public System.Drawing.RectangleF textureRect;
         public Vector2 textureRectOffset;
         public Vector2 atlasRectOffset;
@@ -21,8 +21,8 @@ namespace AssetStudio
         public SpriteAtlasData(ObjectReader reader)
         {
             var version = reader.version;
-            texture = reader.ReadPPtr();
-            alphaTexture = reader.ReadPPtr();
+            texture = new PPtr<Texture2D>(reader);
+            alphaTexture = new PPtr<Texture2D>(reader);
             textureRect = reader.ReadRectangleF();
             textureRectOffset = reader.ReadVector2();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
@@ -44,7 +44,7 @@ namespace AssetStudio
             var m_PackedSpritesSize = reader.ReadInt32();
             for (int i = 0; i < m_PackedSpritesSize; i++)
             {
-                reader.ReadPPtr(); //PPtr<Sprite> data
+                new PPtr<Sprite>(reader);
             }
 
             var m_PackedSpriteNamesToIndexSize = reader.ReadInt32();

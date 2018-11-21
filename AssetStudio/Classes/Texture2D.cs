@@ -28,13 +28,13 @@ namespace AssetStudio
         public int m_ColorSpace;
         //image dataa
         public int image_data_size;
-        public byte[] image_data;
+        public Lazy<byte[]> image_data;
         //m_StreamData
         public uint offset;
         public uint size;
         public string path;
 
-        public Texture2D(ObjectReader reader, bool readData) : base(reader)
+        public Texture2D(ObjectReader reader) : base(reader)
         {
             m_Width = reader.ReadInt32();
             m_Height = reader.ReadInt32();
@@ -58,11 +58,11 @@ namespace AssetStudio
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }
-            else if (reader.HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
+            else if (HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
             {
                 var m_StreamingMipmapsPriority = reader.ReadInt32();
             }
-            if (reader.HasStructMember("m_StreamingGroupID")) //What the hell is this?
+            if (HasStructMember("m_StreamingGroupID")) //What the hell is this?
             {
                 var m_StreamingGroupID = reader.ReadUInt32();
             }
@@ -101,17 +101,16 @@ namespace AssetStudio
                 path = reader.ReadAlignedString();
             }
 
-            if (readData)
+            ResourceReader resourceReader;
+            if (!string.IsNullOrEmpty(path))
             {
-                if (!string.IsNullOrEmpty(path))
-                {
-                    image_data = ResourcesHelper.GetData(path, sourceFile, offset, image_data_size);
-                }
-                else
-                {
-                    image_data = reader.ReadBytes(image_data_size);
-                }
+                resourceReader = new ResourceReader(path, assetsFile, offset, image_data_size);
             }
+            else
+            {
+                resourceReader = new ResourceReader(reader, reader.BaseStream.Position, image_data_size);
+            }
+            image_data = new Lazy<byte[]>(resourceReader.GetData);
         }
     }
 

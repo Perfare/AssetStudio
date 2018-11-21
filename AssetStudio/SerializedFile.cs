@@ -17,9 +17,7 @@ namespace AssetStudio
         public int[] version = { 0, 0, 0, 0 };
         public BuildType buildType;
         public bool valid;
-        public Dictionary<long, ObjectReader> ObjectReaders = new Dictionary<long, ObjectReader>();
-        public Dictionary<long, GameObject> GameObjects = new Dictionary<long, GameObject>();
-        public Dictionary<long, Transform> Transforms = new Dictionary<long, Transform>();
+        public Dictionary<long, Object> Objects;
 
         public SerializedFileHeader header;
         private EndianType m_FileEndianess;
@@ -27,7 +25,7 @@ namespace AssetStudio
         public BuildTarget m_TargetPlatform = BuildTarget.UnknownPlatform;
         private bool m_EnableTypeTree = true;
         public List<SerializedType> m_Types;
-        private List<ObjectInfo> m_Objects;
+        public List<ObjectInfo> m_Objects;
         private List<LocalSerializedObjectIdentifier> m_ScriptTypes;
         public List<FileIdentifier> m_Externals;
 
@@ -118,7 +116,7 @@ namespace AssetStudio
                     {
                         objectInfo.classID = reader.ReadUInt16();
                         objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
-                        objectInfo.isDestroyed = reader.ReadUInt16();
+                        var isDestroyed = reader.ReadUInt16();
                     }
                     else
                     {
@@ -131,10 +129,6 @@ namespace AssetStudio
                         var stripped = reader.ReadByte();
                     }
                     m_Objects.Add(objectInfo);
-
-                    //Create Reader
-                    var objectReader = new ObjectReader(reader, this, objectInfo);
-                    ObjectReaders.Add(objectInfo.m_PathID, objectReader);
                 }
 
                 if (header.m_Version >= 11)

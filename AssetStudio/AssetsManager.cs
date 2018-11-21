@@ -38,6 +38,7 @@ namespace AssetStudio
                 importFiles.Add(file);
                 importFilesHash.Add(Path.GetFileName(file).ToUpper());
             }
+
             Progress.Reset();
             //use a for loop because list size can change
             for (var i = 0; i < importFiles.Count; i++)
@@ -45,9 +46,13 @@ namespace AssetStudio
                 LoadFile(importFiles[i]);
                 Progress.Report(i + 1, importFiles.Count);
             }
+
             importFiles.Clear();
             importFilesHash.Clear();
             assetsfileListHash.Clear();
+
+            ReadAssets();
+            ProcessGameObject();
         }
 
         private void LoadFile(string fullName)
@@ -118,7 +123,6 @@ namespace AssetStudio
             var fileName = Path.GetFileName(fullName);
             if (!assetsfileListHash.Contains(fileName.ToUpper()))
             {
-                Logger.Info($"Loading {fileName}");
                 var assetsFile = new SerializedFile(this, fullName, reader);
                 if (assetsFile.valid)
                 {
@@ -127,6 +131,7 @@ namespace AssetStudio
                     {
                         assetsFile.SetVersion(unityVersion);
                     }
+
                     assetsFileList.Add(assetsFile);
                     assetsfileListHash.Add(assetsFile.upperFileName);
                 }
@@ -140,7 +145,7 @@ namespace AssetStudio
         private void LoadBundleFile(string fullName, EndianBinaryReader reader, string parentPath = null)
         {
             var fileName = Path.GetFileName(fullName);
-            Logger.Info("Decompressing " + fileName);
+            Logger.Info("Loading " + fileName);
             var bundleFile = new BundleFile(reader, fullName);
             reader.Dispose();
             foreach (var file in bundleFile.fileList)
@@ -178,15 +183,166 @@ namespace AssetStudio
         {
             foreach (var assetsFile in assetsFileList)
             {
+                assetsFile.Objects.Clear();
                 assetsFile.reader.Close();
             }
             assetsFileList.Clear();
+
             foreach (var resourceFileReader in resourceFileReaders)
             {
                 resourceFileReader.Value.Close();
             }
             resourceFileReaders.Clear();
+
             assetsFileIndexCache.Clear();
+        }
+
+        private void ReadAssets()
+        {
+            Logger.Info("Read assets...");
+
+            var progressCount = assetsFileList.Sum(x => x.m_Objects.Count);
+            int i = 0;
+            Progress.Reset();
+            foreach (var assetsFile in assetsFileList)
+            {
+                assetsFile.Objects = new Dictionary<long, Object>(assetsFile.m_Objects.Count);
+                foreach (var objectInfo in assetsFile.m_Objects)
+                {
+                    var objectReader = new ObjectReader(assetsFile.reader, assetsFile, objectInfo);
+                    switch (objectReader.type)
+                    {
+                        case ClassIDType.Animation:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Animation(objectReader));
+                            break;
+                        case ClassIDType.AnimationClip:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new AnimationClip(objectReader));
+                            break;
+                        case ClassIDType.Animator:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Animator(objectReader));
+                            break;
+                        case ClassIDType.AnimatorController:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new AnimatorController(objectReader));
+                            break;
+                        case ClassIDType.AnimatorOverrideController:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new AnimatorOverrideController(objectReader));
+                            break;
+                        case ClassIDType.AssetBundle:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new AssetBundle(objectReader));
+                            break;
+                        case ClassIDType.AudioClip:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new AudioClip(objectReader));
+                            break;
+                        case ClassIDType.Avatar:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Avatar(objectReader));
+                            break;
+                        case ClassIDType.Font:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Font(objectReader));
+                            break;
+                        case ClassIDType.GameObject:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new GameObject(objectReader));
+                            break;
+                        case ClassIDType.Material:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Material(objectReader));
+                            break;
+                        case ClassIDType.Mesh:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Mesh(objectReader));
+                            break;
+                        case ClassIDType.MeshFilter:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new MeshFilter(objectReader));
+                            break;
+                        case ClassIDType.MeshRenderer:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new MeshRenderer(objectReader));
+                            break;
+                        case ClassIDType.MonoBehaviour:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new MonoBehaviour(objectReader));
+                            break;
+                        case ClassIDType.MonoScript:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new MonoScript(objectReader));
+                            break;
+                        case ClassIDType.MovieTexture:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new MovieTexture(objectReader));
+                            break;
+                        case ClassIDType.PlayerSettings:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new PlayerSettings(objectReader));
+                            break;
+                        case ClassIDType.RectTransform:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new RectTransform(objectReader));
+                            break;
+                        case ClassIDType.Shader:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Shader(objectReader));
+                            break;
+                        case ClassIDType.SkinnedMeshRenderer:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new SkinnedMeshRenderer(objectReader));
+                            break;
+                        case ClassIDType.Sprite:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Sprite(objectReader));
+                            break;
+                        case ClassIDType.SpriteAtlas:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new SpriteAtlas(objectReader));
+                            break;
+                        case ClassIDType.TextAsset:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new TextAsset(objectReader));
+                            break;
+                        case ClassIDType.Texture2D:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Texture2D(objectReader));
+                            break;
+                        case ClassIDType.Transform:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Transform(objectReader));
+                            break;
+                        case ClassIDType.VideoClip:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new VideoClip(objectReader));
+                            break;
+                        default:
+                            assetsFile.Objects.Add(objectInfo.m_PathID, new Object(objectReader));
+                            break;
+                    }
+
+                    Progress.Report(++i, progressCount);
+                }
+            }
+        }
+
+        private void ProcessGameObject()
+        {
+            Logger.Info("Process GameObject...");
+
+            foreach (var assetsFile in assetsFileList)
+            {
+                foreach (var obj in assetsFile.Objects.Values)
+                {
+                    if (obj is GameObject m_GameObject)
+                    {
+                        foreach (var pptr in m_GameObject.m_Components)
+                        {
+                            if (pptr.TryGet(out var m_Component))
+                            {
+                                switch (m_Component)
+                                {
+                                    case Transform m_Transform:
+                                        m_GameObject.m_Transform = m_Transform;
+                                        break;
+                                    case MeshRenderer m_MeshRenderer:
+                                        m_GameObject.m_MeshRenderer = m_MeshRenderer;
+                                        break;
+                                    case MeshFilter m_MeshFilter:
+                                        m_GameObject.m_MeshFilter = m_MeshFilter;
+                                        break;
+                                    case SkinnedMeshRenderer m_SkinnedMeshRenderer:
+                                        m_GameObject.m_SkinnedMeshRenderer = m_SkinnedMeshRenderer;
+                                        break;
+                                    case Animator m_Animator:
+                                        m_GameObject.m_Animator = m_Animator;
+                                        break;
+                                    case Animation m_Animation:
+                                        m_GameObject.m_Animation = m_Animation;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

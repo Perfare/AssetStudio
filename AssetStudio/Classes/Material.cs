@@ -8,7 +8,7 @@ namespace AssetStudio
     public class TexEnv
     {
         public string name;
-        public PPtr m_Texture;
+        public PPtr<Texture> m_Texture;
         public float[] m_Scale;
         public float[] m_Offset;
     }
@@ -27,7 +27,7 @@ namespace AssetStudio
 
     public sealed class Material : NamedObject
     {
-        public PPtr m_Shader;
+        public PPtr<Shader> m_Shader;
         public string[] m_ShaderKeywords;
         public int m_CustomRenderQueue;
         public TexEnv[] m_TexEnvs;
@@ -36,7 +36,7 @@ namespace AssetStudio
 
         public Material(ObjectReader reader) : base(reader)
         {
-            m_Shader = reader.ReadPPtr();
+            m_Shader = new PPtr<Shader>(reader);
 
             if (version[0] == 4 && (version[1] >= 2 || (version[1] == 1 && !buildType.IsAlpha)))
             {
@@ -84,7 +84,7 @@ namespace AssetStudio
                 TexEnv m_TexEnv = new TexEnv()
                 {
                     name = reader.ReadAlignedString(),
-                    m_Texture = reader.ReadPPtr(),
+                    m_Texture = new PPtr<Texture>(reader),
                     m_Scale = new[] { reader.ReadSingle(), reader.ReadSingle() },
                     m_Offset = new[] { reader.ReadSingle(), reader.ReadSingle() }
                 };

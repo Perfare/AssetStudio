@@ -15,6 +15,9 @@ namespace AssetStudio
 
         public byte[] ConvertToWav()
         {
+            var m_AudioData = m_AudioClip.m_AudioData.Value;
+            if (m_AudioData == null || m_AudioData.Length == 0)
+                return null;
             var exinfo = new FMOD.CREATESOUNDEXINFO();
             var result = FMOD.Factory.System_Create(out var system);
             if (result != FMOD.RESULT.OK)
@@ -24,7 +27,7 @@ namespace AssetStudio
                 return null;
             exinfo.cbsize = Marshal.SizeOf(exinfo);
             exinfo.length = (uint)m_AudioClip.m_Size;
-            result = system.createSound(m_AudioClip.m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
+            result = system.createSound(m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
             if (result != FMOD.RESULT.OK)
                 return null;
             result = sound.getSubSound(0, out var subsound);

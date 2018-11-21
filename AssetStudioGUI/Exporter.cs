@@ -11,10 +11,7 @@ namespace AssetStudioGUI
     {
         public static bool ExportTexture2D(AssetItem item, string exportPathName)
         {
-            var m_Texture2D = new Texture2D(item.reader, true);
-            if (m_Texture2D.image_data == null || m_Texture2D.image_data.Length == 0)
-                return false;
-            var converter = new Texture2DConverter(m_Texture2D);
+            var converter = new Texture2DConverter((Texture2D)item.Asset);
             var convertTexture = (bool)Properties.Settings.Default["convertTexture"];
             if (convertTexture)
             {
@@ -54,8 +51,9 @@ namespace AssetStudioGUI
 
         public static bool ExportAudioClip(AssetItem item, string exportPath)
         {
-            var m_AudioClip = new AudioClip(item.reader, true);
-            if (m_AudioClip.m_AudioData == null)
+            var m_AudioClip = (AudioClip)item.Asset;
+            var m_AudioData = m_AudioClip.m_AudioData.Value;
+            if (m_AudioData == null || m_AudioData.Length == 0)
                 return false;
             var convertAudio = (bool)Properties.Settings.Default["convertAudio"];
             var converter = new AudioClipConverter(m_AudioClip);
@@ -74,25 +72,24 @@ namespace AssetStudioGUI
                 var exportFullName = exportPath + item.Text + converter.GetExtensionName();
                 if (ExportFileExists(exportFullName))
                     return false;
-                File.WriteAllBytes(exportFullName, m_AudioClip.m_AudioData);
+                File.WriteAllBytes(exportFullName, m_AudioData);
             }
             return true;
         }
 
         public static bool ExportShader(AssetItem item, string exportPath)
         {
-            var m_Shader = new Shader(item.reader);
             var exportFullName = exportPath + item.Text + ".shader";
             if (ExportFileExists(exportFullName))
                 return false;
-            var str = ShaderConverter.Convert(m_Shader);
+            var str = ShaderConverter.Convert((Shader)item.Asset);
             File.WriteAllText(exportFullName, str ?? "Serialized Shader can't be read");
             return true;
         }
 
         public static bool ExportTextAsset(AssetItem item, string exportPath)
         {
-            var m_TextAsset = new TextAsset(item.reader);
+            var m_TextAsset = (TextAsset)(item.Asset);
             var exportFullName = exportPath + item.Text + ".txt";
             if (ExportFileExists(exportFullName))
                 return false;
@@ -105,23 +102,15 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + ".txt";
             if (ExportFileExists(exportFullName))
                 return false;
-            var reader = item.reader;
-            string str;
-            if (reader.serializedType?.m_Nodes != null)
-            {
-                str = reader.Dump();
-            }
-            else
-            {
-                str = Studio.GetScriptString(reader);
-            }
+            var m_MonoBehaviour = (MonoBehaviour)item.Asset;
+            var str = m_MonoBehaviour.Dump() ?? Studio.GetScriptString(item.Asset.reader);
             File.WriteAllText(exportFullName, str);
             return true;
         }
 
         public static bool ExportFont(AssetItem item, string exportPath)
         {
-            var m_Font = new Font(item.reader);
+            var m_Font = (Font)item.Asset;
             if (m_Font.m_FontData != null)
             {
                 var extension = ".ttf";
@@ -140,7 +129,7 @@ namespace AssetStudioGUI
 
         public static bool ExportMesh(AssetItem item, string exportPath)
         {
-            var m_Mesh = new Mesh(item.reader);
+            var m_Mesh = (Mesh)item.Asset;
             if (m_Mesh.m_VertexCount <= 0)
                 return false;
             var exportFullName = exportPath + item.Text + ".obj";
@@ -221,13 +210,14 @@ namespace AssetStudioGUI
 
         public static bool ExportVideoClip(AssetItem item, string exportPath)
         {
-            var m_VideoClip = new VideoClip(item.reader, true);
-            if (m_VideoClip.m_VideoData != null)
+            var m_VideoClip = (VideoClip)item.Asset;
+            var m_VideoData = m_VideoClip.m_VideoData.Value;
+            if (m_VideoData != null && m_VideoData.Length != 0)
             {
                 var exportFullName = exportPath + item.Text + Path.GetExtension(m_VideoClip.m_OriginalPath);
                 if (ExportFileExists(exportFullName))
                     return false;
-                File.WriteAllBytes(exportFullName, m_VideoClip.m_VideoData);
+                File.WriteAllBytes(exportFullName, m_VideoData);
                 return true;
             }
             return false;
@@ -235,7 +225,7 @@ namespace AssetStudioGUI
 
         public static bool ExportMovieTexture(AssetItem item, string exportPath)
         {
-            var m_MovieTexture = new MovieTexture(item.reader);
+            var m_MovieTexture = (MovieTexture)item.Asset;
             var exportFullName = exportPath + item.Text + ".ogv";
             if (ExportFileExists(exportFullName))
                 return false;
@@ -262,7 +252,7 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + "." + type.ToLower();
             if (ExportFileExists(exportFullName))
                 return false;
-            var bitmap = SpriteHelper.GetImageFromSprite(new Sprite(item.reader));
+            var bitmap = SpriteHelper.GetImageFromSprite((Sprite)item.Asset);
             if (bitmap != null)
             {
                 bitmap.Save(exportFullName, format);
@@ -277,7 +267,7 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + ".dat";
             if (ExportFileExists(exportFullName))
                 return false;
-            File.WriteAllBytes(exportFullName, item.reader.GetRawData());
+            File.WriteAllBytes(exportFullName, item.Asset.GetRawData());
             return true;
         }
 
@@ -293,15 +283,15 @@ namespace AssetStudioGUI
 
         public static bool ExportAnimator(AssetItem item, string exportPath, List<AssetItem> animationList = null)
         {
-            var m_Animator = new Animator(item.reader);
-            var convert = animationList != null ? new ModelConverter(m_Animator, animationList.Select(x => x.reader).ToArray()) : new ModelConverter(m_Animator);
+            var m_Animator = (Animator)item.Asset;
+            var convert = animationList != null ? new ModelConverter(m_Animator, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(m_Animator);
             exportPath = exportPath + item.Text + ".fbx";
             return ExportFbx(convert, exportPath);
         }
 
         public static bool ExportGameObject(GameObject gameObject, string exportPath, List<AssetItem> animationList = null)
         {
-            var convert = animationList != null ? new ModelConverter(gameObject, animationList.Select(x => x.reader).ToArray()) : new ModelConverter(gameObject);
+            var convert = animationList != null ? new ModelConverter(gameObject, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(gameObject);
             exportPath = exportPath + Studio.FixFileName(gameObject.m_Name) + ".fbx";
             return ExportFbx(convert, exportPath);
         }

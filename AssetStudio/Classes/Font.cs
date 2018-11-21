@@ -14,9 +14,9 @@ namespace AssetStudio
             if ((version[0] == 5 && version[1] >= 5) || version[0] > 5)//5.5 and up
             {
                 var m_LineSpacing = reader.ReadSingle();
-                var m_DefaultMaterial = reader.ReadPPtr();
+                var m_DefaultMaterial = new PPtr<Material>(reader);
                 var m_FontSize = reader.ReadSingle();
-                var m_Texture = reader.ReadPPtr();
+                var m_Texture = new PPtr<Texture>(reader);
                 int m_AsciiStartOffset = reader.ReadInt32();
                 var m_Tracking = reader.ReadSingle();
                 var m_CharacterSpacing = reader.ReadInt32();
@@ -68,7 +68,7 @@ namespace AssetStudio
                 }
 
                 int m_ConvertCase = reader.ReadInt32();
-                PPtr m_DefaultMaterial = reader.ReadPPtr();
+                var m_DefaultMaterial = new PPtr<Material>(reader);
 
                 int m_CharacterRects_size = reader.ReadInt32();
                 for (int i = 0; i < m_CharacterRects_size; i++)
@@ -93,7 +93,7 @@ namespace AssetStudio
                     }
                 }
 
-                PPtr m_Texture = reader.ReadPPtr();
+                var m_Texture = new PPtr<Texture>(reader);
 
                 int m_KerningValues_size = reader.ReadInt32();
                 for (int i = 0; i < m_KerningValues_size; i++)

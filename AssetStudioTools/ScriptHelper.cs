@@ -13,9 +13,8 @@ namespace AssetStudio
         {
             var m_MonoBehaviour = new MonoBehaviour(reader);
             var sb = CreateMonoBehaviourHeader(m_MonoBehaviour);
-            if (m_MonoBehaviour.m_Script.TryGet(out var script))
+            if (m_MonoBehaviour.m_Script.TryGet(out var m_Script))
             {
-                var m_Script = new MonoScript(script);
                 if (!moduleDic.TryGetValue(m_Script.m_AssemblyName, out var module))
                 {
                     return sb.ToString();
@@ -150,7 +149,7 @@ namespace AssetStudio
             }
             if (indent != -1 && IsAssignFromUnityObject(typeDef))
             {
-                var pptr = reader.ReadPPtr();
+                var pptr = new PPtr<Object>(reader);
                 sb.AppendLine($"{new string('\t', indent)}PPtr<{typeDef.Name}> {name} = {{fileID: {pptr.m_FileID}, pathID: {pptr.m_PathID}}}");
                 return;
             }
@@ -291,19 +290,24 @@ namespace AssetStudio
         {
             switch (typeDef.FullName)
             {
-                case "UnityEngine.Vector2":
-                case "UnityEngine.Vector3":
-                case "UnityEngine.Vector4":
-                case "UnityEngine.Rect":
-                case "UnityEngine.Quaternion":
-                case "UnityEngine.Matrix4x4":
+                case "UnityEngine.AnimationCurve":
+                case "UnityEngine.Bounds":
+                case "UnityEngine.BoundsInt":
                 case "UnityEngine.Color":
                 case "UnityEngine.Color32":
-                case "UnityEngine.LayerMask":
-                case "UnityEngine.AnimationCurve":
                 case "UnityEngine.Gradient":
-                case "UnityEngine.RectOffset":
                 case "UnityEngine.GUIStyle":
+                case "UnityEngine.LayerMask":
+                case "UnityEngine.Matrix4x4":
+                case "UnityEngine.Quaternion":
+                case "UnityEngine.Rect":
+                case "UnityEngine.RectInt":
+                case "UnityEngine.RectOffset":
+                case "UnityEngine.Vector2":
+                case "UnityEngine.Vector2Int":
+                case "UnityEngine.Vector3":
+                case "UnityEngine.Vector3Int":
+                case "UnityEngine.Vector4":
                     return true;
                 default:
                     return false;

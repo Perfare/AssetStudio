@@ -7,14 +7,14 @@ namespace AssetStudio
 {
     public sealed class Animator : Behaviour
     {
-        public PPtr m_Avatar;
-        public PPtr m_Controller;
+        public PPtr<Avatar> m_Avatar;
+        public PPtr<RuntimeAnimatorController> m_Controller;
         public bool m_HasTransformHierarchy;
 
         public Animator(ObjectReader reader) : base(reader)
         {
-            m_Avatar = reader.ReadPPtr();
-            m_Controller = reader.ReadPPtr();
+            m_Avatar = new PPtr<Avatar>(reader);
+            m_Controller = new PPtr<RuntimeAnimatorController>(reader);
             var m_CullingMode = reader.ReadInt32();
 
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up

@@ -87,7 +87,7 @@ namespace AssetStudio
         public Texture2DConverter(Texture2D m_Texture2D)
         {
             image_data_size = m_Texture2D.image_data_size;
-            image_data = m_Texture2D.image_data;
+            image_data = m_Texture2D.image_data.Value;
             m_Width = m_Texture2D.m_Width;
             m_Height = m_Texture2D.m_Height;
             m_TextureFormat = m_Texture2D.m_TextureFormat;
@@ -913,7 +913,7 @@ namespace AssetStudio
                 buff = new byte[stride * m_Height];
                 for (int i = 0; i < m_Height; i++)
                 {
-                    Array.Copy(image_data, i * m_Width * 2, buff, i * stride, m_Width * 2);
+                    Buffer.BlockCopy(image_data, i * m_Width * 2, buff, i * stride, m_Width * 2);
                 }
             }
             else

@@ -1,12 +1,19 @@
 ﻿namespace AssetStudio
 {
-    public class PPtr
+    public sealed class PPtr<T> where T : Object
     {
         public int m_FileID;
         public long m_PathID;
 
-        public SerializedFile assetsFile;
-        public int index = -2; //-2 - Prepare, -1 - Missing
+        private SerializedFile assetsFile;
+        private int index = -2; //-2 - Prepare, -1 - Missing
+
+        public PPtr(ObjectReader reader)
+        {
+            m_FileID = reader.ReadInt32();
+            m_PathID = reader.m_Version < 14 ? reader.ReadInt32() : reader.ReadInt64();
+            assetsFile = reader.assetsFile;
+        }
 
         private bool TryGetAssetsFile(out SerializedFile result)
         {
@@ -20,7 +27,7 @@
             if (m_FileID > 0 && m_FileID - 1 < assetsFile.m_Externals.Count)
             {
                 var assetsManager = assetsFile.assetsManager;
-                var assetsfileList = assetsManager.assetsFileList;
+                var assetsFileList = assetsManager.assetsFileList;
                 var assetsFileIndexCache = assetsManager.assetsFileIndexCache;
 
                 if (index == -2)
@@ -29,14 +36,14 @@
                     var name = m_External.fileName.ToUpper();
                     if (!assetsFileIndexCache.TryGetValue(name, out index))
                     {
-                        index = assetsfileList.FindIndex(x => x.upperFileName == name);
+                        index = assetsFileList.FindIndex(x => x.upperFileName == name);
                         assetsFileIndexCache.Add(name, index);
                     }
                 }
 
                 if (index >= 0)
                 {
-                    result = assetsfileList[index];
+                    result = assetsFileList[index];
                     return true;
                 }
             }
@@ -44,45 +51,39 @@
             return false;
         }
 
-        public bool TryGet(out ObjectReader result)
+        public bool TryGet(out T result)
         {
+            if (TryGetAssetsFile(out var sourceFile))
+            {
+                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
+                {
+                    if (obj is T variable)
+                    {
+                        result = variable;
+                        return true;
+                    }
+                }
+            }
+
             result = null;
-            if (TryGetAssetsFile(out var sourceFile))
-            {
-                if (sourceFile.ObjectReaders.TryGetValue(m_PathID, out result))
-                {
-                    return true;
-                }
-            }
-
             return false;
         }
 
-        public bool TryGetTransform(out Transform m_Transform)
+        public bool TryGet<T2>(out T2 result) where T2 : Object
         {
             if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.Transforms.TryGetValue(m_PathID, out m_Transform))
+                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
                 {
-                    return true;
+                    if (obj is T2 variable)
+                    {
+                        result = variable;
+                        return true;
+                    }
                 }
             }
 
-            m_Transform = null;
-            return false;
-        }
-
-        public bool TryGetGameObject(out GameObject m_GameObject)
-        {
-            if (TryGetAssetsFile(out var sourceFile))
-            {
-                if (sourceFile.GameObjects.TryGetValue(m_PathID, out m_GameObject))
-                {
-                    return true;
-                }
-            }
-
-            m_GameObject = null;
+            result = null;
             return false;
         }
     }
