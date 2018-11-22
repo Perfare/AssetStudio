@@ -38,12 +38,13 @@ namespace AssetStudio
         public void AddChild(ImportedFrame obj)
         {
             children.Add(obj);
+            obj.Parent?.Remove(obj);
             obj.Parent = this;
         }
 
-        public void ClearChild()
+        public void Remove(ImportedFrame frame)
         {
-            children.Clear();
+            children.Remove(frame);
         }
 
         public IEnumerator<ImportedFrame> GetEnumerator()

@@ -81,8 +81,7 @@ namespace AssetStudio
             var m_Transform = m_GameObject.m_Transform;
             if (!hasTransformHierarchy)
             {
-                var rootFrame = ConvertFrame(m_Transform);
-                FrameList.Add(rootFrame);
+                ConvertFrames(m_Transform, null);
                 DeoptimizeTransformHierarchy();
             }
             else
@@ -202,14 +201,16 @@ namespace AssetStudio
             var frame = new ImportedFrame();
             frame.Name = name;
             frame.InitChildren(0);
-            var m_LocalPosition = new[] { t.X, t.Y, t.Z };
-            var m_LocalRotation = new[] { q.X, q.Y, q.Z, q.W };
-            var m_LocalScale = new[] { s.X, s.Y, s.Z };
-            var m_EulerRotation = QuatToEuler(new[] { m_LocalRotation[0], -m_LocalRotation[1], -m_LocalRotation[2], m_LocalRotation[3] });
-            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
-            frame.LocalScale = new[] { m_LocalScale[0], m_LocalScale[1], m_LocalScale[2] };
-            frame.LocalPosition = new[] { -m_LocalPosition[0], m_LocalPosition[1], m_LocalPosition[2] };
+            SetFrame(frame, t, q, s);
             return frame;
+        }
+
+        private void SetFrame(ImportedFrame frame, Vector3 t, Quaternion q, Vector3 s)
+        {
+            var m_EulerRotation = QuatToEuler(new[] { q.X, -q.Y, -q.Z, q.W });
+            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
+            frame.LocalScale = new[] { s.X, s.Y, s.Z };
+            frame.LocalPosition = new[] { -t.X, t.Y, t.Z };
         }
 
         private void ConvertFrames(Transform trans, ImportedFrame parent)
@@ -1019,7 +1020,6 @@ namespace AssetStudio
             // 2. Restore the original transform hierarchy
             // Prerequisite: skeletonPaths follow pre-order traversal
             var rootFrame = FrameList[0];
-            rootFrame.ClearChild();
             for (var i = 1; i < skeletonPaths.Count; i++) // start from 1, skip the root transform because it will always be there.
             {
                 var path = skeletonPaths[i];
@@ -1040,18 +1040,18 @@ namespace AssetStudio
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
                 var xform = skeletonPose.m_X[i];
-                if (!(xform.t is Vector3 t))
+
+                var frame = ImportedHelpers.FindChildOrRoot(transformName, rootFrame);
+                if (frame != null)
                 {
-                    var v4 = (Vector4)xform.t;
-                    t = (Vector3)v4;
+                    SetFrame(frame, xform.t, xform.q, xform.s);
+                    parentFrame.AddChild(frame);
                 }
-                if (!(xform.s is Vector3 s))
+                else
                 {
-                    var v4 = (Vector4)xform.s;
-                    s = (Vector3)v4;
+                    frame = ConvertFrame(xform.t, xform.q, xform.s, transformName);
+                    parentFrame.AddChild(frame);
                 }
-                var frame = ConvertFrame(t, xform.q, s, transformName);
-                parentFrame.AddChild(frame);
             }
         }
 

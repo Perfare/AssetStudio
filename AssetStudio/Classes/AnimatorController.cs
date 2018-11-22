@@ -448,9 +448,9 @@ namespace AssetStudio
         public bool[] m_BoolValues;
         public int[] m_IntValues;
         public float[] m_FloatValues;
-        public object[] m_PositionValues;
+        public Vector3[] m_PositionValues;
         public Vector4[] m_QuaternionValues;
-        public object[] m_ScaleValues;
+        public Vector3[] m_ScaleValues;
 
         public ValueArray(ObjectReader reader)
         {
@@ -471,19 +471,19 @@ namespace AssetStudio
             }
 
             int numPosValues = reader.ReadInt32();
-            m_PositionValues = new object[numPosValues];
+            m_PositionValues = new Vector3[numPosValues];
             for (int i = 0; i < numPosValues; i++)
             {
-                m_PositionValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4(); //5.4 and up
+                m_PositionValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4(); //5.4 and up
             }
 
             m_QuaternionValues = reader.ReadVector4Array(reader.ReadInt32());
 
             int numScaleValues = reader.ReadInt32();
-            m_ScaleValues = new object[numScaleValues];
+            m_ScaleValues = new Vector3[numScaleValues];
             for (int i = 0; i < numScaleValues; i++)
             {
-                m_ScaleValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4(); //5.4 adn up
+                m_ScaleValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4(); //5.4 adn up
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 5)) //5.5 and up

@@ -358,16 +358,16 @@ namespace AssetStudio
 
     public class xform
     {
-        public object t;
+        public Vector3 t;
         public Quaternion q;
-        public object s;
+        public Vector3 s;
 
         public xform(ObjectReader reader)
         {
             var version = reader.version;
-            t = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+            t = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
             q = reader.ReadQuaternion();
-            s = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+            s = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
         }
     }
 
@@ -399,7 +399,7 @@ namespace AssetStudio
         public xform m_X;
         public float m_WeightT;
         public float m_WeightR;
-        public object m_HintT;
+        public Vector3 m_HintT;
         public float m_HintWeightT;
 
         public HumanGoal(ObjectReader reader)
@@ -410,7 +410,7 @@ namespace AssetStudio
             m_WeightR = reader.ReadSingle();
             if (version[0] >= 5)//5.0 and up
             {
-                m_HintT = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+                m_HintT = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
                 m_HintWeightT = reader.ReadSingle();
             }
         }
@@ -419,19 +419,19 @@ namespace AssetStudio
     public class HumanPose
     {
         public xform m_RootX;
-        public object m_LookAtPosition;
+        public Vector3 m_LookAtPosition;
         public Vector4 m_LookAtWeight;
         public List<HumanGoal> m_GoalArray;
         public HandPose m_LeftHandPose;
         public HandPose m_RightHandPose;
         public float[] m_DoFArray;
-        public object[] m_TDoFArray;
+        public Vector3[] m_TDoFArray;
 
         public HumanPose(ObjectReader reader)
         {
             var version = reader.version;
             m_RootX = new xform(reader);
-            m_LookAtPosition = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+            m_LookAtPosition = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
             m_LookAtWeight = reader.ReadVector4();
 
             int numGoals = reader.ReadInt32();
@@ -450,10 +450,10 @@ namespace AssetStudio
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 2))//5.2 and up
             {
                 int numTDof = reader.ReadInt32();
-                m_TDoFArray = new object[numTDof];
+                m_TDoFArray = new Vector3[numTDof];
                 for (int i = 0; i < numTDof; i++)
                 {
-                    m_TDoFArray[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+                    m_TDoFArray[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
                 }
             }
         }
@@ -665,7 +665,7 @@ namespace AssetStudio
         public xform m_RightFootStartX;
         public xform m_MotionStartX;
         public xform m_MotionStopX;
-        public object m_AverageSpeed;
+        public Vector3 m_AverageSpeed;
         public Clip m_Clip;
         public float m_StartTime;
         public float m_StopTime;
@@ -704,7 +704,7 @@ namespace AssetStudio
                 m_MotionStartX = new xform(reader);
                 m_MotionStopX = new xform(reader);
             }
-            m_AverageSpeed = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? (object)reader.ReadVector3() : (object)reader.ReadVector4();//5.4 and up
+            m_AverageSpeed = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4();//5.4 and up
             m_Clip = new Clip(reader);
             m_StartTime = reader.ReadSingle();
             m_StopTime = reader.ReadSingle();
