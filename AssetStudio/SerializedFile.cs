@@ -186,6 +186,7 @@ namespace AssetStudio
 
         public void SetVersion(string stringVersion)
         {
+            unityVersion = stringVersion;
             var buildSplit = Regex.Replace(stringVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
             buildType = new BuildType(buildSplit[0]);
             var versionSplit = Regex.Replace(stringVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);

@@ -18,7 +18,6 @@ namespace AssetStudioGUI
         public static AssetsManager assetsManager = new AssetsManager();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
-        public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> AllTypeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>(); //TODO Delete it
         public static bool ModuleLoaded;
         public static Dictionary<string, ModuleDef> LoadedModuleDic = new Dictionary<string, ModuleDef>();
 
@@ -38,7 +37,7 @@ namespace AssetStudioGUI
                         extractedCount += ExtractWebDataFile(fileName, reader);
                     else
                         reader.Dispose();
-                    Progress.Report(i + 1, fileName.Length);
+                    Progress.Report(++i, fileNames.Length);
                 }
 
                 Logger.Info($"Finished extracting {extractedCount} files.");
@@ -53,7 +52,6 @@ namespace AssetStudioGUI
             if (bundleFile.fileList.Count > 0)
             {
                 var extractPath = bundleFileName + "_unpacked\\";
-                Directory.CreateDirectory(extractPath);
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
@@ -67,7 +65,6 @@ namespace AssetStudioGUI
             if (webFile.fileList.Count > 0)
             {
                 var extractPath = webFileName + "_unpacked\\";
-                Directory.CreateDirectory(extractPath);
                 return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;
@@ -300,11 +297,12 @@ namespace AssetStudioGUI
             return treeNodeCollection;
         }
 
-        public static void BuildClassStructure()
+        public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> BuildClassStructure()
         {
+            var typeMap = new Dictionary<string, SortedDictionary<int, TypeTreeItem>>();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                if (AllTypeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
+                if (typeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
                 {
                     foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
                     {
@@ -328,9 +326,11 @@ namespace AssetStudioGUI
                         }
                         items.Add(key, new TypeTreeItem(key, type.m_Nodes));
                     }
-                    AllTypeMap.Add(assetsFile.unityVersion, items);
+                    typeMap.Add(assetsFile.unityVersion, items);
                 }
             }
+
+            return typeMap;
         }
 
         public static string FixFileName(string str)

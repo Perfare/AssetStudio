@@ -148,9 +148,11 @@ namespace AssetStudioGUI
                 treeNodeCollection = BuildTreeStructure(tempDic);
             }
             tempDic.Clear();
+
+            Dictionary<string, SortedDictionary<int, TypeTreeItem>> typeMap = null;
             if (buildClassStructuresMenuItem.Checked)
             {
-                BuildClassStructure();
+                typeMap = BuildClassStructure();
             }
 
             BeginInvoke(new Action(() =>
@@ -182,7 +184,7 @@ namespace AssetStudioGUI
                 if (buildClassStructuresMenuItem.Checked)
                 {
                     classesListView.BeginUpdate();
-                    foreach (var version in AllTypeMap)
+                    foreach (var version in typeMap)
                     {
                         var versionGroup = new ListViewGroup(version.Key);
                         classesListView.Groups.Add(versionGroup);
@@ -193,6 +195,7 @@ namespace AssetStudioGUI
                             classesListView.Items.Add(uclass.Value);
                         }
                     }
+                    typeMap.Clear();
                     classesListView.EndUpdate();
                 }
 
@@ -299,31 +302,22 @@ namespace AssetStudioGUI
 
         private void exportClassStructuresMenuItem_Click(object sender, EventArgs e)
         {
-            if (AllTypeMap.Count > 0)
+            if (classesListView.Items.Count > 0)
             {
                 var saveFolderDialog = new OpenFolderDialog();
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var count = AllTypeMap.Count;
+                    var savePath = saveFolderDialog.Folder;
+                    var count = classesListView.Items.Count;
                     int i = 0;
                     Progress.Reset();
-                    foreach (var version in AllTypeMap)
+                    foreach (TypeTreeItem item in classesListView.Items)
                     {
-                        var savePath = saveFolderDialog.Folder;
-                        if (version.Value.Count > 0)
-                        {
-                            string versionPath = savePath + "\\" + version.Key;
-                            Directory.CreateDirectory(versionPath);
+                        var versionPath = savePath + "\\" + item.Group.Header;
+                        Directory.CreateDirectory(versionPath);
 
-                            foreach (var uclass in version.Value)
-                            {
-                                string saveFile = $"{versionPath}\\{uclass.Key} {uclass.Value.Text}.txt";
-                                using (var writer = new StreamWriter(saveFile))
-                                {
-                                    writer.Write(uclass.Value.ToString());
-                                }
-                            }
-                        }
+                        var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
+                        File.WriteAllText(saveFile, item.ToString());
 
                         Progress.Report(++i, count);
                     }
