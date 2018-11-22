@@ -210,7 +210,7 @@ namespace AssetStudioGUI
                             var extension = Path.GetExtension(originalPath);
                             if (!string.IsNullOrEmpty(extension) && item.Type == ClassIDType.TextAsset)
                             {
-                                //asset.Extension = extension; //TODO
+                                item.Extension = extension;
                             }
 
                             item.Text = Path.GetDirectoryName(originalPath) + "\\" + item.Text;

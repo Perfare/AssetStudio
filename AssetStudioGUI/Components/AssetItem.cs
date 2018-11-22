@@ -11,6 +11,7 @@ namespace AssetStudioGUI
         public ClassIDType Type;
         public string TypeString;
 
+        public string Extension;
         public string InfoText;
         public string UniqueID;
         public GameObjectTreeNode TreeNode;

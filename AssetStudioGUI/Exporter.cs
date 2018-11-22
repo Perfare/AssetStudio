@@ -90,7 +90,7 @@ namespace AssetStudioGUI
         public static bool ExportTextAsset(AssetItem item, string exportPath)
         {
             var m_TextAsset = (TextAsset)(item.Asset);
-            var exportFullName = exportPath + item.Text + ".txt";
+            var exportFullName = exportPath + item.Text + (item.Extension ?? ".txt");
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_TextAsset.m_Script);
@@ -285,7 +285,7 @@ namespace AssetStudioGUI
         {
             var m_Animator = (Animator)item.Asset;
             var convert = animationList != null ? new ModelConverter(m_Animator, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(m_Animator);
-            exportPath = exportPath + item.Text + ".fbx";
+            exportPath = $"{exportPath}{item.Text}\\{item.Text}.fbx";
             return ExportFbx(convert, exportPath);
         }
 
