@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Drawing.Text;
 using OpenTK;
@@ -1073,7 +1072,7 @@ namespace AssetStudioGUI
             var bitmap = SpriteHelper.GetImageFromSprite(m_Sprite);
             if (bitmap != null)
             {
-                assetItem.InfoText = $"Width: {imageTexture.Width}\nHeight: {imageTexture.Height}\n";
+                assetItem.InfoText = $"Width: {bitmap.Width}\nHeight: {bitmap.Height}\n";
 
                 PreviewTexture(bitmap);
             }

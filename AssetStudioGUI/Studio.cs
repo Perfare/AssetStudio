@@ -483,7 +483,10 @@ namespace AssetStudioGUI
                         CollectNode(j, gameObjects);
                         //跳过一些不需要导出的object
                         if (gameObjects.All(x => x.m_SkinnedMeshRenderer == null && x.m_MeshFilter == null))
+                        {
+                            Progress.Report(++k, count);
                             continue;
+                        }
                         //处理非法文件名
                         var filename = FixFileName(j.Text);
                         //每个文件存放在单独的文件夹
