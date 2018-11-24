@@ -1783,7 +1783,7 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
-                    ExportAnimatorWithAnimationClip(animator, animationList, exportPath);
+                    ExportAnimatorWithAnimationClip(animator, animationList, exportPath, openAfterExport.Checked);
                 }
             }
         }
@@ -1796,7 +1796,7 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes);
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked);
                 }
             }
             else
@@ -1814,7 +1814,7 @@ namespace AssetStudioGUI
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
                     var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList.Count == 0 ? null : animationList);
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked, animationList.Count == 0 ? null : animationList);
                 }
             }
             else
@@ -1841,7 +1841,7 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var savePath = saveFolderDialog1.Folder + "\\";
-                    ExportSplitObjects(savePath, sceneTreeView.Nodes);
+                    ExportSplitObjects(savePath, sceneTreeView.Nodes, openAfterExport.Checked);
                 }
             }
             else

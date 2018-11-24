@@ -466,7 +466,7 @@ namespace AssetStudioGUI
             });
         }
 
-        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes, bool openAfterExport)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -519,6 +519,10 @@ namespace AssetStudioGUI
                         Logger.Info($"Finished exporting {filename}.fbx");
                     }
                 }
+                if (openAfterExport)
+                {
+                    Process.Start(savePath);
+                }
                 Logger.Info("Finished");
             });
         }
@@ -532,7 +536,7 @@ namespace AssetStudioGUI
             }
         }
 
-        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath)
+        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath, bool openAfterExport)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -540,6 +544,10 @@ namespace AssetStudioGUI
                 try
                 {
                     ExportAnimator(animator, exportPath, animationList);
+                    if (openAfterExport)
+                    {
+                        Process.Start(exportPath);
+                    }
                     Logger.Info($"Finished exporting {animator.Text}");
                 }
                 catch (Exception ex)
@@ -550,7 +558,7 @@ namespace AssetStudioGUI
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetItem> animationList = null)
+        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, bool openAfterExport, List<AssetItem> animationList = null)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -576,6 +584,10 @@ namespace AssetStudioGUI
                         }
 
                         Progress.Report(++i, count);
+                    }
+                    if (openAfterExport)
+                    {
+                        Process.Start(exportPath);
                     }
                 }
                 else
