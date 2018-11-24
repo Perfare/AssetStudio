@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using SharpDX;
 using RectangleF = System.Drawing.RectangleF;
 
@@ -44,28 +41,280 @@ namespace AssetStudio
         }
     }
 
+    public class SpriteVertex
+    {
+        public Vector3 pos;
+        public Vector2 uv;
+
+        public SpriteVertex(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            pos = reader.ReadVector3();
+            if (version[0] < 4 || (version[0] == 4 && version[1] <= 3)) //4.3 and down
+            {
+                uv = reader.ReadVector2();
+            }
+        }
+    }
+
+    public class BoneWeights4
+    {
+        public float[] weight;
+        public int[] boneIndex;
+
+        public BoneWeights4(ObjectReader reader)
+        {
+            weight = reader.ReadSingleArray(4);
+            boneIndex = reader.ReadInt32Array(4);
+        }
+    }
+
+    public class StreamInfo
+    {
+        public uint channelMask;
+        public uint offset;
+        public uint stride;
+        public uint align;
+        public byte dividerOp;
+        public ushort frequency;
+
+        public StreamInfo(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            channelMask = reader.ReadUInt32();
+            offset = reader.ReadUInt32();
+
+            if (version[0] < 4)
+            {
+                stride = reader.ReadUInt32();
+                align = reader.ReadUInt32();
+            }
+            else
+            {
+                stride = reader.ReadByte();
+                dividerOp = reader.ReadByte();
+                frequency = reader.ReadUInt16();
+            }
+        }
+    }
+
+    public class ChannelInfo
+    {
+        public byte stream;
+        public byte offset;
+        public byte format;
+        public byte dimension;
+
+        public ChannelInfo(ObjectReader reader)
+        {
+            stream = reader.ReadByte();
+            offset = reader.ReadByte();
+            format = reader.ReadByte();
+            dimension = reader.ReadByte();
+        }
+    }
+
+    public class VertexData
+    {
+        public uint m_CurrentChannels;
+        public uint m_VertexCount;
+        public ChannelInfo[] m_Channels;
+        public StreamInfo[] m_Streams;
+        public byte[] m_DataSize;
+
+        public VertexData(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            if (version[0] < 2018)//2018 down
+            {
+                m_CurrentChannels = reader.ReadUInt32();
+            }
+            m_VertexCount = reader.ReadUInt32();
+
+            if (version[0] >= 4)
+            {
+                var m_ChannelsSize = reader.ReadInt32();
+                m_Channels = new ChannelInfo[m_ChannelsSize];
+                for (int i = 0; i < m_ChannelsSize; i++)
+                {
+                    m_Channels[i] = new ChannelInfo(reader);
+                }
+            }
+
+            if (version[0] < 5) //5.0 down
+            {
+                if (version[0] < 4)
+                {
+                    m_Streams = new StreamInfo[4];
+                }
+                else
+                {
+                    m_Streams = new StreamInfo[reader.ReadInt32()];
+                }
+
+                for (int i = 0; i < m_Streams.Length; i++)
+                {
+                    m_Streams[i] = new StreamInfo(reader);
+                }
+            }
+
+            m_DataSize = reader.ReadBytes(reader.ReadInt32());
+            reader.AlignStream(4);
+        }
+    }
+
+    public class SubMesh
+    {
+        public uint firstByte;
+        public uint indexCount;
+        public int topology;
+        public uint triangleCount;
+        public uint baseVertex;
+        public uint firstVertex;
+        public uint vertexCount;
+        public AABB localAABB;
+
+        public SubMesh(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            firstByte = reader.ReadUInt32();
+            indexCount = reader.ReadUInt32();
+            topology = reader.ReadInt32();
+
+            if (version[0] < 4) //4.0 down
+            {
+                triangleCount = reader.ReadUInt32();
+            }
+
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)) //2017.3 and up
+            {
+                baseVertex = reader.ReadUInt32();
+            }
+
+            if (version[0] >= 3) //3.0 and up
+            {
+                firstVertex = reader.ReadUInt32();
+                vertexCount = reader.ReadUInt32();
+                localAABB = new AABB(reader);
+            }
+        }
+    }
+
+    public class SpriteRenderData
+    {
+        public PPtr<Texture2D> texture;
+        public PPtr<Texture2D> alphaTexture;
+        public SubMesh[] m_SubMeshes;
+        public byte[] m_IndexBuffer;
+        public VertexData m_VertexData;
+        public SpriteVertex[] vertices;
+        public ushort[] indices;
+        public Matrix[] m_Bindpose;
+        public BoneWeights4[] m_SourceSkin;
+        public RectangleF textureRect;
+        public Vector2 textureRectOffset;
+        public Vector2 atlasRectOffset;
+        public SpriteSettings settingsRaw;
+        public Vector4 uvTransform;
+        public float downscaleMultiplier;
+
+        public SpriteRenderData(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            texture = new PPtr<Texture2D>(reader);
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
+            {
+                alphaTexture = new PPtr<Texture2D>(reader);
+            }
+
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
+            {
+                var m_SubMeshesSize = reader.ReadInt32();
+                m_SubMeshes = new SubMesh[m_SubMeshesSize];
+                for (int i = 0; i < m_SubMeshesSize; i++)
+                {
+                    m_SubMeshes[i] = new SubMesh(reader);
+                }
+
+                m_IndexBuffer = reader.ReadBytes(reader.ReadInt32());
+                reader.AlignStream(4);
+
+                m_VertexData = new VertexData(reader);
+            }
+            else
+            {
+                var verticesSize = reader.ReadInt32();
+                vertices = new SpriteVertex[verticesSize];
+                for (int i = 0; i < verticesSize; i++)
+                {
+                    vertices[i] = new SpriteVertex(reader);
+                }
+
+                indices = reader.ReadUInt16Array(reader.ReadInt32());
+                reader.AlignStream(4);
+            }
+
+            if (version[0] >= 2018) //2018 and up
+            {
+                m_Bindpose = reader.ReadMatrixArray(reader.ReadInt32());
+
+                if (version[0] == 2018 && version[1] < 2) //2018.2 down
+                {
+                    var m_SourceSkinSize = reader.ReadInt32();
+                    for (int i = 0; i < m_SourceSkinSize; i++)
+                    {
+                        m_SourceSkin[i] = new BoneWeights4(reader);
+                    }
+                }
+            }
+
+            textureRect = reader.ReadRectangleF();
+            textureRectOffset = reader.ReadVector2();
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
+            {
+                atlasRectOffset = reader.ReadVector2();
+            }
+
+            settingsRaw = new SpriteSettings(reader);
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
+            {
+                uvTransform = reader.ReadVector4();
+            }
+
+            if (version[0] >= 2017) //2017 and up
+            {
+                downscaleMultiplier = reader.ReadSingle();
+            }
+        }
+    }
+
     public sealed class Sprite : NamedObject
     {
         public RectangleF m_Rect;
+        public Vector2 m_Offset;
+        public Vector4 m_Border;
         public float m_PixelsToUnits;
         public Vector2 m_Pivot;
-        public Tuple<Guid, long> m_RenderDataKey;
-        public PPtr<Texture2D> texture;
+        public uint m_Extrude;
+        public bool m_IsPolygon;
+        public KeyValuePair<Guid, long> m_RenderDataKey;
+        public string[] m_AtlasTags;
         public PPtr<SpriteAtlas> m_SpriteAtlas;
-        public RectangleF textureRect;
-        public SpriteSettings settingsRaw;
-        public PointF[][] m_PhysicsShape; //Vector2[][]
+        public SpriteRenderData m_RD;
+        public Vector2[][] m_PhysicsShape;
 
         public Sprite(ObjectReader reader) : base(reader)
         {
-            //Rectf m_Rect
             m_Rect = reader.ReadRectangleF();
-            //Vector2f m_Offset
-            reader.Position += 8;
+            m_Offset = reader.ReadVector2();
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
             {
-                //Vector4f m_Border
-                reader.Position += 16;
+                m_Border = reader.ReadVector4();
             }
 
             m_PixelsToUnits = reader.ReadSingle();
@@ -73,142 +322,44 @@ namespace AssetStudio
                 || (version[0] == 5 && version[1] > 4)
                 || (version[0] == 5 && version[1] == 4 && version[2] >= 2)) //5.4.2 and up
             {
-                //Vector2f m_Pivot
                 m_Pivot = reader.ReadVector2();
             }
 
-            var m_Extrude = reader.ReadUInt32();
+            m_Extrude = reader.ReadUInt32();
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 3)) //5.3 and up
             {
-                var m_IsPolygon = reader.ReadBoolean();
+                m_IsPolygon = reader.ReadBoolean();
                 reader.AlignStream(4);
             }
 
             if (version[0] >= 2017) //2017 and up
             {
-                //pair m_RenderDataKey
                 var first = new Guid(reader.ReadBytes(16));
                 var second = reader.ReadInt64();
-                m_RenderDataKey = new Tuple<Guid, long>(first, second);
-                //vector m_AtlasTags
-                var size = reader.ReadInt32();
-                for (int i = 0; i < size; i++)
+                m_RenderDataKey = new KeyValuePair<Guid, long>(first, second);
+
+                var m_AtlasTagsSize = reader.ReadInt32();
+                m_AtlasTags = new string[m_AtlasTagsSize];
+                for (int i = 0; i < m_AtlasTagsSize; i++)
                 {
-                    var data = reader.ReadAlignedString();
+                    m_AtlasTags[i] = reader.ReadAlignedString();
                 }
 
-                //PPtr<SpriteAtlas> m_SpriteAtlas
                 m_SpriteAtlas = new PPtr<SpriteAtlas>(reader);
             }
 
-            //SpriteRenderData m_RD
-            //  PPtr<Texture2D> texture
-            texture = new PPtr<Texture2D>(reader);
-            //  PPtr<Texture2D> alphaTexture
-            if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
-            {
-                var alphaTexture = new PPtr<Texture2D>(reader);
-            }
+            m_RD = new SpriteRenderData(reader);
 
-            if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
-            {
-                //  vector m_SubMeshes
-                var size = reader.ReadInt32();
-                //      SubMesh data
-                if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 3)) //2017.3 and up
-                {
-                    reader.Position += 48 * size;
-                }
-                else
-                {
-                    reader.Position += 44 * size;
-                }
-
-                //  vector m_IndexBuffer
-                size = reader.ReadInt32();
-                reader.Position += size; //UInt8 data   
-                reader.AlignStream(4);
-                //  VertexData m_VertexData
-                if (version[0] < 2018)//2018 down
-                {
-                    var m_CurrentChannels = reader.ReadInt32();
-                }
-                var m_VertexCount = reader.ReadUInt32();
-                //      vector m_Channels
-                size = reader.ReadInt32();
-                reader.Position += size * 4; //ChannelInfo data
-                                             //      TypelessData m_DataSize
-                size = reader.ReadInt32();
-                reader.Position += size; //UInt8 data   
-                reader.AlignStream(4);
-
-                if (version[0] >= 2018)//2018 and up
-                {
-                    //	vector m_Bindpose
-                    //			Matrix4x4f data
-                    size = reader.ReadInt32();
-                    reader.Position += size * 64;
-                    if (version[0] == 2018 && version[1] < 2) //2018.2 down
-                    {
-                        //	vector m_SourceSkin
-                        //			BoneWeights4 data
-                        size = reader.ReadInt32();
-                        reader.Position += size * 32;
-                    }
-                }
-            }
-            else
-            {
-                //  vector vertices
-                var size = reader.ReadInt32();
-                for (int i = 0; i < size; i++)
-                {
-                    //SpriteVertex data
-                    reader.Position += 12; //Vector3f pos
-                    if (version[0] < 4 || (version[0] == 4 && version[1] <= 3)) //4.3 and down
-                        reader.Position += 8; //Vector2f uv
-                }
-
-                //  vector indices
-                size = reader.ReadInt32();
-                reader.Position += 2 * size; //UInt16 data
-                reader.AlignStream(4);
-            }
-
-            //  Rectf textureRect
-            textureRect = reader.ReadRectangleF();
-            //  Vector2f textureRectOffset
-            reader.Position += 8;
-            //  Vector2f atlasRectOffset - 5.6 and up
-            if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
-            {
-                reader.Position += 8;
-            }
-            //  unsigned int settingsRaw
-            settingsRaw = new SpriteSettings(reader);
-            //  Vector4f uvTransform - 4.5 and up
-            if (version[0] > 4 || (version[0] == 4 && version[1] >= 5)) //4.5 and up
-            {
-                reader.Position += 16;
-            }
             if (version[0] >= 2017) //2017 and up
             {
-                //  float downscaleMultiplier - 2017 and up
-                reader.Position += 4;
-                //vector m_PhysicsShape - 2017 and up
-                var m_PhysicsShape_size = reader.ReadInt32();
-                m_PhysicsShape = new PointF[m_PhysicsShape_size][];
-                for (int i = 0; i < m_PhysicsShape_size; i++)
+                var m_PhysicsShapeSize = reader.ReadInt32();
+                m_PhysicsShape = new Vector2[m_PhysicsShapeSize][];
+                for (int i = 0; i < m_PhysicsShapeSize; i++)
                 {
-                    var data_size = reader.ReadInt32();
-                    //Vector2f
-                    m_PhysicsShape[i] = new PointF[data_size];
-                    for (int j = 0; j < data_size; j++)
-                    {
-                        m_PhysicsShape[i][j] = new PointF(reader.ReadSingle(), reader.ReadSingle());
-                    }
+                    m_PhysicsShape[i] = reader.ReadVector2Array(reader.ReadInt32());
                 }
             }
+
             //vector m_Bones 2018 and up
         }
     }

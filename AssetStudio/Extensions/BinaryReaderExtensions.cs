@@ -65,6 +65,19 @@ namespace AssetStudio
             return new System.Drawing.RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
+        public static Matrix ReadMatrix(this BinaryReader reader)
+        {
+            var m = new Matrix();
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    m[i, j] = reader.ReadSingle();
+                }
+            }
+            return m;
+        }
+
         private static T[] ReadArray<T>(Func<T> del, int length)
         {
             var array = new T[length];
@@ -98,6 +111,16 @@ namespace AssetStudio
         public static Vector4[] ReadVector4Array(this BinaryReader reader, int length)
         {
             return ReadArray(reader.ReadVector4, length);
+        }
+
+        public static ushort[] ReadUInt16Array(this BinaryReader reader, int length)
+        {
+            return ReadArray(reader.ReadUInt16, length);
+        }
+
+        public static Matrix[] ReadMatrixArray(this BinaryReader reader, int length)
+        {
+            return ReadArray(reader.ReadMatrix, length);
         }
     }
 }

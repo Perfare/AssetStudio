@@ -6,14 +6,6 @@ namespace AssetStudio
 {
     public static class BinaryWriterExtensions
     {
-        private static void WriteArray<T>(Action<T> del, T[] array)
-        {
-            foreach (var item in array)
-            {
-                del(item);
-            }
-        }
-
         public static void AlignStream(this BinaryWriter writer, int alignment)
         {
             var pos = writer.BaseStream.Position;

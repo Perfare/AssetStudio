@@ -1,9 +1,6 @@
 ﻿using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 
 namespace AssetStudio
 {
@@ -37,7 +34,7 @@ namespace AssetStudio
 
     public sealed class SpriteAtlas : NamedObject
     {
-        public Dictionary<Tuple<Guid, long>, SpriteAtlasData> m_RenderDataMap;
+        public Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData> m_RenderDataMap;
 
         public SpriteAtlas(ObjectReader reader) : base(reader)
         {
@@ -54,13 +51,13 @@ namespace AssetStudio
             }
 
             var m_RenderDataMapSize = reader.ReadInt32();
-            m_RenderDataMap = new Dictionary<Tuple<Guid, long>, SpriteAtlasData>(m_RenderDataMapSize);
+            m_RenderDataMap = new Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData>(m_RenderDataMapSize);
             for (int i = 0; i < m_RenderDataMapSize; i++)
             {
                 var first = new Guid(reader.ReadBytes(16));
                 var second = reader.ReadInt64();
                 var value = new SpriteAtlasData(reader);
-                m_RenderDataMap.Add(new Tuple<Guid, long>(first, second), value);
+                m_RenderDataMap.Add(new KeyValuePair<Guid, long>(first, second), value);
             }
             //string m_Tag
             //bool m_IsVariant

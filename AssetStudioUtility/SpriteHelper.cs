@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 
 namespace AssetStudio
 {
@@ -17,9 +18,9 @@ namespace AssetStudio
             }
             else
             {
-                if (m_Sprite.texture.TryGet(out var m_Texture2D))
+                if (m_Sprite.m_RD.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite.textureRect, m_Sprite, m_Sprite.settingsRaw);
+                    return CutImage(m_Texture2D, m_Sprite.m_RD.textureRect, m_Sprite, m_Sprite.m_RD.settingsRaw);
                 }
             }
             return null;
@@ -65,7 +66,8 @@ namespace AssetStudio
                             {
                                 using (var path = new GraphicsPath())
                                 {
-                                    foreach (var p in m_Sprite.m_PhysicsShape)
+                                    var points = m_Sprite.m_PhysicsShape.Select(x => x.Select(y => new PointF(y.X, y.Y)).ToArray());
+                                    foreach (var p in points)
                                     {
                                         path.AddPolygon(p);
                                     }
