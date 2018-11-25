@@ -79,6 +79,8 @@ namespace AssetStudio
         public byte dividerOp;
         public ushort frequency;
 
+        public StreamInfo() { }
+
         public StreamInfo(ObjectReader reader)
         {
             var version = reader.version;
