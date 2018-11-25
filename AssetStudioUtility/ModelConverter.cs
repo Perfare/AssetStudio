@@ -10,7 +10,7 @@ namespace AssetStudio
 {
     public class ModelConverter : IImported
     {
-        public List<ImportedFrame> FrameList { get; protected set; } = new List<ImportedFrame>();
+        public ImportedFrame RootFrame { get; protected set; }
         public List<ImportedMesh> MeshList { get; protected set; } = new List<ImportedMesh>();
         public List<ImportedMaterial> MaterialList { get; protected set; } = new List<ImportedMaterial>();
         public List<ImportedTexture> TextureList { get; protected set; } = new List<ImportedTexture>();
@@ -95,7 +95,7 @@ namespace AssetStudio
                 }
                 if (frameList.Count > 0)
                 {
-                    FrameList.Add(frameList[frameList.Count - 1]);
+                    RootFrame = frameList[frameList.Count - 1];
                     for (var i = frameList.Count - 2; i >= 0; i--)
                     {
                         var frame = frameList[i];
@@ -218,7 +218,7 @@ namespace AssetStudio
             var frame = ConvertFrame(trans);
             if (parent == null)
             {
-                FrameList.Add(frame);
+                RootFrame = frame;
             }
             else
             {
@@ -521,24 +521,14 @@ namespace AssetStudio
             if (combine)
             {
                 meshR.m_GameObject.TryGet(out var m_GameObject);
-                var frame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
-                if (frame?.Parent != null)
+                var frame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, RootFrame);
+                frame.LocalPosition = RootFrame.LocalPosition;
+                frame.LocalRotation = RootFrame.LocalRotation;
+                while (frame.Parent != null)
                 {
-                    var parent = frame;
-                    while (true)
-                    {
-                        if (parent.Parent != null)
-                        {
-                            parent = parent.Parent;
-                        }
-                        else
-                        {
-                            frame.LocalRotation = parent.LocalRotation;
-                            frame.LocalScale = parent.LocalScale;
-                            frame.LocalPosition = parent.LocalPosition;
-                            break;
-                        }
-                    }
+                    frame = frame.Parent;
+                    frame.LocalPosition = RootFrame.LocalPosition;
+                    frame.LocalRotation = RootFrame.LocalRotation;
                 }
             }
 
@@ -572,7 +562,7 @@ namespace AssetStudio
         private string GetMeshPath(Transform meshTransform)
         {
             meshTransform.m_GameObject.TryGet(out var m_GameObject);
-            var curFrame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, FrameList[0]);
+            var curFrame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, RootFrame);
             var path = curFrame.Name;
             while (curFrame.Parent != null)
             {
@@ -1019,7 +1009,6 @@ namespace AssetStudio
             }
             // 2. Restore the original transform hierarchy
             // Prerequisite: skeletonPaths follow pre-order traversal
-            var rootFrame = FrameList[0];
             for (var i = 1; i < skeletonPaths.Count; i++) // start from 1, skip the root transform because it will always be there.
             {
                 var path = skeletonPaths[i];
@@ -1029,19 +1018,19 @@ namespace AssetStudio
                 if (strs.Length == 1)
                 {
                     transformName = path;
-                    parentFrame = rootFrame;
+                    parentFrame = RootFrame;
                 }
                 else
                 {
                     transformName = strs.Last();
                     var parentFrameName = strs[strs.Length - 2];
-                    parentFrame = ImportedHelpers.FindChildOrRoot(parentFrameName, rootFrame);
+                    parentFrame = ImportedHelpers.FindChildOrRoot(parentFrameName, RootFrame);
                 }
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
                 var xform = skeletonPose.m_X[i];
 
-                var frame = ImportedHelpers.FindChildOrRoot(transformName, rootFrame);
+                var frame = ImportedHelpers.FindChildOrRoot(transformName, RootFrame);
                 if (frame != null)
                 {
                     SetFrame(frame, xform.t, xform.q, xform.s);

@@ -111,7 +111,7 @@ namespace AssetStudio
 		}
 
 		pMeshNodes = imported->MeshList != nullptr ? new FbxArray<FbxNode*>(imported->MeshList->Count) : NULL;
-		ExportFrame(pScene->GetRootNode(), imported->FrameList[0]);
+		ExportFrame(pScene->GetRootNode(), imported->RootFrame);
 
 		if (imported->MeshList != nullptr)
 		{
@@ -207,7 +207,7 @@ namespace AssetStudio
 			return nullptr;
 		}
 		HashSet<String^>^ exportFrames = gcnew HashSet<String^>();
-		SearchHierarchy(imported->FrameList[0], exportFrames);
+		SearchHierarchy(imported->RootFrame, exportFrames);
 		return exportFrames;
 	}
 
@@ -230,7 +230,7 @@ namespace AssetStudio
 				{
 					if (!exportFrames->Contains(boneList[i]->Name))
 					{
-						ImportedFrame^ boneParent = ImportedHelpers::FindChildOrRoot(boneList[i]->Name, imported->FrameList[0]);
+						ImportedFrame^ boneParent = ImportedHelpers::FindChildOrRoot(boneList[i]->Name, imported->RootFrame);
 						while (boneParent != nullptr)
 						{
 							exportFrames->Add(boneParent->Name);
@@ -751,7 +751,7 @@ namespace AssetStudio
 			ImportedAnimationKeyframedTrack^ keyframeList = pAnimationList[j];
 			String^ name = keyframeList->Name;
 			int dotPos = name->IndexOf('.');
-			if (dotPos >= 0 && !ImportedHelpers::FindChildOrRoot(name, imported->FrameList[0]))
+			if (dotPos >= 0 && !ImportedHelpers::FindChildOrRoot(name, imported->RootFrame))
 			{
 				name = name->Substring(0, dotPos);
 			}

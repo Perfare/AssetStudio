@@ -8,7 +8,7 @@ namespace AssetStudio
 {
     public interface IImported
     {
-        List<ImportedFrame> FrameList { get; }
+        ImportedFrame RootFrame { get; }
         List<ImportedMesh> MeshList { get; }
         List<ImportedMaterial> MaterialList { get; }
         List<ImportedTexture> TextureList { get; }
