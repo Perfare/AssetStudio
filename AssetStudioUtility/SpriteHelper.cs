@@ -65,21 +65,21 @@ namespace AssetStudio
                         {
                             var polygon = GetPolygon(m_Sprite.m_RD);
                             var points = polygon.Select(x => x.Select(y => new PointF(y.X, y.Y)).ToArray());
-                            using (var brush = new TextureBrush(spriteImage))
+                            using (var path = new GraphicsPath())
                             {
-                                using (var path = new GraphicsPath())
+                                foreach (var p in points)
                                 {
-                                    foreach (var p in points)
+                                    path.AddPolygon(p);
+                                }
+                                using (var matr = new System.Drawing.Drawing2D.Matrix())
+                                {
+                                    matr.Translate(m_Sprite.m_Rect.Width * m_Sprite.m_Pivot.X, m_Sprite.m_Rect.Height * m_Sprite.m_Pivot.Y);
+                                    matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
+                                    path.Transform(matr);
+                                    var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
+                                    using (var graphic = Graphics.FromImage(bitmap))
                                     {
-                                        path.AddPolygon(p);
-                                    }
-                                    using (var matr = new System.Drawing.Drawing2D.Matrix())
-                                    {
-                                        matr.Translate(m_Sprite.m_Rect.Width * m_Sprite.m_Pivot.X, m_Sprite.m_Rect.Height * m_Sprite.m_Pivot.Y);
-                                        matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
-                                        path.Transform(matr);
-                                        var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
-                                        using (var graphic = Graphics.FromImage(bitmap))
+                                        using (var brush = new TextureBrush(spriteImage))
                                         {
                                             graphic.FillPath(brush, path);
                                             bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -91,7 +91,6 @@ namespace AssetStudio
                         }
                         catch
                         {
-                            spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
                             spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
                             return spriteImage;
                         }
@@ -130,7 +129,8 @@ namespace AssetStudio
             GetStreams(m_VertexData);
             var m_Channel = m_VertexData.m_Channels[0]; //kShaderChannelVertex
             var m_Stream = m_VertexData.m_Streams[m_Channel.stream];
-            using (var vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)))
+            using (BinaryReader vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)),
+                                indexReader = new BinaryReader(new MemoryStream(m_RD.m_IndexBuffer)))
             {
                 foreach (var subMesh in m_RD.m_SubMeshes)
                 {
@@ -144,17 +144,14 @@ namespace AssetStudio
                     }
 
                     var triangleCount = subMesh.indexCount / 3u;
-                    using (var indexReader = new BinaryReader(new MemoryStream(m_RD.m_IndexBuffer)))
+                    indexReader.BaseStream.Position = subMesh.firstByte;
+                    for (int i = 0; i < triangleCount; i++)
                     {
-                        indexReader.BaseStream.Position = subMesh.firstByte;
-                        for (int i = 0; i < triangleCount; i++)
-                        {
-                            int first = indexReader.ReadInt16();
-                            int second = indexReader.ReadInt16();
-                            int third = indexReader.ReadInt16();
-                            var triangle = new[] { vertices[first], vertices[second], vertices[third] };
-                            triangles.Add(triangle);
-                        }
+                        var first = indexReader.ReadUInt16() - subMesh.firstVertex;
+                        var second = indexReader.ReadUInt16() - subMesh.firstVertex;
+                        var third = indexReader.ReadUInt16() - subMesh.firstVertex;
+                        var triangle = new[] { vertices[first], vertices[second], vertices[third] };
+                        triangles.Add(triangle);
                     }
                 }
             }

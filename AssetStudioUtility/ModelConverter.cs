@@ -707,14 +707,13 @@ namespace AssetStudio
                 return;
             }
 
-            using (var memStream = new MemoryStream())
+            var bitmap = new Texture2DConverter(tex2D).ConvertToBitmap(true);
+            if (bitmap != null)
             {
-                var bitmap = new Texture2DConverter(tex2D).ConvertToBitmap(true);
-                if (bitmap != null)
+                using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(memStream, ImageFormat.Png);
-                    memStream.Position = 0;
-                    iTex = new ImportedTexture(memStream, name);
+                    bitmap.Save(stream, ImageFormat.Png);
+                    iTex = new ImportedTexture(stream, name);
                     TextureList.Add(iTex);
                     bitmap.Dispose();
                 }
