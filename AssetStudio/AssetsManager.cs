@@ -135,10 +135,9 @@ namespace AssetStudio
                     assetsFileList.Add(assetsFile);
                     assetsfileListHash.Add(assetsFile.upperFileName);
                 }
-                else
-                {
-                    resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.reader);
-                }
+
+                resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.reader);
+
             }
         }
 
