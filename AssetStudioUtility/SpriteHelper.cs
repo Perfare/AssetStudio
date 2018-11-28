@@ -17,20 +17,20 @@ namespace AssetStudio
             {
                 if (m_SpriteAtlas.m_RenderDataMap.TryGetValue(m_Sprite.m_RenderDataKey, out var spriteAtlasData) && spriteAtlasData.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, spriteAtlasData.textureRect, m_Sprite, spriteAtlasData.settingsRaw);
+                    return CutImage(m_Texture2D, m_Sprite, spriteAtlasData.textureRect, spriteAtlasData.settingsRaw);
                 }
             }
             else
             {
                 if (m_Sprite.m_RD.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite.m_RD.textureRect, m_Sprite, m_Sprite.m_RD.settingsRaw);
+                    return CutImage(m_Texture2D, m_Sprite, m_Sprite.m_RD.textureRect, m_Sprite.m_RD.settingsRaw);
                 }
             }
             return null;
         }
 
-        private static Bitmap CutImage(Texture2D m_Texture2D, RectangleF textureRect, Sprite m_Sprite, SpriteSettings settingsRaw)
+        private static Bitmap CutImage(Texture2D m_Texture2D, Sprite m_Sprite, RectangleF textureRect, SpriteSettings settingsRaw)
         {
             var texture2D = new Texture2DConverter(m_Texture2D);
             var originalImage = texture2D.ConvertToBitmap(false);
@@ -40,59 +40,68 @@ namespace AssetStudio
                 {
                     var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
 
-                    //RotateAndFlip
-                    switch (settingsRaw.packingRotation)
+                    if (settingsRaw.packed == 1)
                     {
-                        case SpritePackingRotation.kSPRFlipHorizontal:
-                            spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                            break;
-                        case SpritePackingRotation.kSPRFlipVertical:
-                            spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                            break;
-                        case SpritePackingRotation.kSPRRotate180:
-                            spriteImage.RotateFlip(RotateFlipType.Rotate180FlipNone);
-                            break;
-                        case SpritePackingRotation.kSPRRotate90:
-                            spriteImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                            break;
-                    }
-
-                    //Tight
-                    //TODO 2017 and up use m_PhysicsShape should be better
-                    if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
-                    {
-                        try
+                        //RotateAndFlip
+                        switch (settingsRaw.packingRotation)
                         {
-                            var polygon = GetPolygon(m_Sprite.m_RD);
-                            var points = polygon.Select(x => x.Select(y => new PointF(y.X, y.Y)).ToArray());
-                            using (var path = new GraphicsPath())
+                            case SpritePackingRotation.kSPRFlipHorizontal:
+                                spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                                break;
+                            case SpritePackingRotation.kSPRFlipVertical:
+                                spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                                break;
+                            case SpritePackingRotation.kSPRRotate180:
+                                spriteImage.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                                break;
+                            case SpritePackingRotation.kSPRRotate90:
+                                spriteImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                                break;
+                        }
+
+                        //Tight
+                        //TODO 2017 and up use m_PhysicsShape should be better
+                        if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
+                        {
+                            try
                             {
-                                foreach (var p in points)
+                                var triangles = GetTriangles(m_Sprite.m_RD);
+                                var points = triangles.Select(x => x.Select(y => new PointF(y.X, y.Y)).ToArray());
+                                using (var path = new GraphicsPath())
                                 {
-                                    path.AddPolygon(p);
-                                }
-                                using (var matr = new System.Drawing.Drawing2D.Matrix())
-                                {
-                                    matr.Translate(m_Sprite.m_Rect.Width * m_Sprite.m_Pivot.X, m_Sprite.m_Rect.Height * m_Sprite.m_Pivot.Y);
-                                    matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
-                                    path.Transform(matr);
-                                    var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
-                                    using (var graphic = Graphics.FromImage(bitmap))
+                                    foreach (var p in points)
                                     {
-                                        using (var brush = new TextureBrush(spriteImage))
+                                        path.AddPolygon(p);
+                                    }
+                                    using (var matr = new System.Drawing.Drawing2D.Matrix())
+                                    {
+                                        if (m_Sprite.m_Pivot == Vector2.Zero) //5.4.2 down
                                         {
-                                            graphic.FillPath(brush, path);
-                                            bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                                            return bitmap;
+                                            matr.Translate(m_Sprite.m_Rect.Width * 0.5f, m_Sprite.m_Rect.Height * 0.5f);
+                                        }
+                                        else
+                                        {
+                                            matr.Translate(m_Sprite.m_Rect.Width * m_Sprite.m_Pivot.X, m_Sprite.m_Rect.Height * m_Sprite.m_Pivot.Y);
+                                        }
+                                        matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
+                                        path.Transform(matr);
+                                        var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
+                                        using (var graphic = Graphics.FromImage(bitmap))
+                                        {
+                                            using (var brush = new TextureBrush(spriteImage))
+                                            {
+                                                graphic.FillPath(brush, path);
+                                                bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                                                return bitmap;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        catch
-                        {
-                            spriteImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                            return spriteImage;
+                            catch
+                            {
+                                // ignored
+                            }
                         }
                     }
 
@@ -105,46 +114,50 @@ namespace AssetStudio
             return null;
         }
 
-        private static Vector2[][] GetPolygon(SpriteRenderData m_RD)
+        private static Vector2[][] GetTriangles(SpriteRenderData m_RD)
         {
             if (m_RD.vertices != null) //5.6 down
             {
-                var vertices = m_RD.vertices;
-                var polygon = new Vector2[1][];
-                polygon[0] = new Vector2[vertices.Length];
-                for (int i = 0; i < vertices.Length; i++)
+                var vertices = m_RD.vertices.Select(x => (Vector2)x.pos).ToArray();
+                var triangleCount = m_RD.indices.Length / 3;
+                var triangles = new Vector2[triangleCount][];
+                for (int i = 0; i < triangleCount; i++)
                 {
-                    polygon[0][i] = (Vector2)vertices[i].pos;
+                    var first = m_RD.indices[i * 3];
+                    var second = m_RD.indices[i * 3 + 1];
+                    var third = m_RD.indices[i * 3 + 2];
+                    var triangle = new[] { vertices[first], vertices[second], vertices[third] };
+                    triangles[i] = triangle;
                 }
-                return polygon;
+                return triangles;
             }
 
-            return GetTriangles(m_RD); //5.6 and up
+            return GetTriangles(m_RD.m_VertexData, m_RD.m_SubMeshes, m_RD.m_IndexBuffer); //5.6 and up
         }
 
-        private static Vector2[][] GetTriangles(SpriteRenderData m_RD)
+        private static Vector2[][] GetTriangles(VertexData m_VertexData, SubMesh[] m_SubMeshes, byte[] m_IndexBuffer)
         {
             var triangles = new List<Vector2[]>();
-            var m_VertexData = m_RD.m_VertexData;
             GetStreams(m_VertexData);
             var m_Channel = m_VertexData.m_Channels[0]; //kShaderChannelVertex
             var m_Stream = m_VertexData.m_Streams[m_Channel.stream];
             using (BinaryReader vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)),
-                                indexReader = new BinaryReader(new MemoryStream(m_RD.m_IndexBuffer)))
+                                indexReader = new BinaryReader(new MemoryStream(m_IndexBuffer)))
             {
-                foreach (var subMesh in m_RD.m_SubMeshes)
+                foreach (var subMesh in m_SubMeshes)
                 {
-                    var vertices = new Vector2[subMesh.vertexCount];
-
                     vertexReader.BaseStream.Position = m_Stream.offset + subMesh.firstVertex * m_Stream.stride + m_Channel.offset;
+
+                    var vertices = new Vector2[subMesh.vertexCount];
                     for (int v = 0; v < subMesh.vertexCount; v++)
                     {
                         vertices[v] = (Vector2)vertexReader.ReadVector3();
                         vertexReader.BaseStream.Position += m_Stream.stride - 12;
                     }
 
-                    var triangleCount = subMesh.indexCount / 3u;
                     indexReader.BaseStream.Position = subMesh.firstByte;
+
+                    var triangleCount = subMesh.indexCount / 3u;
                     for (int i = 0; i < triangleCount; i++)
                     {
                         var first = indexReader.ReadUInt16() - subMesh.firstVertex;
