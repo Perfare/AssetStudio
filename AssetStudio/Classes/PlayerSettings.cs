@@ -20,7 +20,7 @@ namespace AssetStudio
             var AndroidProfiler = reader.ReadBoolean();
             //bool AndroidFilterTouchesWhenObscured 2017.2 and up
             //bool AndroidEnableSustainedPerformanceMode 2018 and up
-            reader.AlignStream(4);
+            reader.AlignStream();
             int defaultScreenOrientation = reader.ReadInt32();
             int targetDevice = reader.ReadInt32();
             if (version[0] < 5 || (version[0] == 5 && version[1] < 3)) //5.3 down
@@ -38,7 +38,7 @@ namespace AssetStudio
             else
             {
                 var useOnDemandResources = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 5)) //3.5 and up
             {

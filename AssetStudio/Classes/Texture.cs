@@ -13,7 +13,7 @@ namespace AssetStudio
             {
                 var m_ForcedFallbackFormat = reader.ReadInt32();
                 var m_DownscaleFallback = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
         }
     }

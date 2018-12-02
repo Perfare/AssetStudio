@@ -13,7 +13,7 @@ namespace AssetStudio
         public MovieTexture(ObjectReader reader) : base(reader)
         {
             var m_Loop = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
             m_AudioClip = new PPtr<AudioClip>(reader);
             m_MovieData = reader.ReadBytes(reader.ReadInt32());
         }

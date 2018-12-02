@@ -25,13 +25,13 @@ namespace AssetStudio
             var m_ApplyRootMotion = reader.ReadBoolean();
             if (version[0] == 4 && version[1] >= 5) //4.5 and up - 5.0 down
             {
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
 
             if (version[0] >= 5) //5.0 and up
             {
                 var m_LinearVelocityBlending = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
 
             if (version[0] < 4 || (version[0] == 4 && version[1] < 5)) //4.5 down
@@ -50,13 +50,13 @@ namespace AssetStudio
             }
             if (version[0] >= 5 && version[0] < 2018) //5.0 and up - 2018 down
             {
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
 
             if (version[0] >= 2018) //2018 and up
             {
                 var m_KeepAnimatorControllerStateOnDisable = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
         }
     }

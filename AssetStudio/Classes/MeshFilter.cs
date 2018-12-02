@@ -7,7 +7,6 @@ namespace AssetStudio
 {
     public sealed class MeshFilter : Component
     {
-        public long preloadIndex;
         public PPtr<Mesh> m_Mesh;
 
         public MeshFilter(ObjectReader reader) : base(reader)

@@ -12,7 +12,7 @@ namespace AssetStudio
         protected Behaviour(ObjectReader reader) : base(reader)
         {
             m_Enabled = reader.ReadByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 }

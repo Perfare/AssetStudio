@@ -16,7 +16,6 @@ namespace AssetStudio
         public string upperFileName;
         public int[] version = { 0, 0, 0, 0 };
         public BuildType buildType;
-        public bool valid;
         public Dictionary<long, Object> Objects;
 
         public SerializedFileHeader header;
@@ -36,151 +35,143 @@ namespace AssetStudio
             this.fullName = fullName;
             fileName = Path.GetFileName(fullName);
             upperFileName = fileName.ToUpper();
-            try
-            {
-                //ReadHeader
-                header = new SerializedFileHeader();
-                header.m_MetadataSize = reader.ReadUInt32();
-                header.m_FileSize = reader.ReadUInt32();
-                header.m_Version = reader.ReadUInt32();
-                header.m_DataOffset = reader.ReadUInt32();
 
-                if (header.m_Version >= 9)
+            //ReadHeader
+            header = new SerializedFileHeader();
+            header.m_MetadataSize = reader.ReadUInt32();
+            header.m_FileSize = reader.ReadUInt32();
+            header.m_Version = reader.ReadUInt32();
+            header.m_DataOffset = reader.ReadUInt32();
+
+            if (header.m_Version >= 9)
+            {
+                header.m_Endianess = reader.ReadByte();
+                header.m_Reserved = reader.ReadBytes(3);
+                m_FileEndianess = (EndianType)header.m_Endianess;
+            }
+            else
+            {
+                reader.Position = header.m_FileSize - header.m_MetadataSize;
+                m_FileEndianess = (EndianType)reader.ReadByte();
+            }
+
+            //ReadMetadata
+            if (m_FileEndianess == EndianType.LittleEndian)
+            {
+                reader.endian = EndianType.LittleEndian;
+            }
+            if (header.m_Version >= 7)
+            {
+                unityVersion = reader.ReadStringToNull();
+                SetVersion(unityVersion);
+            }
+            if (header.m_Version >= 8)
+            {
+                m_TargetPlatform = (BuildTarget)reader.ReadInt32();
+                if (!Enum.IsDefined(typeof(BuildTarget), m_TargetPlatform))
                 {
-                    header.m_Endianess = reader.ReadByte();
-                    header.m_Reserved = reader.ReadBytes(3);
-                    m_FileEndianess = (EndianType)header.m_Endianess;
+                    m_TargetPlatform = BuildTarget.UnknownPlatform;
+                }
+            }
+            if (header.m_Version >= 13)
+            {
+                m_EnableTypeTree = reader.ReadBoolean();
+            }
+
+            //ReadTypes
+            int typeCount = reader.ReadInt32();
+            m_Types = new List<SerializedType>(typeCount);
+            for (int i = 0; i < typeCount; i++)
+            {
+                m_Types.Add(ReadSerializedType());
+            }
+
+            if (header.m_Version >= 7 && header.m_Version < 14)
+            {
+                var bigIDEnabled = reader.ReadInt32();
+            }
+
+            //ReadObjects
+            int objectCount = reader.ReadInt32();
+            m_Objects = new List<ObjectInfo>(objectCount);
+            for (int i = 0; i < objectCount; i++)
+            {
+                var objectInfo = new ObjectInfo();
+                if (header.m_Version < 14)
+                {
+                    objectInfo.m_PathID = reader.ReadInt32();
                 }
                 else
                 {
-                    reader.Position = header.m_FileSize - header.m_MetadataSize;
-                    m_FileEndianess = (EndianType)reader.ReadByte();
+                    reader.AlignStream();
+                    objectInfo.m_PathID = reader.ReadInt64();
                 }
+                objectInfo.byteStart = reader.ReadUInt32();
+                objectInfo.byteStart += header.m_DataOffset;
+                objectInfo.byteSize = reader.ReadUInt32();
+                objectInfo.typeID = reader.ReadInt32();
+                if (header.m_Version < 16)
+                {
+                    objectInfo.classID = reader.ReadUInt16();
+                    objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
+                    var isDestroyed = reader.ReadUInt16();
+                }
+                else
+                {
+                    var type = m_Types[objectInfo.typeID];
+                    objectInfo.serializedType = type;
+                    objectInfo.classID = type.classID;
+                }
+                if (header.m_Version == 15 || header.m_Version == 16)
+                {
+                    var stripped = reader.ReadByte();
+                }
+                m_Objects.Add(objectInfo);
+            }
 
-                //ReadMetadata
-                if (m_FileEndianess == EndianType.LittleEndian)
+            if (header.m_Version >= 11)
+            {
+                int scriptCount = reader.ReadInt32();
+                m_ScriptTypes = new List<LocalSerializedObjectIdentifier>(scriptCount);
+                for (int i = 0; i < scriptCount; i++)
                 {
-                    reader.endian = EndianType.LittleEndian;
-                }
-                if (header.m_Version >= 7)
-                {
-                    unityVersion = reader.ReadStringToNull();
-                    SetVersion(unityVersion);
-                }
-                if (header.m_Version >= 8)
-                {
-                    m_TargetPlatform = (BuildTarget)reader.ReadInt32();
-                    if (!Enum.IsDefined(typeof(BuildTarget), m_TargetPlatform))
-                    {
-                        m_TargetPlatform = BuildTarget.UnknownPlatform;
-                    }
-                }
-                if (header.m_Version >= 13)
-                {
-                    m_EnableTypeTree = reader.ReadBoolean();
-                }
-
-                //ReadTypes
-                int typeCount = reader.ReadInt32();
-                m_Types = new List<SerializedType>(typeCount);
-                for (int i = 0; i < typeCount; i++)
-                {
-                    m_Types.Add(ReadSerializedType());
-                }
-
-                if (header.m_Version >= 7 && header.m_Version < 14)
-                {
-                    var bigIDEnabled = reader.ReadInt32();
-                }
-
-                //ReadObjects
-                int objectCount = reader.ReadInt32();
-                m_Objects = new List<ObjectInfo>(objectCount);
-                for (int i = 0; i < objectCount; i++)
-                {
-                    var objectInfo = new ObjectInfo();
+                    var m_ScriptType = new LocalSerializedObjectIdentifier();
+                    m_ScriptType.localSerializedFileIndex = reader.ReadInt32();
                     if (header.m_Version < 14)
                     {
-                        objectInfo.m_PathID = reader.ReadInt32();
+                        m_ScriptType.localIdentifierInFile = reader.ReadInt32();
                     }
                     else
                     {
-                        reader.AlignStream(4);
-                        objectInfo.m_PathID = reader.ReadInt64();
+                        reader.AlignStream();
+                        m_ScriptType.localIdentifierInFile = reader.ReadInt64();
                     }
-                    objectInfo.byteStart = reader.ReadUInt32();
-                    objectInfo.byteStart += header.m_DataOffset;
-                    objectInfo.byteSize = reader.ReadUInt32();
-                    objectInfo.typeID = reader.ReadInt32();
-                    if (header.m_Version < 16)
-                    {
-                        objectInfo.classID = reader.ReadUInt16();
-                        objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
-                        var isDestroyed = reader.ReadUInt16();
-                    }
-                    else
-                    {
-                        var type = m_Types[objectInfo.typeID];
-                        objectInfo.serializedType = type;
-                        objectInfo.classID = type.classID;
-                    }
-                    if (header.m_Version == 15 || header.m_Version == 16)
-                    {
-                        var stripped = reader.ReadByte();
-                    }
-                    m_Objects.Add(objectInfo);
+                    m_ScriptTypes.Add(m_ScriptType);
                 }
+            }
 
-                if (header.m_Version >= 11)
+            int externalsCount = reader.ReadInt32();
+            m_Externals = new List<FileIdentifier>(externalsCount);
+            for (int i = 0; i < externalsCount; i++)
+            {
+                var m_External = new FileIdentifier();
+                if (header.m_Version >= 6)
                 {
-                    int scriptCount = reader.ReadInt32();
-                    m_ScriptTypes = new List<LocalSerializedObjectIdentifier>(scriptCount);
-                    for (int i = 0; i < scriptCount; i++)
-                    {
-                        var m_ScriptType = new LocalSerializedObjectIdentifier();
-                        m_ScriptType.localSerializedFileIndex = reader.ReadInt32();
-                        if (header.m_Version < 14)
-                        {
-                            m_ScriptType.localIdentifierInFile = reader.ReadInt32();
-                        }
-                        else
-                        {
-                            reader.AlignStream(4);
-                            m_ScriptType.localIdentifierInFile = reader.ReadInt64();
-                        }
-                        m_ScriptTypes.Add(m_ScriptType);
-                    }
+                    var tempEmpty = reader.ReadStringToNull();
                 }
-
-                int externalsCount = reader.ReadInt32();
-                m_Externals = new List<FileIdentifier>(externalsCount);
-                for (int i = 0; i < externalsCount; i++)
-                {
-                    var m_External = new FileIdentifier();
-                    if (header.m_Version >= 6)
-                    {
-                        var tempEmpty = reader.ReadStringToNull();
-                    }
-                    if (header.m_Version >= 5)
-                    {
-                        m_External.guid = new Guid(reader.ReadBytes(16));
-                        m_External.type = reader.ReadInt32();
-                    }
-                    m_External.pathName = reader.ReadStringToNull();
-                    m_External.fileName = Path.GetFileName(m_External.pathName);
-                    m_Externals.Add(m_External);
-                }
-
                 if (header.m_Version >= 5)
                 {
-                    //var userInformation = reader.ReadStringToNull();
+                    m_External.guid = new Guid(reader.ReadBytes(16));
+                    m_External.type = reader.ReadInt32();
                 }
-
-                valid = true;
+                m_External.pathName = reader.ReadStringToNull();
+                m_External.fileName = Path.GetFileName(m_External.pathName);
+                m_Externals.Add(m_External);
             }
-            catch
+
+            if (header.m_Version >= 5)
             {
-                // ignored
+                //var userInformation = reader.ReadStringToNull();
             }
         }
 

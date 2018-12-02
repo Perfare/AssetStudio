@@ -11,11 +11,7 @@ namespace AssetStudio
 
         public BuildSettings(ObjectReader reader) : base(reader)
         {
-            int levelsNum = reader.ReadInt32();
-            for (int i = 0; i < levelsNum; i++)
-            {
-                var level = reader.ReadAlignedString();
-            }
+            var levels = reader.ReadStringArray();
 
             var hasRenderTexture = reader.ReadBoolean();
             var hasPROVersion = reader.ReadBoolean();

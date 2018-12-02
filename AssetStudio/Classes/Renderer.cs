@@ -9,6 +9,12 @@ namespace AssetStudio
     {
         public ushort firstSubMesh;
         public ushort subMeshCount;
+
+        public StaticBatchInfo(ObjectReader reader)
+        {
+            firstSubMesh = reader.ReadUInt16();
+            subMeshCount = reader.ReadUInt16();
+        }
     }
 
     public abstract class Renderer : Component
@@ -19,97 +25,114 @@ namespace AssetStudio
 
         protected Renderer(ObjectReader reader) : base(reader)
         {
-            if (version[0] < 5)
+            if (version[0] < 5) //5.0 down
             {
                 var m_Enabled = reader.ReadBoolean();
-                var m_CastShadows = reader.ReadByte();
+                var m_CastShadows = reader.ReadBoolean();
                 var m_ReceiveShadows = reader.ReadBoolean();
                 var m_LightmapIndex = reader.ReadByte();
             }
-            else
+            else //5.0 and up
             {
-                var m_Enabled = reader.ReadBoolean();
-                reader.AlignStream(4);
-                var m_CastShadows = reader.ReadByte();
-                var m_ReceiveShadows = reader.ReadBoolean();
-                reader.AlignStream(4);
-                if (version[0] >= 2018)//2018 and up
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 4)) //5.4 and up
+                {
+                    var m_Enabled = reader.ReadBoolean();
+                    var m_CastShadows = reader.ReadByte();
+                    var m_ReceiveShadows = reader.ReadByte();
+                    if (version[0] > 2017 || (version[0] == 2017 && version[0] >= 2)) //2017.2 and up
+                    {
+                        var m_DynamicOccludee = reader.ReadByte();
+                    }
+                    var m_MotionVectors = reader.ReadByte();
+                    var m_LightProbeUsage = reader.ReadByte();
+                    var m_ReflectionProbeUsage = reader.ReadByte();
+                    reader.AlignStream();
+                }
+                else
+                {
+                    var m_Enabled = reader.ReadBoolean();
+                    reader.AlignStream();
+                    var m_CastShadows = reader.ReadByte();
+                    var m_ReceiveShadows = reader.ReadBoolean();
+                    reader.AlignStream();
+                }
+
+                if (version[0] >= 2018) //2018 and up
                 {
                     var m_RenderingLayerMask = reader.ReadUInt32();
                 }
+
                 var m_LightmapIndex = reader.ReadUInt16();
                 var m_LightmapIndexDynamic = reader.ReadUInt16();
             }
 
-            if (version[0] >= 3)
+            if (version[0] >= 3) //3.0 and up
             {
-                reader.Position += 16;//Vector4f m_LightmapTilingOffset
+                var m_LightmapTilingOffset = reader.ReadVector4();
             }
 
-            if (version[0] >= 5)
+            if (version[0] >= 5) //5.0 and up
             {
-                reader.Position += 16;//Vector4f m_LightmapTilingOffsetDynamic
+                var m_LightmapTilingOffsetDynamic = reader.ReadVector4();
             }
 
-            m_Materials = new PPtr<Material>[reader.ReadInt32()];
-            for (int m = 0; m < m_Materials.Length; m++)
+            var m_MaterialsSize = reader.ReadInt32();
+            m_Materials = new PPtr<Material>[m_MaterialsSize];
+            for (int i = 0; i < m_MaterialsSize; i++)
             {
-                m_Materials[m] = new PPtr<Material>(reader);
+                m_Materials[i] = new PPtr<Material>(reader);
             }
 
-            if (version[0] < 3)
+            if (version[0] < 3) //3.0 down
             {
-                reader.Position += 16;//m_LightmapTilingOffset vector4d
+                var m_LightmapTilingOffset = reader.ReadVector4();
             }
-            else
+            else //3.0 and up
             {
-                if ((version[0] == 5 && version[1] >= 5) || version[0] > 5)//5.5.0 and up
+                if (version[0] > 5 || (version[0] == 5 && version[1] >= 5)) //5.5 and up
                 {
-                    m_StaticBatchInfo = new StaticBatchInfo
-                    {
-                        firstSubMesh = reader.ReadUInt16(),
-                        subMeshCount = reader.ReadUInt16()
-                    };
+                    m_StaticBatchInfo = new StaticBatchInfo(reader);
                 }
                 else
                 {
-                    int numSubsetIndices = reader.ReadInt32();
-                    m_SubsetIndices = reader.ReadUInt32Array(numSubsetIndices);
+                    m_SubsetIndices = reader.ReadUInt32Array();
                 }
 
                 var m_StaticBatchRoot = new PPtr<Transform>(reader);
+            }
 
-                if ((version[0] == 5 && version[1] >= 4) || version[0] > 5)//5.4.0 and up
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 4)) //5.4 and up
+            {
+                var m_ProbeAnchor = new PPtr<Transform>(reader);
+                var m_LightProbeVolumeOverride = new PPtr<GameObject>(reader);
+            }
+            else if (version[0] > 3 || (version[0] == 3 && version[1] >= 5)) //3.5 - 5.3
+            {
+                var m_UseLightProbes = reader.ReadBoolean();
+                reader.AlignStream();
+
+                if (version[0] >= 5)//5.0 and up
                 {
-                    var m_ProbeAnchor = new PPtr<Transform>(reader);
-                    var m_LightProbeVolumeOverride = new PPtr<GameObject>(reader);
-                }
-                else if (version[0] >= 4 || (version[0] == 3 && version[1] >= 5))//3.5 - 5.3
-                {
-                    var m_UseLightProbes = reader.ReadBoolean();
-                    reader.AlignStream(4);
-                    if (version[0] == 5)//5.0 and up
-                    {
-                        int m_ReflectionProbeUsage = reader.ReadInt32();
-                    }
-                    var m_LightProbeAnchor = new PPtr<Transform>(reader);
+                    var m_ReflectionProbeUsage = reader.ReadInt32();
                 }
 
-                if (version[0] >= 5 || (version[0] == 4 && version[1] >= 3))//4.3 and up
-                {
-                    if (version[0] == 4 && version[1] == 3)//4.3
-                    {
-                        int m_SortingLayer = reader.ReadInt16();
-                    }
-                    else
-                    {
-                        int m_SortingLayerID = reader.ReadInt32();
-                        //SInt16 m_SortingOrder 5.6 and up
-                    }
+                var m_LightProbeAnchor = new PPtr<Transform>(reader); //5.0 and up m_ProbeAnchor
+            }
 
-                    int m_SortingOrder = reader.ReadInt16();
-                    reader.AlignStream(4);
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
+                if (version[0] == 4 && version[1] == 3) //4.3
+                {
+                    var m_SortingLayer = reader.ReadInt16();
                 }
+                else
+                {
+                    var m_SortingLayerID = reader.ReadUInt32();
+                }
+
+                //SInt16 m_SortingLayer 5.6 and up
+                var m_SortingOrder = reader.ReadInt16();
+                reader.AlignStream();
             }
         }
     }

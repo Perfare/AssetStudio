@@ -20,7 +20,7 @@ namespace AssetStudio
             var m_ProxyHeight = reader.ReadUInt32();
             var Width = reader.ReadUInt32();
             var Height = reader.ReadUInt32();
-            if (version[0] >= 2017)//2017.x and up
+            if (version[0] >= 2017) //2017.x and up
             {
                 var m_PixelAspecRatioNum = reader.ReadUInt32();
                 var m_PixelAspecRatioDen = reader.ReadUInt32();
@@ -28,19 +28,10 @@ namespace AssetStudio
             var m_FrameRate = reader.ReadDouble();
             var m_FrameCount = reader.ReadUInt64();
             var m_Format = reader.ReadInt32();
-            //m_AudioChannelCount
-            var size = reader.ReadInt32();
-            reader.Position += size * 2;
-            reader.AlignStream(4);
-            //m_AudioSampleRate
-            size = reader.ReadInt32();
-            reader.Position += size * 4;
-            //m_AudioLanguage
-            size = reader.ReadInt32();
-            for (int i = 0; i < size; i++)
-            {
-                reader.ReadAlignedString();
-            }
+            var m_AudioChannelCount = reader.ReadUInt16Array();
+            reader.AlignStream();
+            var m_AudioSampleRate = reader.ReadUInt32Array();
+            var m_AudioLanguage = reader.ReadStringArray();
             //StreamedResource m_ExternalResources
             m_Source = reader.ReadAlignedString();
             var m_Offset = reader.ReadUInt64();

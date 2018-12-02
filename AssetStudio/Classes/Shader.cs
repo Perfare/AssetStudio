@@ -81,34 +81,20 @@ namespace AssetStudio
     {
         public string m_Name;
         public string m_Description;
-        public List<string> m_Attributes;
+        public string[] m_Attributes;
         public SerializedPropertyType m_Type;
         public uint m_Flags;
-        public List<float> m_DefValue;
+        public float[] m_DefValue;
         public SerializedTextureProperty m_DefTexture;
 
         public SerializedProperty(BinaryReader reader)
         {
             m_Name = reader.ReadAlignedString();
             m_Description = reader.ReadAlignedString();
-
-            int numAttributes = reader.ReadInt32();
-            m_Attributes = new List<string>(numAttributes);
-            for (int i = 0; i < numAttributes; i++)
-            {
-                m_Attributes.Add(reader.ReadAlignedString());
-            }
-
+            m_Attributes = reader.ReadStringArray();
             m_Type = (SerializedPropertyType)reader.ReadInt32();
             m_Flags = reader.ReadUInt32();
-
-            int numValues = 4;
-            m_DefValue = new List<float>(numValues);
-            for (int i = 0; i < numValues; i++)
-            {
-                m_DefValue.Add(reader.ReadSingle());
-            }
-
+            m_DefValue = reader.ReadSingleArray(4);
             m_DefTexture = new SerializedTextureProperty(reader);
         }
     }
@@ -255,7 +241,7 @@ namespace AssetStudio
             rtBlend6 = new SerializedShaderRTBlendState(reader);
             rtBlend7 = new SerializedShaderRTBlendState(reader);
             rtSeparateBlend = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
                 zClip = new SerializedShaderFloatValue(reader);
@@ -281,7 +267,7 @@ namespace AssetStudio
             m_Tags = new SerializedTagMap(reader);
             m_LOD = reader.ReadInt32();
             lighting = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -310,7 +296,7 @@ namespace AssetStudio
             {
                 m_Channels.Add(new ShaderBindChannel(reader));
             }
-            reader.AlignStream(4);
+            reader.AlignStream();
 
             m_SourceMap = reader.ReadUInt32();
         }
@@ -331,7 +317,7 @@ namespace AssetStudio
             m_ArraySize = reader.ReadInt32();
             m_Type = reader.ReadSByte();
             m_Dim = reader.ReadSByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -350,7 +336,7 @@ namespace AssetStudio
             m_ArraySize = reader.ReadInt32();
             m_Type = reader.ReadSByte();
             m_RowCount = reader.ReadSByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -373,7 +359,7 @@ namespace AssetStudio
                 var m_MultiSampled = reader.ReadBoolean();
             }
             m_Dim = reader.ReadSByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -478,7 +464,7 @@ namespace AssetStudio
     {
         public uint m_BlobIndex;
         public ParserBindChannels m_Channels;
-        public List<ushort> m_KeywordIndices;
+        public ushort[] m_KeywordIndices;
         public sbyte m_ShaderHardwareTier;
         public ShaderGpuProgramType m_GpuProgramType;
         public List<VectorParameter> m_VectorParams;
@@ -497,19 +483,14 @@ namespace AssetStudio
             m_BlobIndex = reader.ReadUInt32();
             m_Channels = new ParserBindChannels(reader);
 
-            int numIndices = reader.ReadInt32();
-            m_KeywordIndices = new List<ushort>(numIndices);
-            for (int i = 0; i < numIndices; i++)
-            {
-                m_KeywordIndices.Add(reader.ReadUInt16());
-            }
+            m_KeywordIndices = reader.ReadUInt16Array();
             if (version[0] >= 2017) //2017 and up
             {
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
             m_ShaderHardwareTier = reader.ReadSByte();
             m_GpuProgramType = (ShaderGpuProgramType)reader.ReadSByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
 
             int numVectorParams = reader.ReadInt32();
             m_VectorParams = new List<VectorParameter>(numVectorParams);
@@ -639,7 +620,7 @@ namespace AssetStudio
             {
                 var m_HasProceduralInstancingVariant = reader.ReadBoolean();
             }
-            reader.AlignStream(4);
+            reader.AlignStream();
             m_UseName = reader.ReadAlignedString();
             m_Name = reader.ReadAlignedString();
             m_TextureName = reader.ReadAlignedString();
@@ -727,7 +708,7 @@ namespace AssetStudio
             }
 
             m_DisableNoSubshadersMessage = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -739,10 +720,10 @@ namespace AssetStudio
         public byte[] m_SubProgramBlob;
         //5.5 and up
         public SerializedShader m_ParsedForm;
-        public List<uint> platforms;
-        public List<uint> offsets;
-        public List<uint> compressedLengths;
-        public List<uint> decompressedLengths;
+        public uint[] platforms;
+        public uint[] offsets;
+        public uint[] compressedLengths;
+        public uint[] decompressedLengths;
         public byte[] compressedBlob;
 
         public Shader(ObjectReader reader) : base(reader)
@@ -750,40 +731,16 @@ namespace AssetStudio
             if (version[0] == 5 && version[1] >= 5 || version[0] > 5) //5.5 and up
             {
                 m_ParsedForm = new SerializedShader(reader);
-                int numPlatforms = reader.ReadInt32();
-                platforms = new List<uint>(numPlatforms);
-                for (int i = 0; i < numPlatforms; i++)
-                {
-                    platforms.Add(reader.ReadUInt32());
-                }
-
-                int numOffsets = reader.ReadInt32();
-                offsets = new List<uint>(numOffsets);
-                for (int i = 0; i < numOffsets; i++)
-                {
-                    offsets.Add(reader.ReadUInt32());
-                }
-
-                int numCompressedLengths = reader.ReadInt32();
-                compressedLengths = new List<uint>(numCompressedLengths);
-                for (int i = 0; i < numCompressedLengths; i++)
-                {
-                    compressedLengths.Add(reader.ReadUInt32());
-                }
-
-                int numDecompressedLengths = reader.ReadInt32();
-                decompressedLengths = new List<uint>(numDecompressedLengths);
-                for (int i = 0; i < numDecompressedLengths; i++)
-                {
-                    decompressedLengths.Add(reader.ReadUInt32());
-                }
-
+                platforms = reader.ReadUInt32Array();
+                offsets = reader.ReadUInt32Array();
+                compressedLengths = reader.ReadUInt32Array();
+                decompressedLengths = reader.ReadUInt32Array();
                 compressedBlob = reader.ReadBytes(reader.ReadInt32());
             }
             else
             {
                 m_Script = reader.ReadBytes(reader.ReadInt32());
-                reader.AlignStream(4);
+                reader.AlignStream();
                 var m_PathName = reader.ReadAlignedString();
                 if (version[0] == 5 && version[1] >= 3) //5.3 - 5.4
                 {

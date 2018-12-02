@@ -10,7 +10,6 @@ namespace AssetStudio
     {
         public List<SubMesh> m_SubMeshes = new List<SubMesh>();
         public List<uint> m_Indices = new List<uint>(); //use a list because I don't always know the facecount for triangle strips
-        public List<int> m_materialIDs = new List<int>();
         private uint[] m_IndexBuffer;
         private ChannelInfo[] m_Channels;
         private StreamInfo[] m_Streams;
@@ -93,7 +92,7 @@ namespace AssetStudio
                     vertexCount = reader.ReadUInt32();
                     hasNormals = reader.ReadBoolean();
                     hasTangents = reader.ReadBoolean();
-                    reader.AlignStream(4);
+                    reader.AlignStream();
                 }
             }
 
@@ -259,7 +258,7 @@ namespace AssetStudio
                 {
                     m_IndexBuffer = new uint[m_IndexBuffer_size / 2];
                     for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = reader.ReadUInt16(); }
-                    reader.AlignStream(4);
+                    reader.AlignStream();
                 }
                 else
                 {
@@ -356,7 +355,7 @@ namespace AssetStudio
                         var m_UsedForStaticMeshColliderOnly = reader.ReadBoolean();
                     }
                 }
-                reader.AlignStream(4);
+                reader.AlignStream();
                 //This is a bug fixed in 2017.3.1p1 and later versions
                 if ((version[0] > 2017 || (version[0] == 2017 && version[1] >= 4)) || //2017.4
                     ((version[0] == 2017 && version[1] == 3 && version[2] == 1) && buildType.IsPatch) || //fixed after 2017.3.1px
@@ -370,13 +369,13 @@ namespace AssetStudio
                 {
                     m_IndexBuffer = new uint[m_IndexBuffer_size / 2];
                     for (int i = 0; i < m_IndexBuffer_size / 2; i++) { m_IndexBuffer[i] = reader.ReadUInt16(); }
-                    reader.AlignStream(4);
+                    reader.AlignStream();
                 }
                 else
                 {
                     m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
                     for (int i = 0; i < m_IndexBuffer_size / 4; i++) { m_IndexBuffer[i] = reader.ReadUInt32(); }
-                    reader.AlignStream(4);//untested
+                    reader.AlignStream();//untested
                 }
             }
             #endregion
@@ -568,7 +567,7 @@ namespace AssetStudio
 
                 //actual Vertex Buffer
                 var m_DataSize = reader.ReadBytes(reader.ReadInt32());
-                reader.AlignStream(4);
+                reader.AlignStream();
                 #endregion
 
                 #region compute FvF
@@ -1099,7 +1098,6 @@ namespace AssetStudio
                         m_Indices.Add(m_IndexBuffer[firstIndex + i * 3]);
                         m_Indices.Add(m_IndexBuffer[firstIndex + i * 3 + 1]);
                         m_Indices.Add(m_IndexBuffer[firstIndex + i * 3 + 2]);
-                        m_materialIDs.Add(s);
                     }
                 }
                 else
@@ -1124,7 +1122,6 @@ namespace AssetStudio
                                 m_Indices.Add(fc);
                                 m_Indices.Add(fb);
                             }
-                            m_materialIDs.Add(s);
                             j++;
                         }
                     }

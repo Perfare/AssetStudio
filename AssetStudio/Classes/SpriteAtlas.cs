@@ -44,11 +44,7 @@ namespace AssetStudio
                 new PPtr<Sprite>(reader);
             }
 
-            var m_PackedSpriteNamesToIndexSize = reader.ReadInt32();
-            for (int i = 0; i < m_PackedSpriteNamesToIndexSize; i++)
-            {
-                reader.ReadAlignedString();
-            }
+            var m_PackedSpriteNamesToIndex = reader.ReadStringArray();
 
             var m_RenderDataMapSize = reader.ReadInt32();
             m_RenderDataMap = new Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData>(m_RenderDataMapSize);

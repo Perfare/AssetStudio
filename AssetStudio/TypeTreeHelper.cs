@@ -150,7 +150,7 @@ namespace AssetStudio
             if (append)
                 sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level)), varTypeStr, varNameStr, value);
             if (align)
-                reader.AlignStream(4);
+                reader.AlignStream();
         }
 
         public static Dictionary<string, object> ReadBoxingType(List<TypeTreeNode> members, BinaryReader reader)
@@ -284,7 +284,7 @@ namespace AssetStudio
                     }
             }
             if (align)
-                reader.AlignStream(4);
+                reader.AlignStream();
             return value;
         }
 

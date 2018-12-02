@@ -164,7 +164,7 @@ namespace AssetStudio
             }
 
             m_DataSize = reader.ReadBytes(reader.ReadInt32());
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -244,7 +244,7 @@ namespace AssetStudio
                 }
 
                 m_IndexBuffer = reader.ReadBytes(reader.ReadInt32());
-                reader.AlignStream(4);
+                reader.AlignStream();
 
                 m_VertexData = new VertexData(reader);
             }
@@ -257,13 +257,13 @@ namespace AssetStudio
                     vertices[i] = new SpriteVertex(reader);
                 }
 
-                indices = reader.ReadUInt16Array(reader.ReadInt32());
-                reader.AlignStream(4);
+                indices = reader.ReadUInt16Array();
+                reader.AlignStream();
             }
 
             if (version[0] >= 2018) //2018 and up
             {
-                m_Bindpose = reader.ReadMatrixArray(reader.ReadInt32());
+                m_Bindpose = reader.ReadMatrixArray();
 
                 if (version[0] == 2018 && version[1] < 2) //2018.2 down
                 {
@@ -331,7 +331,7 @@ namespace AssetStudio
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 3)) //5.3 and up
             {
                 m_IsPolygon = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
 
             if (version[0] >= 2017) //2017 and up
@@ -340,12 +340,7 @@ namespace AssetStudio
                 var second = reader.ReadInt64();
                 m_RenderDataKey = new KeyValuePair<Guid, long>(first, second);
 
-                var m_AtlasTagsSize = reader.ReadInt32();
-                m_AtlasTags = new string[m_AtlasTagsSize];
-                for (int i = 0; i < m_AtlasTagsSize; i++)
-                {
-                    m_AtlasTags[i] = reader.ReadAlignedString();
-                }
+                m_AtlasTags = reader.ReadStringArray();
 
                 m_SpriteAtlas = new PPtr<SpriteAtlas>(reader);
             }
@@ -358,7 +353,7 @@ namespace AssetStudio
                 m_PhysicsShape = new Vector2[m_PhysicsShapeSize][];
                 for (int i = 0; i < m_PhysicsShapeSize; i++)
                 {
-                    m_PhysicsShape[i] = reader.ReadVector2Array(reader.ReadInt32());
+                    m_PhysicsShape[i] = reader.ReadVector2Array();
                 }
             }
 

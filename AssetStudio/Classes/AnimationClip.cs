@@ -85,10 +85,10 @@ namespace AssetStudio
 
             int numData = reader.ReadInt32();
             m_Data = reader.ReadBytes(numData);
-            reader.AlignStream(4);
+            reader.AlignStream();
 
             m_BitSize = reader.ReadByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
 
         public float[] UnpackFloats(int itemCountInChunk, int chunkStride, int start = 0, int numChunks = -1)
@@ -142,10 +142,10 @@ namespace AssetStudio
 
             int numData = reader.ReadInt32();
             m_Data = reader.ReadBytes(numData);
-            reader.AlignStream(4);
+            reader.AlignStream();
 
             m_BitSize = reader.ReadByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
 
         public int[] UnpackInts()
@@ -187,7 +187,7 @@ namespace AssetStudio
             int numData = reader.ReadInt32();
             m_Data = reader.ReadBytes(numData);
 
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
 
         public Quaternion[] UnpackQuats()
@@ -383,10 +383,7 @@ namespace AssetStudio
         public HandPose(ObjectReader reader)
         {
             m_GrabX = new xform(reader);
-
-            int numDoFs = reader.ReadInt32();
-            m_DoFArray = reader.ReadSingleArray(numDoFs);
-
+            m_DoFArray = reader.ReadSingleArray();
             m_Override = reader.ReadSingle();
             m_CloseOpen = reader.ReadSingle();
             m_InOut = reader.ReadSingle();
@@ -444,8 +441,7 @@ namespace AssetStudio
             m_LeftHandPose = new HandPose(reader);
             m_RightHandPose = new HandPose(reader);
 
-            int numDoFs = reader.ReadInt32();
-            m_DoFArray = reader.ReadSingleArray(numDoFs);
+            m_DoFArray = reader.ReadSingleArray();
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 2))//5.2 and up
             {
@@ -466,8 +462,7 @@ namespace AssetStudio
 
         public StreamedClip(ObjectReader reader)
         {
-            int numData = reader.ReadInt32();
-            data = reader.ReadUInt32Array(numData);
+            data = reader.ReadUInt32Array();
             curveCount = reader.ReadUInt32();
         }
 
@@ -572,9 +567,7 @@ namespace AssetStudio
             m_CurveCount = reader.ReadUInt32();
             m_SampleRate = reader.ReadSingle();
             m_BeginTime = reader.ReadSingle();
-
-            int numSamples = reader.ReadInt32();
-            m_SampleArray = reader.ReadSingleArray(numSamples);
+            m_SampleArray = reader.ReadSingleArray();
         }
     }
 
@@ -584,8 +577,7 @@ namespace AssetStudio
 
         public ConstantClip(ObjectReader reader)
         {
-            int numData = reader.ReadInt32();
-            data = reader.ReadSingleArray(numData);
+            data = reader.ReadSingleArray();
         }
     }
 
@@ -713,16 +705,10 @@ namespace AssetStudio
             m_CycleOffset = reader.ReadSingle();
             m_AverageAngularSpeed = reader.ReadSingle();
 
-            int numIndices = reader.ReadInt32();
-            m_IndexArray = reader.ReadInt32Array(numIndices);
+            m_IndexArray = reader.ReadInt32Array();
             if (version[0] < 4 || (version[0] == 4 && version[1] < 3)) //4.3 down
             {
-                int numAdditionalCurveIndexs = reader.ReadInt32();
-                var m_AdditionalCurveIndexArray = new List<int>(numAdditionalCurveIndexs);
-                for (int i = 0; i < numAdditionalCurveIndexs; i++)
-                {
-                    m_AdditionalCurveIndexArray.Add(reader.ReadInt32());
-                }
+                var m_AdditionalCurveIndexArray = reader.ReadInt32Array();
             }
             int numDeltas = reader.ReadInt32();
             m_ValueArrayDelta = new List<ValueDelta>(numDeltas);
@@ -732,7 +718,7 @@ namespace AssetStudio
             }
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 3))//5.3 and up
             {
-                m_ValueArrayReferencePose = reader.ReadSingleArray(reader.ReadInt32());
+                m_ValueArrayReferencePose = reader.ReadSingleArray();
             }
 
             m_Mirror = reader.ReadBoolean();
@@ -749,7 +735,7 @@ namespace AssetStudio
             m_KeepOriginalPositionY = reader.ReadBoolean();
             m_KeepOriginalPositionXZ = reader.ReadBoolean();
             m_HeightFromFeet = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -778,7 +764,7 @@ namespace AssetStudio
             }
             customType = reader.ReadByte();
             isPPtrCurve = reader.ReadByte();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -890,7 +876,7 @@ namespace AssetStudio
             {
                 m_UseHighQualityCurve = reader.ReadBoolean();
             }
-            reader.AlignStream(4);
+            reader.AlignStream();
             int numRCurves = reader.ReadInt32();
             m_RotationCurves = new List<QuaternionCurve>(numRCurves);
             for (int i = 0; i < numRCurves; i++)
@@ -965,7 +951,7 @@ namespace AssetStudio
             m_Events = new List<AnimationEvent>(numEvents);
             for (int i = 0; i < numEvents; i++)
             {
-                m_Events.Add(new AnimationEvent(stream, file.Version[0] - '0'));
+                m_Events.Add(new AnimationEvent(reader));
             }*/
         }
     }

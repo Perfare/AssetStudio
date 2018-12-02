@@ -13,7 +13,7 @@ namespace AssetStudio
 
         private List<string> importFiles = new List<string>();
         private HashSet<string> importFilesHash = new HashSet<string>();
-        private HashSet<string> assetsfileListHash = new HashSet<string>();
+        private HashSet<string> assetsFileListHash = new HashSet<string>();
 
         public void LoadFiles(string[] files)
         {
@@ -49,7 +49,7 @@ namespace AssetStudio
 
             importFiles.Clear();
             importFilesHash.Clear();
-            assetsfileListHash.Clear();
+            assetsFileListHash.Clear();
 
             ReadAssets();
             ProcessGameObject();
@@ -74,14 +74,14 @@ namespace AssetStudio
         private void LoadAssetsFile(string fullName, EndianBinaryReader reader)
         {
             var fileName = Path.GetFileName(fullName);
-            if (!assetsfileListHash.Contains(fileName.ToUpper()))
+            if (!assetsFileListHash.Contains(fileName.ToUpper()))
             {
                 Logger.Info($"Loading {fileName}");
-                var assetsFile = new SerializedFile(this, fullName, reader);
-                if (assetsFile.valid)
+                try
                 {
+                    var assetsFile = new SerializedFile(this, fullName, reader);
                     assetsFileList.Add(assetsFile);
-                    assetsfileListHash.Add(assetsFile.upperFileName);
+                    assetsFileListHash.Add(assetsFile.upperFileName);
 
                     foreach (var sharedFile in assetsFile.m_Externals)
                     {
@@ -107,9 +107,10 @@ namespace AssetStudio
                         }
                     }
                 }
-                else
+                catch
                 {
                     reader.Dispose();
+                    //Logger.Error($"Unable to load assets file {fileName}");
                 }
             }
             else
@@ -120,24 +121,28 @@ namespace AssetStudio
 
         private void LoadAssetsFromMemory(string fullName, EndianBinaryReader reader, string originalPath, string unityVersion = null)
         {
-            var fileName = Path.GetFileName(fullName);
-            if (!assetsfileListHash.Contains(fileName.ToUpper()))
+            var upperFileName = Path.GetFileName(fullName).ToUpper();
+            if (!assetsFileListHash.Contains(upperFileName))
             {
-                var assetsFile = new SerializedFile(this, fullName, reader);
-                if (assetsFile.valid)
+                try
                 {
+                    var assetsFile = new SerializedFile(this, fullName, reader);
                     assetsFile.originalPath = originalPath;
                     if (assetsFile.header.m_Version < 7)
                     {
                         assetsFile.SetVersion(unityVersion);
                     }
-
                     assetsFileList.Add(assetsFile);
-                    assetsfileListHash.Add(assetsFile.upperFileName);
+                    assetsFileListHash.Add(assetsFile.upperFileName);
                 }
-
-                resourceFileReaders.Add(assetsFile.upperFileName, assetsFile.reader);
-
+                catch
+                {
+                    //Logger.Error($"Unable to load assets file {fileName} from {Path.GetFileName(originalPath)}");
+                }
+                finally
+                {
+                    resourceFileReaders.Add(upperFileName, reader);
+                }
             }
         }
 
@@ -145,12 +150,27 @@ namespace AssetStudio
         {
             var fileName = Path.GetFileName(fullName);
             Logger.Info("Loading " + fileName);
-            var bundleFile = new BundleFile(reader, fullName);
-            reader.Dispose();
-            foreach (var file in bundleFile.fileList)
+            try
             {
-                var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
-                LoadAssetsFromMemory(dummyPath, new EndianBinaryReader(file.stream), parentPath ?? fullName, bundleFile.versionEngine);
+                var bundleFile = new BundleFile(reader, fullName);
+                foreach (var file in bundleFile.fileList)
+                {
+                    var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
+                    LoadAssetsFromMemory(dummyPath, new EndianBinaryReader(file.stream), parentPath ?? fullName, bundleFile.versionEngine);
+                }
+            }
+            catch
+            {
+                /*var str = $"Unable to load bundle file {fileName}";
+                if (parentPath != null)
+                {
+                    str += $" from {Path.GetFileName(parentPath)}";
+                }
+                Logger.Error(str);*/
+            }
+            finally
+            {
+                reader.Dispose();
             }
         }
 
@@ -158,23 +178,33 @@ namespace AssetStudio
         {
             var fileName = Path.GetFileName(fullName);
             Logger.Info("Loading " + fileName);
-            var webFile = new WebFile(reader);
-            reader.Dispose();
-            foreach (var file in webFile.fileList)
+            try
             {
-                var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
-                switch (CheckFileType(file.stream, out reader))
+                var webFile = new WebFile(reader);
+                foreach (var file in webFile.fileList)
                 {
-                    case FileType.AssetsFile:
-                        LoadAssetsFromMemory(dummyPath, reader, fullName);
-                        break;
-                    case FileType.BundleFile:
-                        LoadBundleFile(dummyPath, reader, fullName);
-                        break;
-                    case FileType.WebFile:
-                        LoadWebFile(dummyPath, reader);
-                        break;
+                    var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
+                    switch (CheckFileType(file.stream, out reader))
+                    {
+                        case FileType.AssetsFile:
+                            LoadAssetsFromMemory(dummyPath, reader, fullName);
+                            break;
+                        case FileType.BundleFile:
+                            LoadBundleFile(dummyPath, reader, fullName);
+                            break;
+                        case FileType.WebFile:
+                            LoadWebFile(dummyPath, reader);
+                            break;
+                    }
                 }
+            }
+            catch
+            {
+                //Logger.Error($"Unable to load web file {fileName}");
+            }
+            finally
+            {
+                reader.Dispose();
             }
         }
 

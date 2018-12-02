@@ -73,7 +73,7 @@ namespace AssetStudio
             m_DefaultWeight = reader.ReadSingle();
             m_IKPass = reader.ReadBoolean();
             m_SyncedLayerAffectsTiming = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -135,7 +135,7 @@ namespace AssetStudio
                 m_ExitTime = reader.ReadSingle();
                 m_HasExitTime = reader.ReadBoolean();
                 m_HasFixedDuration = reader.ReadBoolean();
-                reader.AlignStream(4);
+                reader.AlignStream();
                 m_InterruptionSource = reader.ReadInt32();
                 m_OrderedInterruption = reader.ReadBoolean();
             }
@@ -145,7 +145,7 @@ namespace AssetStudio
             }
 
             m_CanTransitionToSelf = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -156,7 +156,7 @@ namespace AssetStudio
 
         public LeafInfoConstant(ObjectReader reader)
         {
-            m_IDArray = reader.ReadUInt32Array(reader.ReadInt32());
+            m_IDArray = reader.ReadUInt32Array();
             m_IndexOffset = reader.ReadUInt32();
         }
     }
@@ -167,7 +167,7 @@ namespace AssetStudio
 
         public MotionNeighborList(ObjectReader reader)
         {
-            m_NeighborArray = reader.ReadUInt32Array(reader.ReadInt32());
+            m_NeighborArray = reader.ReadUInt32Array();
         }
     }
 
@@ -181,10 +181,10 @@ namespace AssetStudio
 
         public Blend2dDataConstant(ObjectReader reader)
         {
-            m_ChildPositionArray = reader.ReadVector2Array(reader.ReadInt32());
-            m_ChildMagnitudeArray = reader.ReadSingleArray(reader.ReadInt32());
-            m_ChildPairVectorArray = reader.ReadVector2Array(reader.ReadInt32());
-            m_ChildPairAvgMagInvArray = reader.ReadSingleArray(reader.ReadInt32());
+            m_ChildPositionArray = reader.ReadVector2Array();
+            m_ChildMagnitudeArray = reader.ReadSingleArray();
+            m_ChildPairVectorArray = reader.ReadVector2Array();
+            m_ChildPairAvgMagInvArray = reader.ReadSingleArray();
 
             int numNeighbours = reader.ReadInt32();
             m_ChildNeighborListArray = new MotionNeighborList[numNeighbours];
@@ -201,7 +201,7 @@ namespace AssetStudio
 
         public Blend1dDataConstant(ObjectReader reader)
         {
-            m_ChildThresholdArray = reader.ReadSingleArray(reader.ReadInt32());
+            m_ChildThresholdArray = reader.ReadSingleArray();
         }
     }
 
@@ -212,9 +212,9 @@ namespace AssetStudio
 
         public BlendDirectDataConstant(ObjectReader reader)
         {
-            m_ChildBlendEventIDArray = reader.ReadUInt32Array(reader.ReadInt32());
+            m_ChildBlendEventIDArray = reader.ReadUInt32Array();
             m_NormalizedBlendValues = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -239,7 +239,7 @@ namespace AssetStudio
             m_BlendType = reader.ReadUInt32();
             m_BlendEventID = reader.ReadUInt32();
             m_BlendEventYID = reader.ReadUInt32();
-            m_ChildIndices = reader.ReadUInt32Array(reader.ReadInt32());
+            m_ChildIndices = reader.ReadUInt32Array();
             m_Blend1dData = new Blend1dDataConstant(reader);
             m_Blend2dData = new Blend2dDataConstant(reader);
             if (version[0] >= 5) //5.0 and up
@@ -256,7 +256,7 @@ namespace AssetStudio
             m_Duration = reader.ReadSingle();
             m_CycleOffset = reader.ReadSingle();
             m_Mirror = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -306,12 +306,7 @@ namespace AssetStudio
                 m_TransitionConstantArray[i] = new TransitionConstant(reader);
             }
 
-            int numBlendIndices = reader.ReadInt32();
-            m_BlendTreeConstantIndexArray = new int[numBlendIndices];
-            for (int i = 0; i < numBlendIndices; i++)
-            {
-                m_BlendTreeConstantIndexArray[i] = reader.ReadInt32();
-            }
+            m_BlendTreeConstantIndexArray = reader.ReadInt32Array();
 
             if (version[0] < 5) //5.0 down
             {
@@ -360,7 +355,7 @@ namespace AssetStudio
 
             m_Loop = reader.ReadBoolean();
             m_Mirror = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -399,7 +394,7 @@ namespace AssetStudio
 
             m_FullPathID = reader.ReadUInt32();
             m_isEntry = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -457,17 +452,12 @@ namespace AssetStudio
             var version = reader.version;
             if (version[0] < 5 || (version[0] == 5 && version[1] < 5)) //5.5 down
             {
-                int numBools = reader.ReadInt32();
-                m_BoolValues = new bool[numBools];
-                for (int i = 0; i < numBools; i++)
-                {
-                    m_BoolValues[i] = reader.ReadBoolean();
-                }
+                m_BoolValues = reader.ReadBooleanArray();
 
-                reader.AlignStream(4);
+                reader.AlignStream();
 
-                m_IntValues = reader.ReadInt32Array(reader.ReadInt32());
-                m_FloatValues = reader.ReadSingleArray(reader.ReadInt32());
+                m_IntValues = reader.ReadInt32Array();
+                m_FloatValues = reader.ReadSingleArray();
             }
 
             int numPosValues = reader.ReadInt32();
@@ -477,28 +467,23 @@ namespace AssetStudio
                 m_PositionValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4(); //5.4 and up
             }
 
-            m_QuaternionValues = reader.ReadVector4Array(reader.ReadInt32());
+            m_QuaternionValues = reader.ReadVector4Array();
 
             int numScaleValues = reader.ReadInt32();
             m_ScaleValues = new Vector3[numScaleValues];
             for (int i = 0; i < numScaleValues; i++)
             {
-                m_ScaleValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4(); //5.4 adn up
+                m_ScaleValues[i] = version[0] > 5 || (version[0] == 5 && version[1] >= 4) ? reader.ReadVector3() : (Vector3)reader.ReadVector4(); //5.4 and up
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 5)) //5.5 and up
             {
-                m_FloatValues = reader.ReadSingleArray(reader.ReadInt32());
-                m_IntValues = reader.ReadInt32Array(reader.ReadInt32());
+                m_FloatValues = reader.ReadSingleArray();
+                m_IntValues = reader.ReadInt32Array();
 
-                int numBools = reader.ReadInt32();
-                m_BoolValues = new bool[numBools];
-                for (int i = 0; i < numBools; i++)
-                {
-                    m_BoolValues[i] = reader.ReadBoolean();
-                }
+                m_BoolValues = reader.ReadBooleanArray();
 
-                reader.AlignStream(4);
+                reader.AlignStream();
             }
         }
     }

@@ -94,7 +94,7 @@ namespace AssetStudio
                         value = reader.ReadChar();
                         break;
                 }
-                reader.AlignStream(4);
+                reader.AlignStream();
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {value}");
                 return;
             }

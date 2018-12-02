@@ -67,7 +67,7 @@ namespace AssetStudio
     public class Skeleton
     {
         public List<Node> m_Node;
-        public List<uint> m_ID;
+        public uint[] m_ID;
         public List<Axes> m_AxesArray;
 
 
@@ -80,12 +80,7 @@ namespace AssetStudio
                 m_Node.Add(new Node(reader));
             }
 
-            int numIDs = reader.ReadInt32();
-            m_ID = new List<uint>(numIDs);
-            for (int i = 0; i < numIDs; i++)
-            {
-                m_ID.Add(reader.ReadUInt32());
-            }
+            m_ID = reader.ReadUInt32Array();
 
             int numAxes = reader.ReadInt32();
             m_AxesArray = new List<Axes>(numAxes);
@@ -118,16 +113,11 @@ namespace AssetStudio
 
     public class Hand
     {
-        public List<int> m_HandBoneIndex;
+        public int[] m_HandBoneIndex;
 
         public Hand(ObjectReader reader)
         {
-            int numIndexes = reader.ReadInt32();
-            m_HandBoneIndex = new List<int>(numIndexes);
-            for (int i = 0; i < numIndexes; i++)
-            {
-                m_HandBoneIndex.Add(reader.ReadInt32());
-            }
+            m_HandBoneIndex = reader.ReadInt32Array();
         }
     }
 
@@ -180,9 +170,9 @@ namespace AssetStudio
         public Hand m_RightHand;
         public List<Handle> m_Handles;
         public List<Collider> m_ColliderArray;
-        public List<int> m_HumanBoneIndex;
-        public List<float> m_HumanBoneMass;
-        public List<int> m_ColliderIndex;
+        public int[] m_HumanBoneIndex;
+        public float[] m_HumanBoneMass;
+        public int[] m_ColliderIndex;
         public float m_Scale;
         public float m_ArmTwist;
         public float m_ForeArmTwist;
@@ -221,28 +211,13 @@ namespace AssetStudio
                 }
             }
 
-            int numIndexes = reader.ReadInt32();
-            m_HumanBoneIndex = new List<int>(numIndexes);
-            for (int i = 0; i < numIndexes; i++)
-            {
-                m_HumanBoneIndex.Add(reader.ReadInt32());
-            }
+            m_HumanBoneIndex = reader.ReadInt32Array();
 
-            int numMasses = reader.ReadInt32();
-            m_HumanBoneMass = new List<float>(numMasses);
-            for (int i = 0; i < numMasses; i++)
-            {
-                m_HumanBoneMass.Add(reader.ReadSingle());
-            }
+            m_HumanBoneMass = reader.ReadSingleArray();
 
             if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
             {
-                int numColliderIndexes = reader.ReadInt32();
-                m_ColliderIndex = new List<int>(numColliderIndexes);
-                for (int i = 0; i < numColliderIndexes; i++)
-                {
-                    m_ColliderIndex.Add(reader.ReadInt32());
-                }
+                m_ColliderIndex = reader.ReadInt32Array();
             }
 
             m_Scale = reader.ReadSingle();
@@ -256,7 +231,7 @@ namespace AssetStudio
             m_HasLeftHand = reader.ReadBoolean();
             m_HasRightHand = reader.ReadBoolean();
             m_HasTDoF = reader.ReadBoolean();
-            reader.AlignStream(4);
+            reader.AlignStream();
         }
     }
 
@@ -265,15 +240,15 @@ namespace AssetStudio
         public Skeleton m_AvatarSkeleton;
         public SkeletonPose m_AvatarSkeletonPose;
         public SkeletonPose m_DefaultPose;
-        public List<uint> m_SkeletonNameIDArray;
+        public uint[] m_SkeletonNameIDArray;
         public Human m_Human;
-        public List<int> m_HumanSkeletonIndexArray;
-        public List<int> m_HumanSkeletonReverseIndexArray;
+        public int[] m_HumanSkeletonIndexArray;
+        public int[] m_HumanSkeletonReverseIndexArray;
         public int m_RootMotionBoneIndex;
         public xform m_RootMotionBoneX;
         public Skeleton m_RootMotionSkeleton;
         public SkeletonPose m_RootMotionSkeletonPose;
-        public List<int> m_RootMotionSkeletonIndexArray;
+        public int[] m_RootMotionSkeletonIndexArray;
 
         public AvatarConstant(ObjectReader reader)
         {
@@ -284,31 +259,17 @@ namespace AssetStudio
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
                 m_DefaultPose = new SkeletonPose(reader);
-                int numIDs = reader.ReadInt32();
-                m_SkeletonNameIDArray = new List<uint>(numIDs);
-                for (int i = 0; i < numIDs; i++)
-                {
-                    m_SkeletonNameIDArray.Add(reader.ReadUInt32());
-                }
+
+                m_SkeletonNameIDArray = reader.ReadUInt32Array();
             }
 
             m_Human = new Human(reader);
 
-            int numIndexes = reader.ReadInt32();
-            m_HumanSkeletonIndexArray = new List<int>(numIndexes);
-            for (int i = 0; i < numIndexes; i++)
-            {
-                m_HumanSkeletonIndexArray.Add(reader.ReadInt32());
-            }
+            m_HumanSkeletonIndexArray = reader.ReadInt32Array();
 
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
-                int numReverseIndexes = reader.ReadInt32();
-                m_HumanSkeletonReverseIndexArray = new List<int>(numReverseIndexes);
-                for (int i = 0; i < numReverseIndexes; i++)
-                {
-                    m_HumanSkeletonReverseIndexArray.Add(reader.ReadInt32());
-                }
+                m_HumanSkeletonReverseIndexArray = reader.ReadInt32Array();
             }
 
             m_RootMotionBoneIndex = reader.ReadInt32();
@@ -319,12 +280,7 @@ namespace AssetStudio
                 m_RootMotionSkeleton = new Skeleton(reader);
                 m_RootMotionSkeletonPose = new SkeletonPose(reader);
 
-                int numMotionIndexes = reader.ReadInt32();
-                m_RootMotionSkeletonIndexArray = new List<int>(numMotionIndexes);
-                for (int i = 0; i < numMotionIndexes; i++)
-                {
-                    m_RootMotionSkeletonIndexArray.Add(reader.ReadInt32());
-                }
+                m_RootMotionSkeletonIndexArray = reader.ReadInt32Array();
             }
         }
     }

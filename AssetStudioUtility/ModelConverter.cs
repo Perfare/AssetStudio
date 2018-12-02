@@ -482,7 +482,7 @@ namespace AssetStudio
                                 lastGroup = group;
                             }
 
-                            morph.Channels.Add(new Tuple<float, int, int>(i < sMesh.m_BlendShapeWeights.Count ? sMesh.m_BlendShapeWeights[i] : 0f, morph.KeyframeList.Count, mesh.m_Shapes.channels[i].frameCount));
+                            morph.Channels.Add(new Tuple<float, int, int>(i < sMesh.m_BlendShapeWeights.Length ? sMesh.m_BlendShapeWeights[i] : 0f, morph.KeyframeList.Count, mesh.m_Shapes.channels[i].frameCount));
                             for (int frameIdx = 0; frameIdx < mesh.m_Shapes.channels[i].frameCount; frameIdx++)
                             {
                                 ImportedMorphKeyframe keyframe = new ImportedMorphKeyframe();
@@ -596,22 +596,21 @@ namespace AssetStudio
                 }
                 iMat = new ImportedMaterial();
                 iMat.Name = mat.m_Name;
-                foreach (var col in mat.m_Colors)
+                foreach (var col in mat.m_SavedProperties.m_Colors)
                 {
-                    var color = new Color4(col.second[0], col.second[1], col.second[2], col.second[3]);
-                    switch (col.first)
+                    switch (col.Key)
                     {
                         case "_Color":
-                            iMat.Diffuse = color;
+                            iMat.Diffuse = col.Value;
                             break;
                         case "_SColor":
-                            iMat.Ambient = color;
+                            iMat.Ambient = col.Value;
                             break;
                         case "_EmissionColor":
-                            iMat.Emissive = color;
+                            iMat.Emissive = col.Value;
                             break;
                         case "_SpecColor":
-                            iMat.Specular = color;
+                            iMat.Specular = col.Value;
                             break;
                         case "_RimColor":
                         case "_OutlineColor":
@@ -620,12 +619,12 @@ namespace AssetStudio
                     }
                 }
 
-                foreach (var flt in mat.m_Floats)
+                foreach (var flt in mat.m_SavedProperties.m_Floats)
                 {
-                    switch (flt.first)
+                    switch (flt.Key)
                     {
                         case "_Shininess":
-                            iMat.Power = flt.second;
+                            iMat.Power = flt.Value;
                             break;
                         case "_RimPower":
                         case "_Outline":
@@ -637,10 +636,10 @@ namespace AssetStudio
                 iMat.Textures = new string[5];
                 iMat.TexOffsets = new Vector2[5];
                 iMat.TexScales = new Vector2[5];
-                foreach (var texEnv in mat.m_TexEnvs)
+                foreach (var texEnv in mat.m_SavedProperties.m_TexEnvs)
                 {
                     Texture2D m_Texture2D = null;
-                    if (texEnv.m_Texture.TryGet<Texture2D>(out var m_Texture)) //TODO other Texture
+                    if (texEnv.Value.m_Texture.TryGet<Texture2D>(out var m_Texture)) //TODO other Texture
                     {
                         m_Texture2D = m_Texture;
                     }
@@ -650,13 +649,13 @@ namespace AssetStudio
                         continue;
                     }
                     int dest = -1;
-                    if (texEnv.name == "_MainTex")
+                    if (texEnv.Key == "_MainTex")
                         dest = 0;
-                    else if (texEnv.name == "_BumpMap")
+                    else if (texEnv.Key == "_BumpMap")
                         dest = 4;
-                    else if (texEnv.name.Contains("Spec"))
+                    else if (texEnv.Key.Contains("Spec"))
                         dest = 2;
-                    else if (texEnv.name.Contains("Norm"))
+                    else if (texEnv.Key.Contains("Norm"))
                         dest = 3;
                     if (dest < 0 || iMat.Textures[dest] != null)
                     {
@@ -685,8 +684,8 @@ namespace AssetStudio
                         iMat.Textures[dest] = m_Texture2D.m_Name + ".png";
                         textureNameDictionary.Add(m_Texture, iMat.Textures[dest]);
                     }
-                    iMat.TexOffsets[dest] = new Vector2(texEnv.m_Offset[0], texEnv.m_Offset[1]);
-                    iMat.TexScales[dest] = new Vector2(texEnv.m_Scale[0], texEnv.m_Scale[1]);
+                    iMat.TexOffsets[dest] = texEnv.Value.m_Offset;
+                    iMat.TexScales[dest] = texEnv.Value.m_Scale;
                     ConvertTexture2D(m_Texture2D, iMat.Textures[dest]);
                 }
 
