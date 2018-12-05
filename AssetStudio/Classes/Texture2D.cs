@@ -7,74 +7,37 @@ using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
-    public sealed class Texture2D : Texture
+    public class StreamingInfo
     {
-        public int m_Width;
-        public int m_Height;
-        public int m_CompleteImageSize;
-        public TextureFormat m_TextureFormat;
-        public bool m_MipMap;
-        public int m_MipCount;
-        public bool m_IsReadable;
-        public bool m_ReadAllowed;
-        public int m_ImageCount;
-        public int m_TextureDimension;
-        //m_TextureSettings
-        public int m_FilterMode;
-        public int m_Aniso;
-        public float m_MipBias;
-        public int m_WrapMode;
-        public int m_LightmapFormat;
-        public int m_ColorSpace;
-        //image dataa
-        public int image_data_size;
-        public Lazy<byte[]> image_data;
-        //m_StreamData
         public uint offset;
         public uint size;
         public string path;
 
-        public Texture2D(ObjectReader reader) : base(reader)
+        public StreamingInfo(ObjectReader reader)
         {
-            m_Width = reader.ReadInt32();
-            m_Height = reader.ReadInt32();
-            m_CompleteImageSize = reader.ReadInt32();
-            m_TextureFormat = (TextureFormat)reader.ReadInt32();
+            offset = reader.ReadUInt32();
+            size = reader.ReadUInt32();
+            path = reader.ReadAlignedString();
+        }
+    }
 
-            if (version[0] < 5 || (version[0] == 5 && version[1] < 2))
-            {
-                m_MipMap = reader.ReadBoolean();
-            }
-            else
-            {
-                m_MipCount = reader.ReadInt32();
-            }
+    public class GLTextureSettings
+    {
+        public int m_FilterMode;
+        public int m_Aniso;
+        public float m_MipBias;
+        public int m_WrapMode;
 
-            m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
-            m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
-            //m_StreamingMipmaps 2018.2 and up
-            reader.AlignStream();
-            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
-            {
-                var m_StreamingMipmapsPriority = reader.ReadInt32();
-            }
-            else if (HasStructMember("m_StreamingMipmapsPriority")) //will fix in some patch version bundle
-            {
-                var m_StreamingMipmapsPriority = reader.ReadInt32();
-            }
-            if (HasStructMember("m_StreamingGroupID")) //What the hell is this?
-            {
-                var m_StreamingGroupID = reader.ReadUInt32();
-            }
-            m_ImageCount = reader.ReadInt32();
-            m_TextureDimension = reader.ReadInt32();
-            //m_TextureSettings
+        public GLTextureSettings(ObjectReader reader)
+        {
+            var version = reader.version;
+
             m_FilterMode = reader.ReadInt32();
             m_Aniso = reader.ReadInt32();
             m_MipBias = reader.ReadSingle();
             if (version[0] >= 2017)//2017.x and up
             {
-                int m_WrapU = reader.ReadInt32();
+                m_WrapMode = reader.ReadInt32(); //m_WrapU
                 int m_WrapV = reader.ReadInt32();
                 int m_WrapW = reader.ReadInt32();
             }
@@ -82,29 +45,63 @@ namespace AssetStudio
             {
                 m_WrapMode = reader.ReadInt32();
             }
-            if (version[0] >= 3)
+        }
+    }
+
+    public sealed class Texture2D : Texture
+    {
+        public int m_Width;
+        public int m_Height;
+        public TextureFormat m_TextureFormat;
+        public bool m_MipMap;
+        public int m_MipCount;
+        public GLTextureSettings m_TextureSettings;
+        public Lazy<byte[]> image_data;
+        public StreamingInfo m_StreamData;
+
+        public Texture2D(ObjectReader reader) : base(reader)
+        {
+            m_Width = reader.ReadInt32();
+            m_Height = reader.ReadInt32();
+            var m_CompleteImageSize = reader.ReadInt32();
+            m_TextureFormat = (TextureFormat)reader.ReadInt32();
+            if (version[0] < 5 || (version[0] == 5 && version[1] < 2)) //5.2 down
             {
-                m_LightmapFormat = reader.ReadInt32();
-                if (version[0] >= 4 || version[1] >= 5)//3.5.0 and up
-                {
-                    m_ColorSpace = reader.ReadInt32();
-                }
+                m_MipMap = reader.ReadBoolean();
             }
-
-            image_data_size = reader.ReadInt32();
-
+            else
+            {
+                m_MipCount = reader.ReadInt32();
+            }
+            var m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
+            var m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
+            //bool m_StreamingMipmaps 2018.2 and up
+            reader.AlignStream();
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
+            {
+                var m_StreamingMipmapsPriority = reader.ReadInt32();
+            }
+            var m_ImageCount = reader.ReadInt32();
+            var m_TextureDimension = reader.ReadInt32();
+            m_TextureSettings = new GLTextureSettings(reader);
+            if (version[0] >= 3) //3.0 and up
+            {
+                var m_LightmapFormat = reader.ReadInt32();
+            }
+            if (version[0] > 3 || (version[0] == 3 && version[1] >= 5)) //3.5.0 and up
+            {
+                var m_ColorSpace = reader.ReadInt32();
+            }
+            var image_data_size = reader.ReadInt32();
             if (image_data_size == 0 && ((version[0] == 5 && version[1] >= 3) || version[0] > 5))//5.3.0 and up
             {
-                offset = reader.ReadUInt32();
-                size = reader.ReadUInt32();
-                image_data_size = (int)size;
-                path = reader.ReadAlignedString();
+                m_StreamData = new StreamingInfo(reader);
             }
 
             ResourceReader resourceReader;
-            if (!string.IsNullOrEmpty(path))
+            if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
-                resourceReader = new ResourceReader(path, assetsFile, offset, image_data_size);
+                resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
             }
             else
             {

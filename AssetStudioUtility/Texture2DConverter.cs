@@ -86,8 +86,10 @@ namespace AssetStudio
 
         public Texture2DConverter(Texture2D m_Texture2D)
         {
-            image_data_size = m_Texture2D.image_data_size;
-            image_data = m_Texture2D.image_data.Value;
+            var image_data_value = m_Texture2D.image_data.Value;
+            image_data_size = image_data_value.Length;
+            image_data = new byte[image_data_size];
+            Buffer.BlockCopy(image_data_value, 0, image_data, 0, image_data_size);
             m_Width = m_Texture2D.m_Width;
             m_Height = m_Texture2D.m_Height;
             m_TextureFormat = m_Texture2D.m_TextureFormat;

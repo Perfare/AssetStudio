@@ -115,8 +115,8 @@ namespace AssetStudioGUI
                             assetItem.Text = m_GameObject.m_Name;
                             break;
                         case Texture2D m_Texture2D:
-                            if (!string.IsNullOrEmpty(m_Texture2D.path))
-                                assetItem.FullSize = asset.byteSize + m_Texture2D.size;
+                            if (!string.IsNullOrEmpty(m_Texture2D.m_StreamData?.path))
+                                assetItem.FullSize = asset.byteSize + m_Texture2D.m_StreamData.size;
                             assetItem.Text = m_Texture2D.m_Name;
                             exportable = true;
                             break;

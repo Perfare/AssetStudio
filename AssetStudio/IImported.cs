@@ -76,7 +76,7 @@ namespace AssetStudio
     {
         public Vector3 Position { get; set; }
         public float[] Weights { get; set; }
-        public byte[] BoneIndices { get; set; }
+        public int[] BoneIndices { get; set; }
         public Vector3 Normal { get; set; }
         public float[] UV { get; set; }
         public Vector4 Tangent { get; set; }

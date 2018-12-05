@@ -138,7 +138,6 @@ namespace AssetStudio
         private static Vector2[][] GetTriangles(VertexData m_VertexData, SubMesh[] m_SubMeshes, byte[] m_IndexBuffer)
         {
             var triangles = new List<Vector2[]>();
-            GetStreams(m_VertexData);
             var m_Channel = m_VertexData.m_Channels[0]; //kShaderChannelVertex
             var m_Stream = m_VertexData.m_Streams[m_Channel.stream];
             using (BinaryReader vertexReader = new BinaryReader(new MemoryStream(m_VertexData.m_DataSize)),
@@ -169,63 +168,6 @@ namespace AssetStudio
                 }
             }
             return triangles.ToArray();
-        }
-
-        private static void GetStreams(VertexData vertexData)
-        {
-            var m_Channels = vertexData.m_Channels;
-            var streamCount = m_Channels.Max(x => x.stream) + 1;
-            var m_Streams = new StreamInfo[streamCount];
-            uint offset = 0;
-            for (int s = 0; s < streamCount; s++)
-            {
-                uint chnMask = 0;
-                uint stride = 0;
-                for (int chn = 0; chn < m_Channels.Length; chn++)
-                {
-                    var m_Channel = m_Channels[chn];
-                    if (m_Channel.stream == s)
-                    {
-                        if (m_Channel.dimension > 0)
-                        {
-                            chnMask |= 1u << chn;
-                            stride += m_Channel.dimension * GetChannelFormatSize(m_Channel.format);
-                        }
-                    }
-                }
-                m_Streams[s] = new StreamInfo
-                {
-                    channelMask = chnMask,
-                    offset = offset,
-                    stride = stride,
-                    dividerOp = 0,
-                    frequency = 0
-                };
-                offset += vertexData.m_VertexCount * stride;
-                //static size_t AlignStreamSize (size_t size) { return (size + (kVertexStreamAlign-1)) & ~(kVertexStreamAlign-1); }
-                offset = (offset + (16u - 1u)) & ~(16u - 1u);
-            }
-
-            vertexData.m_Streams = m_Streams;
-        }
-
-        private static uint GetChannelFormatSize(int format)
-        {
-            switch (format)
-            {
-                case 0: //kChannelFormatFloat
-                    return 4u;
-                case 1: //kChannelFormatFloat16
-                    return 2u;
-                case 2: //kChannelFormatColor, in 4.x is size 4
-                    return 1u;
-                case 3: //kChannelFormatByte
-                    return 1u;
-                case 11: //kChannelFormatInt32
-                    return 4u;
-                default:
-                    return 0;
-            }
         }
     }
 }

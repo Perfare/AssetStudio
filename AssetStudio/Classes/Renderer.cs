@@ -62,6 +62,11 @@ namespace AssetStudio
                     var m_RenderingLayerMask = reader.ReadUInt32();
                 }
 
+                if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3)) //2018.3 and up
+                {
+                    var m_RendererPriority = reader.ReadInt32();
+                }
+
                 var m_LightmapIndex = reader.ReadUInt16();
                 var m_LightmapIndexDynamic = reader.ReadUInt16();
             }

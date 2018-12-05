@@ -713,14 +713,14 @@ namespace AssetStudioGUI
             if (bitmap != null)
             {
                 assetItem.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
-                switch (m_Texture2D.m_FilterMode)
+                switch (m_Texture2D.m_TextureSettings.m_FilterMode)
                 {
                     case 0: assetItem.InfoText += "\nFilter Mode: Point "; break;
                     case 1: assetItem.InfoText += "\nFilter Mode: Bilinear "; break;
                     case 2: assetItem.InfoText += "\nFilter Mode: Trilinear "; break;
                 }
-                assetItem.InfoText += $"\nAnisotropic level: {m_Texture2D.m_Aniso}\nMip map bias: {m_Texture2D.m_MipBias}";
-                switch (m_Texture2D.m_WrapMode)
+                assetItem.InfoText += $"\nAnisotropic level: {m_Texture2D.m_TextureSettings.m_Aniso}\nMip map bias: {m_Texture2D.m_TextureSettings.m_MipBias}";
+                switch (m_Texture2D.m_TextureSettings.m_WrapMode)
                 {
                     case 0: assetItem.InfoText += "\nWrap mode: Repeat"; break;
                     case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
@@ -1061,10 +1061,14 @@ namespace AssetStudioGUI
                 #endregion
                 glControl1.Visible = true;
                 createVAO();
+                StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
+                                  + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
+                                  + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
             }
-            StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
-                            + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
-                            + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
+            else
+            {
+                StatusStripUpdate("Unable to preview this mesh");
+            }
         }
 
         private void PreviewSprite(AssetItem assetItem, Sprite m_Sprite)

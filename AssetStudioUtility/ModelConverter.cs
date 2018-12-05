@@ -263,7 +263,7 @@ namespace AssetStudio
                 combine = true;
             }
             int firstFace = 0;
-            for (int i = 0; i < mesh.m_SubMeshes.Count; i++)
+            for (int i = 0; i < mesh.m_SubMeshes.Length; i++)
             {
                 int numFaces = (int)mesh.m_SubMeshes[i].indexCount / 3;
                 if (subHashSet.Count > 0 && !subHashSet.Contains(i))
@@ -338,12 +338,12 @@ namespace AssetStudio
                     if (mesh.m_Skin?.Length > 0)
                     {
                         var inf = mesh.m_Skin[j];
-                        iVertex.BoneIndices = new byte[inf.Count];
-                        iVertex.Weights = new float[inf.Count];
-                        for (var k = 0; k < inf.Count; k++)
+                        iVertex.BoneIndices = new int[4];
+                        iVertex.Weights = new float[4];
+                        for (var k = 0; k < 4; k++)
                         {
-                            iVertex.BoneIndices[k] = (byte)inf[k].boneIndex;
-                            iVertex.Weights[k] = inf[k].weight;
+                            iVertex.BoneIndices[k] = inf.boneIndex[k];
+                            iVertex.Weights[k] = inf.weight[k];
                         }
                     }
                     iSubmesh.VertexList.Add(iVertex);
@@ -490,7 +490,7 @@ namespace AssetStudio
                                 int shapeIdx = mesh.m_Shapes.channels[i].frameIndex + frameIdx;
                                 keyframe.VertexList = new List<ImportedVertex>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
                                 keyframe.MorphedVertexIndices = new List<ushort>((int)mesh.m_Shapes.shapes[shapeIdx].vertexCount);
-                                keyframe.Weight = shapeIdx < mesh.m_Shapes.fullWeights.Count ? mesh.m_Shapes.fullWeights[shapeIdx] : 100f;
+                                keyframe.Weight = shapeIdx < mesh.m_Shapes.fullWeights.Length ? mesh.m_Shapes.fullWeights[shapeIdx] : 100f;
                                 int lastVertIndex = (int)(mesh.m_Shapes.shapes[shapeIdx].firstVertex + mesh.m_Shapes.shapes[shapeIdx].vertexCount);
                                 for (int j = (int)mesh.m_Shapes.shapes[shapeIdx].firstVertex; j < lastVertIndex; j++)
                                 {

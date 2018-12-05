@@ -554,8 +554,8 @@ namespace AssetStudio
 
 						if (hasBones && vertex->BoneIndices != nullptr)
 						{
-							array<unsigned char>^ boneIndices = vertex->BoneIndices;
-							array<float>^ weights4 = vertex->Weights;
+							auto boneIndices = vertex->BoneIndices;
+							auto weights4 = vertex->Weights;
 							for (int k = 0; k < weights4->Length; k++)
 							{
 								if (boneIndices[k] < boneList->Count && weights4[k] > 0)

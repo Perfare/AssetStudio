@@ -190,7 +190,7 @@ namespace AssetStudioGUI
 
             #region Face
             int sum = 0;
-            for (var i = 0; i < m_Mesh.m_SubMeshes.Count; i++)
+            for (var i = 0; i < m_Mesh.m_SubMeshes.Length; i++)
             {
                 sb.AppendLine($"g {m_Mesh.m_Name}_{i}");
                 int indexCount = (int)m_Mesh.m_SubMeshes[i].indexCount;

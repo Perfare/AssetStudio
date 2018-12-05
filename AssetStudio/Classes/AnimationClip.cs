@@ -632,7 +632,10 @@ namespace AssetStudio
             {
                 m_ConstantClip = new ConstantClip(reader);
             }
-            m_Binding = new ValueArrayConstant(reader);
+            if (version[0] < 2018 || (version[0] == 2018 && version[1] < 3)) //2018.3 down
+            {
+                m_Binding = new ValueArrayConstant(reader);
+            }
         }
     }
 
@@ -947,6 +950,8 @@ namespace AssetStudio
             {
                 m_ClipBindingConstant = new AnimationClipBindingConstant(reader);
             }
+            //m_HasGenericRootTransform 2018.3
+            //m_HasMotionFloatCurves 2018.3
             /*int numEvents = reader.ReadInt32();
             m_Events = new List<AnimationEvent>(numEvents);
             for (int i = 0; i < numEvents; i++)
