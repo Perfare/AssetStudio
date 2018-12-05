@@ -681,11 +681,6 @@ namespace AssetStudio
         {
             m_VertexCount = (int)m_VertexData.m_VertexCount;
 
-            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
-            {
-                InitMSkin();
-            }
-
             for (var chn = 0; chn < m_VertexData.m_Channels.Length; chn++)
             {
                 var m_Channel = m_VertexData.m_Channels[chn];
@@ -764,6 +759,10 @@ namespace AssetStudio
                                 //kShaderChannelTexCoord7 11
                                 //2018.2 and up
                                 case 12: //kShaderChannelBlendWeight
+                                    if (m_Skin == null)
+                                    {
+                                        InitMSkin();
+                                    }
                                     for (int i = 0; i < m_VertexCount; i++)
                                     {
                                         for (int j = 0; j < 4; j++)
@@ -773,6 +772,10 @@ namespace AssetStudio
                                     }
                                     break;
                                 case 13: //kShaderChannelBlendIndices
+                                    if (m_Skin == null)
+                                    {
+                                        InitMSkin();
+                                    }
                                     for (int i = 0; i < m_VertexCount; i++)
                                     {
                                         for (int j = 0; j < 4; j++)
