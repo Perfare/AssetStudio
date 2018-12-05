@@ -707,7 +707,7 @@ namespace AssetStudio
                             }
                         }
 
-                        if (reader.endian == EndianType.BigEndian) //swap bytes
+                        if (reader.endian == EndianType.BigEndian && componentByteSize > 1) //swap bytes
                         {
                             for (var i = 0; i < componentBytes.Length / componentByteSize; i++)
                             {
