@@ -288,9 +288,9 @@ namespace AssetStudio
 				Marshal::FreeHGlobal((IntPtr)pName);
 			}
 
-			pFrameNode->LclScaling.Set(FbxDouble3(frame->LocalScale[0], frame->LocalScale[1], frame->LocalScale[2]));
-			pFrameNode->LclRotation.Set(FbxDouble3(frame->LocalRotation[0], frame->LocalRotation[1], frame->LocalRotation[2]));
-			pFrameNode->LclTranslation.Set(FbxDouble3(frame->LocalPosition[0], frame->LocalPosition[1], frame->LocalPosition[2]));
+			pFrameNode->LclScaling.Set(FbxDouble3(frame->LocalScale.X, frame->LocalScale.Y, frame->LocalScale.Z));
+			pFrameNode->LclRotation.Set(FbxDouble3(frame->LocalRotation.X, frame->LocalRotation.Y, frame->LocalRotation.Z));
+			pFrameNode->LclTranslation.Set(FbxDouble3(frame->LocalPosition.X, frame->LocalPosition.Y, frame->LocalPosition.Z));
 			pParentNode->AddChild(pFrameNode);
 
 			if (imported->MeshList != nullptr && ImportedHelpers::FindMesh(frame, imported->MeshList) != nullptr)
@@ -545,11 +545,11 @@ namespace AssetStudio
 						}
 						array<float>^ uv = vertex->UV;
 						if (uv != nullptr)
-							lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], -uv[1]));
+							lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], uv[1]));
 						if (normals)
 						{
 							Vector4 tangent = vertex->Tangent;
-							lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, -tangent.W));
+							lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, tangent.W));
 						}
 
 						if (hasBones && vertex->BoneIndices != nullptr)

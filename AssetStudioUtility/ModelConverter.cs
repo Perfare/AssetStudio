@@ -81,7 +81,7 @@ namespace AssetStudio
             var m_Transform = m_GameObject.m_Transform;
             if (!hasTransformHierarchy)
             {
-                ConvertFrames(m_Transform, null);
+                ConvertTransforms(m_Transform, null);
                 DeoptimizeTransformHierarchy();
             }
             else
@@ -90,7 +90,7 @@ namespace AssetStudio
                 var tempTransform = m_Transform;
                 while (tempTransform.m_Father.TryGet(out var m_Father))
                 {
-                    frameList.Add(ConvertFrame(m_Father));
+                    frameList.Add(ConvertTransform(m_Father));
                     tempTransform = m_Father;
                 }
                 if (frameList.Count > 0)
@@ -102,11 +102,11 @@ namespace AssetStudio
                         var parent = frameList[i + 1];
                         parent.AddChild(frame);
                     }
-                    ConvertFrames(m_Transform, frameList[0]);
+                    ConvertTransforms(m_Transform, frameList[0]);
                 }
                 else
                 {
-                    ConvertFrames(m_Transform, null);
+                    ConvertTransforms(m_Transform, null);
                 }
 
                 CreateBonePathHash(m_Transform);
@@ -183,39 +183,33 @@ namespace AssetStudio
             }
         }
 
-        private ImportedFrame ConvertFrame(Transform trans)
+        private static ImportedFrame ConvertTransform(Transform trans)
         {
-            var frame = new ImportedFrame();
+            var frame = new ImportedFrame(trans.m_Children.Length);
             trans.m_GameObject.TryGet(out var m_GameObject);
             frame.Name = m_GameObject.m_Name;
-            frame.InitChildren(trans.m_Children.Count);
-            var m_EulerRotation = QuatToEuler(new[] { trans.m_LocalRotation[0], -trans.m_LocalRotation[1], -trans.m_LocalRotation[2], trans.m_LocalRotation[3] });
-            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
-            frame.LocalScale = new[] { trans.m_LocalScale[0], trans.m_LocalScale[1], trans.m_LocalScale[2] };
-            frame.LocalPosition = new[] { -trans.m_LocalPosition[0], trans.m_LocalPosition[1], trans.m_LocalPosition[2] };
+            SetFrame(frame, trans.m_LocalPosition, trans.m_LocalRotation, trans.m_LocalScale);
             return frame;
         }
 
-        private ImportedFrame ConvertFrame(Vector3 t, Quaternion q, Vector3 s, string name)
+        private static ImportedFrame CreateFrame(string name, Vector3 t, Quaternion q, Vector3 s)
         {
             var frame = new ImportedFrame();
             frame.Name = name;
-            frame.InitChildren(0);
             SetFrame(frame, t, q, s);
             return frame;
         }
 
-        private void SetFrame(ImportedFrame frame, Vector3 t, Quaternion q, Vector3 s)
+        private static void SetFrame(ImportedFrame frame, Vector3 t, Quaternion q, Vector3 s)
         {
-            var m_EulerRotation = QuatToEuler(new[] { q.X, -q.Y, -q.Z, q.W });
-            frame.LocalRotation = new[] { m_EulerRotation[0], m_EulerRotation[1], m_EulerRotation[2] };
-            frame.LocalScale = new[] { s.X, s.Y, s.Z };
-            frame.LocalPosition = new[] { -t.X, t.Y, t.Z };
+            frame.LocalPosition = new Vector3(-t.X, t.Y, t.Z);
+            frame.LocalRotation = Fbx.QuaternionToEuler(new Quaternion(q.X, -q.Y, -q.Z, q.W));
+            frame.LocalScale = s;
         }
 
-        private void ConvertFrames(Transform trans, ImportedFrame parent)
+        private void ConvertTransforms(Transform trans, ImportedFrame parent)
         {
-            var frame = ConvertFrame(trans);
+            var frame = ConvertTransform(trans);
             if (parent == null)
             {
                 RootFrame = frame;
@@ -227,7 +221,7 @@ namespace AssetStudio
             foreach (var pptr in trans.m_Children)
             {
                 if (pptr.TryGet(out var child))
-                    ConvertFrames(child, frame);
+                    ConvertTransforms(child, frame);
             }
         }
 
@@ -323,16 +317,16 @@ namespace AssetStudio
                     //UV
                     if (mesh.m_UV0 != null && mesh.m_UV0.Length == mesh.m_VertexCount * 2)
                     {
-                        iVertex.UV = new[] { mesh.m_UV0[j * 2], -mesh.m_UV0[j * 2 + 1] };
+                        iVertex.UV = new[] { mesh.m_UV0[j * 2], mesh.m_UV0[j * 2 + 1] };
                     }
                     else if (mesh.m_UV1 != null && mesh.m_UV1.Length == mesh.m_VertexCount * 2)
                     {
-                        iVertex.UV = new[] { mesh.m_UV1[j * 2], -mesh.m_UV1[j * 2 + 1] };
+                        iVertex.UV = new[] { mesh.m_UV1[j * 2], mesh.m_UV1[j * 2 + 1] };
                     }
                     //Tangent
                     if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
                     {
-                        iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
+                        iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], -mesh.m_Tangents[j * 4 + 3]);
                     }
                     //BoneInfluence
                     if (mesh.m_Skin?.Length > 0)
@@ -382,25 +376,8 @@ namespace AssetStudio
                         //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
                         continue;
                     }
-                    var om = new float[4, 4];
-                    var m = mesh.m_BindPose[i];
-                    om[0, 0] = m[0, 0];
-                    om[0, 1] = -m[1, 0];
-                    om[0, 2] = -m[2, 0];
-                    om[0, 3] = m[3, 0];
-                    om[1, 0] = -m[0, 1];
-                    om[1, 1] = m[1, 1];
-                    om[1, 2] = m[2, 1];
-                    om[1, 3] = m[3, 1];
-                    om[2, 0] = -m[0, 2];
-                    om[2, 1] = m[1, 2];
-                    om[2, 2] = m[2, 2];
-                    om[2, 3] = m[3, 2];
-                    om[3, 0] = -m[0, 3];
-                    om[3, 1] = m[1, 3];
-                    om[3, 2] = m[2, 3];
-                    om[3, 3] = m[3, 3];
-                    bone.Matrix = om;
+                    var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
+                    bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
                     iMesh.BoneList.Add(bone);
                 }
             }
@@ -434,25 +411,8 @@ namespace AssetStudio
                                 continue;
                             }
                         }
-                        var om = new float[4, 4];
-                        var m = mesh.m_BindPose[i];
-                        om[0, 0] = m[0, 0];
-                        om[0, 1] = -m[1, 0];
-                        om[0, 2] = -m[2, 0];
-                        om[0, 3] = m[3, 0];
-                        om[1, 0] = -m[0, 1];
-                        om[1, 1] = m[1, 1];
-                        om[1, 2] = m[2, 1];
-                        om[1, 3] = m[3, 1];
-                        om[2, 0] = -m[0, 2];
-                        om[2, 1] = m[1, 2];
-                        om[2, 2] = m[2, 2];
-                        om[2, 3] = m[3, 2];
-                        om[3, 0] = -m[0, 3];
-                        om[3, 1] = m[1, 3];
-                        om[3, 2] = m[2, 3];
-                        om[3, 3] = m[3, 3];
-                        bone.Matrix = om;
+                        var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
+                        bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
                         iMesh.BoneList.Add(bone);
                     }
                 }
@@ -464,11 +424,11 @@ namespace AssetStudio
                     {
                         morphChannelInfo[channel.nameHash] = channel.name;
                     }
-                    if (mesh.m_Shapes.shapes.Count > 0)
+                    if (mesh.m_Shapes.shapes.Length > 0)
                     {
                         ImportedMorph morph = null;
                         string lastGroup = "";
-                        for (int i = 0; i < mesh.m_Shapes.channels.Count; i++)
+                        for (int i = 0; i < mesh.m_Shapes.channels.Length; i++)
                         {
                             string group = BlendShapeNameGroup(mesh, i);
                             if (group != lastGroup)
@@ -477,8 +437,8 @@ namespace AssetStudio
                                 MorphList.Add(morph);
                                 morph.Name = iMesh.Name;
                                 morph.ClipName = group;
-                                morph.Channels = new List<Tuple<float, int, int>>(mesh.m_Shapes.channels.Count);
-                                morph.KeyframeList = new List<ImportedMorphKeyframe>(mesh.m_Shapes.shapes.Count);
+                                morph.Channels = new List<Tuple<float, int, int>>(mesh.m_Shapes.channels.Length);
+                                morph.KeyframeList = new List<ImportedMorphKeyframe>(mesh.m_Shapes.shapes.Length);
                                 lastGroup = group;
                             }
 
@@ -535,7 +495,7 @@ namespace AssetStudio
             MeshList.Add(iMesh);
         }
 
-        private Mesh GetMesh(Renderer meshR)
+        private static Mesh GetMesh(Renderer meshR)
         {
             if (meshR is SkinnedMeshRenderer sMesh)
             {
@@ -573,7 +533,7 @@ namespace AssetStudio
             return path;
         }
 
-        private string GetTransformPath(Transform transform)
+        private static string GetTransformPath(Transform transform)
         {
             transform.m_GameObject.TryGet(out var m_GameObject);
             if (transform.m_Father.TryGet(out var father))
@@ -817,7 +777,7 @@ namespace AssetStudio
                     {
                         var frame = streamedFrames[frameIndex];
                         var streamedValues = frame.keyList.Select(x => x.value).ToArray();
-                        for (int curveIndex = 0; curveIndex < frame.keyList.Count;)
+                        for (int curveIndex = 0; curveIndex < frame.keyList.Length;)
                         {
                             ReadCurveData(iAnim, m_ClipBindingConstant, frame.keyList[curveIndex].index, frame.time, streamedValues, 0, ref curveIndex);
                         }
@@ -1036,52 +996,10 @@ namespace AssetStudio
                 }
                 else
                 {
-                    frame = ConvertFrame(xform.t, xform.q, xform.s, transformName);
+                    frame = CreateFrame(transformName, xform.t, xform.q, xform.s);
                     parentFrame.AddChild(frame);
                 }
             }
-        }
-
-        private static float[] QuatToEuler(float[] q)
-        {
-            double eax = 0;
-            double eay = 0;
-            double eaz = 0;
-
-            float qx = q[0];
-            float qy = q[1];
-            float qz = q[2];
-            float qw = q[3];
-
-            double[,] M = new double[4, 4];
-
-            double Nq = qx * qx + qy * qy + qz * qz + qw * qw;
-            double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
-            double xs = qx * s, ys = qy * s, zs = qz * s;
-            double wx = qw * xs, wy = qw * ys, wz = qw * zs;
-            double xx = qx * xs, xy = qx * ys, xz = qx * zs;
-            double yy = qy * ys, yz = qy * zs, zz = qz * zs;
-
-            M[0, 0] = 1.0 - (yy + zz); M[0, 1] = xy - wz; M[0, 2] = xz + wy;
-            M[1, 0] = xy + wz; M[1, 1] = 1.0 - (xx + zz); M[1, 2] = yz - wx;
-            M[2, 0] = xz - wy; M[2, 1] = yz + wx; M[2, 2] = 1.0 - (xx + yy);
-            M[3, 0] = M[3, 1] = M[3, 2] = M[0, 3] = M[1, 3] = M[2, 3] = 0.0; M[3, 3] = 1.0;
-
-            double test = Math.Sqrt(M[0, 0] * M[0, 0] + M[1, 0] * M[1, 0]);
-            if (test > 16 * 1.19209290E-07F)//FLT_EPSILON
-            {
-                eax = Math.Atan2(M[2, 1], M[2, 2]);
-                eay = Math.Atan2(-M[2, 0], test);
-                eaz = Math.Atan2(M[1, 0], M[0, 0]);
-            }
-            else
-            {
-                eax = Math.Atan2(-M[1, 2], M[1, 1]);
-                eay = Math.Atan2(-M[2, 0], test);
-                eaz = 0;
-            }
-
-            return new[] { (float)(eax * 180 / Math.PI), (float)(eay * 180 / Math.PI), (float)(eaz * 180 / Math.PI) };
         }
     }
 }

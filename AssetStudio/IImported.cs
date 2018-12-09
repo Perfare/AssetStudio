@@ -19,9 +19,9 @@ namespace AssetStudio
     public class ImportedFrame : IEnumerable<ImportedFrame>
     {
         public string Name { get; set; }
-        public float[] LocalRotation { get; set; }
-        public float[] LocalPosition { get; set; }
-        public float[] LocalScale { get; set; }
+        public Vector3 LocalRotation { get; set; }
+        public Vector3 LocalPosition { get; set; }
+        public Vector3 LocalScale { get; set; }
         public ImportedFrame Parent { get; set; }
 
         private List<ImportedFrame> children;
@@ -30,9 +30,9 @@ namespace AssetStudio
 
         public int Count => children.Count;
 
-        public void InitChildren(int count)
+        public ImportedFrame(int childrenCount = 0)
         {
-            children = new List<ImportedFrame>(count);
+            children = new List<ImportedFrame>(childrenCount);
         }
 
         public void AddChild(ImportedFrame obj)
@@ -95,7 +95,7 @@ namespace AssetStudio
     public class ImportedBone
     {
         public string Name { get; set; }
-        public float[,] Matrix { get; set; }
+        public Matrix Matrix { get; set; }
     }
 
     public class ImportedMaterial

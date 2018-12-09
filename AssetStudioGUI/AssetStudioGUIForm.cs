@@ -277,7 +277,7 @@ namespace AssetStudioGUI
                             if (e.Control) //Normal mode
                             {
                                 normalMode = (normalMode + 1) % 2;
-                                createVAO();
+                                CreateVAO();
                                 glControl1.Invalidate();
                             }
                             break;
@@ -1060,7 +1060,7 @@ namespace AssetStudioGUI
                 }
                 #endregion
                 glControl1.Visible = true;
-                createVAO();
+                CreateVAO();
                 StatusStripUpdate("Using OpenGL Version: " + GL.GetString(StringName.Version) + "\n"
                                   + "'Mouse Left'=Rotate | 'Mouse Right'=Move | 'Mouse Wheel'=Zoom \n"
                                   + "'Ctrl W'=Wireframe | 'Ctrl S'=Shade | 'Ctrl N'=ReNormal ");
@@ -1446,23 +1446,23 @@ namespace AssetStudioGUI
             Progress.Default = new GUIProgress(SetProgressBarValue);
         }
 
-        private void initOpenTK()
+        private void InitOpenTK()
         {
-            changeGLSize(glControl1.Size);
+            ChangeGLSize(glControl1.Size);
             GL.ClearColor(Color.CadetBlue);
             pgmID = GL.CreateProgram();
-            loadShader("vs", ShaderType.VertexShader, pgmID, out int vsID);
-            loadShader("fs", ShaderType.FragmentShader, pgmID, out int fsID);
+            LoadShader("vs", ShaderType.VertexShader, pgmID, out int vsID);
+            LoadShader("fs", ShaderType.FragmentShader, pgmID, out int fsID);
             GL.LinkProgram(pgmID);
 
             pgmColorID = GL.CreateProgram();
-            loadShader("vs", ShaderType.VertexShader, pgmColorID, out vsID);
-            loadShader("fsColor", ShaderType.FragmentShader, pgmColorID, out fsID);
+            LoadShader("vs", ShaderType.VertexShader, pgmColorID, out vsID);
+            LoadShader("fsColor", ShaderType.FragmentShader, pgmColorID, out fsID);
             GL.LinkProgram(pgmColorID);
 
             pgmBlackID = GL.CreateProgram();
-            loadShader("vs", ShaderType.VertexShader, pgmBlackID, out vsID);
-            loadShader("fsBlack", ShaderType.FragmentShader, pgmBlackID, out fsID);
+            LoadShader("vs", ShaderType.VertexShader, pgmBlackID, out vsID);
+            LoadShader("fsBlack", ShaderType.FragmentShader, pgmBlackID, out fsID);
             GL.LinkProgram(pgmBlackID);
 
             attributeVertexPosition = GL.GetAttribLocation(pgmID, "vertexPosition");
@@ -1473,7 +1473,7 @@ namespace AssetStudioGUI
             uniformProjMatrix = GL.GetUniformLocation(pgmID, "projMatrix");
         }
 
-        private void loadShader(string filename, ShaderType type, int program, out int address)
+        private static void LoadShader(string filename, ShaderType type, int program, out int address)
         {
             address = GL.CreateShader(type);
             var str = (string)Properties.Resources.ResourceManager.GetObject(filename);
@@ -1483,7 +1483,7 @@ namespace AssetStudioGUI
             GL.DeleteShader(address);
         }
 
-        private void createVBO(out int vboAddress, Vector3[] data, int address)
+        private static void CreateVBO(out int vboAddress, Vector3[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
@@ -1495,7 +1495,7 @@ namespace AssetStudioGUI
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(out int vboAddress, Vector4[] data, int address)
+        private static void CreateVBO(out int vboAddress, Vector4[] data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vboAddress);
@@ -1507,13 +1507,13 @@ namespace AssetStudioGUI
             GL.EnableVertexAttribArray(address);
         }
 
-        private void createVBO(out int vboAddress, Matrix4 data, int address)
+        private static void CreateVBO(out int vboAddress, Matrix4 data, int address)
         {
             GL.GenBuffers(1, out vboAddress);
             GL.UniformMatrix4(address, false, ref data);
         }
 
-        private void createEBO(out int address, int[] data)
+        private static void CreateEBO(out int address, int[] data)
         {
             GL.GenBuffers(1, out address);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, address);
@@ -1523,31 +1523,31 @@ namespace AssetStudioGUI
                             BufferUsageHint.StaticDraw);
         }
 
-        private void createVAO()
+        private void CreateVAO()
         {
             GL.DeleteVertexArray(vao);
             GL.GenVertexArrays(1, out vao);
             GL.BindVertexArray(vao);
-            createVBO(out var vboPositions, vertexData, attributeVertexPosition);
+            CreateVBO(out var vboPositions, vertexData, attributeVertexPosition);
             if (normalMode == 0)
             {
-                createVBO(out var vboNormals, normal2Data, attributeNormalDirection);
+                CreateVBO(out var vboNormals, normal2Data, attributeNormalDirection);
             }
             else
             {
                 if (normalData != null)
-                    createVBO(out var vboNormals, normalData, attributeNormalDirection);
+                    CreateVBO(out var vboNormals, normalData, attributeNormalDirection);
             }
-            createVBO(out var vboColors, colorData, attributeVertexColor);
-            createVBO(out var vboModelMatrix, modelMatrixData, uniformModelMatrix);
-            createVBO(out var vboViewMatrix, viewMatrixData, uniformViewMatrix);
-            createVBO(out var vboProjMatrix, projMatrixData, uniformProjMatrix);
-            createEBO(out var eboElements, indiceData);
+            CreateVBO(out var vboColors, colorData, attributeVertexColor);
+            CreateVBO(out var vboModelMatrix, modelMatrixData, uniformModelMatrix);
+            CreateVBO(out var vboViewMatrix, viewMatrixData, uniformViewMatrix);
+            CreateVBO(out var vboProjMatrix, projMatrixData, uniformProjMatrix);
+            CreateEBO(out var eboElements, indiceData);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
         }
 
-        private void changeGLSize(Size size)
+        private void ChangeGLSize(Size size)
         {
             GL.Viewport(0, 0, size.Width, size.Height);
 
@@ -1567,14 +1567,14 @@ namespace AssetStudioGUI
         {
             if (glControlLoaded && glControl1.Visible)
             {
-                changeGLSize(glControl1.Size);
+                ChangeGLSize(glControl1.Size);
                 glControl1.Invalidate();
             }
         }
 
         private void glControl1_Load(object sender, EventArgs e)
         {
-            initOpenTK();
+            InitOpenTK();
             glControlLoaded = true;
         }
 

@@ -201,7 +201,7 @@ namespace AssetStudioGUI
                 {
                     foreach (var item in tempExportableAssets)
                     {
-                        var originalPath = ab.m_Container.Find(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
+                        var originalPath = ab.m_Container.FirstOrDefault(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
                         if (!string.IsNullOrEmpty(originalPath))
                         {
                             var extension = Path.GetExtension(originalPath);

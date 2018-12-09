@@ -317,32 +317,32 @@ namespace AssetStudio
 
     public class BlendShapeData
     {
-        public List<BlendShapeVertex> vertices;
-        public List<MeshBlendShape> shapes;
-        public List<MeshBlendShapeChannel> channels;
+        public BlendShapeVertex[] vertices;
+        public MeshBlendShape[] shapes;
+        public MeshBlendShapeChannel[] channels;
         public float[] fullWeights;
 
         public BlendShapeData(ObjectReader reader)
         {
             int numVerts = reader.ReadInt32();
-            vertices = new List<BlendShapeVertex>(numVerts);
+            vertices = new BlendShapeVertex[numVerts];
             for (int i = 0; i < numVerts; i++)
             {
-                vertices.Add(new BlendShapeVertex(reader));
+                vertices[i] = new BlendShapeVertex(reader);
             }
 
             int numShapes = reader.ReadInt32();
-            shapes = new List<MeshBlendShape>(numShapes);
+            shapes = new MeshBlendShape[numShapes];
             for (int i = 0; i < numShapes; i++)
             {
-                shapes.Add(new MeshBlendShape(reader));
+                shapes[i] = new MeshBlendShape(reader);
             }
 
             int numChannels = reader.ReadInt32();
-            channels = new List<MeshBlendShapeChannel>(numChannels);
+            channels = new MeshBlendShapeChannel[numChannels];
             for (int i = 0; i < numChannels; i++)
             {
-                channels.Add(new MeshBlendShapeChannel(reader));
+                channels[i] = new MeshBlendShapeChannel(reader);
             }
 
             fullWeights = reader.ReadSingleArray();
@@ -393,7 +393,7 @@ namespace AssetStudio
         public SubMesh[] m_SubMeshes;
         private uint[] m_IndexBuffer;
         public BlendShapeData m_Shapes;
-        public float[][,] m_BindPose;
+        public Matrix[] m_BindPose;
         public uint[] m_BoneNameHashes;
         public int m_VertexCount;
         public float[] m_Vertices;
@@ -467,19 +467,8 @@ namespace AssetStudio
             else if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3.0 and later
             {
                 m_Shapes = new BlendShapeData(reader);
-
-                m_BindPose = new float[reader.ReadInt32()][,];
-                for (int i = 0; i < m_BindPose.Length; i++)
-                {
-                    m_BindPose[i] = new[,] {
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
-                }
-
+                m_BindPose = reader.ReadMatrixArray();
                 m_BoneNameHashes = reader.ReadUInt32Array();
-
                 var m_RootBoneNameHash = reader.ReadUInt32();
             }
 
@@ -530,11 +519,7 @@ namespace AssetStudio
             if (version[0] < 3 || (version[0] == 3 && version[1] < 5)) //3.4.2 and earlier
             {
                 m_VertexCount = reader.ReadInt32();
-                m_Vertices = new float[m_VertexCount * 3];
-                for (int v = 0; v < m_VertexCount * 3; v++)
-                {
-                    m_Vertices[v] = reader.ReadSingle();
-                }
+                m_Vertices = reader.ReadSingleArray(m_VertexCount * 3); //Vector3
 
                 m_Skin = new BoneWeights4[reader.ReadInt32()];
                 for (int s = 0; s < m_Skin.Length; s++)
@@ -542,15 +527,7 @@ namespace AssetStudio
                     m_Skin[s] = new BoneWeights4(reader);
                 }
 
-                m_BindPose = new float[reader.ReadInt32()][,];
-                for (int i = 0; i < m_BindPose.Length; i++)
-                {
-                    m_BindPose[i] = new[,] {
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
-                }
+                m_BindPose = reader.ReadMatrixArray();
 
                 m_UV0 = reader.ReadSingleArray(reader.ReadInt32() * 2); //Vector2
 
@@ -588,15 +565,7 @@ namespace AssetStudio
 
                 if (version[0] == 3 || (version[0] == 4 && version[1] <= 2)) //4.2 and down
                 {
-                    m_BindPose = new float[reader.ReadInt32()][,];
-                    for (int i = 0; i < m_BindPose.Length; i++)
-                    {
-                        m_BindPose[i] = new[,] {
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() },
-                        { reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle() } };
-                    }
+                    m_BindPose = reader.ReadMatrixArray();
                 }
 
                 m_VertexData = new VertexData(reader);
@@ -858,11 +827,13 @@ namespace AssetStudio
             {
                 if (m_CompressedMesh.m_BindPoses.m_NumItems > 0)
                 {
-                    m_BindPose = new float[m_CompressedMesh.m_BindPoses.m_NumItems / 16][,];
+                    m_BindPose = new Matrix[m_CompressedMesh.m_BindPoses.m_NumItems / 16];
                     var m_BindPoses_Unpacked = m_CompressedMesh.m_BindPoses.UnpackFloats(16, 4 * 16);
+                    var buffer = new float[16];
                     for (int i = 0; i < m_BindPose.Length; i++)
                     {
-                        Array.Copy(m_BindPoses_Unpacked, i * 16, m_BindPose[i], 0, 16);
+                        Array.Copy(m_BindPoses_Unpacked, i * 16, buffer, 0, 16);
+                        m_BindPose[i] = new Matrix(buffer);
                     }
                 }
             }

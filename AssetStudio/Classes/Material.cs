@@ -19,31 +19,31 @@ namespace AssetStudio
 
     public class UnityPropertySheet
     {
-        public List<KeyValuePair<string, UnityTexEnv>> m_TexEnvs;
-        public List<KeyValuePair<string, float>> m_Floats;
-        public List<KeyValuePair<string, Color4>> m_Colors;
+        public KeyValuePair<string, UnityTexEnv>[] m_TexEnvs;
+        public KeyValuePair<string, float>[] m_Floats;
+        public KeyValuePair<string, Color4>[] m_Colors;
 
         public UnityPropertySheet(ObjectReader reader)
         {
             int m_TexEnvsSize = reader.ReadInt32();
-            m_TexEnvs = new List<KeyValuePair<string, UnityTexEnv>>(m_TexEnvsSize);
+            m_TexEnvs = new KeyValuePair<string, UnityTexEnv>[m_TexEnvsSize];
             for (int i = 0; i < m_TexEnvsSize; i++)
             {
-                m_TexEnvs.Add(new KeyValuePair<string, UnityTexEnv>(reader.ReadAlignedString(), new UnityTexEnv(reader)));
+                m_TexEnvs[i] = new KeyValuePair<string, UnityTexEnv>(reader.ReadAlignedString(), new UnityTexEnv(reader));
             }
 
             int m_FloatsSize = reader.ReadInt32();
-            m_Floats = new List<KeyValuePair<string, float>>(m_FloatsSize);
+            m_Floats = new KeyValuePair<string, float>[m_FloatsSize];
             for (int i = 0; i < m_FloatsSize; i++)
             {
-                m_Floats.Add(new KeyValuePair<string, float>(reader.ReadAlignedString(), reader.ReadSingle()));
+                m_Floats[i] = new KeyValuePair<string, float>(reader.ReadAlignedString(), reader.ReadSingle());
             }
 
             int m_ColorsSize = reader.ReadInt32();
-            m_Colors = new List<KeyValuePair<string, Color4>>(m_ColorsSize);
+            m_Colors = new KeyValuePair<string, Color4>[m_ColorsSize];
             for (int i = 0; i < m_ColorsSize; i++)
             {
-                m_Colors.Add(new KeyValuePair<string, Color4>(reader.ReadAlignedString(), reader.ReadColor4()));
+                m_Colors[i] = new KeyValuePair<string, Color4>(reader.ReadAlignedString(), reader.ReadColor4());
             }
         }
     }

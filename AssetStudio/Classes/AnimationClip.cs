@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SharpDX;
 
 namespace AssetStudio
@@ -22,7 +23,7 @@ namespace AssetStudio
             value = readerFunc();
             inSlope = readerFunc();
             outSlope = readerFunc();
-            if (reader.version[0] >= 2018)
+            if (reader.version[0] >= 2018) //2018 and up
             {
                 weightedMode = reader.ReadInt32();
                 inWeight = readerFunc();
@@ -33,7 +34,7 @@ namespace AssetStudio
 
     public class AnimationCurve<T>
     {
-        public List<Keyframe<T>> m_Curve;
+        public Keyframe<T>[] m_Curve;
         public int m_PreInfinity;
         public int m_PostInfinity;
         public int m_RotationOrder;
@@ -42,10 +43,10 @@ namespace AssetStudio
         {
             var version = reader.version;
             int numCurves = reader.ReadInt32();
-            m_Curve = new List<Keyframe<T>>(numCurves);
+            m_Curve = new Keyframe<T>[numCurves];
             for (int i = 0; i < numCurves; i++)
             {
-                m_Curve.Add(new Keyframe<T>(reader, readerFunc));
+                m_Curve[i] = new Keyframe<T>(reader, readerFunc);
             }
 
             m_PreInfinity = reader.ReadInt32();
@@ -321,7 +322,7 @@ namespace AssetStudio
 
     public class PPtrCurve
     {
-        public List<PPtrKeyframe> curve;
+        public PPtrKeyframe[] curve;
         public string attribute;
         public string path;
         public int classID;
@@ -331,10 +332,10 @@ namespace AssetStudio
         public PPtrCurve(ObjectReader reader)
         {
             int numCurves = reader.ReadInt32();
-            curve = new List<PPtrKeyframe>(numCurves);
+            curve = new PPtrKeyframe[numCurves];
             for (int i = 0; i < numCurves; i++)
             {
-                curve.Add(new PPtrKeyframe(reader));
+                curve[i] = new PPtrKeyframe(reader);
             }
 
             attribute = reader.ReadAlignedString();
@@ -418,7 +419,7 @@ namespace AssetStudio
         public xform m_RootX;
         public Vector3 m_LookAtPosition;
         public Vector4 m_LookAtWeight;
-        public List<HumanGoal> m_GoalArray;
+        public HumanGoal[] m_GoalArray;
         public HandPose m_LeftHandPose;
         public HandPose m_RightHandPose;
         public float[] m_DoFArray;
@@ -432,10 +433,10 @@ namespace AssetStudio
             m_LookAtWeight = reader.ReadVector4();
 
             int numGoals = reader.ReadInt32();
-            m_GoalArray = new List<HumanGoal>(numGoals);
+            m_GoalArray = new HumanGoal[numGoals];
             for (int i = 0; i < numGoals; i++)
             {
-                m_GoalArray.Add(new HumanGoal(reader));
+                m_GoalArray[i] = new HumanGoal(reader);
             }
 
             m_LeftHandPose = new HandPose(reader);
@@ -504,17 +505,17 @@ namespace AssetStudio
         public class StreamedFrame
         {
             public float time;
-            public List<StreamedCurveKey> keyList;
+            public StreamedCurveKey[] keyList;
 
             public StreamedFrame(BinaryReader reader)
             {
                 time = reader.ReadSingle();
 
                 int numKeys = reader.ReadInt32();
-                keyList = new List<StreamedCurveKey>(numKeys);
+                keyList = new StreamedCurveKey[numKeys];
                 for (int i = 0; i < numKeys; i++)
                 {
-                    keyList.Add(new StreamedCurveKey(reader));
+                    keyList[i] = new StreamedCurveKey(reader);
                 }
             }
         }
@@ -540,7 +541,7 @@ namespace AssetStudio
                     for (int i = frameIndex - 1; i >= 0; i--)
                     {
                         var preFrame = frameList[i];
-                        var preCurveKey = preFrame.keyList.Find(x => x.index == curveKey.index);
+                        var preCurveKey = preFrame.keyList.FirstOrDefault(x => x.index == curveKey.index);
                         if (preCurveKey != null)
                         {
                             curveKey.inSlope = preCurveKey.CalculateNextInSlope(frame.time - preFrame.time, curveKey);
@@ -603,15 +604,15 @@ namespace AssetStudio
 
     public class ValueArrayConstant
     {
-        public List<ValueConstant> m_ValueArray;
+        public ValueConstant[] m_ValueArray;
 
         public ValueArrayConstant(ObjectReader reader)
         {
             int numVals = reader.ReadInt32();
-            m_ValueArray = new List<ValueConstant>(numVals);
+            m_ValueArray = new ValueConstant[numVals];
             for (int i = 0; i < numVals; i++)
             {
-                m_ValueArray.Add(new ValueConstant(reader));
+                m_ValueArray[i] = new ValueConstant(reader);
             }
         }
     }
@@ -669,7 +670,7 @@ namespace AssetStudio
         public float m_CycleOffset;
         public float m_AverageAngularSpeed;
         public int[] m_IndexArray;
-        public List<ValueDelta> m_ValueArrayDelta;
+        public ValueDelta[] m_ValueArrayDelta;
         public float[] m_ValueArrayReferencePose;
         public bool m_Mirror;
         public bool m_LoopTime;
@@ -714,10 +715,10 @@ namespace AssetStudio
                 var m_AdditionalCurveIndexArray = reader.ReadInt32Array();
             }
             int numDeltas = reader.ReadInt32();
-            m_ValueArrayDelta = new List<ValueDelta>(numDeltas);
+            m_ValueArrayDelta = new ValueDelta[numDeltas];
             for (int i = 0; i < numDeltas; i++)
             {
-                m_ValueArrayDelta.Add(new ValueDelta(reader));
+                m_ValueArrayDelta[i] = new ValueDelta(reader);
             }
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 3))//5.3 and up
             {
@@ -725,7 +726,10 @@ namespace AssetStudio
             }
 
             m_Mirror = reader.ReadBoolean();
-            m_LoopTime = reader.ReadBoolean();
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
+                m_LoopTime = reader.ReadBoolean();
+            }
             m_LoopBlend = reader.ReadBoolean();
             m_LoopBlendOrientation = reader.ReadBoolean();
             m_LoopBlendPositionY = reader.ReadBoolean();
@@ -773,23 +777,23 @@ namespace AssetStudio
 
     public class AnimationClipBindingConstant
     {
-        public List<GenericBinding> genericBindings;
-        public List<PPtr<Object>> pptrCurveMapping;
+        public GenericBinding[] genericBindings;
+        public PPtr<Object>[] pptrCurveMapping;
 
         public AnimationClipBindingConstant(ObjectReader reader)
         {
             int numBindings = reader.ReadInt32();
-            genericBindings = new List<GenericBinding>(numBindings);
+            genericBindings = new GenericBinding[numBindings];
             for (int i = 0; i < numBindings; i++)
             {
-                genericBindings.Add(new GenericBinding(reader));
+                genericBindings[i] = new GenericBinding(reader);
             }
 
             int numMappings = reader.ReadInt32();
-            pptrCurveMapping = new List<PPtr<Object>>(numMappings);
+            pptrCurveMapping = new PPtr<Object>[numMappings];
             for (int i = 0; i < numMappings; i++)
             {
-                pptrCurveMapping.Add(new PPtr<Object>(reader));
+                pptrCurveMapping[i] = new PPtr<Object>(reader);
             }
         }
 
@@ -842,20 +846,20 @@ namespace AssetStudio
         public bool m_Legacy;
         public bool m_Compressed;
         public bool m_UseHighQualityCurve;
-        public List<QuaternionCurve> m_RotationCurves;
-        public List<CompressedAnimationCurve> m_CompressedRotationCurves;
-        public List<Vector3Curve> m_EulerCurves;
-        public List<Vector3Curve> m_PositionCurves;
-        public List<Vector3Curve> m_ScaleCurves;
-        public List<FloatCurve> m_FloatCurves;
-        public List<PPtrCurve> m_PPtrCurves;
+        public QuaternionCurve[] m_RotationCurves;
+        public CompressedAnimationCurve[] m_CompressedRotationCurves;
+        public Vector3Curve[] m_EulerCurves;
+        public Vector3Curve[] m_PositionCurves;
+        public Vector3Curve[] m_ScaleCurves;
+        public FloatCurve[] m_FloatCurves;
+        public PPtrCurve[] m_PPtrCurves;
         public float m_SampleRate;
         public int m_WrapMode;
         public AABB m_Bounds;
         public uint m_MuscleClipSize;
         public ClipMuscleConstant m_MuscleClip;
         public AnimationClipBindingConstant m_ClipBindingConstant;
-        //public List<AnimationEvent> m_Events;
+        //public AnimationEvent[] m_Events;
 
 
         public AnimationClip(ObjectReader reader) : base(reader)
@@ -881,57 +885,57 @@ namespace AssetStudio
             }
             reader.AlignStream();
             int numRCurves = reader.ReadInt32();
-            m_RotationCurves = new List<QuaternionCurve>(numRCurves);
+            m_RotationCurves = new QuaternionCurve[numRCurves];
             for (int i = 0; i < numRCurves; i++)
             {
-                m_RotationCurves.Add(new QuaternionCurve(reader));
+                m_RotationCurves[i] = new QuaternionCurve(reader);
             }
 
             int numCRCurves = reader.ReadInt32();
-            m_CompressedRotationCurves = new List<CompressedAnimationCurve>(numCRCurves);
+            m_CompressedRotationCurves = new CompressedAnimationCurve[numCRCurves];
             for (int i = 0; i < numCRCurves; i++)
             {
-                m_CompressedRotationCurves.Add(new CompressedAnimationCurve(reader));
+                m_CompressedRotationCurves[i] = new CompressedAnimationCurve(reader);
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 3))//5.3 and up
             {
                 int numEulerCurves = reader.ReadInt32();
-                m_EulerCurves = new List<Vector3Curve>(numEulerCurves);
+                m_EulerCurves = new Vector3Curve[numEulerCurves];
                 for (int i = 0; i < numEulerCurves; i++)
                 {
-                    m_EulerCurves.Add(new Vector3Curve(reader));
+                    m_EulerCurves[i] = new Vector3Curve(reader);
                 }
             }
 
             int numPCurves = reader.ReadInt32();
-            m_PositionCurves = new List<Vector3Curve>(numPCurves);
+            m_PositionCurves = new Vector3Curve[numPCurves];
             for (int i = 0; i < numPCurves; i++)
             {
-                m_PositionCurves.Add(new Vector3Curve(reader));
+                m_PositionCurves[i] = new Vector3Curve(reader);
             }
 
             int numSCurves = reader.ReadInt32();
-            m_ScaleCurves = new List<Vector3Curve>(numSCurves);
+            m_ScaleCurves = new Vector3Curve[numSCurves];
             for (int i = 0; i < numSCurves; i++)
             {
-                m_ScaleCurves.Add(new Vector3Curve(reader));
+                m_ScaleCurves[i] = new Vector3Curve(reader);
             }
 
             int numFCurves = reader.ReadInt32();
-            m_FloatCurves = new List<FloatCurve>(numFCurves);
+            m_FloatCurves = new FloatCurve[numFCurves];
             for (int i = 0; i < numFCurves; i++)
             {
-                m_FloatCurves.Add(new FloatCurve(reader));
+                m_FloatCurves[i] = new FloatCurve(reader);
             }
 
             if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
                 int numPtrCurves = reader.ReadInt32();
-                m_PPtrCurves = new List<PPtrCurve>(numPtrCurves);
+                m_PPtrCurves = new PPtrCurve[numPtrCurves];
                 for (int i = 0; i < numPtrCurves; i++)
                 {
-                    m_PPtrCurves.Add(new PPtrCurve(reader));
+                    m_PPtrCurves[i] = new PPtrCurve(reader);
                 }
             }
 
@@ -953,10 +957,10 @@ namespace AssetStudio
             //m_HasGenericRootTransform 2018.3
             //m_HasMotionFloatCurves 2018.3
             /*int numEvents = reader.ReadInt32();
-            m_Events = new List<AnimationEvent>(numEvents);
+            m_Events = new AnimationEvent[numEvents];
             for (int i = 0; i < numEvents; i++)
             {
-                m_Events.Add(new AnimationEvent(reader));
+                m_Events[i] = new AnimationEvent(reader);
             }*/
         }
     }

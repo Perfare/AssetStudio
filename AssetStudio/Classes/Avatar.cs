@@ -1,5 +1,6 @@
 ﻿using SharpDX;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AssetStudio
 {
@@ -66,47 +67,42 @@ namespace AssetStudio
 
     public class Skeleton
     {
-        public List<Node> m_Node;
+        public Node[] m_Node;
         public uint[] m_ID;
-        public List<Axes> m_AxesArray;
+        public Axes[] m_AxesArray;
 
 
         public Skeleton(ObjectReader reader)
         {
             int numNodes = reader.ReadInt32();
-            m_Node = new List<Node>(numNodes);
+            m_Node = new Node[numNodes];
             for (int i = 0; i < numNodes; i++)
             {
-                m_Node.Add(new Node(reader));
+                m_Node[i] = new Node(reader);
             }
 
             m_ID = reader.ReadUInt32Array();
 
             int numAxes = reader.ReadInt32();
-            m_AxesArray = new List<Axes>(numAxes);
+            m_AxesArray = new Axes[numAxes];
             for (int i = 0; i < numAxes; i++)
             {
-                m_AxesArray.Add(new Axes(reader));
+                m_AxesArray[i] = new Axes(reader);
             }
         }
     }
 
     public class SkeletonPose
     {
-        public List<xform> m_X;
-
-        public SkeletonPose()
-        {
-            m_X = new List<xform>();
-        }
+        public xform[] m_X;
 
         public SkeletonPose(ObjectReader reader)
         {
             int numXforms = reader.ReadInt32();
-            m_X = new List<xform>(numXforms);
+            m_X = new xform[numXforms];
             for (int i = 0; i < numXforms; i++)
             {
-                m_X.Add(new xform(reader));
+                m_X[i] = new xform(reader);
             }
         }
     }
@@ -168,8 +164,8 @@ namespace AssetStudio
         public SkeletonPose m_SkeletonPose;
         public Hand m_LeftHand;
         public Hand m_RightHand;
-        public List<Handle> m_Handles;
-        public List<Collider> m_ColliderArray;
+        public Handle[] m_Handles;
+        public Collider[] m_ColliderArray;
         public int[] m_HumanBoneIndex;
         public float[] m_HumanBoneMass;
         public int[] m_ColliderIndex;
@@ -197,17 +193,17 @@ namespace AssetStudio
             if (version[0] < 2018 || (version[0] == 2018 && version[1] < 2)) //2018.2 down
             {
                 int numHandles = reader.ReadInt32();
-                m_Handles = new List<Handle>(numHandles);
+                m_Handles = new Handle[numHandles];
                 for (int i = 0; i < numHandles; i++)
                 {
-                    m_Handles.Add(new Handle(reader));
+                    m_Handles[i] = new Handle(reader);
                 }
 
                 int numColliders = reader.ReadInt32();
-                m_ColliderArray = new List<Collider>(numColliders);
+                m_ColliderArray = new Collider[numColliders];
                 for (int i = 0; i < numColliders; i++)
                 {
-                    m_ColliderArray.Add(new Collider(reader));
+                    m_ColliderArray[i] = new Collider(reader);
                 }
             }
 
@@ -230,7 +226,10 @@ namespace AssetStudio
             m_FeetSpacing = reader.ReadSingle();
             m_HasLeftHand = reader.ReadBoolean();
             m_HasRightHand = reader.ReadBoolean();
-            m_HasTDoF = reader.ReadBoolean();
+            if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
+            {
+                m_HasTDoF = reader.ReadBoolean();
+            }
             reader.AlignStream();
         }
     }
@@ -289,7 +288,7 @@ namespace AssetStudio
     {
         public uint m_AvatarSize;
         public AvatarConstant m_Avatar;
-        public List<KeyValuePair<uint, string>> m_TOS;
+        public KeyValuePair<uint, string>[] m_TOS;
 
         public Avatar(ObjectReader reader) : base(reader)
         {
@@ -297,10 +296,10 @@ namespace AssetStudio
             m_Avatar = new AvatarConstant(reader);
 
             int numTOS = reader.ReadInt32();
-            m_TOS = new List<KeyValuePair<uint, string>>(numTOS);
+            m_TOS = new KeyValuePair<uint, string>[numTOS];
             for (int i = 0; i < numTOS; i++)
             {
-                m_TOS.Add(new KeyValuePair<uint, string>(reader.ReadUInt32(), reader.ReadAlignedString()));
+                m_TOS[i] = new KeyValuePair<uint, string>(reader.ReadUInt32(), reader.ReadAlignedString());
             }
         }
 
@@ -318,7 +317,7 @@ namespace AssetStudio
 
         public string FindBonePath(uint hash)
         {
-            return m_TOS.Find(pair => pair.Key == hash).Value;
+            return m_TOS.FirstOrDefault(pair => pair.Key == hash).Value;
         }
     }
 }
