@@ -179,6 +179,10 @@ namespace AssetStudio
                 {
                     var genericType = genericInstSig.GenericType.ToTypeDefOrRef().ResolveTypeDefThrow();
                     var type = genericInstSig.GenericArguments[0].ToTypeDefOrRef().ResolveTypeDefThrow();
+                    if (genericInstSig.GenericArguments[0] is ArraySigBase)
+                    {
+                        return;
+                    }
                     if (!type.IsEnum && !IsBaseType(type) && !IsAssignFromUnityObject(type) && !IsEngineType(type) && !type.IsSerializable)
                     {
                         return;
@@ -323,15 +327,21 @@ namespace AssetStudio
                 }
                 foreach (var fieldDef in typeDef.Fields)
                 {
+                    var flag = false;
                     var access = fieldDef.Access & FieldAttributes.FieldAccessMask;
                     if (access != FieldAttributes.Public)
                     {
-                        if (fieldDef.CustomAttributes.Any(x => x.TypeFullName.Contains("SerializeField")))
+                        if (fieldDef.CustomAttributes.Any(x => x.TypeFullName == "UnityEngine.SerializeField"))
                         {
-                            DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
+                            flag = true;
                         }
                     }
                     else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0 && (fieldDef.Attributes & FieldAttributes.NotSerialized) == 0)
+                    {
+                        flag = true;
+                    }
+
+                    if (flag)
                     {
                         if (fieldDef.FieldType.IsGenericParameter)
                         {
