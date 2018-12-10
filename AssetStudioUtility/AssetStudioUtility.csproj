@@ -82,7 +82,7 @@
     <Compile Include="ModelConverter.cs" />
     <Compile Include="ModelExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptHelper.cs" />
+    <Compile Include="ScriptDumper.cs" />
     <Compile Include="ShaderConverter.cs" />
     <Compile Include="SpriteHelper.cs" />
     <Compile Include="Texture2DConverter.cs" />

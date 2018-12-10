@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using dnlib.DotNet;
@@ -7,9 +8,37 @@ using dnlib.DotNet;
 namespace AssetStudio
 {
     //TODO unfinished
-    public static class ScriptHelper
+    //Separate， EngineType read
+    public class ScriptDumper : IDisposable
     {
-        public static string GetScriptString(ObjectReader reader, Dictionary<string, ModuleDef> moduleDic)
+        private Dictionary<string, ModuleDef> moduleDic = new Dictionary<string, ModuleDef>();
+
+        public ScriptDumper() { }
+
+        public ScriptDumper(string path)
+        {
+            var files = Directory.GetFiles(path, "*.dll");
+            var moduleContext = new ModuleContext();
+            var asmResolver = new AssemblyResolver(moduleContext);
+            var resolver = new Resolver(asmResolver);
+            moduleContext.AssemblyResolver = asmResolver;
+            moduleContext.Resolver = resolver;
+            try
+            {
+                foreach (var file in files)
+                {
+                    var module = ModuleDefMD.Load(file, moduleContext);
+                    asmResolver.AddToCache(module);
+                    moduleDic.Add(Path.GetFileName(file), module);
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        public string DumpScript(ObjectReader reader)
         {
             var m_MonoBehaviour = new MonoBehaviour(reader);
             var sb = CreateMonoBehaviourHeader(m_MonoBehaviour);
@@ -25,14 +54,30 @@ namespace AssetStudio
                     try
                     {
                         DumpType(typeDef.ToTypeSig(), sb, reader, null, -1, true);
+                        var readed = reader.Position - reader.byteStart;
+                        if (readed != reader.byteSize)
+                        {
+                            Logger.Error($"Error while dump type, read {readed} bytes but expected {reader.byteSize} bytes");
+                        }
                     }
                     catch
                     {
                         sb = CreateMonoBehaviourHeader(m_MonoBehaviour);
+                        Logger.Error("Error while dump type");
                     }
                 }
             }
             return sb.ToString();
+        }
+
+        public void Dispose()
+        {
+            foreach (var pair in moduleDic)
+            {
+                pair.Value.Dispose();
+            }
+            moduleDic.Clear();
+            moduleDic = null;
         }
 
         private static StringBuilder CreateMonoBehaviourHeader(MonoBehaviour m_MonoBehaviour)
@@ -49,7 +94,7 @@ namespace AssetStudio
             return sb;
         }
 
-        private static void DumpType(TypeSig typeSig, StringBuilder sb, ObjectReader reader, string name, int indent, bool isRoot = false)
+        private static void DumpType(TypeSig typeSig, StringBuilder sb, ObjectReader reader, string name, int indent, bool isRoot = false, bool align = true)
         {
             var typeDef = typeSig.ToTypeDefOrRef().ResolveTypeDefThrow();
             if (typeSig.IsPrimitive)
@@ -94,7 +139,8 @@ namespace AssetStudio
                         value = reader.ReadChar();
                         break;
                 }
-                reader.AlignStream();
+                if (align)
+                    reader.AlignStream();
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {value}");
                 return;
             }
@@ -131,18 +177,27 @@ namespace AssetStudio
             {
                 if (genericInstSig.GenericArguments.Count == 1)
                 {
+                    var genericType = genericInstSig.GenericType.ToTypeDefOrRef().ResolveTypeDefThrow();
                     var type = genericInstSig.GenericArguments[0].ToTypeDefOrRef().ResolveTypeDefThrow();
                     if (!type.IsEnum && !IsBaseType(type) && !IsAssignFromUnityObject(type) && !IsEngineType(type) && !type.IsSerializable)
                     {
                         return;
                     }
-                    var size = reader.ReadInt32();
                     sb.AppendLine($"{new string('\t', indent)}{typeSig.TypeName} {name}");
-                    sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
-                    for (int i = 0; i < size; i++)
+                    if (genericType.Interfaces.Any(x => x.Interface.FullName == "System.Collections.Generic.ICollection`1<T>")) //System.Collections.Generic.IEnumerable`1<T>
                     {
-                        sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
-                        DumpType(genericInstSig.GenericArguments[0], sb, reader, "data", indent + 2);
+                        var size = reader.ReadInt32();
+                        sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+                        for (int i = 0; i < size; i++)
+                        {
+                            sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+                            DumpType(genericInstSig.GenericArguments[0], sb, reader, "data", indent + 2, false, false);
+                        }
+                        reader.AlignStream();
+                    }
+                    else
+                    {
+                        DumpType(genericType.ToTypeSig(), sb, reader, "data", indent + 1);
                     }
                 }
                 return;
@@ -158,31 +213,37 @@ namespace AssetStudio
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name} = {reader.ReadUInt32()}");
                 return;
             }
-            if (indent != -1 && !IsEngineType(typeDef) && !typeDef.IsSerializable)
+            if (!isRoot && !IsEngineType(typeDef) && !typeDef.IsSerializable)
             {
                 return;
             }
             if (typeDef.FullName == "UnityEngine.Rect")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var rect = reader.ReadSingleArray(4);
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}float x = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float y = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float width = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float height = {reader.ReadSingle()}");
                 return;
             }
             if (typeDef.FullName == "UnityEngine.LayerMask")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var value = reader.ReadInt32();
+                sb.AppendLine($"{new string('\t', indent + 1)}uint m_Bits = {reader.ReadUInt32()}");
                 return;
             }
             if (typeDef.FullName == "UnityEngine.AnimationCurve")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
                 var animationCurve = new AnimationCurve<float>(reader, reader.ReadSingle);
                 return;
             }
             if (typeDef.FullName == "UnityEngine.Gradient")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
                 if (reader.version[0] == 5 && reader.version[1] < 5)
                     reader.Position += 68;
                 else if (reader.version[0] == 5 && reader.version[1] < 6)
@@ -194,10 +255,52 @@ namespace AssetStudio
             if (typeDef.FullName == "UnityEngine.RectOffset")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var left = reader.ReadSingle();
-                var right = reader.ReadSingle();
-                var top = reader.ReadSingle();
-                var bottom = reader.ReadSingle();
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}float left = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float right = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float top = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float bottom = {reader.ReadSingle()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.PropertyName")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}int id = {reader.ReadInt32()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Color32")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}byte r = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte g = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte b = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte a = {reader.ReadByte()}");
+                reader.AlignStream();
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Vector2Int")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}int x = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int y = {reader.ReadInt32()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Vector3Int")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}int x = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int y = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int z = {reader.ReadInt32()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Bounds")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
+                new AABB(reader);
                 return;
             }
             if (typeDef.FullName == "UnityEngine.GUIStyle") //TODO
@@ -230,7 +333,22 @@ namespace AssetStudio
                     }
                     else if ((fieldDef.Attributes & FieldAttributes.Static) == 0 && (fieldDef.Attributes & FieldAttributes.InitOnly) == 0 && (fieldDef.Attributes & FieldAttributes.NotSerialized) == 0)
                     {
-                        DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
+                        if (fieldDef.FieldType.IsGenericParameter)
+                        {
+                            foreach (var g in typeDef.GenericParameters)
+                            {
+                                if (g.FullName == fieldDef.FieldType.FullName)
+                                {
+                                    var type = ((GenericInstSig)typeSig).GenericArguments[0];
+                                    DumpType(type, sb, reader, fieldDef.Name, indent + 1);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
+                        }
                     }
                 }
             }
@@ -308,6 +426,7 @@ namespace AssetStudio
                 case "UnityEngine.Vector3":
                 case "UnityEngine.Vector3Int":
                 case "UnityEngine.Vector4":
+                case "UnityEngine.PropertyName":
                     return true;
                 default:
                     return false;

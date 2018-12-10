@@ -174,7 +174,8 @@ namespace AssetStudio
             m_PixelsToUnits = reader.ReadSingle();
             if (version[0] > 5
                 || (version[0] == 5 && version[1] > 4)
-                || (version[0] == 5 && version[1] == 4 && version[2] >= 2)) //5.4.2 and up
+                || (version[0] == 5 && version[1] == 4 && version[2] >= 2)
+                || (version[0] == 5 && version[1] == 4 && version[2] == 1 && buildType.IsPatch && version[3] >= 3)) //5.4.1p3 and up
             {
                 m_Pivot = reader.ReadVector2();
             }

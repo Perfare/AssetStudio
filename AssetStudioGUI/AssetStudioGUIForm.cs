@@ -1707,12 +1707,8 @@ namespace AssetStudioGUI
 
             FMODreset();
 
-            ModuleLoaded = false;
-            foreach (var pair in LoadedModuleDic)
-            {
-                pair.Value.Dispose();
-            }
-            LoadedModuleDic.Clear();
+            scriptDumper.Dispose();
+            scriptDumper = null;
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)

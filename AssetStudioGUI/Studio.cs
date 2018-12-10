@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using AssetStudio;
-using dnlib.DotNet;
 using static AssetStudioGUI.Exporter;
 using Object = AssetStudio.Object;
 
@@ -16,10 +15,9 @@ namespace AssetStudioGUI
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
+        public static ScriptDumper scriptDumper = new ScriptDumper();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
-        public static bool ModuleLoaded;
-        public static Dictionary<string, ModuleDef> LoadedModuleDic = new Dictionary<string, ModuleDef>();
 
         public static void ExtractFile(string[] fileNames)
         {
@@ -614,36 +612,21 @@ namespace AssetStudioGUI
 
         public static string GetScriptString(ObjectReader reader)
         {
-            if (!ModuleLoaded)
+            if (scriptDumper == null)
             {
                 var openFolderDialog = new OpenFolderDialog();
                 openFolderDialog.Title = "Select Assembly Folder";
                 if (openFolderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    var files = Directory.GetFiles(openFolderDialog.Folder, "*.dll");
-                    var moduleContext = new ModuleContext();
-                    var asmResolver = new AssemblyResolver(moduleContext, true);
-                    var resolver = new Resolver(asmResolver);
-                    moduleContext.AssemblyResolver = asmResolver;
-                    moduleContext.Resolver = resolver;
-                    try
-                    {
-                        foreach (var file in files)
-                        {
-                            var module = ModuleDefMD.Load(file, moduleContext);
-                            LoadedModuleDic.Add(Path.GetFileName(file), module);
-                        }
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+                    scriptDumper = new ScriptDumper(openFolderDialog.Folder);
                 }
-
-                ModuleLoaded = true;
+                else
+                {
+                    scriptDumper = new ScriptDumper();
+                }
             }
 
-            return ScriptHelper.GetScriptString(reader, LoadedModuleDic);
+            return scriptDumper.DumpScript(reader);
         }
     }
 }
