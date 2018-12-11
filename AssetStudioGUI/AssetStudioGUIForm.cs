@@ -1707,8 +1707,11 @@ namespace AssetStudioGUI
 
             FMODreset();
 
-            scriptDumper.Dispose();
-            scriptDumper = null;
+            if (scriptDumper != null)
+            {
+                scriptDumper.Dispose();
+                scriptDumper = null;
+            }
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)
