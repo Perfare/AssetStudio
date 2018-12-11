@@ -74,6 +74,17 @@ namespace AssetStudio
                 sb.Append(ConvertSerializedSubShader(m_SubShader, platform, platformIndex));
             }
 
+            if (!string.IsNullOrEmpty(m_ParsedForm.m_FallbackName))
+            {
+                sb.Append($"Fallback \"{m_ParsedForm.m_FallbackName}\"\n");
+            }
+
+            if (!string.IsNullOrEmpty(m_ParsedForm.m_CustomEditorName))
+            {
+                sb.Append($"CustomEditor \"{m_ParsedForm.m_CustomEditorName}\"\n");
+            }
+
+            sb.Append("}");
             return sb.ToString();
         }
 
@@ -134,30 +145,35 @@ namespace AssetStudio
                     {
                         sb.Append("Program \"vp\" {\n");
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progVertex.m_SubPrograms, platform, platformIndex));
+                        sb.Append("}\n");
                     }
 
                     if (m_Passe.progFragment.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"fp\" {\n");
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progFragment.m_SubPrograms, platform, platformIndex));
+                        sb.Append("}\n");
                     }
 
                     if (m_Passe.progGeometry.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"gp\" {\n");
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progGeometry.m_SubPrograms, platform, platformIndex));
+                        sb.Append("}\n");
                     }
 
                     if (m_Passe.progHull.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"hp\" {\n");
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progHull.m_SubPrograms, platform, platformIndex));
+                        sb.Append("}\n");
                     }
 
                     if (m_Passe.progDomain.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"dp\" {\n");
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platform, platformIndex));
+                        sb.Append("}\n");
                     }
                 }
                 sb.Append("}\n");
@@ -404,7 +420,7 @@ namespace AssetStudio
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            sb.Append('\n');
+            sb.Append("\n");
             return sb.ToString();
         }
 
