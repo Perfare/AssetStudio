@@ -51,7 +51,7 @@ namespace AssetStudio
                     using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                     {
                         var program = new ShaderProgram(blobReader);
-                        var m_Script = ConvertSerializedShader(shader.m_ParsedForm, shader.platforms[i], i);
+                        var m_Script = ConvertSerializedShader(shader.m_ParsedForm, shader.platforms[i]);
                         strs[i] = program.Export(m_Script);
                     }
                 }
@@ -62,7 +62,7 @@ namespace AssetStudio
             return null;
         }
 
-        private static string ConvertSerializedShader(SerializedShader m_ParsedForm, uint platform, int platformIndex)
+        private static string ConvertSerializedShader(SerializedShader m_ParsedForm, ShaderCompilerPlatform platform)
         {
             var sb = new StringBuilder();
             sb.Append($"Shader \"{m_ParsedForm.m_Name}\" {{\n");
@@ -71,7 +71,7 @@ namespace AssetStudio
 
             foreach (var m_SubShader in m_ParsedForm.m_SubShaders)
             {
-                sb.Append(ConvertSerializedSubShader(m_SubShader, platform, platformIndex));
+                sb.Append(ConvertSerializedSubShader(m_SubShader, platform));
             }
 
             if (!string.IsNullOrEmpty(m_ParsedForm.m_FallbackName))
@@ -88,7 +88,7 @@ namespace AssetStudio
             return sb.ToString();
         }
 
-        private static string ConvertSerializedSubShader(SerializedSubShader m_SubShader, uint platform, int platformIndex)
+        private static string ConvertSerializedSubShader(SerializedSubShader m_SubShader, ShaderCompilerPlatform platform)
         {
             var sb = new StringBuilder();
             sb.Append("SubShader {\n");
@@ -101,13 +101,13 @@ namespace AssetStudio
 
             foreach (var m_Passe in m_SubShader.m_Passes)
             {
-                sb.Append(ConvertSerializedPass(m_Passe, platform, platformIndex));
+                sb.Append(ConvertSerializedPass(m_Passe, platform));
             }
             sb.Append("}\n");
             return sb.ToString();
         }
 
-        private static string ConvertSerializedPass(SerializedPass m_Passe, uint platform, int platformIndex)
+        private static string ConvertSerializedPass(SerializedPass m_Passe, ShaderCompilerPlatform platform)
         {
             var sb = new StringBuilder();
             switch (m_Passe.m_Type)
@@ -144,35 +144,35 @@ namespace AssetStudio
                     if (m_Passe.progVertex.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"vp\" {\n");
-                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progVertex.m_SubPrograms, platform, platformIndex));
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progVertex.m_SubPrograms, platform));
                         sb.Append("}\n");
                     }
 
                     if (m_Passe.progFragment.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"fp\" {\n");
-                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progFragment.m_SubPrograms, platform, platformIndex));
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progFragment.m_SubPrograms, platform));
                         sb.Append("}\n");
                     }
 
                     if (m_Passe.progGeometry.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"gp\" {\n");
-                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progGeometry.m_SubPrograms, platform, platformIndex));
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progGeometry.m_SubPrograms, platform));
                         sb.Append("}\n");
                     }
 
                     if (m_Passe.progHull.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"hp\" {\n");
-                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progHull.m_SubPrograms, platform, platformIndex));
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progHull.m_SubPrograms, platform));
                         sb.Append("}\n");
                     }
 
                     if (m_Passe.progDomain.m_SubPrograms.Length > 0)
                     {
                         sb.Append("Program \"dp\" {\n");
-                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platform, platformIndex));
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platform));
                         sb.Append("}\n");
                     }
                 }
@@ -181,27 +181,31 @@ namespace AssetStudio
             return sb.ToString();
         }
 
-        private static string ConvertSerializedSubPrograms(SerializedSubProgram[] m_SubPrograms, uint platform, int platformIndex)
+        private static string ConvertSerializedSubPrograms(SerializedSubProgram[] m_SubPrograms, ShaderCompilerPlatform platform)
         {
             var sb = new StringBuilder();
             var groups = m_SubPrograms.GroupBy(x => x.m_BlobIndex);
             foreach (var group in groups)
             {
-                var programs = group.GroupBy(x => x.m_GpuProgramType).ToList();
-                if (platformIndex < programs.Count)
+                var programs = group.GroupBy(x => x.m_GpuProgramType);
+                foreach (var program in programs)
                 {
-                    var subPrograms = programs[platformIndex].ToList();
-                    var isTier = subPrograms.Count > 1;
-                    foreach (var subProgram in subPrograms)
+                    if (CheckGpuProgramUsable(platform, program.Key))
                     {
-                        sb.Append($"SubProgram \"{GetPlatformString(platform)} ");
-                        if (isTier)
+                        var subPrograms = program.ToList();
+                        var isTier = subPrograms.Count > 1;
+                        foreach (var subProgram in subPrograms)
                         {
-                            sb.Append($"hw_tier{subProgram.m_ShaderHardwareTier:00} ");
+                            sb.Append($"SubProgram \"{GetPlatformString(platform)} ");
+                            if (isTier)
+                            {
+                                sb.Append($"hw_tier{subProgram.m_ShaderHardwareTier:00} ");
+                            }
+                            sb.Append("\" {\n");
+                            sb.Append($"GpuProgramIndex {subProgram.m_BlobIndex}\n");
+                            sb.Append("}\n");
                         }
-                        sb.Append("\" {\n");
-                        sb.Append($"GpuProgramIndex {subProgram.m_BlobIndex}\n");
-                        sb.Append("}\n");
+                        break;
                     }
                 }
             }
@@ -424,51 +428,118 @@ namespace AssetStudio
             return sb.ToString();
         }
 
-        public static string GetPlatformString(uint platform)
+        private static bool CheckGpuProgramUsable(ShaderCompilerPlatform platform, ShaderGpuProgramType programType)
         {
             switch (platform)
             {
-                case 0: //kShaderCompPlatformGL
+                case ShaderCompilerPlatform.kShaderCompPlatformGL:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramGLLegacy;
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D9:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM20
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM30
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM20
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM30;
+                case ShaderCompilerPlatform.kShaderCompPlatformXbox360:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformPS3:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D11:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM40
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM50
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM40
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM50
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM40
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM50
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11HullSM50
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50;
+                case ShaderCompilerPlatform.kShaderCompPlatformGLES20:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramGLES;
+                case ShaderCompilerPlatform.kShaderCompPlatformNaCl:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformFlash:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D11_9x:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramDX10Level9Vertex
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramDX10Level9Pixel;
+                case ShaderCompilerPlatform.kShaderCompPlatformGLES3Plus:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramGLES31AEP
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramGLES31
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramGLES3;
+                case ShaderCompilerPlatform.kShaderCompPlatformPSP2:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformPS4:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformXboxOne:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformPSM:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformMetal:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramMetalVS
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramMetalFS;
+                case ShaderCompilerPlatform.kShaderCompPlatformOpenGLCore:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramGLCore32
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramGLCore41
+                        || programType == ShaderGpuProgramType.kShaderGpuProgramGLCore43;
+                case ShaderCompilerPlatform.kShaderCompPlatformN3DS:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformWiiU:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformVulkan:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramSPIRV;
+                case ShaderCompilerPlatform.kShaderCompPlatformSwitch:
+                    throw new NotSupportedException();
+                case ShaderCompilerPlatform.kShaderCompPlatformXboxOneD3D12:
+                    throw new NotSupportedException();
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public static string GetPlatformString(ShaderCompilerPlatform platform)
+        {
+            switch (platform)
+            {
+                case ShaderCompilerPlatform.kShaderCompPlatformGL:
                     return "openGL";
-                case 1: //kShaderCompPlatformD3D9
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D9:
                     return "d3d9";
-                case 2: //kShaderCompPlatformXbox360
+                case ShaderCompilerPlatform.kShaderCompPlatformXbox360:
                     return "xbox360";
-                case 3: //kShaderCompPlatformPS3
+                case ShaderCompilerPlatform.kShaderCompPlatformPS3:
                     return "ps3";
-                case 4: //kShaderCompPlatformD3D11
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D11:
                     return "d3d11";
-                case 5: //kShaderCompPlatformGLES20
+                case ShaderCompilerPlatform.kShaderCompPlatformGLES20:
                     return "gles";
-                case 6: //kShaderCompPlatformNaCl
+                case ShaderCompilerPlatform.kShaderCompPlatformNaCl:
                     return "glesdesktop";
-                case 7: //kShaderCompPlatformFlash
+                case ShaderCompilerPlatform.kShaderCompPlatformFlash:
                     return "flash";
-                case 8: //kShaderCompPlatformD3D11_9x
+                case ShaderCompilerPlatform.kShaderCompPlatformD3D11_9x:
                     return "d3d11_9x";
-                case 9: //kShaderCompPlatformGLES3Plus
+                case ShaderCompilerPlatform.kShaderCompPlatformGLES3Plus:
                     return "gles3";
-                case 10: //kShaderCompPlatformPSP2
+                case ShaderCompilerPlatform.kShaderCompPlatformPSP2:
                     return "psp2";
-                case 11: //kShaderCompPlatformPS4
+                case ShaderCompilerPlatform.kShaderCompPlatformPS4:
                     return "ps4";
-                case 12: //kShaderCompPlatformXboxOne
+                case ShaderCompilerPlatform.kShaderCompPlatformXboxOne:
                     return "xboxone";
-                case 13: //kShaderCompPlatformPSM
+                case ShaderCompilerPlatform.kShaderCompPlatformPSM:
                     return "psm";
-                case 14: //kShaderCompPlatformMetal
+                case ShaderCompilerPlatform.kShaderCompPlatformMetal:
                     return "metal";
-                case 15: //kShaderCompPlatformOpenGLCore
+                case ShaderCompilerPlatform.kShaderCompPlatformOpenGLCore:
                     return "glcore";
-                case 16: //kShaderCompPlatformN3DS
+                case ShaderCompilerPlatform.kShaderCompPlatformN3DS:
                     return "n3ds";
-                case 17: //kShaderCompPlatformWiiU
+                case ShaderCompilerPlatform.kShaderCompPlatformWiiU:
                     return "wiiu";
-                case 18: //kShaderCompPlatformVulkan
+                case ShaderCompilerPlatform.kShaderCompPlatformVulkan:
                     return "vulkan";
-                case 19: //kShaderCompPlatformSwitch
+                case ShaderCompilerPlatform.kShaderCompPlatformSwitch:
                     return "switch";
-                case 20: //kShaderCompPlatformXboxOneD3D12
+                case ShaderCompilerPlatform.kShaderCompPlatformXboxOneD3D12:
                     return "xboxone_d3d12";
                 default:
                     return "unknown";

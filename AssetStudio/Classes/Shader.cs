@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace AssetStudio
 {
@@ -188,7 +189,7 @@ namespace AssetStudio
         kFogDisabled = 0,
         kFogLinear = 1,
         kFogExp = 2,
-        kFogExp2 = 3,
+        kFogExp2 = 3
     };
 
     public class SerializedShaderState
@@ -446,7 +447,7 @@ namespace AssetStudio
         kShaderGpuProgramMetalVS = 23,
         kShaderGpuProgramMetalFS = 24,
         kShaderGpuProgramSPIRV = 25,
-        kShaderGpuProgramConsole = 26,
+        kShaderGpuProgramConsole = 26
     };
 
     public class SerializedSubProgram
@@ -701,6 +702,32 @@ namespace AssetStudio
         }
     }
 
+    public enum ShaderCompilerPlatform
+    {
+        kShaderCompPlatformNone = -1,
+        kShaderCompPlatformGL = 0,
+        kShaderCompPlatformD3D9 = 1,
+        kShaderCompPlatformXbox360 = 2,
+        kShaderCompPlatformPS3 = 3,
+        kShaderCompPlatformD3D11 = 4,
+        kShaderCompPlatformGLES20 = 5,
+        kShaderCompPlatformNaCl = 6,
+        kShaderCompPlatformFlash = 7,
+        kShaderCompPlatformD3D11_9x = 8,
+        kShaderCompPlatformGLES3Plus = 9,
+        kShaderCompPlatformPSP2 = 10,
+        kShaderCompPlatformPS4 = 11,
+        kShaderCompPlatformXboxOne = 12,
+        kShaderCompPlatformPSM = 13,
+        kShaderCompPlatformMetal = 14,
+        kShaderCompPlatformOpenGLCore = 15,
+        kShaderCompPlatformN3DS = 16,
+        kShaderCompPlatformWiiU = 17,
+        kShaderCompPlatformVulkan = 18,
+        kShaderCompPlatformSwitch = 19,
+        kShaderCompPlatformXboxOneD3D12 = 20
+    };
+
     public class Shader : NamedObject
     {
         public byte[] m_Script;
@@ -709,7 +736,7 @@ namespace AssetStudio
         public byte[] m_SubProgramBlob;
         //5.5 and up
         public SerializedShader m_ParsedForm;
-        public uint[] platforms;
+        public ShaderCompilerPlatform[] platforms;
         public uint[] offsets;
         public uint[] compressedLengths;
         public uint[] decompressedLengths;
@@ -720,7 +747,7 @@ namespace AssetStudio
             if (version[0] == 5 && version[1] >= 5 || version[0] > 5) //5.5 and up
             {
                 m_ParsedForm = new SerializedShader(reader);
-                platforms = reader.ReadUInt32Array();
+                platforms = reader.ReadUInt32Array().Select(x => (ShaderCompilerPlatform)x).ToArray();
                 offsets = reader.ReadUInt32Array();
                 compressedLengths = reader.ReadUInt32Array();
                 decompressedLengths = reader.ReadUInt32Array();
