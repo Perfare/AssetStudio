@@ -9,7 +9,7 @@ namespace AssetStudio
 {
     //TODO unfinished
     //Separate， EngineType read
-    public class ScriptDumper : IDisposable
+    public sealed class ScriptDumper : IDisposable
     {
         private Dictionary<string, ModuleDef> moduleDic = new Dictionary<string, ModuleDef>();
 
@@ -72,12 +72,15 @@ namespace AssetStudio
 
         public void Dispose()
         {
-            foreach (var pair in moduleDic)
+            if (moduleDic != null)
             {
-                pair.Value.Dispose();
+                foreach (var pair in moduleDic)
+                {
+                    pair.Value.Dispose();
+                }
+                moduleDic.Clear();
+                moduleDic = null;
             }
-            moduleDic.Clear();
-            moduleDic = null;
         }
 
         private static StringBuilder CreateMonoBehaviourHeader(MonoBehaviour m_MonoBehaviour)
@@ -345,11 +348,12 @@ namespace AssetStudio
                     {
                         if (fieldDef.FieldType.IsGenericParameter)
                         {
-                            foreach (var g in typeDef.GenericParameters)
+                            for (var i = 0; i < typeDef.GenericParameters.Count; i++)
                             {
+                                var g = typeDef.GenericParameters[i];
                                 if (g.FullName == fieldDef.FieldType.FullName)
                                 {
-                                    var type = ((GenericInstSig)typeSig).GenericArguments[0];
+                                    var type = ((GenericInstSig)typeSig).GenericArguments[i];
                                     DumpType(type, sb, reader, fieldDef.Name, indent + 1);
                                     break;
                                 }
