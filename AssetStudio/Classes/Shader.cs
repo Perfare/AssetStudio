@@ -189,20 +189,12 @@ namespace AssetStudio
         kFogLinear = 1,
         kFogExp = 2,
         kFogExp2 = 3,
-        kFogModeCount = 4
     };
 
     public class SerializedShaderState
     {
         public string m_Name;
-        public SerializedShaderRTBlendState rtBlend0;
-        public SerializedShaderRTBlendState rtBlend1;
-        public SerializedShaderRTBlendState rtBlend2;
-        public SerializedShaderRTBlendState rtBlend3;
-        public SerializedShaderRTBlendState rtBlend4;
-        public SerializedShaderRTBlendState rtBlend5;
-        public SerializedShaderRTBlendState rtBlend6;
-        public SerializedShaderRTBlendState rtBlend7;
+        public SerializedShaderRTBlendState[] rtBlend;
         public bool rtSeparateBlend;
         public SerializedShaderFloatValue zClip;
         public SerializedShaderFloatValue zTest;
@@ -232,14 +224,11 @@ namespace AssetStudio
             var version = reader.version;
 
             m_Name = reader.ReadAlignedString();
-            rtBlend0 = new SerializedShaderRTBlendState(reader);
-            rtBlend1 = new SerializedShaderRTBlendState(reader);
-            rtBlend2 = new SerializedShaderRTBlendState(reader);
-            rtBlend3 = new SerializedShaderRTBlendState(reader);
-            rtBlend4 = new SerializedShaderRTBlendState(reader);
-            rtBlend5 = new SerializedShaderRTBlendState(reader);
-            rtBlend6 = new SerializedShaderRTBlendState(reader);
-            rtBlend7 = new SerializedShaderRTBlendState(reader);
+            rtBlend = new SerializedShaderRTBlendState[8];
+            for (int i = 0; i < 8; i++)
+            {
+                rtBlend[i] = new SerializedShaderRTBlendState(reader);
+            }
             rtSeparateBlend = reader.ReadBoolean();
             reader.AlignStream();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up

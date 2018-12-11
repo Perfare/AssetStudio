@@ -82,8 +82,21 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + ".shader";
             if (ExportFileExists(exportFullName))
                 return false;
-            var str = ShaderConverter.Convert((Shader)item.Asset);
-            File.WriteAllText(exportFullName, str ?? "Serialized Shader can't be read");
+            var m_Shader = (Shader) item.Asset;
+            if (m_Shader.compressedBlob != null) //5.5 and up
+            {
+                var strs = ShaderConverter.ConvertMultiple(m_Shader);
+                for (int i = 0; i < strs.Length; i++)
+                {
+                    var platformName = ShaderConverter.GetPlatformString(m_Shader.platforms[i]);
+                    File.WriteAllText($"{exportPath}{item.Text}_{platformName}.shader", strs[i]);
+                }
+            }
+            else
+            {
+                var str = ShaderConverter.Convert(m_Shader);
+                File.WriteAllText(exportFullName, str);
+            }
             return true;
         }
 

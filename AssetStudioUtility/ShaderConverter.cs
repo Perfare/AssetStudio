@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Lz4;
@@ -27,11 +28,21 @@ namespace AssetStudio
 
             if (shader.compressedBlob != null) //5.5 and up
             {
-                //TODO
-                /*for (var i = 0; i < shader.platforms.Count; i++)
+                return ConvertMultiple(shader)[0];
+            }
+
+            return Encoding.UTF8.GetString(shader.m_Script);
+        }
+
+        public static string[] ConvertMultiple(Shader shader)
+        {
+            if (shader.compressedBlob != null) //5.5 and up
+            {
+                var strs = new string[shader.platforms.Length];
+                for (var i = 0; i < shader.platforms.Length; i++)
                 {
                     var compressedBytes = new byte[shader.compressedLengths[i]];
-                    Array.Copy(shader.compressedBlob, shader.offsets[i], compressedBytes, 0, shader.compressedLengths[i]);
+                    Buffer.BlockCopy(shader.compressedBlob, (int)shader.offsets[i], compressedBytes, 0, (int)shader.compressedLengths[i]);
                     var decompressedBytes = new byte[shader.decompressedLengths[i]];
                     using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
                     {
@@ -39,12 +50,413 @@ namespace AssetStudio
                     }
                     using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                     {
-                        new ShaderProgram(blobReader);
+                        var program = new ShaderProgram(blobReader);
+                        var m_Script = ConvertSerializedShader(shader.m_ParsedForm, shader.platforms[i], i);
+                        strs[i] = program.Export(m_Script);
                     }
-                }*/
-                return shader.Dump();
+                }
+
+                return strs;
             }
-            return Encoding.UTF8.GetString(shader.m_Script);
+
+            return null;
+        }
+
+        private static string ConvertSerializedShader(SerializedShader m_ParsedForm, uint platform, int platformIndex)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"Shader \"{m_ParsedForm.m_Name}\" {{\n");
+
+            sb.Append(ConvertSerializedProperties(m_ParsedForm.m_PropInfo));
+
+            foreach (var m_SubShader in m_ParsedForm.m_SubShaders)
+            {
+                sb.Append(ConvertSerializedSubShader(m_SubShader, platform, platformIndex));
+            }
+
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedSubShader(SerializedSubShader m_SubShader, uint platform, int platformIndex)
+        {
+            var sb = new StringBuilder();
+            sb.Append("SubShader {\n");
+            if (m_SubShader.m_LOD != 0)
+            {
+                sb.Append($" LOD {m_SubShader.m_LOD}\n");
+            }
+
+            sb.Append(ConvertSerializedTagMap(m_SubShader.m_Tags, 1));
+
+            foreach (var m_Passe in m_SubShader.m_Passes)
+            {
+                sb.Append(ConvertSerializedPass(m_Passe, platform, platformIndex));
+            }
+            sb.Append("}\n");
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedPass(SerializedPass m_Passe, uint platform, int platformIndex)
+        {
+            var sb = new StringBuilder();
+            switch (m_Passe.m_Type)
+            {
+                case PassType.kPassTypeNormal:
+                    sb.Append(" Pass ");
+                    break;
+                case PassType.kPassTypeUse:
+                    sb.Append(" UsePass ");
+                    break;
+                case PassType.kPassTypeGrab:
+                    sb.Append(" GrabPass ");
+                    break;
+            }
+            if (m_Passe.m_Type == PassType.kPassTypeUse)
+            {
+                sb.Append($"\"{m_Passe.m_UseName}\"\n");
+            }
+            else
+            {
+                sb.Append("{\n");
+
+                if (m_Passe.m_Type == PassType.kPassTypeGrab)
+                {
+                    if (!string.IsNullOrEmpty(m_Passe.m_TextureName))
+                    {
+                        sb.Append($"  \"{m_Passe.m_TextureName}\"\n");
+                    }
+                }
+                else
+                {
+                    sb.Append(ConvertSerializedShaderState(m_Passe.m_State));
+
+                    if (m_Passe.progVertex.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"vp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progVertex.m_SubPrograms, platform, platformIndex));
+                    }
+
+                    if (m_Passe.progFragment.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"fp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progFragment.m_SubPrograms, platform, platformIndex));
+                    }
+
+                    if (m_Passe.progGeometry.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"gp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progGeometry.m_SubPrograms, platform, platformIndex));
+                    }
+
+                    if (m_Passe.progHull.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"hp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progHull.m_SubPrograms, platform, platformIndex));
+                    }
+
+                    if (m_Passe.progDomain.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"dp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platform, platformIndex));
+                    }
+                }
+                sb.Append("}\n");
+            }
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedSubPrograms(SerializedSubProgram[] m_SubPrograms, uint platform, int platformIndex)
+        {
+            var sb = new StringBuilder();
+            var groups = m_SubPrograms.GroupBy(x => x.m_BlobIndex);
+            foreach (var group in groups)
+            {
+                var programs = group.GroupBy(x => x.m_GpuProgramType).ToList();
+                if (platformIndex < programs.Count)
+                {
+                    var subPrograms = programs[platformIndex].ToList();
+                    var isTier = subPrograms.Count > 1;
+                    foreach (var subProgram in subPrograms)
+                    {
+                        sb.Append($"SubProgram \"{GetPlatformString(platform)} ");
+                        if (isTier)
+                        {
+                            sb.Append($"hw_tier{subProgram.m_ShaderHardwareTier:00} ");
+                        }
+                        sb.Append("\" {\n");
+                        sb.Append($"GpuProgramIndex {subProgram.m_BlobIndex}\n");
+                        sb.Append("}\n");
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedShaderState(SerializedShaderState m_State)
+        {
+            var sb = new StringBuilder();
+            if (!string.IsNullOrEmpty(m_State.m_Name))
+            {
+                sb.Append($"  Name \"{m_State.m_Name}\"\n");
+            }
+            if (m_State.m_LOD != 0)
+            {
+                sb.Append($"  LOD {m_State.m_LOD}\n");
+            }
+
+            sb.Append(ConvertSerializedTagMap(m_State.m_Tags, 2));
+
+            sb.Append(ConvertSerializedShaderRTBlendState(m_State.rtBlend));
+
+            if (m_State.alphaToMask.val > 0f)
+            {
+                sb.Append("  AlphaToMask On\n");
+            }
+
+            if (m_State.zClip?.val != 1f) //ZClip On
+            {
+                sb.Append("  ZClip Off\n");
+            }
+
+            if (m_State.zTest.val != 4f) //ZTest LEqual
+            {
+                sb.Append("  ZTest ");
+                switch (m_State.zTest.val) //enum CompareFunction
+                {
+                    case 0f: //kFuncDisabled
+                        sb.Append("Off");
+                        break;
+                    case 1f: //kFuncNever
+                        sb.Append("Never");
+                        break;
+                    case 2f: //kFuncLess
+                        sb.Append("Less");
+                        break;
+                    case 3f: //kFuncEqual
+                        sb.Append("Equal");
+                        break;
+                    case 5f: //kFuncGreater
+                        sb.Append("Greater");
+                        break;
+                    case 6f: //kFuncNotEqual
+                        sb.Append("NotEqual");
+                        break;
+                    case 7f: //kFuncGEqual
+                        sb.Append("GEqual");
+                        break;
+                    case 8f: //kFuncAlways
+                        sb.Append("Always");
+                        break;
+                }
+
+                sb.Append("\n");
+            }
+
+            if (m_State.zWrite.val != 1f) //ZWrite On
+            {
+                sb.Append("  ZWrite Off\n");
+            }
+
+            if (m_State.culling.val != 2f) //Cull Back
+            {
+                sb.Append("  Cull ");
+                switch (m_State.culling.val) //enum CullMode
+                {
+                    case 0f: //kCullOff
+                        sb.Append("Off");
+                        break;
+                    case 1f: //kCullFront
+                        sb.Append("Front");
+                        break;
+                }
+                sb.Append("\n");
+            }
+
+            if (m_State.offsetFactor.val != 0f || m_State.offsetUnits.val != 0f)
+            {
+                sb.Append($"  Offset {m_State.offsetFactor.val}, {m_State.offsetUnits.val}\n");
+            }
+
+            //TODO Stencil
+
+            //TODO Fog
+
+            if (m_State.lighting)
+            {
+                sb.Append($"  Lighting {(m_State.lighting ? "On" : "Off")}\n");
+            }
+
+            sb.Append($"  GpuProgramID {m_State.gpuProgramID}\n");
+
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedShaderRTBlendState(SerializedShaderRTBlendState[] rtBlend)
+        {
+            //TODO Blend
+            var sb = new StringBuilder();
+            /*for (var i = 0; i < rtBlend.Length; i++)
+            {
+                var blend = rtBlend[i];
+                if (!blend.srcBlend.val.Equals(1f) ||
+                    !blend.destBlend.val.Equals(0f) ||
+                    !blend.srcBlendAlpha.val.Equals(1f) ||
+                    !blend.destBlendAlpha.val.Equals(0f))
+                {
+                    sb.Append("  Blend ");
+                    sb.Append($"{i} ");
+                    sb.Append('\n');
+                }
+            }*/
+
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedTagMap(SerializedTagMap m_Tags, int intent)
+        {
+            var sb = new StringBuilder();
+            if (m_Tags.tags.Length > 0)
+            {
+                sb.Append(new string(' ', intent));
+                sb.Append("Tags { ");
+                foreach (var pair in m_Tags.tags)
+                {
+                    sb.Append($"\"{pair.Key}\" = \"{pair.Value}\" ");
+                }
+                sb.Append("}\n");
+            }
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedProperties(SerializedProperties m_PropInfo)
+        {
+            var sb = new StringBuilder();
+            sb.Append("Properties {\n");
+            foreach (var m_Prop in m_PropInfo.m_Props)
+            {
+                sb.Append(ConvertSerializedProperty(m_Prop));
+            }
+            sb.Append("}\n");
+            return sb.ToString();
+        }
+
+        private static string ConvertSerializedProperty(SerializedProperty m_Prop)
+        {
+            var sb = new StringBuilder();
+            foreach (var m_Attribute in m_Prop.m_Attributes)
+            {
+                sb.Append($"[{m_Attribute}] ");
+            }
+            //TODO Flag
+            sb.Append($"{m_Prop.m_Name} (\"{m_Prop.m_Description}\", ");
+            switch (m_Prop.m_Type)
+            {
+                case SerializedPropertyType.kColor:
+                    sb.Append("Color");
+                    break;
+                case SerializedPropertyType.kVector:
+                    sb.Append("Vector");
+                    break;
+                case SerializedPropertyType.kFloat:
+                    sb.Append("Float");
+                    break;
+                case SerializedPropertyType.kRange:
+                    sb.Append($"Range({m_Prop.m_DefValue[1]}, {m_Prop.m_DefValue[2]})");
+                    break;
+                case SerializedPropertyType.kTexture:
+                    switch (m_Prop.m_DefTexture.m_TexDim)
+                    {
+                        case TextureDimension.kTexDimAny:
+                            sb.Append("any");
+                            break;
+                        case TextureDimension.kTexDim2D:
+                            sb.Append("2D");
+                            break;
+                        case TextureDimension.kTexDim3D:
+                            sb.Append("3D");
+                            break;
+                        case TextureDimension.kTexDimCUBE:
+                            sb.Append("Cube");
+                            break;
+                        case TextureDimension.kTexDim2DArray:
+                            sb.Append("2DArray");
+                            break;
+                        case TextureDimension.kTexDimCubeArray:
+                            sb.Append("CubeArray");
+                            break;
+                    }
+                    break;
+            }
+            sb.Append(") = ");
+            switch (m_Prop.m_Type)
+            {
+                case SerializedPropertyType.kColor:
+                case SerializedPropertyType.kVector:
+                    sb.Append($"({m_Prop.m_DefValue[0]},{m_Prop.m_DefValue[1]},{m_Prop.m_DefValue[2]},{m_Prop.m_DefValue[3]})");
+                    break;
+                case SerializedPropertyType.kFloat:
+                case SerializedPropertyType.kRange:
+                    sb.Append(m_Prop.m_DefValue[0]);
+                    break;
+                case SerializedPropertyType.kTexture:
+                    sb.Append($"\"{m_Prop.m_DefTexture.m_DefaultName}\" {{ }}");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            sb.Append('\n');
+            return sb.ToString();
+        }
+
+        public static string GetPlatformString(uint platform)
+        {
+            switch (platform)
+            {
+                case 0: //kShaderCompPlatformGL
+                    return "openGL";
+                case 1: //kShaderCompPlatformD3D9
+                    return "d3d9";
+                case 2: //kShaderCompPlatformXbox360
+                    return "xbox360";
+                case 3: //kShaderCompPlatformPS3
+                    return "ps3";
+                case 4: //kShaderCompPlatformD3D11
+                    return "d3d11";
+                case 5: //kShaderCompPlatformGLES20
+                    return "gles";
+                case 6: //kShaderCompPlatformNaCl
+                    return "glesdesktop";
+                case 7: //kShaderCompPlatformFlash
+                    return "flash";
+                case 8: //kShaderCompPlatformD3D11_9x
+                    return "d3d11_9x";
+                case 9: //kShaderCompPlatformGLES3Plus
+                    return "gles3";
+                case 10: //kShaderCompPlatformPSP2
+                    return "psp2";
+                case 11: //kShaderCompPlatformPS4
+                    return "ps4";
+                case 12: //kShaderCompPlatformXboxOne
+                    return "xboxone";
+                case 13: //kShaderCompPlatformPSM
+                    return "psm";
+                case 14: //kShaderCompPlatformMetal
+                    return "metal";
+                case 15: //kShaderCompPlatformOpenGLCore
+                    return "glcore";
+                case 16: //kShaderCompPlatformN3DS
+                    return "n3ds";
+                case 17: //kShaderCompPlatformWiiU
+                    return "wiiu";
+                case 18: //kShaderCompPlatformVulkan
+                    return "vulkan";
+                case 19: //kShaderCompPlatformSwitch
+                    return "switch";
+                case 20: //kShaderCompPlatformXboxOneD3D12
+                    return "xboxone_d3d12";
+                default:
+                    return "unknown";
+            }
         }
     }
 
@@ -125,7 +537,7 @@ namespace AssetStudio
                 sb.Append("}\n");
             }
 
-            sb.Append("\"\n");
+            sb.Append("\"");
             if (m_ProgramCode.Length > 0)
             {
                 switch (m_ProgramType)
@@ -186,8 +598,12 @@ namespace AssetStudio
                             sb.Append(Encoding.UTF8.GetString(buff));
                         }
                         break;
+                    case ShaderGpuProgramType.kShaderGpuProgramSPIRV:
+                        sb.Append("// shader disassembly not supported on SPIR-V\n");
+                        sb.Append("// https://github.com/KhronosGroup/SPIRV-Cross");
+                        break;
                     default:
-                        sb.Append($"/*Unsupported program data {m_ProgramType}*/");
+                        sb.Append($"//shader disassembly not supported on {m_ProgramType}");
                         break;
                 }
             }
