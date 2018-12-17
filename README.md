@@ -1,27 +1,25 @@
 # AssetStudio
-Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/rnu7l90422pdewx4?svg=true)](https://ci.appveyor.com/project/Perfare/assetstudio/branch/master/artifacts)
+[![Build status](https://ci.appveyor.com/api/projects/status/rnu7l90422pdewx4?svg=true)](https://ci.appveyor.com/project/Perfare/assetstudio/branch/master/artifacts)
 
 **None of the repo, the tool, nor the repo owner is affiliated with, or sponsored or authorized by, Unity Technologies or its affiliates.**
 
-AssetStudio is a tool for exploring, extracting and exporting assets and assetbundles. It has been tested with builds from most platforms, ranging from Web, PC, Linux, MacOS to Xbox360, PS3, Android and iOS, and it is currently maintained to be compatible with assets from 2.5 up to the 2018.2 version.
+AssetStudio is a tool for exploring, extracting and exporting assets and assetbundles.
 
 ## Features
-
-* Support asset types:  
-  * **Texture2D** : support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX  
-  * **Sprite** : bmp, png or jpeg  
-  * **AudioClip** : mp3, ogg, wav, m4a, fsb. support convert FSB file to WAV(PCM)  
-  * **Font** : ttf, otf  
-  * **Mesh** : obj  
-  * **TextAsset** : txt
+* Support version:
+  * 2.5 - 2018.3
+* Support asset types:
+  * **Texture2D** : support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX
+  * **Sprite** : bmp, png or jpeg
+  * **AudioClip** : mp3, ogg, wav, m4a, fsb. support convert FSB file to WAV(PCM)
+  * **Font**
+  * **Mesh** : obj
+  * **TextAsset**
   * **Shader**
-  * **MovieTexture** : ogv
+  * **MovieTexture**
   * **VideoClip**
   * **MonoBehaviour**
-  * **Animator** : Export to FBX file with bound AnimationClip
-* Export model to FBX format, with complete hierarchy, transformations, materials and textures. Geometry is exported with normals, tangents, UV coordinates, vertex colors and deformers. Skeleton nodes can be exported either as bones or dummy deformers.
-* Real-time preview window for the above-mentioned assets
-* Diagnostics mode with useful tools for research
+  * **Animator** : export to FBX file with bound AnimationClip
 
 ## Usage
 ### Requirements
@@ -44,6 +42,6 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
   
 ## Build
 
-* The project uses some C# 7 syntax, need Visual Studio 2017
+* The project uses some C# 7 syntax, need Visual Studio 2017 or newer
 * **AssetStudioFBX** uses FBX SDK 2019.0 VS2015, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
-* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudio/Library/x86/` and `AssetStudio/Library/x64` directory to the new version
+* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudio/Libraries/x86/` and `AssetStudio/Libraries/x64` directory to the new version
