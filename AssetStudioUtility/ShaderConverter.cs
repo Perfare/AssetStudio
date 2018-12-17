@@ -440,9 +440,9 @@ namespace AssetStudio
                         || programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM20
                         || programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM30;
                 case ShaderCompilerPlatform.kShaderCompPlatformXbox360:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformPS3:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformD3D11:
                     return programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM40
                         || programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM50
@@ -454,9 +454,9 @@ namespace AssetStudio
                         || programType == ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50;
                 case ShaderCompilerPlatform.kShaderCompPlatformGLES20:
                     return programType == ShaderGpuProgramType.kShaderGpuProgramGLES;
-                case ShaderCompilerPlatform.kShaderCompPlatformNaCl:
+                case ShaderCompilerPlatform.kShaderCompPlatformNaCl: //Obsolete
                     throw new NotSupportedException();
-                case ShaderCompilerPlatform.kShaderCompPlatformFlash:
+                case ShaderCompilerPlatform.kShaderCompPlatformFlash: //Obsolete
                     throw new NotSupportedException();
                 case ShaderCompilerPlatform.kShaderCompPlatformD3D11_9x:
                     return programType == ShaderGpuProgramType.kShaderGpuProgramDX10Level9Vertex
@@ -466,12 +466,12 @@ namespace AssetStudio
                         || programType == ShaderGpuProgramType.kShaderGpuProgramGLES31
                         || programType == ShaderGpuProgramType.kShaderGpuProgramGLES3;
                 case ShaderCompilerPlatform.kShaderCompPlatformPSP2:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformPS4:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformXboxOne:
-                    throw new NotSupportedException();
-                case ShaderCompilerPlatform.kShaderCompPlatformPSM:
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
+                case ShaderCompilerPlatform.kShaderCompPlatformPSM: //Unknown
                     throw new NotSupportedException();
                 case ShaderCompilerPlatform.kShaderCompPlatformMetal:
                     return programType == ShaderGpuProgramType.kShaderGpuProgramMetalVS
@@ -481,15 +481,15 @@ namespace AssetStudio
                         || programType == ShaderGpuProgramType.kShaderGpuProgramGLCore41
                         || programType == ShaderGpuProgramType.kShaderGpuProgramGLCore43;
                 case ShaderCompilerPlatform.kShaderCompPlatformN3DS:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformWiiU:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformVulkan:
                     return programType == ShaderGpuProgramType.kShaderGpuProgramSPIRV;
                 case ShaderCompilerPlatform.kShaderCompPlatformSwitch:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 case ShaderCompilerPlatform.kShaderCompPlatformXboxOneD3D12:
-                    throw new NotSupportedException();
+                    return programType == ShaderGpuProgramType.kShaderGpuProgramConsole;
                 default:
                     throw new NotSupportedException();
             }
@@ -688,6 +688,9 @@ namespace AssetStudio
                     case ShaderGpuProgramType.kShaderGpuProgramSPIRV:
                         sb.Append("// shader disassembly not supported on SPIR-V\n");
                         sb.Append("// https://github.com/KhronosGroup/SPIRV-Cross");
+                        break;
+                    case ShaderGpuProgramType.kShaderGpuProgramConsole:
+                        sb.Append(Encoding.UTF8.GetString(m_ProgramCode));
                         break;
                     default:
                         sb.Append($"//shader disassembly not supported on {m_ProgramType}");
