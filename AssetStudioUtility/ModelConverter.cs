@@ -397,23 +397,12 @@ namespace AssetStudio
                                 bone.Name = m_GameObject.m_Name;
                             }
                         }
-                        if (string.IsNullOrEmpty(bone.Name))
+                        if (!string.IsNullOrEmpty(bone.Name))
                         {
-                            var boneHash = mesh.m_BoneNameHashes[i];
-                            bone.Name = GetNameFromBonePathHashes(boneHash);
-                            if (string.IsNullOrEmpty(bone.Name))
-                            {
-                                bone.Name = avatar?.FindBoneName(boneHash);
-                            }
-                            if (string.IsNullOrEmpty(bone.Name))
-                            {
-                                //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
-                                continue;
-                            }
+                            var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
+                            bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
+                            iMesh.BoneList.Add(bone);
                         }
-                        var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
-                        bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
-                        iMesh.BoneList.Add(bone);
                     }
                 }
 
