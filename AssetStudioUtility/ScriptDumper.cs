@@ -7,8 +7,7 @@ using dnlib.DotNet;
 
 namespace AssetStudio
 {
-    //TODO unfinished
-    //Separate， EngineType read
+    //TODO to json file
     public sealed class ScriptDumper : IDisposable
     {
         private Dictionary<string, ModuleDef> moduleDic = new Dictionary<string, ModuleDef>();
@@ -356,6 +355,32 @@ namespace AssetStudio
                                     var type = ((GenericInstSig)typeSig).GenericArguments[i];
                                     DumpType(type, sb, reader, fieldDef.Name, indent + 1);
                                     break;
+                                }
+                            }
+                        }
+                        else if (fieldDef.FieldType is GenericInstSig genericSig && genericSig.GenericArguments.Count == 1 && genericSig.GenericArguments[0].IsGenericParameter)
+                        {
+                            for (var i = 0; i < typeDef.GenericParameters.Count; i++)
+                            {
+                                var g = typeDef.GenericParameters[i];
+                                if (g.FullName == genericSig.GenericArguments[0].FullName)
+                                {
+                                    var type = ((GenericInstSig)typeSig).GenericArguments[i];
+                                    var fieldTypeDef = fieldDef.FieldType.ToTypeDefOrRef().ResolveTypeDefThrow();
+                                    if (fieldTypeDef.Interfaces.Any(x => x.Interface.FullName == "System.Collections.Generic.ICollection`1<T>")) //System.Collections.Generic.IEnumerable`1<T>
+                                    {
+                                        var size = reader.ReadInt32();
+                                        sb.AppendLine($"{new string('\t', indent + 1)}int size = {size}");
+                                        for (int j = 0; j < size; j++)
+                                        {
+                                            sb.AppendLine($"{new string('\t', indent + 2)}[{i}]");
+                                            DumpType(type, sb, reader, "data", indent + 2, false, false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        DumpType(fieldDef.FieldType, sb, reader, fieldDef.Name, indent + 1);
+                                    }
                                 }
                             }
                         }

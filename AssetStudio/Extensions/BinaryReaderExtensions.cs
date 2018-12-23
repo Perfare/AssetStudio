@@ -26,7 +26,7 @@ namespace AssetStudio
         public static string ReadAlignedString(this BinaryReader reader)
         {
             var length = reader.ReadInt32();
-            if (length > 0 && length < (reader.BaseStream.Length - reader.BaseStream.Position))
+            if (length > 0 && length <= reader.BaseStream.Length - reader.BaseStream.Position)
             {
                 var stringData = reader.ReadBytes(length);
                 var result = Encoding.UTF8.GetString(stringData);
