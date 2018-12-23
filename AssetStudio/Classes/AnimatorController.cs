@@ -287,7 +287,9 @@ namespace AssetStudio
 
             m_Duration = reader.ReadSingle();
 
-            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
+            if (version[0] > 4
+                || (version[0] == 4 && version[1] > 1)
+                || (version[0] == 4 && version[1] == 1 && version[2] >= 3)) //4.1.3 and up
             {
                 m_CycleOffset = reader.ReadSingle();
                 m_Mirror = reader.ReadBoolean();
