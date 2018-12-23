@@ -303,18 +303,6 @@ namespace AssetStudio
             }
         }
 
-        public string FindBoneName(uint hash)
-        {
-            foreach (var pair in m_TOS)
-            {
-                if (pair.Key == hash)
-                {
-                    return pair.Value.Substring(pair.Value.LastIndexOf('/') + 1);
-                }
-            }
-            return null;
-        }
-
         public string FindBonePath(uint hash)
         {
             return m_TOS.FirstOrDefault(pair => pair.Key == hash).Value;

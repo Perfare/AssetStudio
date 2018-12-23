@@ -16,7 +16,7 @@ namespace AssetStudio
         List<ImportedMorph> MorphList { get; }
     }
 
-    public class ImportedFrame : IEnumerable<ImportedFrame>
+    public class ImportedFrame
     {
         public string Name { get; set; }
         public Vector3 LocalRotation { get; set; }
@@ -47,20 +47,82 @@ namespace AssetStudio
             children.Remove(frame);
         }
 
-        public IEnumerator<ImportedFrame> GetEnumerator()
+        public ImportedFrame FindFrameByPath(string path)
         {
-            return children.GetEnumerator();
+            var splitPath = path.Split('/');
+            if (Name != splitPath[0])
+                throw new Exception($"Couldn't find path {path}");
+            var curFrame = this;
+            for (int i = 1; i < splitPath.Length; i++)
+            {
+                curFrame = curFrame.FindChild(splitPath[i], false);
+                if (curFrame == null)
+                {
+                    throw new Exception($"Couldn't find path {path}");
+                }
+            }
+            return curFrame;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public ImportedFrame FindFrame(string name)
         {
-            return GetEnumerator();
+            if (Name == name)
+            {
+                return this;
+            }
+            foreach (var child in children)
+            {
+                var frame = child.FindFrame(name);
+                if (frame != null)
+                {
+                    return frame;
+                }
+            }
+            return null;
+        }
+
+        public ImportedFrame FindChild(string name, bool recursive = true)
+        {
+            foreach (var child in children)
+            {
+                if (recursive)
+                {
+                    var frame = child.FindFrame(name);
+                    if (frame != null)
+                    {
+                        return frame;
+                    }
+                }
+                else
+                {
+                    if (child.Name == name)
+                    {
+                        return child;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public IEnumerable<ImportedFrame> FindChilds(string name)
+        {
+            if (Name == name)
+            {
+                yield return this;
+            }
+            foreach (var child in children)
+            {
+                foreach (var item in child.FindChilds(name))
+                {
+                    yield return item;
+                }
+            }
         }
     }
 
     public class ImportedMesh
     {
-        public string Name { get; set; }
+        public string Path { get; set; }
         public List<ImportedSubmesh> SubmeshList { get; set; }
         public List<ImportedBone> BoneList { get; set; }
     }
@@ -94,7 +156,7 @@ namespace AssetStudio
 
     public class ImportedBone
     {
-        public string Name { get; set; }
+        public string Path { get; set; }
         public Matrix Matrix { get; set; }
     }
 
@@ -129,12 +191,12 @@ namespace AssetStudio
 
         public List<ImportedAnimationKeyframedTrack> TrackList { get; set; }
 
-        public ImportedAnimationKeyframedTrack FindTrack(string name)
+        public ImportedAnimationKeyframedTrack FindTrack(string path)
         {
-            var track = TrackList.Find(x => x.Name == name);
+            var track = TrackList.Find(x => x.Path == path);
             if (track == null)
             {
-                track = new ImportedAnimationKeyframedTrack { Name = name };
+                track = new ImportedAnimationKeyframedTrack { Path = path };
                 TrackList.Add(track);
             }
 
@@ -144,11 +206,10 @@ namespace AssetStudio
 
     public class ImportedAnimationKeyframedTrack
     {
-        public string Name { get; set; }
+        public string Path { get; set; }
         public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Rotations = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
-        public List<ImportedKeyframe<float>> Curve = new List<ImportedKeyframe<float>>();
     }
 
     public class ImportedKeyframe<T>
@@ -167,7 +228,7 @@ namespace AssetStudio
 
     public class ImportedMorph
     {
-        public string Name { get; set; }
+        public string Path { get; set; }
         public string ClipName { get; set; }
         public List<Tuple<float, int, int>> Channels { get; set; }
         public List<ImportedMorphKeyframe> KeyframeList { get; set; }
@@ -184,45 +245,11 @@ namespace AssetStudio
 
     public static class ImportedHelpers
     {
-        public static ImportedFrame FindFrame(string name, ImportedFrame root)
-        {
-            if (root.Name == name)
-            {
-                return root;
-            }
-            foreach (var child in root)
-            {
-                var frame = FindFrame(name, child);
-                if (frame != null)
-                {
-                    return frame;
-                }
-            }
-            return null;
-        }
-
-        public static ImportedFrame FindChildOrRoot(string name, ImportedFrame root)
-        {
-            foreach (var child in root)
-            {
-                var frame = FindFrame(name, child);
-                if (frame != null)
-                {
-                    return frame;
-                }
-            }
-            if (root.Name == name)
-            {
-                return root;
-            }
-            return null;
-        }
-
-        public static ImportedMesh FindMesh(string frameName, List<ImportedMesh> importedMeshList)
+        public static ImportedMesh FindMesh(string path, List<ImportedMesh> importedMeshList)
         {
             foreach (var mesh in importedMeshList)
             {
-                if (mesh.Name == frameName)
+                if (mesh.Path == path)
                 {
                     return mesh;
                 }
@@ -243,7 +270,7 @@ namespace AssetStudio
 
             foreach (var mesh in importedMeshList)
             {
-                if (mesh.Name == framePath)
+                if (mesh.Path == framePath)
                 {
                     return mesh;
                 }

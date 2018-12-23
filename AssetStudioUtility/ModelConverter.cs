@@ -18,10 +18,10 @@ namespace AssetStudio
         public List<ImportedMorph> MorphList { get; protected set; } = new List<ImportedMorph>();
 
         private Avatar avatar;
-        private Dictionary<uint, string> morphChannelInfo = new Dictionary<uint, string>();
         private HashSet<AnimationClip> animationClipHashSet = new HashSet<AnimationClip>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
         private Dictionary<Texture2D, string> textureNameDictionary = new Dictionary<Texture2D, string>();
+        private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
 
         public ModelConverter(GameObject m_GameObject)
         {
@@ -183,9 +183,10 @@ namespace AssetStudio
             }
         }
 
-        private static ImportedFrame ConvertTransform(Transform trans)
+        private ImportedFrame ConvertTransform(Transform trans)
         {
             var frame = new ImportedFrame(trans.m_Children.Length);
+            transformDictionary.Add(trans, frame);
             trans.m_GameObject.TryGet(out var m_GameObject);
             frame.Name = m_GameObject.m_Name;
             SetFrame(frame, trans.m_LocalPosition, trans.m_LocalRotation, trans.m_LocalScale);
@@ -232,7 +233,7 @@ namespace AssetStudio
                 return;
             var iMesh = new ImportedMesh();
             meshR.m_GameObject.TryGet(out var m_GameObject2);
-            iMesh.Name = GetMeshPath(m_GameObject2.m_Transform);
+            iMesh.Path = GetTransformPath(m_GameObject2.m_Transform);
             iMesh.SubmeshList = new List<ImportedSubmesh>();
             var subHashSet = new HashSet<int>();
             var combine = false;
@@ -358,46 +359,37 @@ namespace AssetStudio
                 iMesh.SubmeshList.Add(iSubmesh);
             }
 
-            //Bone
-            iMesh.BoneList = new List<ImportedBone>();
-            if (mesh.m_BindPose?.Length > 0 && mesh.m_BoneNameHashes?.Length > 0 && mesh.m_BindPose.Length == mesh.m_BoneNameHashes.Length)
-            {
-                for (int i = 0; i < mesh.m_BindPose.Length; i++)
-                {
-                    var bone = new ImportedBone();
-                    var boneHash = mesh.m_BoneNameHashes[i];
-                    bone.Name = GetNameFromBonePathHashes(boneHash);
-                    if (string.IsNullOrEmpty(bone.Name))
-                    {
-                        bone.Name = avatar?.FindBoneName(boneHash);
-                    }
-                    if (string.IsNullOrEmpty(bone.Name))
-                    {
-                        //throw new Exception("A Bone could neither be found by hash in Avatar nor by index in SkinnedMeshRenderer.");
-                        continue;
-                    }
-                    var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
-                    bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
-                    iMesh.BoneList.Add(bone);
-                }
-            }
-
             if (meshR is SkinnedMeshRenderer sMesh)
             {
-                //Bone for 4.3 down and other
-                if (iMesh.BoneList.Count == 0)
+                //Bone
+                if (sMesh.m_Bones.Length > 0)
                 {
+                    iMesh.BoneList = new List<ImportedBone>(sMesh.m_Bones.Length);
                     for (int i = 0; i < sMesh.m_Bones.Length; i++)
                     {
                         var bone = new ImportedBone();
                         if (sMesh.m_Bones[i].TryGet(out var m_Transform))
                         {
-                            if (m_Transform.m_GameObject.TryGet(out var m_GameObject))
-                            {
-                                bone.Name = m_GameObject.m_Name;
-                            }
+                            bone.Path = GetTransformPath(m_Transform);
                         }
-                        if (!string.IsNullOrEmpty(bone.Name))
+                        if (!string.IsNullOrEmpty(bone.Path))
+                        {
+                            var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
+                            bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
+                            iMesh.BoneList.Add(bone);
+                        }
+                    }
+                }
+                else if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0 && mesh.m_BindPose.Length == mesh.m_BoneNameHashes.Length)
+                {
+                    iMesh.BoneList = new List<ImportedBone>(mesh.m_BoneNameHashes.Length);
+                    for (int i = 0; i < mesh.m_BoneNameHashes.Length; i++)
+                    {
+                        var bone = new ImportedBone();
+                        var boneHash = mesh.m_BoneNameHashes[i];
+                        var path = GetPathFromHash(boneHash);
+                        bone.Path = FixBonePath(path);
+                        if (!string.IsNullOrEmpty(bone.Path))
                         {
                             var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
                             bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
@@ -407,12 +399,8 @@ namespace AssetStudio
                 }
 
                 //Morphs
-                if (mesh.m_Shapes?.channels != null)
+                if (mesh.m_Shapes?.shapes != null)
                 {
-                    foreach (var channel in mesh.m_Shapes.channels)
-                    {
-                        morphChannelInfo[channel.nameHash] = channel.name;
-                    }
                     if (mesh.m_Shapes.shapes.Length > 0)
                     {
                         ImportedMorph morph = null;
@@ -424,7 +412,7 @@ namespace AssetStudio
                             {
                                 morph = new ImportedMorph();
                                 MorphList.Add(morph);
-                                morph.Name = iMesh.Name;
+                                morph.Path = iMesh.Path;
                                 morph.ClipName = group;
                                 morph.Channels = new List<Tuple<float, int, int>>(mesh.m_Shapes.channels.Length);
                                 morph.KeyframeList = new List<ImportedMorphKeyframe>(mesh.m_Shapes.shapes.Length);
@@ -470,7 +458,7 @@ namespace AssetStudio
             if (combine)
             {
                 meshR.m_GameObject.TryGet(out var m_GameObject);
-                var frame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, RootFrame);
+                var frame = RootFrame.FindChild(m_GameObject.m_Name);
                 frame.LocalPosition = RootFrame.LocalPosition;
                 frame.LocalRotation = RootFrame.LocalRotation;
                 while (frame.Parent != null)
@@ -508,26 +496,43 @@ namespace AssetStudio
             return null;
         }
 
-        private string GetMeshPath(Transform meshTransform)
+        private string GetTransformPath(Transform transform)
         {
-            meshTransform.m_GameObject.TryGet(out var m_GameObject);
-            var curFrame = ImportedHelpers.FindChildOrRoot(m_GameObject.m_Name, RootFrame);
-            var path = curFrame.Name;
-            while (curFrame.Parent != null)
-            {
-                curFrame = curFrame.Parent;
-                path = curFrame.Name + "/" + path;
-            }
+            var frame = transformDictionary[transform];
+            return GetFramePath(frame);
+        }
 
+        private static string GetFramePath(ImportedFrame frame)
+        {
+            var path = frame.Name;
+            while (frame.Parent != null)
+            {
+                frame = frame.Parent;
+                path = frame.Name + "/" + path;
+            }
             return path;
         }
 
-        private static string GetTransformPath(Transform transform)
+        private string FixBonePath(string path)
+        {
+            var name = path.Substring(path.LastIndexOf('/') + 1);
+            foreach (var frame in RootFrame.FindChilds(name))
+            {
+                var fullPath = GetFramePath(frame);
+                if (fullPath.EndsWith(path))
+                {
+                    return fullPath;
+                }
+            }
+            return null;
+        }
+
+        private static string GetTransformPathByFather(Transform transform)
         {
             transform.m_GameObject.TryGet(out var m_GameObject);
             if (transform.m_Father.TryGet(out var father))
             {
-                return GetTransformPath(father) + "/" + m_GameObject.m_Name;
+                return GetTransformPathByFather(father) + "/" + m_GameObject.m_Name;
             }
 
             return m_GameObject.m_Name;
@@ -680,9 +685,7 @@ namespace AssetStudio
                 {
                     foreach (var m_CompressedRotationCurve in animationClip.m_CompressedRotationCurves)
                     {
-                        var path = m_CompressedRotationCurve.m_Path;
-                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                        var track = iAnim.FindTrack(boneName);
+                        var track = iAnim.FindTrack(m_CompressedRotationCurve.m_Path);
 
                         var numKeys = m_CompressedRotationCurve.m_Times.m_NumItems;
                         var data = m_CompressedRotationCurve.m_Times.UnpackInts();
@@ -704,9 +707,7 @@ namespace AssetStudio
                     }
                     foreach (var m_RotationCurve in animationClip.m_RotationCurves)
                     {
-                        var path = m_RotationCurve.path;
-                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                        var track = iAnim.FindTrack(boneName);
+                        var track = iAnim.FindTrack(m_RotationCurve.path);
                         foreach (var m_Curve in m_RotationCurve.curve.m_Curve)
                         {
                             var value = Fbx.QuaternionToEuler(new Quaternion(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z, m_Curve.value.W));
@@ -715,9 +716,7 @@ namespace AssetStudio
                     }
                     foreach (var m_PositionCurve in animationClip.m_PositionCurves)
                     {
-                        var path = m_PositionCurve.path;
-                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                        var track = iAnim.FindTrack(boneName);
+                        var track = iAnim.FindTrack(m_PositionCurve.path);
                         foreach (var m_Curve in m_PositionCurve.curve.m_Curve)
                         {
                             track.Translations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(-m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
@@ -725,9 +724,7 @@ namespace AssetStudio
                     }
                     foreach (var m_ScaleCurve in animationClip.m_ScaleCurves)
                     {
-                        var path = m_ScaleCurve.path;
-                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                        var track = iAnim.FindTrack(boneName);
+                        var track = iAnim.FindTrack(m_ScaleCurve.path);
                         foreach (var m_Curve in m_ScaleCurve.curve.m_Curve)
                         {
                             track.Scalings.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, m_Curve.value.Y, m_Curve.value.Z)));
@@ -737,25 +734,21 @@ namespace AssetStudio
                     {
                         foreach (var m_EulerCurve in animationClip.m_EulerCurves)
                         {
-                            var path = m_EulerCurve.path;
-                            var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                            var track = iAnim.FindTrack(boneName);
+                            var track = iAnim.FindTrack(m_EulerCurve.path);
                             foreach (var m_Curve in m_EulerCurve.curve.m_Curve)
                             {
                                 track.Rotations.Add(new ImportedKeyframe<Vector3>(m_Curve.time, new Vector3(m_Curve.value.X, -m_Curve.value.Y, -m_Curve.value.Z)));
                             }
                         }
                     }
-                    foreach (var m_FloatCurve in animationClip.m_FloatCurves)
+                    /*foreach (var m_FloatCurve in animationClip.m_FloatCurves)
                     {
-                        var path = m_FloatCurve.path;
-                        var boneName = path.Substring(path.LastIndexOf('/') + 1);
-                        var track = iAnim.FindTrack(boneName);
+                        var track = iAnim.FindTrack(m_FloatCurve.path);
                         foreach (var m_Curve in m_FloatCurve.curve.m_Curve)
                         {
                             track.Curve.Add(new ImportedKeyframe<float>(m_Curve.time, m_Curve.value));
                         }
-                    }
+                    }*/
                 }
                 else
                 {
@@ -810,8 +803,8 @@ namespace AssetStudio
                 curveIndex++;
                 return;
             }
-            var boneName = GetNameFromHashes(binding.path, binding.attribute);
-            var track = iAnim.FindTrack(boneName);
+
+            var track = iAnim.FindTrack(GetPathFromHash(binding.path));
 
             switch (binding.attribute)
             {
@@ -850,37 +843,23 @@ namespace AssetStudio
                     )));
                     break;
                 default:
-                    track.Curve.Add(new ImportedKeyframe<float>(time, data[curveIndex++]));
+                    //track.Curve.Add(new ImportedKeyframe<float>(time, data[curveIndex++]));
+                    curveIndex++;
                     break;
             }
         }
 
-        private string GetNameFromHashes(uint path, uint attribute)
+        private string GetPathFromHash(uint hash)
         {
-            var boneName = GetNameFromBonePathHashes(path);
+            bonePathHash.TryGetValue(hash, out var boneName);
             if (string.IsNullOrEmpty(boneName))
             {
-                boneName = avatar?.FindBoneName(path);
+                boneName = avatar?.FindBonePath(hash);
             }
             if (string.IsNullOrEmpty(boneName))
             {
-                boneName = "unknown " + path;
+                boneName = "unknown " + hash;
             }
-            if (attribute > 4)
-            {
-                if (morphChannelInfo.TryGetValue(attribute, out var morphChannel))
-                {
-                    return boneName + "." + morphChannel;
-                }
-                return boneName + ".unknown_morphChannel " + attribute;
-            }
-            return boneName;
-        }
-
-        private string GetNameFromBonePathHashes(uint path)
-        {
-            if (bonePathHash.TryGetValue(path, out var boneName))
-                boneName = boneName.Substring(boneName.LastIndexOf('/') + 1);
             return boneName;
         }
 
@@ -922,7 +901,7 @@ namespace AssetStudio
 
         private void CreateBonePathHash(Transform m_Transform)
         {
-            var name = GetTransformPath(m_Transform);
+            var name = GetTransformPathByFather(m_Transform);
             var crc = new SevenZip.CRC();
             var bytes = Encoding.UTF8.GetBytes(name);
             crc.Update(bytes, 0, (uint)bytes.Length);
@@ -971,13 +950,13 @@ namespace AssetStudio
                 {
                     transformName = strs.Last();
                     var parentFrameName = strs[strs.Length - 2];
-                    parentFrame = ImportedHelpers.FindChildOrRoot(parentFrameName, RootFrame);
+                    parentFrame = RootFrame.FindChild(parentFrameName);
                 }
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
                 var xform = skeletonPose.m_X[i];
 
-                var frame = ImportedHelpers.FindChildOrRoot(transformName, RootFrame);
+                var frame = RootFrame.FindChild(transformName);
                 if (frame != null)
                 {
                     SetFrame(frame, xform.t, xform.q, xform.s);

@@ -9,7 +9,7 @@ namespace AssetStudio
     {
         public PPtr<Avatar> m_Avatar;
         public PPtr<RuntimeAnimatorController> m_Controller;
-        public bool m_HasTransformHierarchy;
+        public bool m_HasTransformHierarchy = true;
 
         public Animator(ObjectReader reader) : base(reader)
         {
