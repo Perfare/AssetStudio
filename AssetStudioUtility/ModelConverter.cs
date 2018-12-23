@@ -407,7 +407,7 @@ namespace AssetStudio
                 }
 
                 //Morphs
-                if (mesh.m_Shapes != null)
+                if (mesh.m_Shapes?.channels != null)
                 {
                     foreach (var channel in mesh.m_Shapes.channels)
                     {

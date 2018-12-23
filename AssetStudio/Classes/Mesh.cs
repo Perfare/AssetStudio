@@ -291,11 +291,25 @@ namespace AssetStudio
 
         public MeshBlendShape(ObjectReader reader)
         {
+            var version = reader.version;
+
+            if (version[0] == 4 && version[1] < 3) //4.3 down
+            {
+                var name = reader.ReadAlignedString();
+            }
             firstVertex = reader.ReadUInt32();
             vertexCount = reader.ReadUInt32();
+            if (version[0] == 4 && version[1] < 3) //4.3 down
+            {
+                var aabbMinDelta = reader.ReadVector3();
+                var aabbMaxDelta = reader.ReadVector3();
+            }
             hasNormals = reader.ReadBoolean();
             hasTangents = reader.ReadBoolean();
-            reader.AlignStream();
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
+                reader.AlignStream();
+            }
         }
     }
 
@@ -324,28 +338,49 @@ namespace AssetStudio
 
         public BlendShapeData(ObjectReader reader)
         {
-            int numVerts = reader.ReadInt32();
-            vertices = new BlendShapeVertex[numVerts];
-            for (int i = 0; i < numVerts; i++)
-            {
-                vertices[i] = new BlendShapeVertex(reader);
-            }
+            var version = reader.version;
 
-            int numShapes = reader.ReadInt32();
-            shapes = new MeshBlendShape[numShapes];
-            for (int i = 0; i < numShapes; i++)
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
             {
-                shapes[i] = new MeshBlendShape(reader);
-            }
+                int numVerts = reader.ReadInt32();
+                vertices = new BlendShapeVertex[numVerts];
+                for (int i = 0; i < numVerts; i++)
+                {
+                    vertices[i] = new BlendShapeVertex(reader);
+                }
 
-            int numChannels = reader.ReadInt32();
-            channels = new MeshBlendShapeChannel[numChannels];
-            for (int i = 0; i < numChannels; i++)
+                int numShapes = reader.ReadInt32();
+                shapes = new MeshBlendShape[numShapes];
+                for (int i = 0; i < numShapes; i++)
+                {
+                    shapes[i] = new MeshBlendShape(reader);
+                }
+
+                int numChannels = reader.ReadInt32();
+                channels = new MeshBlendShapeChannel[numChannels];
+                for (int i = 0; i < numChannels; i++)
+                {
+                    channels[i] = new MeshBlendShapeChannel(reader);
+                }
+
+                fullWeights = reader.ReadSingleArray();
+            }
+            else
             {
-                channels[i] = new MeshBlendShapeChannel(reader);
+                var m_ShapesSize = reader.ReadInt32();
+                var m_Shapes = new MeshBlendShape[m_ShapesSize];
+                for (int i = 0; i < m_ShapesSize; i++)
+                {
+                    m_Shapes[i] = new MeshBlendShape(reader);
+                }
+                reader.AlignStream();
+                var m_ShapeVerticesSize = reader.ReadInt32();
+                var m_ShapeVertices = new BlendShapeVertex[m_ShapeVerticesSize]; //MeshBlendShapeVertex
+                for (int i = 0; i < m_ShapeVerticesSize; i++)
+                {
+                    m_ShapeVertices[i] = new BlendShapeVertex(reader);
+                }
             }
-
-            fullWeights = reader.ReadSingleArray();
         }
     }
 
@@ -433,11 +468,7 @@ namespace AssetStudio
                 }
                 else
                 {
-                    m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
-                    for (int i = 0; i < m_IndexBuffer_size / 4; i++)
-                    {
-                        m_IndexBuffer[i] = reader.ReadUInt32();
-                    }
+                    m_IndexBuffer = reader.ReadUInt32Array(m_IndexBuffer_size / 4);
                 }
             }
 
@@ -448,25 +479,13 @@ namespace AssetStudio
                 m_SubMeshes[i] = new SubMesh(reader);
             }
 
-            if (version[0] == 4 && ((version[1] == 1 && !buildType.IsAlpha) || (version[1] > 1 && version[1] <= 2))) //4.1.0 to 4.2.x, excluding 4.1.0 alpha
-            {
-                int m_Shapes_size = reader.ReadInt32();
-                if (m_Shapes_size > 0)
-                {
-                    //bool stop = true;
-                }
-                for (int s = 0; s < m_Shapes_size; s++) //untested
-                {
-                    var shape_name = reader.ReadAlignedString();
-                    reader.Position += 36; //uint firstVertex, vertexCount; Vector3f aabbMinDelta, aabbMaxDelta; bool hasNormals, hasTangents
-                }
-
-                int m_ShapeVertices_size = reader.ReadInt32();
-                reader.Position += m_ShapeVertices_size * 40; //vertex positions, normals, tangents & uint index
-            }
-            else if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3.0 and later
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 1)) //4.1 and up
             {
                 m_Shapes = new BlendShapeData(reader);
+            }
+
+            if (version[0] > 4 || (version[0] == 4 && version[1] >= 3)) //4.3 and up
+            {
                 m_BindPose = reader.ReadMatrixArray();
                 m_BoneNameHashes = reader.ReadUInt32Array();
                 var m_RootBoneNameHash = reader.ReadUInt32();
@@ -507,12 +526,7 @@ namespace AssetStudio
                 }
                 else
                 {
-                    m_IndexBuffer = new uint[m_IndexBuffer_size / 4];
-                    for (int i = 0; i < m_IndexBuffer_size / 4; i++)
-                    {
-                        m_IndexBuffer[i] = reader.ReadUInt32();
-                    }
-                    reader.AlignStream();
+                    m_IndexBuffer = reader.ReadUInt32Array(m_IndexBuffer_size / 4);
                 }
             }
 
@@ -537,12 +551,16 @@ namespace AssetStudio
                 {
                     int m_TangentSpace_size = reader.ReadInt32();
                     m_Normals = new float[m_TangentSpace_size * 3];
+                    m_Tangents = new float[m_TangentSpace_size * 4];
                     for (int v = 0; v < m_TangentSpace_size; v++)
                     {
                         m_Normals[v * 3] = reader.ReadSingle();
                         m_Normals[v * 3 + 1] = reader.ReadSingle();
                         m_Normals[v * 3 + 2] = reader.ReadSingle();
-                        reader.Position += 16; //Vector3f tangent & float handedness 
+                        m_Tangents[v * 3] = reader.ReadSingle();
+                        m_Tangents[v * 3 + 1] = reader.ReadSingle();
+                        m_Tangents[v * 3 + 2] = reader.ReadSingle();
+                        m_Tangents[v * 3 + 3] = reader.ReadSingle(); //handedness
                     }
                 }
                 else //2.6.0 and later
