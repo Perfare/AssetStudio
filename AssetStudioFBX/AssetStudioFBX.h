@@ -69,7 +69,7 @@ namespace AssetStudio {
 			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii, bool normals);
 			~Exporter();
 
-			void Exporter::LinkTexture(ImportedMaterial^ mat, int attIndex, FbxFileTexture* pTexture, FbxProperty& prop);
+			void Exporter::LinkTexture(ImportedMaterialTexture^ texture, FbxFileTexture* pTexture, FbxProperty& prop);
 			void SetJointsNode(FbxNode* pNode, HashSet<String^>^ boneNames, bool allBones);
 			HashSet<String^>^ SearchHierarchy();
 			void SearchHierarchy(ImportedFrame^ frame, HashSet<String^>^ exportFrames);
@@ -77,7 +77,7 @@ namespace AssetStudio {
 			void ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame);
 			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList, bool normals);
 			FbxNode* FindNodeByPath(String ^ path, bool recursive);
-			FbxFileTexture* ExportTexture(ImportedTexture^ matTex, FbxMesh* pMesh);
+			FbxFileTexture* ExportTexture(ImportedTexture^ matTex);
 			void ExportAnimations(bool eulerFilter, float filterValue, bool flatInbetween);
 			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision, bool flatInbetween);
 			void ExportMorphs(IImported^ imported, bool morphMask, bool flatInbetween);

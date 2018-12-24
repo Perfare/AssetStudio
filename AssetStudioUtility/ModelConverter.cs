@@ -587,38 +587,32 @@ namespace AssetStudio
                 }
 
                 //textures
-                iMat.Textures = new string[5];
-                iMat.TexOffsets = new Vector2[5];
-                iMat.TexScales = new Vector2[5];
+                iMat.Textures = new List<ImportedMaterialTexture>();
                 foreach (var texEnv in mat.m_SavedProperties.m_TexEnvs)
                 {
-                    Texture2D m_Texture2D = null;
-                    if (texEnv.Value.m_Texture.TryGet<Texture2D>(out var m_Texture)) //TODO other Texture
-                    {
-                        m_Texture2D = m_Texture;
-                    }
-
-                    if (m_Texture2D == null)
+                    if (!texEnv.Value.m_Texture.TryGet<Texture2D>(out var m_Texture2D)) //TODO other Texture
                     {
                         continue;
                     }
+
+                    var texture = new ImportedMaterialTexture();
+                    iMat.Textures.Add(texture);
+
                     int dest = -1;
                     if (texEnv.Key == "_MainTex")
                         dest = 0;
                     else if (texEnv.Key == "_BumpMap")
-                        dest = 4;
-                    else if (texEnv.Key.Contains("Spec"))
-                        dest = 2;
-                    else if (texEnv.Key.Contains("Norm"))
                         dest = 3;
-                    if (dest < 0 || iMat.Textures[dest] != null)
-                    {
-                        continue;
-                    }
+                    else if (texEnv.Key.Contains("Specular"))
+                        dest = 2;
+                    else if (texEnv.Key.Contains("Normal"))
+                        dest = 1;
 
-                    if (textureNameDictionary.TryGetValue(m_Texture, out var textureName))
+                    texture.Dest = dest;
+
+                    if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
                     {
-                        iMat.Textures[dest] = textureName;
+                        texture.Name = textureName;
                     }
                     else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ".png", TextureList) != null) //已有相同名字的图片
                     {
@@ -627,20 +621,21 @@ namespace AssetStudio
                             var name = m_Texture2D.m_Name + $" ({i}).png";
                             if (ImportedHelpers.FindTexture(name, TextureList) == null)
                             {
-                                iMat.Textures[dest] = name;
-                                textureNameDictionary.Add(m_Texture, name);
+                                texture.Name = name;
+                                textureNameDictionary.Add(m_Texture2D, name);
                                 break;
                             }
                         }
                     }
                     else
                     {
-                        iMat.Textures[dest] = m_Texture2D.m_Name + ".png";
-                        textureNameDictionary.Add(m_Texture, iMat.Textures[dest]);
+                        texture.Name = m_Texture2D.m_Name + ".png";
+                        textureNameDictionary.Add(m_Texture2D, texture.Name);
                     }
-                    iMat.TexOffsets[dest] = texEnv.Value.m_Offset;
-                    iMat.TexScales[dest] = texEnv.Value.m_Scale;
-                    ConvertTexture2D(m_Texture2D, iMat.Textures[dest]);
+
+                    texture.Offset = texEnv.Value.m_Offset;
+                    texture.Scale = texEnv.Value.m_Scale;
+                    ConvertTexture2D(m_Texture2D, texture.Name);
                 }
 
                 MaterialList.Add(iMat);

@@ -474,39 +474,49 @@ namespace AssetStudio
 							pMeshNode->AddMaterial(pMat);
 
 							bool hasTexture = false;
-							FbxFileTexture* pTextureDiffuse = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[0], imported->TextureList), pMesh);
-							if (pTextureDiffuse != NULL)
-							{
-								LinkTexture(mat, 0, pTextureDiffuse, pMat->Diffuse);
-								hasTexture = true;
-							}
 
-							FbxFileTexture* pTextureAmbient = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[1], imported->TextureList), pMesh);
-							if (pTextureAmbient != NULL)
+							for each (ImportedMaterialTexture^ texture in mat->Textures)
 							{
-								LinkTexture(mat, 1, pTextureAmbient, pMat->Ambient);
-								hasTexture = true;
-							}
-
-							FbxFileTexture* pTextureEmissive = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[2], imported->TextureList), pMesh);
-							if (pTextureEmissive != NULL)
-							{
-								LinkTexture(mat, 2, pTextureEmissive, pMat->Emissive);
-								hasTexture = true;
-							}
-
-							FbxFileTexture* pTextureSpecular = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[3], imported->TextureList), pMesh);
-							if (pTextureSpecular != NULL)
-							{
-								LinkTexture(mat, 3, pTextureSpecular, pMat->Specular);
-								hasTexture = true;
-							}
-
-							FbxFileTexture* pTextureBump = ExportTexture(ImportedHelpers::FindTexture(mat->Textures[4], imported->TextureList), pMesh);
-							if (pTextureBump != NULL)
-							{
-								LinkTexture(mat, 4, pTextureBump, pMat->Bump);
-								hasTexture = true;
+								if (texture->Dest == 0)
+								{
+									FbxFileTexture* pTextureDiffuse = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+									if (pTextureDiffuse != NULL)
+									{
+										LinkTexture(texture, pTextureDiffuse, pMat->Diffuse);
+										hasTexture = true;
+									}
+								}
+								else if (texture->Dest == 1)
+								{
+									FbxFileTexture* pTextureEmissive = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+									if (pTextureEmissive != NULL)
+									{
+										LinkTexture(texture, pTextureEmissive, pMat->Emissive);
+										hasTexture = true;
+									}
+								}
+								else if (texture->Dest == 2)
+								{
+									FbxFileTexture* pTextureSpecular = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+									if (pTextureSpecular != NULL)
+									{
+										LinkTexture(texture, pTextureSpecular, pMat->Specular);
+										hasTexture = true;
+									}
+								}
+								else if (texture->Dest == 3)
+								{
+									FbxFileTexture* pTextureBump = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+									if (pTextureBump != NULL)
+									{
+										LinkTexture(texture, pTextureBump, pMat->Bump);
+										hasTexture = true;
+									}
+								}
+								else
+								{
+									ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+								}
 							}
 
 							if (hasTexture)
@@ -650,7 +660,7 @@ namespace AssetStudio
 		return lNode;
 	}
 
-	FbxFileTexture* Fbx::Exporter::ExportTexture(ImportedTexture^ matTex, FbxMesh* pMesh)
+	FbxFileTexture* Fbx::Exporter::ExportTexture(ImportedTexture^ matTex)
 	{
 		FbxFileTexture* pTex = NULL;
 
@@ -714,16 +724,10 @@ namespace AssetStudio
 		return pTex;
 	}
 
-	void Fbx::Exporter::LinkTexture(ImportedMaterial^ mat, int attIndex, FbxFileTexture* pTexture, FbxProperty& prop)
+	void Fbx::Exporter::LinkTexture(ImportedMaterialTexture^ texture, FbxFileTexture* pTexture, FbxProperty& prop)
 	{
-		if (mat->TexOffsets != nullptr)
-		{
-			pTexture->SetTranslation(mat->TexOffsets[attIndex].X, mat->TexOffsets[attIndex].Y);
-		}
-		if (mat->TexScales != nullptr)
-		{
-			pTexture->SetScale(mat->TexScales[attIndex].X, mat->TexScales[attIndex].Y);
-		}
+		pTexture->SetTranslation(texture->Offset.X, texture->Offset.Y);
+		pTexture->SetScale(texture->Scale.X, texture->Scale.Y);
 		prop.ConnectSrcObject(pTexture);
 	}
 

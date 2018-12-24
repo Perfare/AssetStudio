@@ -168,9 +168,15 @@ namespace AssetStudio
         public Color4 Specular { get; set; }
         public Color4 Emissive { get; set; }
         public float Power { get; set; }
-        public string[] Textures { get; set; }
-        public Vector2[] TexOffsets { get; set; }
-        public Vector2[] TexScales { get; set; }
+        public List<ImportedMaterialTexture> Textures { get; set; }
+    }
+
+    public class ImportedMaterialTexture
+    {
+        public string Name { get; set; }
+        public int Dest { get; set; }
+        public Vector2 Offset { get; set; }
+        public Vector2 Scale { get; set; }
     }
 
     public class ImportedTexture
