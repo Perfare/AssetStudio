@@ -752,9 +752,9 @@ namespace AssetStudio
                                     }
                                     for (int i = 0; i < m_VertexCount; i++)
                                     {
-                                        for (int j = 0; j < 4; j++)
+                                        for (int j = 0; j < m_Channel.dimension; j++)
                                         {
-                                            m_Skin[i].weight[j] = componentsFloatArray[i * 4 + j];
+                                            m_Skin[i].weight[j] = componentsFloatArray[i * m_Channel.dimension + j];
                                         }
                                     }
                                     break;
@@ -765,9 +765,9 @@ namespace AssetStudio
                                     }
                                     for (int i = 0; i < m_VertexCount; i++)
                                     {
-                                        for (int j = 0; j < 4; j++)
+                                        for (int j = 0; j < m_Channel.dimension; j++)
                                         {
-                                            m_Skin[i].boneIndex[j] = componentsIntArray[i * 4 + j];
+                                            m_Skin[i].boneIndex[j] = componentsIntArray[i * m_Channel.dimension + j];
                                         }
                                     }
                                     break;
