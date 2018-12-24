@@ -455,7 +455,7 @@ namespace AssetStudio
 								Color4 ambient = mat->Ambient;
 								Color4 emissive = mat->Emissive;
 								Color4 specular = mat->Specular;
-								float specularPower = mat->Power;
+								Color4 reflection = mat->Reflection;
 								pMat = FbxSurfacePhong::Create(pScene, pMatName);
 								pMat->Diffuse.Set(FbxDouble3(diffuse.Red, diffuse.Green, diffuse.Blue));
 								pMat->DiffuseFactor.Set(FbxDouble(diffuse.Alpha));
@@ -465,9 +465,11 @@ namespace AssetStudio
 								pMat->EmissiveFactor.Set(FbxDouble(emissive.Alpha));
 								pMat->Specular.Set(FbxDouble3(specular.Red, specular.Green, specular.Blue));
 								pMat->SpecularFactor.Set(FbxDouble(specular.Alpha));
-								pMat->Shininess.Set(specularPower);
+								pMat->Reflection.Set(FbxDouble3(reflection.Red, reflection.Green, reflection.Blue));
+								pMat->ReflectionFactor.Set(FbxDouble(reflection.Alpha));
+								pMat->Shininess.Set(FbxDouble(mat->Shininess));
+								pMat->TransparencyFactor.Set(FbxDouble(mat->Transparency));
 								pMat->ShadingModel.Set(lShadingName);
-
 								foundMat = pMaterials->GetCount();
 								pMaterials->Add(pMat);
 							}
@@ -488,10 +490,10 @@ namespace AssetStudio
 								}
 								else if (texture->Dest == 1)
 								{
-									FbxFileTexture* pTextureEmissive = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
-									if (pTextureEmissive != NULL)
+									FbxFileTexture* pTextureNormalMap = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+									if (pTextureNormalMap != NULL)
 									{
-										LinkTexture(texture, pTextureEmissive, pMat->Emissive);
+										LinkTexture(texture, pTextureNormalMap, pMat->NormalMap);
 										hasTexture = true;
 									}
 								}

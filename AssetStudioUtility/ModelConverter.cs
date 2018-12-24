@@ -563,12 +563,12 @@ namespace AssetStudio
                         case "_EmissionColor":
                             iMat.Emissive = col.Value;
                             break;
+                        case "_SpecularColor":
                         case "_SpecColor":
                             iMat.Specular = col.Value;
                             break;
-                        case "_RimColor":
-                        case "_OutlineColor":
-                        case "_ShadowColor":
+                        case "_ReflectColor":
+                            iMat.Reflection = col.Value;
                             break;
                     }
                 }
@@ -578,10 +578,10 @@ namespace AssetStudio
                     switch (flt.Key)
                     {
                         case "_Shininess":
-                            iMat.Power = flt.Value;
+                            iMat.Shininess = flt.Value;
                             break;
-                        case "_RimPower":
-                        case "_Outline":
+                        case "_Transparency":
+                            iMat.Transparency = flt.Value;
                             break;
                     }
                 }

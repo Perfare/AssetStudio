@@ -167,7 +167,9 @@ namespace AssetStudio
         public Color4 Ambient { get; set; }
         public Color4 Specular { get; set; }
         public Color4 Emissive { get; set; }
-        public float Power { get; set; }
+        public Color4 Reflection { get; set; }
+        public float Shininess { get; set; }
+        public float Transparency { get; set; }
         public List<ImportedMaterialTexture> Textures { get; set; }
     }
 
