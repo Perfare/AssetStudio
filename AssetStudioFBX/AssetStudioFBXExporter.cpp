@@ -479,45 +479,29 @@ namespace AssetStudio
 
 							for each (ImportedMaterialTexture^ texture in mat->Textures)
 							{
-								if (texture->Dest == 0)
+								auto pTexture = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
+								if (pTexture != NULL)
 								{
-									FbxFileTexture* pTextureDiffuse = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
-									if (pTextureDiffuse != NULL)
+									if (texture->Dest == 0)
 									{
-										LinkTexture(texture, pTextureDiffuse, pMat->Diffuse);
+										LinkTexture(texture, pTexture, pMat->Diffuse);
 										hasTexture = true;
 									}
-								}
-								else if (texture->Dest == 1)
-								{
-									FbxFileTexture* pTextureNormalMap = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
-									if (pTextureNormalMap != NULL)
+									else if (texture->Dest == 1)
 									{
-										LinkTexture(texture, pTextureNormalMap, pMat->NormalMap);
+										LinkTexture(texture, pTexture, pMat->NormalMap);
 										hasTexture = true;
 									}
-								}
-								else if (texture->Dest == 2)
-								{
-									FbxFileTexture* pTextureSpecular = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
-									if (pTextureSpecular != NULL)
+									else if (texture->Dest == 2)
 									{
-										LinkTexture(texture, pTextureSpecular, pMat->Specular);
+										LinkTexture(texture, pTexture, pMat->Specular);
 										hasTexture = true;
 									}
-								}
-								else if (texture->Dest == 3)
-								{
-									FbxFileTexture* pTextureBump = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
-									if (pTextureBump != NULL)
+									else if (texture->Dest == 3)
 									{
-										LinkTexture(texture, pTextureBump, pMat->Bump);
+										LinkTexture(texture, pTexture, pMat->Bump);
 										hasTexture = true;
 									}
-								}
-								else
-								{
-									ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
 								}
 							}
 
