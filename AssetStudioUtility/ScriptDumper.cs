@@ -223,27 +223,36 @@ namespace AssetStudio
             {
                 return;
             }
-            if (typeDef.FullName == "UnityEngine.Rect")
-            {
-                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var prefix = new string('\t', indent + 1);
-                sb.AppendLine($"{prefix}float x = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float y = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float width = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float height = {reader.ReadSingle()}");
-                return;
-            }
-            if (typeDef.FullName == "UnityEngine.LayerMask")
-            {
-                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                sb.AppendLine($"{new string('\t', indent + 1)}uint m_Bits = {reader.ReadUInt32()}");
-                return;
-            }
             if (typeDef.FullName == "UnityEngine.AnimationCurve")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
                 sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
                 var animationCurve = new AnimationCurve<float>(reader, reader.ReadSingle);
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Bounds")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
+                new AABB(reader);
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.BoundsInt")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
+                reader.Position += 24;
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.Color32")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}byte r = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte g = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte b = {reader.ReadByte()}");
+                sb.AppendLine($"{prefix}byte a = {reader.ReadByte()}");
+                reader.AlignStream();
                 return;
             }
             if (typeDef.FullName == "UnityEngine.Gradient")
@@ -258,14 +267,14 @@ namespace AssetStudio
                     reader.Position += 168;
                 return;
             }
-            if (typeDef.FullName == "UnityEngine.RectOffset")
+            if (typeDef.FullName == "UnityEngine.GUIStyle") //TODO
+            {
+                throw new NotSupportedException();
+            }
+            if (typeDef.FullName == "UnityEngine.LayerMask")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                var prefix = new string('\t', indent + 1);
-                sb.AppendLine($"{prefix}float left = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float right = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float top = {reader.ReadSingle()}");
-                sb.AppendLine($"{prefix}float bottom = {reader.ReadSingle()}");
+                sb.AppendLine($"{new string('\t', indent + 1)}uint m_Bits = {reader.ReadUInt32()}");
                 return;
             }
             if (typeDef.FullName == "UnityEngine.PropertyName")
@@ -274,15 +283,34 @@ namespace AssetStudio
                 sb.AppendLine($"{new string('\t', indent + 1)}int id = {reader.ReadInt32()}");
                 return;
             }
-            if (typeDef.FullName == "UnityEngine.Color32")
+            if (typeDef.FullName == "UnityEngine.Rect")
             {
                 sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
                 var prefix = new string('\t', indent + 1);
-                sb.AppendLine($"{prefix}byte r = {reader.ReadByte()}");
-                sb.AppendLine($"{prefix}byte g = {reader.ReadByte()}");
-                sb.AppendLine($"{prefix}byte b = {reader.ReadByte()}");
-                sb.AppendLine($"{prefix}byte a = {reader.ReadByte()}");
-                reader.AlignStream();
+                sb.AppendLine($"{prefix}float x = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float y = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float width = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float height = {reader.ReadSingle()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.RectInt")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}int x = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int y = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int width = {reader.ReadInt32()}");
+                sb.AppendLine($"{prefix}int height = {reader.ReadInt32()}");
+                return;
+            }
+            if (typeDef.FullName == "UnityEngine.RectOffset")
+            {
+                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
+                var prefix = new string('\t', indent + 1);
+                sb.AppendLine($"{prefix}float left = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float right = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float top = {reader.ReadSingle()}");
+                sb.AppendLine($"{prefix}float bottom = {reader.ReadSingle()}");
                 return;
             }
             if (typeDef.FullName == "UnityEngine.Vector2Int")
@@ -301,17 +329,6 @@ namespace AssetStudio
                 sb.AppendLine($"{prefix}int y = {reader.ReadInt32()}");
                 sb.AppendLine($"{prefix}int z = {reader.ReadInt32()}");
                 return;
-            }
-            if (typeDef.FullName == "UnityEngine.Bounds")
-            {
-                sb.AppendLine($"{new string('\t', indent)}{typeDef.Name} {name}");
-                sb.AppendLine($"{new string('\t', indent + 1)}<truncated>");
-                new AABB(reader);
-                return;
-            }
-            if (typeDef.FullName == "UnityEngine.GUIStyle") //TODO
-            {
-                throw new NotSupportedException();
             }
             if (typeDef.IsClass || typeDef.IsValueType)
             {
@@ -456,6 +473,7 @@ namespace AssetStudio
                 case "UnityEngine.GUIStyle":
                 case "UnityEngine.LayerMask":
                 case "UnityEngine.Matrix4x4":
+                case "UnityEngine.PropertyName":
                 case "UnityEngine.Quaternion":
                 case "UnityEngine.Rect":
                 case "UnityEngine.RectInt":
@@ -465,7 +483,6 @@ namespace AssetStudio
                 case "UnityEngine.Vector3":
                 case "UnityEngine.Vector3Int":
                 case "UnityEngine.Vector4":
-                case "UnityEngine.PropertyName":
                     return true;
                 default:
                     return false;
