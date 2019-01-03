@@ -4,8 +4,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using SharpDX;
-using RectangleF = System.Drawing.RectangleF;
 
 namespace AssetStudio
 {
@@ -73,7 +71,7 @@ namespace AssetStudio
                                     {
                                         path.AddPolygon(p);
                                     }
-                                    using (var matr = new System.Drawing.Drawing2D.Matrix())
+                                    using (var matr = new Matrix())
                                     {
                                         if (m_Sprite.m_Pivot == Vector2.Zero) //5.4.2 down
                                         {

@@ -59,15 +59,9 @@
     <Reference Include="SharpDX.D3DCompiler">
       <HintPath>..\AssetStudio\Libraries\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Mathematics">
-      <HintPath>..\AssetStudio\Libraries\SharpDX.Mathematics.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Half">
-      <HintPath>..\AssetStudio\Libraries\System.Half.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />

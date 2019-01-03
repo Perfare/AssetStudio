@@ -409,7 +409,7 @@ namespace AssetStudio
 						for (int j = 0; j < vertexList->Count; j++)
 						{
 							ImportedVertexWithColour^ vert = (ImportedVertexWithColour^)vertexList[j];
-							lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(vert->Colour.Red, vert->Colour.Green, vert->Colour.Blue, vert->Colour.Alpha));
+							lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(vert->Colour.R, vert->Colour.G, vert->Colour.B, vert->Colour.A));
 						}
 					}
 
@@ -451,22 +451,22 @@ namespace AssetStudio
 							else
 							{
 								FbxString lShadingName = "Phong";
-								Color4 diffuse = mat->Diffuse;
-								Color4 ambient = mat->Ambient;
-								Color4 emissive = mat->Emissive;
-								Color4 specular = mat->Specular;
-								Color4 reflection = mat->Reflection;
+								Color diffuse = mat->Diffuse;
+								Color ambient = mat->Ambient;
+								Color emissive = mat->Emissive;
+								Color specular = mat->Specular;
+								Color reflection = mat->Reflection;
 								pMat = FbxSurfacePhong::Create(pScene, pMatName);
-								pMat->Diffuse.Set(FbxDouble3(diffuse.Red, diffuse.Green, diffuse.Blue));
-								pMat->DiffuseFactor.Set(FbxDouble(diffuse.Alpha));
-								pMat->Ambient.Set(FbxDouble3(ambient.Red, ambient.Green, ambient.Blue));
-								pMat->AmbientFactor.Set(FbxDouble(ambient.Alpha));
-								pMat->Emissive.Set(FbxDouble3(emissive.Red, emissive.Green, emissive.Blue));
-								pMat->EmissiveFactor.Set(FbxDouble(emissive.Alpha));
-								pMat->Specular.Set(FbxDouble3(specular.Red, specular.Green, specular.Blue));
-								pMat->SpecularFactor.Set(FbxDouble(specular.Alpha));
-								pMat->Reflection.Set(FbxDouble3(reflection.Red, reflection.Green, reflection.Blue));
-								pMat->ReflectionFactor.Set(FbxDouble(reflection.Alpha));
+								pMat->Diffuse.Set(FbxDouble3(diffuse.R, diffuse.G, diffuse.B));
+								pMat->DiffuseFactor.Set(FbxDouble(diffuse.A));
+								pMat->Ambient.Set(FbxDouble3(ambient.R, ambient.G, ambient.B));
+								pMat->AmbientFactor.Set(FbxDouble(ambient.A));
+								pMat->Emissive.Set(FbxDouble3(emissive.R, emissive.G, emissive.B));
+								pMat->EmissiveFactor.Set(FbxDouble(emissive.A));
+								pMat->Specular.Set(FbxDouble3(specular.R, specular.G, specular.B));
+								pMat->SpecularFactor.Set(FbxDouble(specular.A));
+								pMat->Reflection.Set(FbxDouble3(reflection.R, reflection.G, reflection.B));
+								pMat->ReflectionFactor.Set(FbxDouble(reflection.A));
 								pMat->Shininess.Set(FbxDouble(mat->Shininess));
 								pMat->TransparencyFactor.Set(FbxDouble(mat->Transparency));
 								pMat->ShadingModel.Set(lShadingName);

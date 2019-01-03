@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharpDX;
-using RectangleF = System.Drawing.RectangleF;
+using System.Drawing;
 
 namespace AssetStudio
 {
@@ -67,7 +66,7 @@ namespace AssetStudio
         public VertexData m_VertexData;
         public SpriteVertex[] vertices;
         public ushort[] indices;
-        public Matrix[] m_Bindpose;
+        public Matrix4x4[] m_Bindpose;
         public BoneWeights4[] m_SourceSkin;
         public RectangleF textureRect;
         public Vector2 textureRectOffset;

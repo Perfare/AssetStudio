@@ -16,6 +16,8 @@ using AssetStudio;
 using static AssetStudioGUI.Studio;
 using Object = AssetStudio.Object;
 using Font = AssetStudio.Font;
+using Vector3 = OpenTK.Vector3;
+using Vector4 = OpenTK.Vector4;
 
 namespace AssetStudioGUI
 {
@@ -1449,7 +1451,7 @@ namespace AssetStudioGUI
         private void InitOpenTK()
         {
             ChangeGLSize(glControl1.Size);
-            GL.ClearColor(Color.CadetBlue);
+            GL.ClearColor(System.Drawing.Color.CadetBlue);
             pgmID = GL.CreateProgram();
             LoadShader("vs", ShaderType.VertexShader, pgmID, out int vsID);
             LoadShader("fs", ShaderType.FragmentShader, pgmID, out int fsID);

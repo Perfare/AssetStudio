@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using SharpDX;
 
 namespace AssetStudio
 {
@@ -146,7 +145,7 @@ namespace AssetStudio
 
     public class ImportedVertexWithColour : ImportedVertex
     {
-        public Color4 Colour { get; set; }
+        public Color Colour { get; set; }
     }
 
     public class ImportedFace
@@ -157,17 +156,17 @@ namespace AssetStudio
     public class ImportedBone
     {
         public string Path { get; set; }
-        public Matrix Matrix { get; set; }
+        public Matrix4x4 Matrix { get; set; }
     }
 
     public class ImportedMaterial
     {
         public string Name { get; set; }
-        public Color4 Diffuse { get; set; }
-        public Color4 Ambient { get; set; }
-        public Color4 Specular { get; set; }
-        public Color4 Emissive { get; set; }
-        public Color4 Reflection { get; set; }
+        public Color Diffuse { get; set; }
+        public Color Ambient { get; set; }
+        public Color Specular { get; set; }
+        public Color Emissive { get; set; }
+        public Color Reflection { get; set; }
         public float Shininess { get; set; }
         public float Transparency { get; set; }
         public List<ImportedMaterialTexture> Textures { get; set; }

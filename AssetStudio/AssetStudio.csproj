@@ -31,15 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SharpDX.Mathematics">
-      <HintPath>Libraries\SharpDX.Mathematics.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Half">
-      <HintPath>Libraries\System.Half.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -63,6 +57,14 @@
     <Compile Include="7zip\Compress\RangeCoder\RangeCoderBitTree.cs" />
     <Compile Include="7zip\ICoder.cs" />
     <Compile Include="Classes\RuntimeAnimatorController.cs" />
+    <Compile Include="Math\Color.cs" />
+    <Compile Include="Math\Half.cs" />
+    <Compile Include="Math\HalfHelper.cs" />
+    <Compile Include="Math\Matrix4x4f.cs" />
+    <Compile Include="Math\Quaternion.cs" />
+    <Compile Include="Math\Vector2.cs" />
+    <Compile Include="Math\Vector3.cs" />
+    <Compile Include="Math\Vector4.cs" />
     <Compile Include="ResourceReader.cs" />
     <Compile Include="IImported.cs" />
     <Compile Include="SerializedFile.cs" />
@@ -145,5 +147,6 @@
     <Compile Include="TypeTreeNode.cs" />
     <Compile Include="WebFile.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

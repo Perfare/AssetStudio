@@ -4,7 +4,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
-using SharpDX;
 
 namespace AssetStudio
 {
@@ -308,11 +307,11 @@ namespace AssetStudio
                     {
                         if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
                         {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color4(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
                         }
                         else
                         {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color4(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
                         }
                     }
                     //UV
@@ -364,8 +363,9 @@ namespace AssetStudio
                 //Bone
                 if (sMesh.m_Bones.Length > 0)
                 {
-                    iMesh.BoneList = new List<ImportedBone>(sMesh.m_Bones.Length);
-                    for (int i = 0; i < sMesh.m_Bones.Length; i++)
+                    var boneMax = Math.Min(sMesh.m_Bones.Length, mesh.m_BindPose.Length);
+                    iMesh.BoneList = new List<ImportedBone>(boneMax);
+                    for (int i = 0; i < boneMax; i++)
                     {
                         var bone = new ImportedBone();
                         if (sMesh.m_Bones[i].TryGet(out var m_Transform))
@@ -374,8 +374,8 @@ namespace AssetStudio
                         }
                         if (!string.IsNullOrEmpty(bone.Path))
                         {
-                            var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
-                            bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
+                            var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                            bone.Matrix = convert * mesh.m_BindPose[i] * convert;
                             iMesh.BoneList.Add(bone);
                         }
                     }
@@ -391,8 +391,8 @@ namespace AssetStudio
                         bone.Path = FixBonePath(path);
                         if (!string.IsNullOrEmpty(bone.Path))
                         {
-                            var convert = Matrix.Scaling(new Vector3(-1, 1, 1));
-                            bone.Matrix = convert * Matrix.Transpose(mesh.m_BindPose[i]) * convert;
+                            var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                            bone.Matrix = convert * mesh.m_BindPose[i] * convert;
                             iMesh.BoneList.Add(bone);
                         }
                     }

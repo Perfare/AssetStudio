@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using SharpDX;
 
 namespace AssetStudio
 {
@@ -78,22 +77,14 @@ namespace AssetStudio
             return new System.Drawing.RectangleF(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
-        public static Color4 ReadColor4(this BinaryReader reader)
+        public static Color ReadColor4(this BinaryReader reader)
         {
-            return new Color4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            return new Color(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
-        public static Matrix ReadMatrix(this BinaryReader reader)
+        public static Matrix4x4 ReadMatrix(this BinaryReader reader)
         {
-            var m = new Matrix();
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    m[i, j] = reader.ReadSingle();
-                }
-            }
-            return m;
+            return new Matrix4x4(reader.ReadSingleArray(16));
         }
 
         private static T[] ReadArray<T>(Func<T> del, int length)
@@ -161,7 +152,7 @@ namespace AssetStudio
             return ReadArray(reader.ReadVector4, reader.ReadInt32());
         }
 
-        public static Matrix[] ReadMatrixArray(this BinaryReader reader)
+        public static Matrix4x4[] ReadMatrixArray(this BinaryReader reader)
         {
             return ReadArray(reader.ReadMatrix, reader.ReadInt32());
         }

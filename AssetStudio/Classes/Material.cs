@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SharpDX;
 
 namespace AssetStudio
 {
@@ -21,7 +20,7 @@ namespace AssetStudio
     {
         public KeyValuePair<string, UnityTexEnv>[] m_TexEnvs;
         public KeyValuePair<string, float>[] m_Floats;
-        public KeyValuePair<string, Color4>[] m_Colors;
+        public KeyValuePair<string, Color>[] m_Colors;
 
         public UnityPropertySheet(ObjectReader reader)
         {
@@ -40,10 +39,10 @@ namespace AssetStudio
             }
 
             int m_ColorsSize = reader.ReadInt32();
-            m_Colors = new KeyValuePair<string, Color4>[m_ColorsSize];
+            m_Colors = new KeyValuePair<string, Color>[m_ColorsSize];
             for (int i = 0; i < m_ColorsSize; i++)
             {
-                m_Colors[i] = new KeyValuePair<string, Color4>(reader.ReadAlignedString(), reader.ReadColor4());
+                m_Colors[i] = new KeyValuePair<string, Color>(reader.ReadAlignedString(), reader.ReadColor4());
             }
         }
     }
