@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct Quaternion : IEquatable<Quaternion>
     {
         public float X;

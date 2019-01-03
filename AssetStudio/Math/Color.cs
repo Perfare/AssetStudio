@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
-    [StructLayout(LayoutKind.Sequential, Size = 4)]
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct Color : IEquatable<Color>
     {
         public float R;
