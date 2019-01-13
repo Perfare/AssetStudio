@@ -20,7 +20,7 @@ namespace AssetStudio
             var m_ProxyHeight = reader.ReadUInt32();
             var Width = reader.ReadUInt32();
             var Height = reader.ReadUInt32();
-            if (version[0] >= 2017) //2017.x and up
+            if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
                 var m_PixelAspecRatioNum = reader.ReadUInt32();
                 var m_PixelAspecRatioDen = reader.ReadUInt32();

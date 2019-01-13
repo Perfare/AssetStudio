@@ -37,7 +37,7 @@ namespace AssetStudio
                     case 1: return Y;
                     case 2: return Z;
                     case 3: return W;
-                    default: throw new IndexOutOfRangeException("Invalid Vector4 index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Vector4 index!");
                 }
             }
 
@@ -49,7 +49,7 @@ namespace AssetStudio
                     case 1: Y = value; break;
                     case 2: Z = value; break;
                     case 3: W = value; break;
-                    default: throw new IndexOutOfRangeException("Invalid Vector4 index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Vector4 index!");
                 }
             }
         }

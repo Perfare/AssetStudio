@@ -23,8 +23,7 @@ namespace AssetStudio
                 {
                     case 0: return X;
                     case 1: return Y;
-                    default:
-                        throw new IndexOutOfRangeException("Invalid Vector2 index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Vector2 index!");
                 }
             }
 
@@ -34,8 +33,7 @@ namespace AssetStudio
                 {
                     case 0: X = value; break;
                     case 1: Y = value; break;
-                    default:
-                        throw new IndexOutOfRangeException("Invalid Vector2 index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Vector2 index!");
                 }
             }
         }

@@ -380,10 +380,11 @@ namespace AssetStudio
                         }
                     }
                 }
-                else if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0 && mesh.m_BindPose.Length == mesh.m_BoneNameHashes.Length)
+                else if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
                 {
-                    iMesh.BoneList = new List<ImportedBone>(mesh.m_BoneNameHashes.Length);
-                    for (int i = 0; i < mesh.m_BoneNameHashes.Length; i++)
+                    var boneMax = Math.Min(mesh.m_BindPose.Length, mesh.m_BoneNameHashes.Length);
+                    iMesh.BoneList = new List<ImportedBone>(boneMax);
+                    for (int i = 0; i < boneMax; i++)
                     {
                         var bone = new ImportedBone();
                         var boneHash = mesh.m_BoneNameHashes[i];

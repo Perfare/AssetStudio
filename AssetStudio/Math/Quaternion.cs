@@ -29,7 +29,7 @@ namespace AssetStudio
                     case 1: return Y;
                     case 2: return Z;
                     case 3: return W;
-                    default: throw new IndexOutOfRangeException("Invalid Quaternion index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Quaternion index!");
                 }
             }
 
@@ -41,7 +41,7 @@ namespace AssetStudio
                     case 1: Y = value; break;
                     case 2: Z = value; break;
                     case 3: W = value; break;
-                    default: throw new IndexOutOfRangeException("Invalid Quaternion index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Quaternion index!");
                 }
             }
         }
@@ -62,5 +62,27 @@ namespace AssetStudio
         {
             return X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z) && W.Equals(other.W);
         }
+
+        public static float Dot(Quaternion a, Quaternion b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
+        }
+
+        private static bool IsEqualUsingDot(float dot)
+        {
+            return dot > 1.0f - kEpsilon;
+        }
+
+        public static bool operator ==(Quaternion lhs, Quaternion rhs)
+        {
+            return IsEqualUsingDot(Dot(lhs, rhs));
+        }
+
+        public static bool operator !=(Quaternion lhs, Quaternion rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        private const float kEpsilon = 0.000001F;
     }
 }

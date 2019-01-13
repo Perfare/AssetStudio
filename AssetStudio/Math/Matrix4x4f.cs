@@ -83,7 +83,7 @@ namespace AssetStudio
                     case 13: return M13;
                     case 14: return M23;
                     case 15: return M33;
-                    default: throw new IndexOutOfRangeException("Invalid matrix index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Matrix4x4 index!");
                 }
             }
 
@@ -107,7 +107,7 @@ namespace AssetStudio
                     case 13: M13 = value; break;
                     case 14: M23 = value; break;
                     case 15: M33 = value; break;
-                    default: throw new IndexOutOfRangeException("Invalid matrix index!");
+                    default: throw new ArgumentOutOfRangeException(nameof(index), "Invalid Matrix4x4 index!");
                 }
             }
         }
