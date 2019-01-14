@@ -499,8 +499,11 @@ namespace AssetStudio
 
         private string GetTransformPath(Transform transform)
         {
-            var frame = transformDictionary[transform];
-            return GetFramePath(frame);
+            if (transformDictionary.TryGetValue(transform, out var frame))
+            {
+                return GetFramePath(frame);
+            }
+            return null;
         }
 
         private static string GetFramePath(ImportedFrame frame)
