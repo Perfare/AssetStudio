@@ -637,14 +637,27 @@ namespace AssetStudio
 
         private void ProcessData()
         {
+            //Fix normal channel in 2018.3 and up
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3))
+            {
+                if (m_VertexData.m_Channels[1].dimension > 4)
+                {
+                    for (int i = 2; i < m_VertexData.m_Channels.Length; i++)
+                    {
+                        if (m_VertexData.m_Channels[i].dimension > 0)
+                        {
+                            var offset = m_VertexData.m_Channels[i].offset - m_VertexData.m_Channels[1].offset;
+                            m_VertexData.m_Channels[1].dimension = (byte)(offset / MeshHelper.GetChannelFormatSize(m_VertexData.m_Channels[1].format));
+                            m_VertexData.GetStreams();
+                            break;
+                        }
+                    }
+                }
+            }
             if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
                 if (m_VertexData.m_VertexCount > 0)
                 {
-                    //Fix Normal Channel
-                    m_VertexData.m_Channels[1].dimension = 4;
-                    m_VertexData.GetStreams();
-
                     var resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
                     m_VertexData.m_DataSize = resourceReader.GetData();
                 }
