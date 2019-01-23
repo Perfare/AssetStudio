@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Lz4;
-using SharpDX.D3DCompiler;
 
 namespace AssetStudio
 {
@@ -591,7 +590,7 @@ namespace AssetStudio
             // 201608170 - Unity 5.5
             // 201609010 - Unity 5.6, 2017.1 & 2017.2
             // 201708220 - Unity 2017.3, Unity 2017.4 & Unity 2018.1
-            // 201802150 - Unity 2018.2
+            // 201802150 - Unity 2018.2 & Unity 2018.3
             magic = reader.ReadInt32();
             m_ProgramType = (ShaderGpuProgramType)reader.ReadInt32();
             reader.BaseStream.Position += 12;
@@ -644,8 +643,9 @@ namespace AssetStudio
                     case ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM20:
                     case ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM30:
                         {
-                            var shaderBytecode = new ShaderBytecode(m_ProgramCode);
-                            sb.Append(shaderBytecode.Disassemble());
+                            /*var shaderBytecode = new ShaderBytecode(m_ProgramCode);
+                            sb.Append(shaderBytecode.Disassemble());*/
+                            sb.Append("// shader disassembly not supported on DXBC");
                             break;
                         }
                     case ShaderGpuProgramType.kShaderGpuProgramDX10Level9Vertex:
@@ -666,8 +666,9 @@ namespace AssetStudio
                             }
                             var buff = new byte[m_ProgramCode.Length - start];
                             Buffer.BlockCopy(m_ProgramCode, start, buff, 0, buff.Length);
-                            var shaderBytecode = new ShaderBytecode(buff);
-                            sb.Append(shaderBytecode.Disassemble());
+                            /*var shaderBytecode = new ShaderBytecode(buff);
+                            sb.Append(shaderBytecode.Disassemble());*/
+                            sb.Append("// shader disassembly not supported on DXBC");
                             break;
                         }
                     case ShaderGpuProgramType.kShaderGpuProgramMetalVS:
