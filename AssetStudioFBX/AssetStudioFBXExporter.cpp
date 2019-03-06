@@ -111,6 +111,8 @@ namespace AssetStudio
 		}
 
 		pMeshNodes = imported->MeshList != nullptr ? new FbxArray<FbxNode*>(imported->MeshList->Count) : NULL;
+		pBindPose = FbxPose::Create(pScene, "BindPose");
+		pBindPose->SetIsBindPose(true);
 		ExportFrame(pScene->GetRootNode(), imported->RootFrame);
 
 		if (imported->MeshList != nullptr)
@@ -278,21 +280,19 @@ namespace AssetStudio
 		if ((frameNames == nullptr) || frameNames->Contains(frameName))
 		{
 			FbxNode* pFrameNode = NULL;
-			char* pName = NULL;
-			try
-			{
-				pName = StringToCharArray(frameName);
+			WITH_MARSHALLED_STRING
+			(
+				pName,
+				frameName,
 				pFrameNode = FbxNode::Create(pScene, pName);
-			}
-			finally
-			{
-				Marshal::FreeHGlobal((IntPtr)pName);
-			}
+			);
 
 			pFrameNode->LclScaling.Set(FbxDouble3(frame->LocalScale.X, frame->LocalScale.Y, frame->LocalScale.Z));
 			pFrameNode->LclRotation.Set(FbxDouble3(frame->LocalRotation.X, frame->LocalRotation.Y, frame->LocalRotation.Z));
 			pFrameNode->LclTranslation.Set(FbxDouble3(frame->LocalPosition.X, frame->LocalPosition.Y, frame->LocalPosition.Z));
+			pFrameNode->SetPreferedAngle(pFrameNode->LclRotation.Get());
 			pParentNode->AddChild(pFrameNode);
+			pBindPose->Add(pFrameNode, pFrameNode->EvaluateGlobalTransform());
 
 			if (imported->MeshList != nullptr && ImportedHelpers::FindMesh(frame, imported->MeshList) != nullptr)
 			{
@@ -414,6 +414,10 @@ namespace AssetStudio
 					}
 
 					FbxNode* pMeshNode = FbxNode::Create(pScene, pName);
+					if (hasBones)
+					{
+						pBindPose->Add(pMeshNode, pMeshNode->EvaluateGlobalTransform());
+					}
 					pMeshNode->SetNodeAttribute(pMesh);
 					pFrameNode->AddChild(pMeshNode);
 
@@ -562,8 +566,9 @@ namespace AssetStudio
 
 					if (hasBones)
 					{
+						FbxAMatrix lMeshMatrix = pFrameNode->EvaluateGlobalTransform();
+
 						FbxSkin* pSkin = FbxSkin::Create(pScene, "");
-						FbxAMatrix lMeshMatrix = pMeshNode->EvaluateGlobalTransform();
 						for (int j = 0; j < boneList->Count; j++)
 						{
 							FbxCluster* pCluster = pClusterArray->GetAt(j);
@@ -879,6 +884,7 @@ namespace AssetStudio
 					List<ImportedVertex^>^ vertList = meshList->SubmeshList[meshObjIdx]->VertexList;
 					FbxNode* pBaseMeshNode = pBaseNode->GetChild(meshObjIdx);
 					FbxMesh* pBaseMesh = pBaseMeshNode->GetMesh();
+					int numColourSets = pBaseMesh->GetElementVertexColorCount();
 
 					FbxBlendShape* lBlendShape;
 					WITH_MARSHALLED_STRING
@@ -887,6 +893,7 @@ namespace AssetStudio
 						morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) /*+ "_BlendShape"*/,
 						lBlendShape = FbxBlendShape::Create(pScene, pShapeName);
 					);
+					FbxProperty rootGroupProp = FbxProperty::Create(lBlendShape, FbxStringDT, "RootGroup");
 					pBaseMesh->AddDeformer(lBlendShape);
 					List<ImportedMorphKeyframe^>^ keyframes = morph->KeyframeList;
 					for (int i = 0; i < morph->Channels->Count; i++)
@@ -912,12 +919,25 @@ namespace AssetStudio
 							FbxShape* pShape;
 							if (!flatInbetween)
 							{
-								WITH_MARSHALLED_STRING
-								(
-									pMorphShapeName,
-									keyframe->Name,
+								char* pMorphShapeName;
+								try
+								{
+									pMorphShapeName = StringToCharArray(keyframe->Name);
+									if (pScene->FindMember<FbxShape>(pMorphShapeName))
+									{
+										Marshal::FreeHGlobal((IntPtr)pMorphShapeName);
+										pMorphShapeName = StringToCharArray(morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) + "__" + keyframe->Name);
+									}
 									pShape = FbxShape::Create(pScene, pMorphShapeName);
-								);
+								}
+								finally
+								{
+									Marshal::FreeHGlobal((IntPtr)pMorphShapeName);
+								}
+								if (frameIdx == morph->Channels[i]->Item3 - 1)
+								{
+									FbxProperty::Create(lBlendShape, FbxStringDT, rootGroupProp.GetName() + "|" + pShape->GetName());
+								}
 								lBlendShapeChannel->AddTargetShape(pShape, keyframe->Weight);
 							}
 							else
@@ -964,6 +984,11 @@ namespace AssetStudio
 									pControlPoints[controlPointIndex] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
 								}
 							}
+							if (flatInbetween && meshIndices->Count == 0)
+							{
+								Vector3 coords = vertList[0]->Position;
+								pControlPoints[0] = FbxVector4(coords.X - 1.0e-6, coords.Y, coords.Z, 0);
+							}
 
 							if (flatInbetween && frameIdx > 0)
 							{
@@ -982,14 +1007,19 @@ namespace AssetStudio
 								}
 							}
 
-							if (morphMask)
+							if (morphMask && frameIdx == 0)
 							{
-								FbxGeometryElementVertexColor* lGeometryElementVertexColor = pBaseMesh->CreateElementVertexColor();
+								int colourSetIdx = numColourSets + shapeIdx;
+								FbxGeometryElementVertexColor* lGeometryElementVertexColor = pBaseMesh->GetElementVertexColor(colourSetIdx);
+								if (lGeometryElementVertexColor == NULL)
+								{
+									lGeometryElementVertexColor = pBaseMesh->CreateElementVertexColor();
+								}
 								lGeometryElementVertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
 								lGeometryElementVertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
 								WITH_MARSHALLED_STRING
 								(
-									pColourLayerName, morph->KeyframeList[shapeIdx]->Name,
+									pColourLayerName, morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) + "." + keyframe->Name,
 									lGeometryElementVertexColor->SetName(pColourLayerName);
 								);
 								for (int j = 0; j < vertList->Count; j++)

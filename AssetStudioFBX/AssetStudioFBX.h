@@ -64,6 +64,7 @@ namespace AssetStudio {
 			FbxArray<FbxSurfacePhong*>* pMaterials;
 			FbxArray<FbxFileTexture*>* pTextures;
 			FbxArray<FbxNode*>* pMeshNodes;
+			FbxPose* pBindPose;
 
 			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii, bool normals);
 			~Exporter();
