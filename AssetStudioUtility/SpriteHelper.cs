@@ -36,8 +36,13 @@ namespace AssetStudio
             {
                 using (originalImage)
                 {
-                    var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
-
+                    //var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
+                    var spriteImage = new Bitmap((int)textureRect.Width, (int)textureRect.Height, PixelFormat.Format32bppArgb);
+                    var destRect = new Rectangle(0, 0, (int)textureRect.Width, (int)textureRect.Height);
+                    using (var graphic = Graphics.FromImage(spriteImage))
+                    {
+                        graphic.DrawImage(originalImage, destRect, textureRect, GraphicsUnit.Pixel);
+                    }
                     if (settingsRaw.packed == 1)
                     {
                         //RotateAndFlip
@@ -58,7 +63,6 @@ namespace AssetStudio
                         }
 
                         //Tight
-                        //TODO 2017 and up use m_PhysicsShape should be better
                         if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
                         {
                             try
