@@ -73,15 +73,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AssetStudio\Libraries\OpenTK.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="OpenTK">
+      <HintPath>Libraries\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AssetStudio\Libraries\OpenTK.GLControl.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="OpenTK.GLControl">
+      <HintPath>Libraries\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -183,8 +179,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y "$(SolutionDir)AssetStudio\Libraries" "$(TargetDir)"
-xcopy /y "$(SolutionDir)AssetStudio\Libraries\$(PlatformName)" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y "$(ProjectDir)Libraries" "$(TargetDir)"
+xcopy /y "$(ProjectDir)Libraries\$(PlatformName)" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
