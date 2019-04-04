@@ -44,4 +44,4 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 * The project uses some C# 7 syntax, need Visual Studio 2017 or newer
 * **AssetStudioFBX** uses FBX SDK 2019.0 VS2015, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
-* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudio/Libraries/x86/` and `AssetStudio/Libraries/x64` directory to the new version
+* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudioGUI/Libraries/x86/` and `AssetStudioGUI/Libraries/x64` directory to the new version
