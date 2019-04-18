@@ -331,7 +331,7 @@ namespace AssetStudio
 				for (int i = 0; i < boneList->Count; i++)
 				{
 					ImportedBone^ bone = boneList[i];
-					FbxNode* lFrame = FindNodeByPath(bone->Path, false);
+					FbxNode* lFrame = FindNodeByPath(bone->Path);
 					pBoneNodeList->Add(lFrame);
 				}
 			}
@@ -616,7 +616,7 @@ namespace AssetStudio
 		}
 	}
 
-	FbxNode* Fbx::Exporter::FindNodeByPath(String ^ path, bool recursive)
+	FbxNode* Fbx::Exporter::FindNodeByPath(String ^ path)
 	{
 		array<String^>^ splitPath = path->Split('/');
 		FbxNode* lNode = pScene->GetRootNode();
@@ -627,19 +627,10 @@ namespace AssetStudio
 			try
 			{
 				pNodeName = StringToCharArray(frameName);
-				FbxNode* foundNode;
-				if (recursive && i == 0)
-				{
-					foundNode = lNode->FindChild(pNodeName);
-				}
-				else
-				{
-					foundNode = lNode->FindChild(pNodeName, false);
-				}
+				FbxNode* foundNode = lNode->FindChild(pNodeName, false);
 				if (foundNode == NULL)
 				{
-					//throw gcnew Exception(gcnew String("Couldn't find path ") + path);
-					return NULL;
+					throw gcnew Exception(gcnew String("Couldn't find path ") + path);
 				}
 				lNode = foundNode;
 			}
@@ -766,7 +757,7 @@ namespace AssetStudio
 		for (int j = 0; j < pAnimationList->Count; j++)
 		{
 			ImportedAnimationKeyframedTrack^ keyframeList = pAnimationList[j];
-			FbxNode* pNode = FindNodeByPath(keyframeList->Path, true);
+			FbxNode* pNode = FindNodeByPath(keyframeList->Path);
 			if (pNode != nullptr)
 			{
 				FbxAnimCurve* lCurveSX = pNode->LclScaling.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X, true);
@@ -934,10 +925,10 @@ namespace AssetStudio
 								{
 									Marshal::FreeHGlobal((IntPtr)pMorphShapeName);
 								}
-								if (frameIdx == morph->Channels[i]->Item3 - 1)
-								{
-									FbxProperty::Create(lBlendShape, FbxStringDT, rootGroupProp.GetName() + "|" + pShape->GetName());
-								}
+									if (frameIdx == morph->Channels[i]->Item3 - 1)
+									{
+										FbxProperty::Create(lBlendShape, FbxStringDT, rootGroupProp.GetName() + "|" + pShape->GetName());
+									}
 								lBlendShapeChannel->AddTargetShape(pShape, keyframe->Weight);
 							}
 							else

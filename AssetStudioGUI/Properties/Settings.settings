@@ -36,7 +36,7 @@
       <Value Profile="(Default)">0.25</Value>
     </Setting>
     <Setting Name="allFrames" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="allBones" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

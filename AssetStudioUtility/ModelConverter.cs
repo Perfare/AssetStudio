@@ -803,7 +803,8 @@ namespace AssetStudio
                 return;
             }
 
-            var track = iAnim.FindTrack(GetPathFromHash(binding.path));
+            var path = FixBonePath(GetPathFromHash(binding.path));
+            var track = iAnim.FindTrack(path);
 
             switch (binding.attribute)
             {
