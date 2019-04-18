@@ -250,6 +250,7 @@ namespace AssetStudioGUI
                                 var item = tempDic[m_Mesh];
                                 item.TreeNode = currentNode;
                             }
+                            tempDic[m_GameObject.m_MeshFilter].TreeNode = currentNode;
                         }
 
                         if (m_GameObject.m_SkinnedMeshRenderer != null)
@@ -259,6 +260,7 @@ namespace AssetStudioGUI
                                 var item = tempDic[m_Mesh];
                                 item.TreeNode = currentNode;
                             }
+                            tempDic[m_GameObject.m_SkinnedMeshRenderer].TreeNode = currentNode;
                         }
 
                         var parentNode = fileNode;
