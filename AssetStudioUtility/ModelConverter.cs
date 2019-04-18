@@ -677,9 +677,22 @@ namespace AssetStudio
             foreach (var animationClip in animationClipHashSet)
             {
                 var iAnim = new ImportedKeyframedAnimation();
-                AnimationList.Add(iAnim);
-                iAnim.Name = animationClip.m_Name;
+                var name = animationClip.m_Name;
+                if (AnimationList.Exists(x => x.Name == name))
+                {
+                    for (int i = 1; ; i++)
+                    {
+                        var fixName = name + $"_{i}";
+                        if (!AnimationList.Exists(x => x.Name == fixName))
+                        {
+                            name = fixName;
+                            break;
+                        }
+                    }
+                }
+                iAnim.Name = name;
                 iAnim.TrackList = new List<ImportedAnimationKeyframedTrack>();
+                AnimationList.Add(iAnim);
                 if (animationClip.m_Legacy)
                 {
                     foreach (var m_CompressedRotationCurve in animationClip.m_CompressedRotationCurves)
@@ -740,14 +753,6 @@ namespace AssetStudio
                             }
                         }
                     }
-                    /*foreach (var m_FloatCurve in animationClip.m_FloatCurves)
-                    {
-                        var track = iAnim.FindTrack(m_FloatCurve.path);
-                        foreach (var m_Curve in m_FloatCurve.curve.m_Curve)
-                        {
-                            track.Curve.Add(new ImportedKeyframe<float>(m_Curve.time, m_Curve.value));
-                        }
-                    }*/
                 }
                 else
                 {

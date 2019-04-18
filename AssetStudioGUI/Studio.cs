@@ -538,6 +538,7 @@ namespace AssetStudioGUI
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
+                Progress.Reset();
                 Logger.Info($"Exporting {animator.Text}");
                 try
                 {
@@ -546,6 +547,7 @@ namespace AssetStudioGUI
                     {
                         Process.Start(exportPath);
                     }
+                    Progress.Report(1, 1);
                     Logger.Info($"Finished exporting {animator.Text}");
                 }
                 catch (Exception ex)

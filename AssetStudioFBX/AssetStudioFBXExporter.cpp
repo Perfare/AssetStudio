@@ -757,6 +757,10 @@ namespace AssetStudio
 		for (int j = 0; j < pAnimationList->Count; j++)
 		{
 			ImportedAnimationKeyframedTrack^ keyframeList = pAnimationList[j];
+			if (keyframeList->Path == nullptr)
+			{
+				continue;
+			}
 			FbxNode* pNode = FindNodeByPath(keyframeList->Path);
 			if (pNode != nullptr)
 			{
