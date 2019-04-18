@@ -153,10 +153,10 @@ namespace AssetStudio
                 reader.AlignStream();
         }
 
-        public static Dictionary<string, object> ReadBoxingType(List<TypeTreeNode> members, BinaryReader reader)
+        public static UType ReadUType(List<TypeTreeNode> members, BinaryReader reader)
         {
-            var obj = new Dictionary<string, object>();
-            for (int i = 0; i < members.Count; i++)
+            var obj = new UType();
+            for (int i = 1; i < members.Count; i++)
             {
                 var member = members[i];
                 var varNameStr = member.m_Name;
@@ -218,23 +218,6 @@ namespace AssetStudio
                     value = reader.ReadAlignedString();
                     i += 3;
                     break;
-                case "vector":
-                    {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
-                            align = true;
-                        var size = reader.ReadInt32();
-                        var list = new List<object>(size);
-                        var vector = GetMembers(members, level, i);
-                        i += vector.Count - 1;
-                        vector.RemoveRange(0, 3);
-                        for (int j = 0; j < size; j++)
-                        {
-                            int tmp = 0;
-                            list.Add(ReadValue(vector, reader, ref tmp));
-                        }
-                        value = list;
-                        break;
-                    }
                 case "map":
                     {
                         if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
@@ -265,22 +248,38 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].m_Type == "Array")
+                        if (i != members.Count && members[i + 1].m_Type == "Array") //Array
                         {
-                            goto case "vector";
+                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                                align = true;
+                            var size = reader.ReadInt32();
+                            var list = new List<object>(size);
+                            var vector = GetMembers(members, level, i);
+                            i += vector.Count - 1;
+                            vector.RemoveRange(0, 3);
+                            for (int j = 0; j < size; j++)
+                            {
+                                int tmp = 0;
+                                list.Add(ReadValue(vector, reader, ref tmp));
+                            }
+                            value = list;
+                            break;
                         }
-                        var @class = GetMembers(members, level, i);
-                        @class.RemoveAt(0);
-                        i += @class.Count;
-                        var obj = new Dictionary<string, object>();
-                        for (int j = 0; j < @class.Count; j++)
+                        else //Class
                         {
-                            var classmember = @class[j];
-                            var name = classmember.m_Name;
-                            obj[name] = ReadValue(@class, reader, ref j);
+                            var @class = GetMembers(members, level, i);
+                            @class.RemoveAt(0);
+                            i += @class.Count;
+                            var obj = new UType();
+                            for (int j = 0; j < @class.Count; j++)
+                            {
+                                var classmember = @class[j];
+                                var name = classmember.m_Name;
+                                obj[name] = ReadValue(@class, reader, ref j);
+                            }
+                            value = obj;
+                            break;
                         }
-                        value = obj;
-                        break;
                     }
             }
             if (align)
@@ -305,7 +304,7 @@ namespace AssetStudio
             return member2;
         }
 
-        public static byte[] WriteBoxingType(Dictionary<string, object> obj, List<TypeTreeNode> members)
+        public static byte[] WriteUType(UType obj, List<TypeTreeNode> members)
         {
             var stream = new MemoryStream();
             var write = new BinaryWriter(stream);
@@ -370,23 +369,6 @@ namespace AssetStudio
                     write.WriteAlignedString((string)value);
                     i += 3;
                     break;
-                case "vector":
-                    {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
-                            align = true;
-                        var list = (List<object>)value;
-                        var size = list.Count;
-                        write.Write(size);
-                        var vector = GetMembers(members, level, i);
-                        i += vector.Count - 1;
-                        vector.RemoveRange(0, 3);
-                        for (int j = 0; j < size; j++)
-                        {
-                            int tmp = 0;
-                            WriteValue(list[j], vector, write, ref tmp);
-                        }
-                        break;
-                    }
                 case "map":
                     {
                         if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
@@ -420,21 +402,37 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].m_Type == "Array")
+                        if (i != members.Count && members[i + 1].m_Type == "Array") //Array
                         {
-                            goto case "vector";
+                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                                align = true;
+                            var list = (List<object>)value;
+                            var size = list.Count;
+                            write.Write(size);
+                            var vector = GetMembers(members, level, i);
+                            i += vector.Count - 1;
+                            vector.RemoveRange(0, 3);
+                            for (int j = 0; j < size; j++)
+                            {
+                                int tmp = 0;
+                                WriteValue(list[j], vector, write, ref tmp);
+                            }
+                            break;
                         }
-                        var @class = GetMembers(members, level, i);
-                        @class.RemoveAt(0);
-                        i += @class.Count;
-                        var obj = (Dictionary<string, object>)value;
-                        for (int j = 0; j < @class.Count; j++)
+                        else //Class
                         {
-                            var classmember = @class[j];
-                            var name = classmember.m_Name;
-                            WriteValue(obj[name], @class, write, ref j);
+                            var @class = GetMembers(members, level, i);
+                            @class.RemoveAt(0);
+                            i += @class.Count;
+                            var obj = (UType)value;
+                            for (int j = 0; j < @class.Count; j++)
+                            {
+                                var classmember = @class[j];
+                                var name = classmember.m_Name;
+                                WriteValue(obj[name], @class, write, ref j);
+                            }
+                            break;
                         }
-                        break;
                     }
             }
             if (align)

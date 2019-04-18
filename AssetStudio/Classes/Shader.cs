@@ -473,11 +473,22 @@ namespace AssetStudio
             m_BlobIndex = reader.ReadUInt32();
             m_Channels = new ParserBindChannels(reader);
 
-            m_KeywordIndices = reader.ReadUInt16Array();
-            if (version[0] >= 2017) //2017 and up
+            if (version[0] >= 2019) //2019 and up
             {
+                var m_GlobalKeywordIndices = reader.ReadUInt16Array();
+                reader.AlignStream();
+                var m_LocalKeywordIndices = reader.ReadUInt16Array();
                 reader.AlignStream();
             }
+            else
+            {
+                m_KeywordIndices = reader.ReadUInt16Array();
+                if (version[0] >= 2017) //2017 and up
+                {
+                    reader.AlignStream();
+                }
+            }
+
             m_ShaderHardwareTier = reader.ReadSByte();
             m_GpuProgramType = (ShaderGpuProgramType)reader.ReadSByte();
             reader.AlignStream();

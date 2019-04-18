@@ -4,7 +4,7 @@ namespace AssetStudio
 {
     public static class CommonString
     {
-        public static readonly Dictionary<int, string> StringBuffer = new Dictionary<int, string>
+        public static readonly Dictionary<uint, string> StringBuffer = new Dictionary<uint, string>
         {
             {0, "AABB"},
             {5, "AnimationClip"},
@@ -110,7 +110,9 @@ namespace AssetStudio
             {1057, "int2_storage"},
             {1070, "int3_storage"},
             {1083, "BoundsInt"},
-            {1093, "m_CorrespondingSourceObject"}
+            {1093, "m_CorrespondingSourceObject"},
+            {1121, "m_PrefabInstance"},
+            {1138, "m_PrefabAsset"}
         };
     }
 }

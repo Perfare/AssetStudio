@@ -227,11 +227,11 @@ namespace AssetStudio
             return type;
         }
 
-        private void ReadTypeTree(List<TypeTreeNode> typeTree, int depth = 0)
+        private void ReadTypeTree(List<TypeTreeNode> typeTree, int level = 0)
         {
             var typeTreeNode = new TypeTreeNode();
             typeTree.Add(typeTreeNode);
-            typeTreeNode.m_Level = depth;
+            typeTreeNode.m_Level = level;
             typeTreeNode.m_Type = reader.ReadStringToNull();
             typeTreeNode.m_Name = reader.ReadStringToNull();
             typeTreeNode.m_ByteSize = reader.ReadInt32();
@@ -253,7 +253,7 @@ namespace AssetStudio
             int childrenCount = reader.ReadInt32();
             for (int i = 0; i < childrenCount; i++)
             {
-                ReadTypeTree(typeTree, depth + 1);
+                ReadTypeTree(typeTree, level + 1);
             }
         }
 
@@ -262,10 +262,15 @@ namespace AssetStudio
             int numberOfNodes = reader.ReadInt32();
             int stringBufferSize = reader.ReadInt32();
 
-            reader.Position += numberOfNodes * 24;
+            var nodeSize = 24;
+            if (header.m_Version > 17)
+            {
+                nodeSize = 32;
+            }
+            reader.Position += numberOfNodes * nodeSize;
             using (var stringBufferReader = new BinaryReader(new MemoryStream(reader.ReadBytes(stringBufferSize))))
             {
-                reader.Position -= numberOfNodes * 24 + stringBufferSize;
+                reader.Position -= numberOfNodes * nodeSize + stringBufferSize;
                 for (int i = 0; i < numberOfNodes; i++)
                 {
                     var typeTreeNode = new TypeTreeNode();
@@ -273,36 +278,37 @@ namespace AssetStudio
                     typeTreeNode.m_Version = reader.ReadUInt16();
                     typeTreeNode.m_Level = reader.ReadByte();
                     typeTreeNode.m_IsArray = reader.ReadBoolean() ? 1 : 0;
-
-                    var m_TypeStrOffset = reader.ReadUInt16();
-                    var temp = reader.ReadUInt16();
-                    if (temp == 0)
-                    {
-                        stringBufferReader.BaseStream.Position = m_TypeStrOffset;
-                        typeTreeNode.m_Type = stringBufferReader.ReadStringToNull();
-                    }
-                    else
-                    {
-                        typeTreeNode.m_Type = CommonString.StringBuffer.ContainsKey(m_TypeStrOffset) ? CommonString.StringBuffer[m_TypeStrOffset] : m_TypeStrOffset.ToString();
-                    }
-
-                    var m_NameStrOffset = reader.ReadUInt16();
-                    temp = reader.ReadUInt16();
-                    if (temp == 0)
-                    {
-                        stringBufferReader.BaseStream.Position = m_NameStrOffset;
-                        typeTreeNode.m_Name = stringBufferReader.ReadStringToNull();
-                    }
-                    else
-                    {
-                        typeTreeNode.m_Name = CommonString.StringBuffer.ContainsKey(m_NameStrOffset) ? CommonString.StringBuffer[m_NameStrOffset] : m_NameStrOffset.ToString();
-                    }
-
+                    typeTreeNode.m_TypeStrOffset = reader.ReadUInt32();
+                    typeTreeNode.m_NameStrOffset = reader.ReadUInt32();
                     typeTreeNode.m_ByteSize = reader.ReadInt32();
                     typeTreeNode.m_Index = reader.ReadInt32();
                     typeTreeNode.m_MetaFlag = reader.ReadInt32();
+
+                    if (header.m_Version > 17)
+                    {
+                        reader.Position += 8;
+                    }
+
+                    typeTreeNode.m_Type = ReadString(stringBufferReader, typeTreeNode.m_TypeStrOffset);
+                    typeTreeNode.m_Name = ReadString(stringBufferReader, typeTreeNode.m_NameStrOffset);
                 }
                 reader.Position += stringBufferSize;
+            }
+
+            string ReadString(BinaryReader stringBufferReader, uint value)
+            {
+                var isOffset = (value & 0x80000000) == 0;
+                if (isOffset)
+                {
+                    stringBufferReader.BaseStream.Position = value;
+                    return stringBufferReader.ReadStringToNull();
+                }
+                var offset = value & 0x7FFFFFFF;
+                if (CommonString.StringBuffer.TryGetValue(offset, out var str))
+                {
+                    return str;
+                }
+                return offset.ToString();
             }
         }
     }

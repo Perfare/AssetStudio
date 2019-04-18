@@ -1,10 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace AssetStudio
 {
+    public class MinMaxAABB
+    {
+        public Vector3 m_Min;
+        public Vector3 m_Max;
+
+        public MinMaxAABB(BinaryReader reader)
+        {
+            m_Min = reader.ReadVector3();
+            m_Max = reader.ReadVector3();
+        }
+    }
+
     public class CompressedMesh
     {
         public PackedFloatVector m_Vertices;
@@ -490,8 +503,20 @@ namespace AssetStudio
                 var m_RootBoneNameHash = reader.ReadUInt32();
             }
 
-            if (version[0] > 2 || (version[0] == 2 && version[1] >= 6)) //2.6.0 and later
+            if (version[0] > 2 || (version[0] == 2 && version[1] >= 6)) //2.6.0 and up
             {
+                if (version[0] >= 2019) //2019 and up
+                {
+                    var m_BonesAABBSize = reader.ReadInt32();
+                    var m_BonesAABB = new MinMaxAABB[m_BonesAABBSize];
+                    for (int i = 0; i < m_BonesAABBSize; i++)
+                    {
+                        m_BonesAABB[i] = new MinMaxAABB(reader);
+                    }
+
+                    var m_VariableBoneCountWeights = reader.ReadUInt32Array();
+                }
+
                 var m_MeshCompression = reader.ReadByte();
                 if (version[0] >= 4)
                 {
@@ -719,7 +744,7 @@ namespace AssetStudio
 
                         int[] componentsIntArray = null;
                         float[] componentsFloatArray = null;
-                        if (m_Channel.format == 11)
+                        if (m_Channel.format == 10 || m_Channel.format == 11)
                             componentsIntArray = MeshHelper.BytesToIntArray(componentBytes);
                         else
                             componentsFloatArray = MeshHelper.BytesToFloatArray(componentBytes, componentByteSize);
@@ -1075,6 +1100,10 @@ namespace AssetStudio
                     return 1u;
                 case 3: //kChannelFormatByte
                     return 1u;
+                case 4: //kChannelFormatUInt32
+                    return 4u;
+                case 10: //kChannelFormatInt32
+                    return 4u;
                 case 11: //kChannelFormatInt32
                     return 4u;
                 default:

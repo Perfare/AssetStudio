@@ -15,5 +15,7 @@ namespace AssetStudio
         public int m_Version;
         public int m_MetaFlag;
         public int m_Level;
+        public uint m_TypeStrOffset;
+        public uint m_NameStrOffset;
     }
 }

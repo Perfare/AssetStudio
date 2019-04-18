@@ -300,6 +300,8 @@ namespace AssetStudio
             {
                 m_TOS[i] = new KeyValuePair<uint, string>(reader.ReadUInt32(), reader.ReadAlignedString());
             }
+
+            //HumanDescription m_HumanDescription 2019 and up
         }
 
         public string FindBonePath(uint hash)

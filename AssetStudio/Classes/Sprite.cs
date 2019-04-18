@@ -1,9 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 
 namespace AssetStudio
 {
+    public class SecondarySpriteTexture
+    {
+        public PPtr<Texture2D> texture;
+        public string name;
+
+        public SecondarySpriteTexture(ObjectReader reader)
+        {
+            texture = new PPtr<Texture2D>(reader);
+            name = reader.ReadStringToNull();
+        }
+    }
+
     public enum SpritePackingRotation
     {
         kSPRNone = 0,
@@ -27,7 +40,7 @@ namespace AssetStudio
         public SpritePackingMode packingMode;
         public SpritePackingRotation packingRotation;
 
-        public SpriteSettings(ObjectReader reader)
+        public SpriteSettings(BinaryReader reader)
         {
             settingsRaw = reader.ReadUInt32();
 
@@ -61,6 +74,7 @@ namespace AssetStudio
     {
         public PPtr<Texture2D> texture;
         public PPtr<Texture2D> alphaTexture;
+        public SecondarySpriteTexture[] secondaryTextures;
         public SubMesh[] m_SubMeshes;
         public byte[] m_IndexBuffer;
         public VertexData m_VertexData;
@@ -83,6 +97,16 @@ namespace AssetStudio
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 2)) //5.2 and up
             {
                 alphaTexture = new PPtr<Texture2D>(reader);
+            }
+
+            if (version[0] >= 2019) //2019 and up
+            {
+                var secondaryTexturesSize = reader.ReadInt32();
+                secondaryTextures = new SecondarySpriteTexture[secondaryTexturesSize];
+                for (int i = 0; i < secondaryTexturesSize; i++)
+                {
+                    secondaryTextures[i] = new SecondarySpriteTexture(reader);
+                }
             }
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up

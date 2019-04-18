@@ -30,7 +30,7 @@ namespace AssetStudio
                 return ConvertMultiple(shader)[0];
             }
 
-            return Encoding.UTF8.GetString(shader.m_Script);
+            return header + Encoding.UTF8.GetString(shader.m_Script);
         }
 
         public static string[] ConvertMultiple(Shader shader)
@@ -51,7 +51,7 @@ namespace AssetStudio
                     {
                         var program = new ShaderProgram(blobReader);
                         var m_Script = ConvertSerializedShader(shader.m_ParsedForm, shader.platforms[i]);
-                        strs[i] = program.Export(m_Script);
+                        strs[i] = header + program.Export(m_Script);
                     }
                 }
 
@@ -544,6 +544,12 @@ namespace AssetStudio
                     return "unknown";
             }
         }
+
+        private static string header = "//////////////////////////////////////////\n" +
+                                      "//\n" +
+                                      "// NOTE: This is *not* a valid shader file\n" +
+                                      "//\n" +
+                                      "///////////////////////////////////////////\n";
     }
 
     public class ShaderProgram
@@ -577,32 +583,43 @@ namespace AssetStudio
 
     public class ShaderSubProgram
     {
-        private int magic;
+        private int m_Version;
         public ShaderGpuProgramType m_ProgramType;
         public string[] m_Keywords;
+        public string[] m_LocalKeywords;
         public byte[] m_ProgramCode;
 
         public ShaderSubProgram(BinaryReader reader)
         {
             //LoadGpuProgramFromData
-            // 201509030 - Unity 5.3
-            // 201510240 - Unity 5.4
-            // 201608170 - Unity 5.5
-            // 201609010 - Unity 5.6, 2017.1 & 2017.2
-            // 201708220 - Unity 2017.3, Unity 2017.4 & Unity 2018.1
-            // 201802150 - Unity 2018.2 & Unity 2018.3
-            magic = reader.ReadInt32();
+            //201509030 - Unity 5.3
+            //201510240 - Unity 5.4
+            //201608170 - Unity 5.5
+            //201609010 - Unity 5.6, 2017.1 & 2017.2
+            //201708220 - Unity 2017.3, Unity 2017.4 & Unity 2018.1
+            //201802150 - Unity 2018.2 & Unity 2018.3
+            //201806140 - Unity 2019.1
+            m_Version = reader.ReadInt32();
             m_ProgramType = (ShaderGpuProgramType)reader.ReadInt32();
             reader.BaseStream.Position += 12;
-            if (magic >= 201608170) //5.5.0 and up
+            if (m_Version >= 201608170)
             {
                 reader.BaseStream.Position += 4;
             }
-            var keywordCount = reader.ReadInt32();
-            m_Keywords = new string[keywordCount];
-            for (int i = 0; i < keywordCount; i++)
+            var m_KeywordsSize = reader.ReadInt32();
+            m_Keywords = new string[m_KeywordsSize];
+            for (int i = 0; i < m_KeywordsSize; i++)
             {
                 m_Keywords[i] = reader.ReadAlignedString();
+            }
+            if (m_Version >= 201806140)
+            {
+                var m_LocalKeywordsSize = reader.ReadInt32();
+                m_LocalKeywords = new string[m_LocalKeywordsSize];
+                for (int i = 0; i < m_LocalKeywordsSize; i++)
+                {
+                    m_LocalKeywords[i] = reader.ReadAlignedString();
+                }
             }
             m_ProgramCode = reader.ReadBytes(reader.ReadInt32());
             reader.AlignStream();
@@ -660,7 +677,7 @@ namespace AssetStudio
                     case ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50:
                         {
                             int start = 6;
-                            if (magic == 201509030) // 5.3
+                            if (m_Version == 201509030) // 5.3
                             {
                                 start = 5;
                             }
