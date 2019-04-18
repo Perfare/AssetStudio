@@ -35,7 +35,7 @@ namespace AssetStudioGUI
                         extractedCount += ExtractWebDataFile(fileName, reader);
                     else
                         reader.Dispose();
-                    Progress.Report(++i, fileNames.Length);
+                    Progress.Report(i + 1, fileNames.Length);
                 }
 
                 Logger.Info($"Finished extracting {extractedCount} files.");
