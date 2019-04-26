@@ -463,13 +463,16 @@ namespace AssetStudio
             {
                 meshR.m_GameObject.TryGet(out var m_GameObject);
                 var frame = RootFrame.FindChild(m_GameObject.m_Name);
-                frame.LocalPosition = RootFrame.LocalPosition;
-                frame.LocalRotation = RootFrame.LocalRotation;
-                while (frame.Parent != null)
+                if (frame != null)
                 {
-                    frame = frame.Parent;
                     frame.LocalPosition = RootFrame.LocalPosition;
                     frame.LocalRotation = RootFrame.LocalRotation;
+                    while (frame.Parent != null)
+                    {
+                        frame = frame.Parent;
+                        frame.LocalPosition = RootFrame.LocalPosition;
+                        frame.LocalRotation = RootFrame.LocalRotation;
+                    }
                 }
             }
 
