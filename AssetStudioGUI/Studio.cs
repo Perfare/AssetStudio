@@ -168,6 +168,18 @@ namespace AssetStudioGUI
                             ab = m_AssetBundle;
                             assetItem.Text = ab.m_Name;
                             break;
+                        case SpriteAtlas m_SpriteAtlas:
+                            foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
+                            {
+                                if (m_PackedSprite.TryGet(out var m_Sprite))
+                                {
+                                    if (m_Sprite.m_SpriteAtlas.IsNull())
+                                    {
+                                        m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
+                                    }
+                                }
+                            }
+                            break;
                         case NamedObject m_NamedObject:
                             assetItem.Text = m_NamedObject.m_Name;
                             break;

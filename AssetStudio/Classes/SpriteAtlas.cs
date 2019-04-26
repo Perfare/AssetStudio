@@ -33,14 +33,16 @@ namespace AssetStudio
 
     public sealed class SpriteAtlas : NamedObject
     {
+        public PPtr<Sprite>[] m_PackedSprites;
         public Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData> m_RenderDataMap;
 
         public SpriteAtlas(ObjectReader reader) : base(reader)
         {
             var m_PackedSpritesSize = reader.ReadInt32();
+            m_PackedSprites = new PPtr<Sprite>[m_PackedSpritesSize];
             for (int i = 0; i < m_PackedSpritesSize; i++)
             {
-                new PPtr<Sprite>(reader);
+                m_PackedSprites[i] = new PPtr<Sprite>(reader);
             }
 
             var m_PackedSpriteNamesToIndex = reader.ReadStringArray();

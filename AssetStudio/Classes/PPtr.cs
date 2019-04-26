@@ -1,4 +1,6 @@
-﻿namespace AssetStudio
+﻿using System;
+
+namespace AssetStudio
 {
     public sealed class PPtr<T> where T : Object
     {
@@ -86,5 +88,44 @@
             result = null;
             return false;
         }
+
+        public void Set(T m_Object)
+        {
+            var name = m_Object.assetsFile.upperFileName;
+            if (string.Equals(assetsFile.upperFileName, name, StringComparison.Ordinal))
+            {
+                m_FileID = 0;
+            }
+            else
+            {
+                m_FileID = assetsFile.m_Externals.FindIndex(x => string.Equals(x.fileName, name, StringComparison.OrdinalIgnoreCase));
+                if (m_FileID == -1)
+                {
+                    assetsFile.m_Externals.Add(new FileIdentifier
+                    {
+                        fileName = m_Object.assetsFile.fileName
+                    });
+                    m_FileID = assetsFile.m_Externals.Count;
+                }
+                else
+                {
+                    m_FileID += 1;
+                }
+            }
+
+            var assetsManager = assetsFile.assetsManager;
+            var assetsFileList = assetsManager.assetsFileList;
+            var assetsFileIndexCache = assetsManager.assetsFileIndexCache;
+
+            if (!assetsFileIndexCache.TryGetValue(name, out index))
+            {
+                index = assetsFileList.FindIndex(x => x.upperFileName == name);
+                assetsFileIndexCache.Add(name, index);
+            }
+
+            m_PathID = m_Object.m_PathID;
+        }
+
+        public bool IsNull() => m_PathID == 0 || m_FileID < 0;
     }
 }
