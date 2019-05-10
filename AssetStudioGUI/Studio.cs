@@ -188,7 +188,7 @@ namespace AssetStudioGUI
                     {
                         assetItem.Text = assetItem.TypeString + assetItem.UniqueID;
                     }
-                    assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString() });
+                    assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString(), assetItem.Asset.m_PathID.ToString() });
                     //处理同名文件
                     if (!assetsNameHash.Add((assetItem.TypeString + assetItem.Text).ToUpper()))
                     {

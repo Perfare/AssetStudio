@@ -179,9 +179,11 @@ namespace AssetStudio
         {
             unityVersion = stringVersion;
             var buildSplit = Regex.Replace(stringVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-            buildType = new BuildType(buildSplit[0]);
-            var versionSplit = Regex.Replace(stringVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-            version = versionSplit.Select(int.Parse).ToArray();
+            if (buildSplit != null && buildSplit.Length > 0) {
+                buildType = new BuildType(buildSplit[0]);
+                var versionSplit = Regex.Replace(stringVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                version = versionSplit.Select(int.Parse).ToArray();
+            }
         }
 
         private SerializedType ReadSerializedType()

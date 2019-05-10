@@ -74,11 +74,22 @@ namespace AssetStudioGUI
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
+        const string MANAGED = "Managed";
 
         private void loadFile_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                ReleaseScriptDumper();
+                var files = openFileDialog1.FileNames;
+                if (files.Length > 0)
+                {
+                    var ManagedPath = Path.Combine(Path.GetDirectoryName(files[0]), MANAGED);
+                    if (Directory.Exists(ManagedPath))
+                    {
+                        scriptDumper = new ScriptDumper(ManagedPath);
+                    }
+                }
                 ResetForm();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
@@ -93,6 +104,13 @@ namespace AssetStudioGUI
             var openFolderDialog = new OpenFolderDialog();
             if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
             {
+                ReleaseScriptDumper();
+                var file = openFolderDialog.Folder;
+                var ManagedPath = Path.Combine(file, MANAGED);
+                if (Directory.Exists(ManagedPath))
+                {
+                    scriptDumper = new ScriptDumper(ManagedPath);
+                }
                 ResetForm();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
@@ -526,7 +544,7 @@ namespace AssetStudioGUI
 
             var vscrollwidth = SystemInformation.VerticalScrollBarWidth;
             var hasvscroll = (visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
-            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
+            columnHeaderName.Width = assetListView.Width - columnHeaderId.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
         }
 
         private void tabPage2_Resize(object sender, EventArgs e)
@@ -872,6 +890,10 @@ namespace AssetStudioGUI
         private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
             PreviewText(m_MonoBehaviour.Dump() ?? GetScriptString(m_MonoBehaviour.reader));
+        }
+        private string _PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
+        {
+            return m_MonoBehaviour.Dump() ?? GetScriptString(m_MonoBehaviour.reader);
         }
 
         private void PreviewFont(Font m_Font)
@@ -1708,7 +1730,9 @@ namespace AssetStudioGUI
             }
 
             FMODreset();
+        }
 
+        private void ReleaseScriptDumper() {
             if (scriptDumper != null)
             {
                 scriptDumper.Dispose();
@@ -1825,6 +1849,46 @@ namespace AssetStudioGUI
             else
             {
                 StatusStripUpdate("No Objects available for export");
+            }
+        }
+
+        private void sceneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            StatusStripUpdate("Dumping");
+            if (e.Node is GameObjectTreeNode treeNode) {
+                var text = "";
+                if (treeNode.gameObject != null && treeNode.gameObject.m_Components != null) {
+                    foreach (var i in treeNode.gameObject.m_Components)
+                    {
+                        if (i.TryGet<Object>(out var obj))
+                        {
+                            if (obj is MonoBehaviour behaviour)
+                            {
+                                text += $"FileId:{i.m_FileID} PathId:{i.m_PathID}\r\n";
+                                text += _PreviewMonoBehaviour(behaviour);   
+                            }
+                            else {
+                                text += $"Object Get {i.m_FileID}:{i.m_PathID} {obj.type}";
+                            }
+                        }
+                        else
+                        {
+                            text += $"Failed To Get {i.m_FileID}:{i.m_PathID}";
+                        }
+                        text += "\r\n\r\n";
+                    }
+                    StatusStripUpdate("View Done");
+                }
+                PreviewText(text);
+            }
+        }
+
+        private void textPreviewBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.A) {
+                if (sender != null) {
+                    ((TextBox)sender).SelectAll();
+                }
             }
         }
 
