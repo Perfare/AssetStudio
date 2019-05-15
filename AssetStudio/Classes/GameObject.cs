@@ -16,6 +16,9 @@ namespace AssetStudio
         public SkinnedMeshRenderer m_SkinnedMeshRenderer;
         public Animator m_Animator;
         public Animation m_Animation;
+        public UInt16 m_Tag;
+        public Int32 m_Layer;
+        public bool active;
 
         public GameObject(ObjectReader reader) : base(reader)
         {
@@ -30,8 +33,10 @@ namespace AssetStudio
                 m_Components[i] = new PPtr<Component>(reader);
             }
 
-            var m_Layer = reader.ReadInt32();
+            m_Layer = reader.ReadInt32();
             m_Name = reader.ReadAlignedString();
+            m_Tag = reader.ReadUInt16();
+            active = reader.ReadBoolean();
         }
     }
 }

@@ -156,5 +156,11 @@ namespace AssetStudio
         {
             return ReadArray(reader.ReadMatrix, reader.ReadInt32());
         }
+
+        public static Rect ReadRect(this BinaryReader reader)
+        {
+            var data = ReadRectangleF(reader);
+            return new Rect(data.X, data.Y, data.Width, data.Height);
+        }
     }
 }

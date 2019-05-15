@@ -90,6 +90,12 @@ namespace AssetStudio
             sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_GameObject.m_PathID}");
             sb.AppendLine($"UInt8 m_Enabled = {m_MonoBehaviour.m_Enabled}");
             sb.AppendLine("PPtr<MonoScript> m_Script");
+            if (m_MonoBehaviour.m_Script.TryGet(out var script))
+            {
+                sb.AppendLine($"##\t FileName = {script.m_AssemblyName}");
+                sb.AppendLine(string.Format("##\t Where = {0} - {1}", string.IsNullOrEmpty(script.m_Namespace) ? "NoneNamespace" : script.m_Namespace, script.m_ClassName));
+                sb.AppendLine($"##\t Name = {script.m_Name}");
+            }
             sb.AppendLine($"\tint m_FileID = {m_MonoBehaviour.m_Script.m_FileID}");
             sb.AppendLine($"\tint64 m_PathID = {m_MonoBehaviour.m_Script.m_PathID}");
             sb.AppendLine($"string m_Name = \"{m_MonoBehaviour.m_Name}\"");

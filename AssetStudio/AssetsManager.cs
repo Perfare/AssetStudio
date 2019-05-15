@@ -212,8 +212,9 @@ namespace AssetStudio
         {
             foreach (var assetsFile in assetsFileList)
             {
-                assetsFile.Objects.Clear();
-                assetsFile.reader.Close();
+
+                assetsFile?.Objects?.Clear();
+                assetsFile?.reader?.Close();
             }
             assetsFileList.Clear();
 

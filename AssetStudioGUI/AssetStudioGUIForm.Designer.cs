@@ -30,6 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AssetStudioGUIForm));
+            this.sceneTreeView = new System.Windows.Forms.TreeView();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,10 +64,11 @@
             this.dontBuildHierarchyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scriptDumperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.unloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.sceneTreeView = new AssetStudioGUI.GOHierarchy();
             this.treeSearch = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.assetListView = new System.Windows.Forms.ListView();
@@ -110,6 +112,7 @@
             this.exportobjectswithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jumpToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.monoBehaviourToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -149,7 +152,9 @@
             this.modelToolStripMenuItem,
             this.exportToolStripMenuItem,
             this.filterTypeToolStripMenuItem,
-            this.debugMenuItem});
+            this.debugMenuItem,
+            this.scriptDumperToolStripMenuItem,
+            this.monoBehaviourToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1264, 25);
@@ -377,7 +382,7 @@
             this.allToolStripMenuItem.CheckOnClick = true;
             this.allToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.allToolStripMenuItem.Name = "allToolStripMenuItem";
-            this.allToolStripMenuItem.Size = new System.Drawing.Size(90, 22);
+            this.allToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.allToolStripMenuItem.Text = "All";
             this.allToolStripMenuItem.Click += new System.EventHandler(this.typeToolStripMenuItem_Click);
             // 
@@ -427,6 +432,21 @@
             this.exportClassStructuresMenuItem.Size = new System.Drawing.Size(224, 22);
             this.exportClassStructuresMenuItem.Text = "Export class structures";
             this.exportClassStructuresMenuItem.Click += new System.EventHandler(this.exportClassStructuresMenuItem_Click);
+            // 
+            // scriptDumperToolStripMenuItem
+            // 
+            this.scriptDumperToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.unloadToolStripMenuItem});
+            this.scriptDumperToolStripMenuItem.Name = "scriptDumperToolStripMenuItem";
+            this.scriptDumperToolStripMenuItem.Size = new System.Drawing.Size(100, 21);
+            this.scriptDumperToolStripMenuItem.Text = "ScriptDumper";
+            // 
+            // unloadToolStripMenuItem
+            // 
+            this.unloadToolStripMenuItem.Name = "unloadToolStripMenuItem";
+            this.unloadToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.unloadToolStripMenuItem.Text = "Unload";
+            this.unloadToolStripMenuItem.Click += new System.EventHandler(this.unloadToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -921,6 +941,12 @@
             this.showOriginalFileToolStripMenuItem.Visible = false;
             this.showOriginalFileToolStripMenuItem.Click += new System.EventHandler(this.showOriginalFileToolStripMenuItem_Click);
             // 
+            // monoBehaviourToolStripMenuItem
+            // 
+            this.monoBehaviourToolStripMenuItem.Name = "monoBehaviourToolStripMenuItem";
+            this.monoBehaviourToolStripMenuItem.Size = new System.Drawing.Size(113, 21);
+            this.monoBehaviourToolStripMenuItem.Text = "MonoBehaviour";
+            // 
             // AssetStudioGUIForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1019,7 +1045,7 @@
         private System.Windows.Forms.ToolStripComboBox assetGroupOptions;
         private System.Windows.Forms.ToolStripMenuItem openAfterExport;
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
-        private GOHierarchy sceneTreeView;
+        private System.Windows.Forms.TreeView sceneTreeView;
         private System.Windows.Forms.ToolStripMenuItem debugMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildClassStructuresMenuItem;
         private System.Windows.Forms.ToolStripMenuItem dontLoadAssetsMenuItem;
@@ -1048,6 +1074,9 @@
         private System.Windows.Forms.ToolStripMenuItem exportAllObjectssplitToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem jumpToSceneHierarchyToolStripMenuItem;
         private System.Windows.Forms.ColumnHeader columnHeaderId;
+        private System.Windows.Forms.ToolStripMenuItem scriptDumperToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem unloadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem monoBehaviourToolStripMenuItem;
     }
 }
 

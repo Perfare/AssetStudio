@@ -231,6 +231,32 @@ namespace AssetStudioGUI
                     typeItem.Click += typeToolStripMenuItem_Click;
                     filterTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
+                var monoTypes = exportableAssets.Where(x => x.Type == ClassIDType.MonoBehaviour)
+                .Select(x => (MonoBehaviour)x.Asset)
+                .Select(x =>
+                {
+                    if (x.m_Script.TryGet(out var script))
+                    {
+                        return $"{script.m_Namespace} - {script.m_ClassName}";
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }).Distinct().Where(x => x != null).OrderBy(x => x.ToString()).ToArray();
+
+                foreach (var type in monoTypes) {
+                    var typeItem = new ToolStripMenuItem
+                    {
+                        CheckOnClick = true,
+                        Name = type.ToString(),
+                        Size = new Size(180, 22),
+                        Text = type.ToString()
+                    };
+                    //typeItem.Click += typeToolStripMenuItem_Click;
+                    monoBehaviourToolStripMenuItem.DropDownItems.Add(typeItem);
+                }
+
                 allToolStripMenuItem.Checked = true;
                 StatusStripUpdate($"Finished loading {assetsManager.assetsFileList.Count} files with {assetListView.Items.Count} exportable assets.");
                 treeSearch.Select();
@@ -889,7 +915,7 @@ namespace AssetStudioGUI
 
         private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
-            PreviewText(m_MonoBehaviour.Dump() ?? GetScriptString(m_MonoBehaviour.reader));
+            PreviewText(_PreviewMonoBehaviour(m_MonoBehaviour));
         }
         private string _PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
@@ -1729,6 +1755,11 @@ namespace AssetStudioGUI
                 filterTypeToolStripMenuItem.DropDownItems.RemoveAt(1);
             }
 
+            for (var i = 1; i < monoBehaviourToolStripMenuItem.DropDownItems.Count; i++)
+            {
+                monoBehaviourToolStripMenuItem.DropDownItems.RemoveAt(1);
+            }
+
             FMODreset();
         }
 
@@ -1852,23 +1883,48 @@ namespace AssetStudioGUI
             }
         }
 
+        private string _PreviewTransform(Transform transform) {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine($"Position x: {transform.m_LocalPosition.X} y: {transform.m_LocalPosition.Y} z: {transform.m_LocalPosition.Z}");
+            builder.AppendLine($"Rotation x: {transform.m_LocalRotation.X} y: {transform.m_LocalRotation.Y} z: {transform.m_LocalRotation.Z} w: {transform.m_LocalRotation.W}");
+            builder.AppendLine($"Scale x: {transform.m_LocalScale.X} y: {transform.m_LocalScale.Y} z: {transform.m_LocalScale.Z}");
+
+            if (transform is RectTransform rectTransform) {
+                builder.AppendLine($"AnchorMin x: {rectTransform.anchorMin.X} y: {rectTransform.anchorMin.Y}");
+                builder.AppendLine($"AnchorMax x: {rectTransform.anchorMax.X} y: {rectTransform.anchorMax.Y}");
+                builder.AppendLine($"AnchorPosition x: {rectTransform.anchoredPosition.X} y: {rectTransform.anchoredPosition.Y}");
+                builder.AppendLine($"SizeDelta width: {rectTransform.sizeDelta.X} height: {rectTransform.sizeDelta.Y}");
+                builder.AppendLine($"Pivot x: {rectTransform.pivot.X} y: {rectTransform.pivot.Y}");
+            }
+
+            return builder.ToString();
+        }
+
+        private string _PreviewGameObject(GameObject gameObject) {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine($"### GameObject Name: {gameObject.m_Name} PathId: {gameObject.m_PathID}");
+            builder.AppendLine($"m_Layer: {gameObject.m_Layer} m_Tag: {gameObject.m_Tag} active: {gameObject.active}");
+            builder.AppendLine("");
+            return builder.ToString();
+        }
+
         private void sceneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            StatusStripUpdate("Dumping");
             if (e.Node is GameObjectTreeNode treeNode) {
-                var text = "";
                 if (treeNode.gameObject != null && treeNode.gameObject.m_Components != null) {
+                    StatusStripUpdate("Dumping");
+                    var text = "";
+                    text += _PreviewGameObject(treeNode.gameObject);
                     foreach (var i in treeNode.gameObject.m_Components)
                     {
                         if (i.TryGet<Object>(out var obj))
                         {
+                            text += $"### FileName: {obj.assetsFile.fileName} PathId: {obj.m_PathID} {obj.type}\r\n";
                             if (obj is MonoBehaviour behaviour)
                             {
-                                text += $"FileId:{i.m_FileID} PathId:{i.m_PathID}\r\n";
-                                text += _PreviewMonoBehaviour(behaviour);   
-                            }
-                            else {
-                                text += $"Object Get {i.m_FileID}:{i.m_PathID} {obj.type}";
+                                text += _PreviewMonoBehaviour(behaviour);
+                            } else if (obj is Transform transform) {
+                                text += _PreviewTransform(transform);
                             }
                         }
                         else
@@ -1878,8 +1934,8 @@ namespace AssetStudioGUI
                         text += "\r\n\r\n";
                     }
                     StatusStripUpdate("View Done");
+                    PreviewText(text);
                 }
-                PreviewText(text);
             }
         }
 
@@ -1889,6 +1945,14 @@ namespace AssetStudioGUI
                 if (sender != null) {
                     ((TextBox)sender).SelectAll();
                 }
+            }
+        }
+
+        private void unloadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (scriptDumper != null) {
+                scriptDumper.Dispose();
+                scriptDumper = null;
             }
         }
 
