@@ -220,7 +220,11 @@ namespace AssetStudioGUI
                                 item.Extension = extension;
                             }
 
-                            item.Text = Path.GetDirectoryName(originalPath) + "\\" + item.Text;
+                            item.Text = Path.GetDirectoryName(originalPath) + "\\" + Path.GetFileNameWithoutExtension(originalPath);
+                            if (!assetsNameHash.Add((item.TypeString + item.Text).ToUpper()))
+                            {
+                                item.Text += item.UniqueID;
+                            }
                         }
                     }
                 }
