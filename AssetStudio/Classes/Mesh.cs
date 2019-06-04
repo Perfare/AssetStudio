@@ -178,7 +178,7 @@ namespace AssetStudio
             reader.AlignStream();
         }
 
-        public void GetStreams()
+        private void GetStreams()
         {
             var streamCount = m_Channels.Max(x => x.stream) + 1;
             m_Streams = new StreamInfo[streamCount];
@@ -256,6 +256,31 @@ namespace AssetStudio
                         offset += (byte)(m_Channel.dimension * MeshHelper.GetChannelFormatSize(m_Channel.format));
                     }
                 }
+            }
+        }
+
+        public void FixChannel()
+        {
+            if (m_Channels.FirstOrDefault(x => x.dimension > 4) != null)
+            {
+                var fixStream = m_Channels.Max(x => x.stream);
+                var fixChannels = m_Channels.Where(x => x.stream == fixStream).ToArray();
+                var stride = 0;
+                for (int i = 1, l = fixChannels.Length; i < l; i++)
+                {
+                    var curChannel = fixChannels[i];
+                    var preChannel = fixChannels[i - 1];
+                    var offset = curChannel.offset - preChannel.offset;
+                    preChannel.dimension = (byte)(offset / MeshHelper.GetChannelFormatSize(preChannel.format));
+                    stride += offset;
+                }
+                //Fix Last
+                var m_Channel = fixChannels.Last();
+                var streamSize = m_DataSize.Length - m_Streams[fixStream].offset;
+                var totalStride = streamSize / m_VertexCount;
+                var channelStride = totalStride - stride;
+                m_Channel.dimension = (byte)(channelStride / MeshHelper.GetChannelFormatSize(m_Channel.format));
+                GetStreams();
             }
         }
     }
@@ -662,22 +687,10 @@ namespace AssetStudio
 
         private void ProcessData()
         {
-            //Fix normal channel in 2018.3 and up
+            //Fix channel after 2018.3
             if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3))
             {
-                if (m_VertexData.m_Channels[1].dimension > 4)
-                {
-                    for (int i = 2; i < m_VertexData.m_Channels.Length; i++)
-                    {
-                        if (m_VertexData.m_Channels[i].dimension > 0)
-                        {
-                            var offset = m_VertexData.m_Channels[i].offset - m_VertexData.m_Channels[1].offset;
-                            m_VertexData.m_Channels[1].dimension = (byte)(offset / MeshHelper.GetChannelFormatSize(m_VertexData.m_Channels[1].format));
-                            m_VertexData.GetStreams();
-                            break;
-                        }
-                    }
-                }
+                m_VertexData.FixChannel();
             }
             if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
