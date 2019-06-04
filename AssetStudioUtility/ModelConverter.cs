@@ -380,7 +380,7 @@ namespace AssetStudio
                         }
                     }
                 }
-                if (iMesh.BoneList?.Count == 0)
+                if (iMesh.BoneList == null || iMesh.BoneList.Count == 0)
                 {
                     if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
                     {
