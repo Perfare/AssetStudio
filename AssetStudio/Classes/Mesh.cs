@@ -264,7 +264,7 @@ namespace AssetStudio
             if (m_Channels.FirstOrDefault(x => x.dimension > 4) != null)
             {
                 var fixStream = m_Channels.Max(x => x.stream);
-                var fixChannels = m_Channels.Where(x => x.stream == fixStream).ToArray();
+                var fixChannels = m_Channels.Where(x => x.dimension > 0 && x.stream == fixStream).ToArray();
                 var stride = 0;
                 for (int i = 1, l = fixChannels.Length; i < l; i++)
                 {
@@ -687,11 +687,6 @@ namespace AssetStudio
 
         private void ProcessData()
         {
-            //Fix channel after 2018.3
-            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3))
-            {
-                m_VertexData.FixChannel();
-            }
             if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
                 if (m_VertexData.m_VertexCount > 0)
@@ -700,7 +695,11 @@ namespace AssetStudio
                     m_VertexData.m_DataSize = resourceReader.GetData();
                 }
             }
-
+            //Fix channel after 2018.3
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3))
+            {
+                m_VertexData.FixChannel();
+            }
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 5)) //3.5 and up
             {
                 ReadVertexData();
