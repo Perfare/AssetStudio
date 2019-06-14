@@ -15,7 +15,7 @@ namespace AssetStudio
         private HashSet<string> importFilesHash = new HashSet<string>();
         private HashSet<string> assetsFileListHash = new HashSet<string>();
 
-        public void LoadFiles(string[] files)
+        public void LoadFiles(params string[] files)
         {
             var path = Path.GetDirectoryName(files[0]);
             MergeSplitAssets(path);
