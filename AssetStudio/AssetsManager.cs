@@ -184,16 +184,16 @@ namespace AssetStudio
                 foreach (var file in webFile.fileList)
                 {
                     var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
-                    switch (CheckFileType(file.stream, out reader))
+                    switch (CheckFileType(file.stream, out var fileReader))
                     {
                         case FileType.AssetsFile:
-                            LoadAssetsFromMemory(dummyPath, reader, fullName);
+                            LoadAssetsFromMemory(dummyPath, fileReader, fullName);
                             break;
                         case FileType.BundleFile:
-                            LoadBundleFile(dummyPath, reader, fullName);
+                            LoadBundleFile(dummyPath, fileReader, fullName);
                             break;
                         case FileType.WebFile:
-                            LoadWebFile(dummyPath, reader);
+                            LoadWebFile(dummyPath, fileReader);
                             break;
                     }
                 }
