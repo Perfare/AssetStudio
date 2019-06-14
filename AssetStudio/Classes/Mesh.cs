@@ -115,7 +115,7 @@ namespace AssetStudio
             stream = reader.ReadByte();
             offset = reader.ReadByte();
             format = reader.ReadByte();
-            dimension = reader.ReadByte();
+            dimension = (byte)(reader.ReadByte() & 0xF);
         }
     }
 
@@ -256,31 +256,6 @@ namespace AssetStudio
                         offset += (byte)(m_Channel.dimension * MeshHelper.GetChannelFormatSize(m_Channel.format));
                     }
                 }
-            }
-        }
-
-        public void FixChannel()
-        {
-            if (m_Channels.FirstOrDefault(x => x.dimension > 4) != null)
-            {
-                var fixStream = m_Channels.Max(x => x.stream);
-                var fixChannels = m_Channels.Where(x => x.dimension > 0 && x.stream == fixStream).ToArray();
-                var stride = 0;
-                for (int i = 1, l = fixChannels.Length; i < l; i++)
-                {
-                    var curChannel = fixChannels[i];
-                    var preChannel = fixChannels[i - 1];
-                    var offset = curChannel.offset - preChannel.offset;
-                    preChannel.dimension = (byte)(offset / MeshHelper.GetChannelFormatSize(preChannel.format));
-                    stride += offset;
-                }
-                //Fix Last
-                var m_Channel = fixChannels.Last();
-                var streamSize = m_DataSize.Length - m_Streams[fixStream].offset;
-                var totalStride = streamSize / m_VertexCount;
-                var channelStride = totalStride - stride;
-                m_Channel.dimension = (byte)(channelStride / MeshHelper.GetChannelFormatSize(m_Channel.format));
-                GetStreams();
             }
         }
     }
@@ -694,11 +669,6 @@ namespace AssetStudio
                     var resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
                     m_VertexData.m_DataSize = resourceReader.GetData();
                 }
-            }
-            //Fix channel after 2018.3
-            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3))
-            {
-                m_VertexData.FixChannel();
             }
             if (version[0] > 3 || (version[0] == 3 && version[1] >= 5)) //3.5 and up
             {

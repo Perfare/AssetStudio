@@ -832,6 +832,33 @@ namespace AssetStudio
         }
     }
 
+    public class AnimationEvent
+    {
+        public float time;
+        public string functionName;
+        public string data;
+        public PPtr<Object> objectReferenceParameter;
+        public float floatParameter;
+        public int intParameter;
+        public int messageOptions;
+
+        public AnimationEvent(ObjectReader reader)
+        {
+            var version = reader.version;
+
+            time = reader.ReadSingle();
+            functionName = reader.ReadAlignedString();
+            data = reader.ReadAlignedString();
+            objectReferenceParameter = new PPtr<Object>(reader);
+            floatParameter = reader.ReadSingle();
+            if (version[0] >= 3) //3 and up
+            {
+                intParameter = reader.ReadInt32();
+            }
+            messageOptions = reader.ReadInt32();
+        }
+    }
+
     public enum AnimationType
     {
         kLegacy = 1,
@@ -858,7 +885,7 @@ namespace AssetStudio
         public uint m_MuscleClipSize;
         public ClipMuscleConstant m_MuscleClip;
         public AnimationClipBindingConstant m_ClipBindingConstant;
-        //public AnimationEvent[] m_Events;
+        public AnimationEvent[] m_Events;
 
 
         public AnimationClip(ObjectReader reader) : base(reader)
@@ -953,14 +980,22 @@ namespace AssetStudio
             {
                 m_ClipBindingConstant = new AnimationClipBindingConstant(reader);
             }
-            //m_HasGenericRootTransform 2018.3
-            //m_HasMotionFloatCurves 2018.3
-            /*int numEvents = reader.ReadInt32();
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 3)) //2018.3 and up
+            {
+                var m_HasGenericRootTransform = reader.ReadBoolean();
+                var m_HasMotionFloatCurves = reader.ReadBoolean();
+                reader.AlignStream();
+            }
+            int numEvents = reader.ReadInt32();
             m_Events = new AnimationEvent[numEvents];
             for (int i = 0; i < numEvents; i++)
             {
                 m_Events[i] = new AnimationEvent(reader);
-            }*/
+            }
+            if (version[0] >= 2017) //2017 and up
+            {
+                reader.AlignStream();
+            }
         }
     }
 }
