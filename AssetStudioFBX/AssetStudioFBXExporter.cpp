@@ -12,9 +12,8 @@ namespace AssetStudio
 		}
 		String^ currentDir = Directory::GetCurrentDirectory();
 		Directory::SetCurrentDirectory(dir->FullName);
-		path = Path::GetFileName(path);
-
-		Exporter^ exporter = gcnew Exporter(path, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii);
+		auto name = Path::GetFileName(path);
+		Exporter^ exporter = gcnew Exporter(name, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii);
 		//TODO exporter->ExportMorphs(false, flatInbetween);
 		exporter->ExportAnimations(eulerFilter, filterPrecision, flatInbetween);
 		exporter->pExporter->Export(exporter->pScene);
@@ -23,7 +22,7 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
+	Fbx::Exporter::Exporter(String^ name, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -51,7 +50,7 @@ namespace AssetStudio
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
 		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
 
-		cDest = StringToCharArray(path);
+		cDest = StringToUTF8(name);
 		pExporter = FbxExporter::Create(pScene, "");
 
 		int pFileFormat = 0;
@@ -155,7 +154,7 @@ namespace AssetStudio
 		}
 		if (cDest != NULL)
 		{
-			Marshal::FreeHGlobal((IntPtr)cDest);
+			delete cDest;
 		}
 	}
 
@@ -387,7 +386,7 @@ namespace AssetStudio
 					char* pMatName = NULL;
 					try
 					{
-						pMatName = StringToCharArray(mat->Name);
+						pMatName = StringToUTF8(mat->Name);
 						int foundMat = -1;
 						for (int j = 0; j < pMaterials->GetCount(); j++)
 						{
@@ -467,7 +466,7 @@ namespace AssetStudio
 					}
 					finally
 					{
-						Marshal::FreeHGlobal((IntPtr)pMatName);
+						delete pMatName;
 					}
 				}
 
@@ -579,7 +578,7 @@ namespace AssetStudio
 			char* pTexName = NULL;
 			try
 			{
-				pTexName = StringToCharArray(matTexName);
+				pTexName = StringToUTF8(matTexName);
 				int foundTex = -1;
 				for (int i = 0; i < pTextures->GetCount(); i++)
 				{
@@ -608,17 +607,7 @@ namespace AssetStudio
 					pTex->SetRotation(0.0, 0.0);
 					pTextures->Add(pTex);
 
-					String^ path = Path::GetDirectoryName(gcnew String(pExporter->GetFileName().Buffer()));
-					if (path == String::Empty)
-					{
-						path = ".";
-					}
-					FileInfo^ file = gcnew FileInfo(path + Path::DirectorySeparatorChar + Path::GetFileName(matTex->Name));
-					DirectoryInfo^ dir = file->Directory;
-					if (!dir->Exists)
-					{
-						dir->Create();
-					}
+					FileInfo^ file = gcnew FileInfo(matTex->Name);
 					BinaryWriter^ writer = gcnew BinaryWriter(file->Create());
 					writer->Write(matTex->Data);
 					writer->Close();
@@ -626,7 +615,7 @@ namespace AssetStudio
 			}
 			finally
 			{
-				Marshal::FreeHGlobal((IntPtr)pTexName);
+				delete pTexName;
 			}
 		}
 

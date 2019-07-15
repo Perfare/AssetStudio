@@ -2,9 +2,14 @@
 
 namespace AssetStudio
 {
-	char* Fbx::StringToCharArray(String^ s)
+	char* Fbx::StringToUTF8(String^ s)
 	{
-		return (char*)(void*)Marshal::StringToHGlobalAnsi(s);
+		auto bytes = Text::Encoding::UTF8->GetBytes(s);
+		auto chars = new char[bytes->Length + 1];
+		pin_ptr<unsigned char> ptr = &bytes[0];
+		memcpy(chars, ptr, bytes->Length);
+		chars[bytes->Length] = '\0';
+		return chars;
 	}
 
 	void Fbx::Init(FbxManager** pSdkManager, FbxScene** pScene)

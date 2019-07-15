@@ -10,19 +10,18 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::IO;
-using namespace System::Runtime::InteropServices;
 
 #define WITH_MARSHALLED_STRING(name,str,block)\
 	{ \
 		char* name; \
 		try \
 		{ \
-			name = StringToCharArray(str); \
+			name = StringToUTF8(str); \
 			block \
 		} \
 		finally \
 		{ \
-			Marshal::FreeHGlobal((IntPtr)name); \
+			delete name; \
 		} \
 	}
 
@@ -43,13 +42,13 @@ namespace AssetStudio {
 	public:
 		static Vector3 QuaternionToEuler(Quaternion q);
 		static Quaternion EulerToQuaternion(Vector3 v);
-		static char* StringToCharArray(String^ s);
+		static char* StringToUTF8(String^ s);
 		static void Init(FbxManager** pSdkManager, FbxScene** pScene);
 
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, bool flatInbetween, int versionIndex, bool isAscii);
+			static void Export(String^ name, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, bool flatInbetween, int versionIndex, bool isAscii);
 
 		private:
 			bool exportSkins;
