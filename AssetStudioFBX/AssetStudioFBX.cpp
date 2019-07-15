@@ -1,5 +1,3 @@
-#include <fbxsdk.h>
-#include <fbxsdk/fileio/fbxiosettings.h>
 #include "AssetStudioFBX.h"
 
 namespace AssetStudio

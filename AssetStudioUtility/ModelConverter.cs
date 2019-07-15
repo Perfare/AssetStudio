@@ -507,34 +507,15 @@ namespace AssetStudio
         {
             if (transformDictionary.TryGetValue(transform, out var frame))
             {
-                return GetFramePath(frame);
+                return frame.Path;
             }
             return null;
-        }
-
-        private static string GetFramePath(ImportedFrame frame)
-        {
-            var path = frame.Name;
-            while (frame.Parent != null)
-            {
-                frame = frame.Parent;
-                path = frame.Name + "/" + path;
-            }
-            return path;
         }
 
         private string FixBonePath(string path)
         {
-            var name = path.Substring(path.LastIndexOf('/') + 1);
-            foreach (var frame in RootFrame.FindChilds(name))
-            {
-                var fullPath = GetFramePath(frame);
-                if (fullPath.EndsWith(path))
-                {
-                    return fullPath;
-                }
-            }
-            return null;
+            var frame = RootFrame.FindFrameByPath(path);
+            return frame?.Path;
         }
 
         private static string GetTransformPathByFather(Transform transform)
@@ -962,6 +943,8 @@ namespace AssetStudio
                     transformName = strs.Last();
                     var parentFrameName = strs[strs.Length - 2];
                     parentFrame = RootFrame.FindChild(parentFrameName);
+                    //var parentFramePath = path.Substring(0, path.LastIndexOf('/'));
+                    //parentFrame = RootFrame.FindFrameByPath(parentFramePath);
                 }
 
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
