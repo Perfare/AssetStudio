@@ -49,10 +49,14 @@ namespace AssetStudio
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
 		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
-		auto ani = imported->AnimationList[0];
-		if (ani->SampleRate == 60.0f)
+
+		if (imported->AnimationList->Count > 0)
 		{
-			globalSettings.SetTimeMode(FbxTime::eFrames60);
+			auto ani = imported->AnimationList[0];
+			if (ani->SampleRate == 60.0f)
+			{
+				globalSettings.SetTimeMode(FbxTime::eFrames60);
+			}
 		}
 
 		cDest = StringToUTF8(name);
