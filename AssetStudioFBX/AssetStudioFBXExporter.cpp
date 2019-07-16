@@ -49,6 +49,11 @@ namespace AssetStudio
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
 		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
+		auto ani = imported->AnimationList[0];
+		if (ani->SampleRate == 60.0f)
+		{
+			globalSettings.SetTimeMode(FbxTime::eFrames60);
+		}
 
 		cDest = StringToUTF8(name);
 		pExporter = FbxExporter::Create(pScene, "");

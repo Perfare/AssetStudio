@@ -673,6 +673,7 @@ namespace AssetStudio
                     }
                 }
                 iAnim.Name = name;
+                iAnim.SampleRate = animationClip.m_SampleRate;
                 iAnim.TrackList = new List<ImportedAnimationKeyframedTrack>();
                 AnimationList.Add(iAnim);
                 if (animationClip.m_Legacy)
