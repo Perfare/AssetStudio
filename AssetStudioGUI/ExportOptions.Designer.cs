@@ -44,7 +44,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.fbxVersion = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.flatInbetween = new System.Windows.Forms.CheckBox();
             this.boneSize = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.skins = new System.Windows.Forms.CheckBox();
@@ -63,7 +62,7 @@
             // 
             // OKbutton
             // 
-            this.OKbutton.Location = new System.Drawing.Point(321, 267);
+            this.OKbutton.Location = new System.Drawing.Point(321, 244);
             this.OKbutton.Name = "OKbutton";
             this.OKbutton.Size = new System.Drawing.Size(75, 21);
             this.OKbutton.TabIndex = 6;
@@ -74,7 +73,7 @@
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(402, 267);
+            this.Cancel.Location = new System.Drawing.Point(402, 244);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 21);
             this.Cancel.TabIndex = 7;
@@ -170,7 +169,6 @@
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.fbxVersion);
             this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.flatInbetween);
             this.groupBox2.Controls.Add(this.boneSize);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.skins);
@@ -181,7 +179,7 @@
             this.groupBox2.Controls.Add(this.eulerFilter);
             this.groupBox2.Location = new System.Drawing.Point(12, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 276);
+            this.groupBox2.Size = new System.Drawing.Size(214, 255);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Fbx";
@@ -221,7 +219,7 @@
             this.fbxFormat.Items.AddRange(new object[] {
             "Binary",
             "Ascii"});
-            this.fbxFormat.Location = new System.Drawing.Point(75, 207);
+            this.fbxFormat.Location = new System.Drawing.Point(77, 186);
             this.fbxFormat.Name = "fbxFormat";
             this.fbxFormat.Size = new System.Drawing.Size(61, 20);
             this.fbxFormat.TabIndex = 18;
@@ -229,7 +227,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 210);
+            this.label4.Location = new System.Drawing.Point(6, 189);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(59, 12);
             this.label4.TabIndex = 17;
@@ -246,7 +244,7 @@
             "7.3",
             "7.4",
             "7.5"});
-            this.fbxVersion.Location = new System.Drawing.Point(75, 236);
+            this.fbxVersion.Location = new System.Drawing.Point(77, 215);
             this.fbxVersion.Name = "fbxVersion";
             this.fbxVersion.Size = new System.Drawing.Size(47, 20);
             this.fbxVersion.TabIndex = 16;
@@ -254,21 +252,11 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(4, 239);
+            this.label3.Location = new System.Drawing.Point(6, 218);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 12);
             this.label3.TabIndex = 15;
             this.label3.Text = "FBXVersion";
-            // 
-            // flatInbetween
-            // 
-            this.flatInbetween.AutoSize = true;
-            this.flatInbetween.Location = new System.Drawing.Point(6, 182);
-            this.flatInbetween.Name = "flatInbetween";
-            this.flatInbetween.Size = new System.Drawing.Size(102, 16);
-            this.flatInbetween.TabIndex = 12;
-            this.flatInbetween.Text = "FlatInbetween";
-            this.flatInbetween.UseVisualStyleBackColor = true;
             // 
             // boneSize
             // 
@@ -345,6 +333,8 @@
             // allFrames
             // 
             this.allFrames.AutoSize = true;
+            this.allFrames.Checked = true;
+            this.allFrames.CheckState = System.Windows.Forms.CheckState.Checked;
             this.allFrames.Location = new System.Drawing.Point(6, 61);
             this.allFrames.Name = "allFrames";
             this.allFrames.Size = new System.Drawing.Size(78, 16);
@@ -370,7 +360,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(490, 301);
+            this.ClientSize = new System.Drawing.Size(490, 277);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.Cancel);
@@ -408,7 +398,6 @@
         private System.Windows.Forms.CheckBox convertAudio;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.CheckBox flatInbetween;
         private System.Windows.Forms.NumericUpDown boneSize;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox skins;

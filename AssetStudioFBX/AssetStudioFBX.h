@@ -48,7 +48,7 @@ namespace AssetStudio {
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ name, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, bool flatInbetween, int versionIndex, bool isAscii);
+			static void Export(String^ name, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
 
 		private:
 			bool exportSkins;
@@ -77,9 +77,9 @@ namespace AssetStudio {
 			void ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame);
 			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList);
 			FbxFileTexture* ExportTexture(ImportedTexture^ matTex);
-			void ExportAnimations(bool eulerFilter, float filterValue, bool flatInbetween);
-			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision, bool flatInbetween);
-			void ExportMorphs(bool morphMask, bool flatInbetween);
+			void ExportAnimations(bool eulerFilter, float filterValue);
+			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision);
+			void ExportMorphs();
 		};
 	};
 }

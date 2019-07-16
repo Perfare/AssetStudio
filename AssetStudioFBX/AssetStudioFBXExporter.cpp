@@ -2,7 +2,7 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, bool flatInbetween, int versionIndex, bool isAscii)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -14,8 +14,8 @@ namespace AssetStudio
 		Directory::SetCurrentDirectory(dir->FullName);
 		auto name = Path::GetFileName(path);
 		Exporter^ exporter = gcnew Exporter(name, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii);
-		//TODO exporter->ExportMorphs(false, flatInbetween);
-		exporter->ExportAnimations(eulerFilter, filterPrecision, flatInbetween);
+		exporter->ExportMorphs();
+		exporter->ExportAnimations(eulerFilter, filterPrecision);
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
 
@@ -629,7 +629,7 @@ namespace AssetStudio
 		prop.ConnectSrcObject(pTexture);
 	}
 
-	void Fbx::Exporter::ExportAnimations(bool eulerFilter, float filterPrecision, bool flatInbetween)
+	void Fbx::Exporter::ExportAnimations(bool eulerFilter, float filterPrecision)
 	{
 		auto importedAnimationList = imported->AnimationList;
 		if (importedAnimationList == nullptr)
@@ -656,11 +656,11 @@ namespace AssetStudio
 			{
 				kTakeName = FbxString("Take") + FbxString(i);
 			}
-			ExportKeyframedAnimation(importedAnimation, kTakeName, lFilter, filterPrecision, flatInbetween);
+			ExportKeyframedAnimation(importedAnimation, kTakeName, lFilter, filterPrecision);
 		}
 	}
 
-	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision, bool flatInbetween)
+	void Fbx::Exporter::ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision)
 	{
 		List<ImportedAnimationKeyframedTrack^>^ pAnimationList = parser->TrackList;
 
@@ -753,206 +753,60 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::ExportMorphs(bool morphMask, bool flatInbetween)
+	void Fbx::Exporter::ExportMorphs()
 	{
-		/*if (imported->MeshList == nullptr)
+		if (imported->MeshList == nullptr)
 		{
 			return;
 		}
-
-		for (int meshIdx = 0; meshIdx < imported->MeshList->Count; meshIdx++)
+		for each (ImportedMorph^ morph in imported->MorphList)
 		{
-			ImportedMesh^ meshList = imported->MeshList[meshIdx];
-			FbxNode* pBaseNode = NULL;
-			for (int nodeIdx = 0; nodeIdx < pMeshNodes->GetCount(); nodeIdx++)
+			auto frame = imported->RootFrame->FindFrameByPath(morph->Path);
+			if (frame != nullptr)
 			{
-				FbxNode* pMeshNode = pMeshNodes->GetAt(nodeIdx);
-				String^ framePath = gcnew String(pMeshNode->GetName());
-				FbxNode* rootNode = pMeshNode;
-				while ((rootNode = rootNode->GetParent()) != pScene->GetRootNode())
-				{
-					framePath = gcnew String(rootNode->GetName()) + "/" + framePath;
-				}
-				if (framePath == meshList->Path)
-				{
-					pBaseNode = pMeshNode;
-					break;
-				}
-			}
-			if (pBaseNode == NULL)
-			{
-				continue;
-			}
+				FbxNode* pNode = (FbxNode*)frameToNode[frame];
+				FbxMesh* pMesh = pNode->GetMesh();
 
-			for each (ImportedMorph^ morph in imported->MorphList)
-			{
-				if (morph->Path != meshList->Path)
-				{
-					continue;
-				}
+				FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, pNode->GetName());
+				pMesh->AddDeformer(lBlendShape);
 
-				int meshVertexIndex = 0;
-				for (int meshObjIdx = pBaseNode->GetChildCount() - meshList->SubmeshList->Count; meshObjIdx < meshList->SubmeshList->Count; meshObjIdx++)
+				for (int i = 0; i < morph->Channels->Count; i++)
 				{
-					List<ImportedVertex^>^ vertList = meshList->SubmeshList[meshObjIdx]->VertexList;
-					FbxNode* pBaseMeshNode = pBaseNode->GetChild(meshObjIdx);
-					FbxMesh* pBaseMesh = pBaseMeshNode->GetMesh();
-					int numColourSets = pBaseMesh->GetElementVertexColorCount();
+					auto channel = morph->Channels[i];
 
-					FbxBlendShape* lBlendShape;
+					FbxBlendShapeChannel* lBlendShapeChannel;
 					WITH_MARSHALLED_STRING
 					(
-						pShapeName,
-						morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty),
-						lBlendShape = FbxBlendShape::Create(pScene, pShapeName);
+						pChannelName,
+						channel->Name,
+						lBlendShapeChannel = FbxBlendShapeChannel::Create(pScene, pChannelName);
 					);
-					FbxProperty rootGroupProp = FbxProperty::Create(lBlendShape, FbxStringDT, "RootGroup");
-					pBaseMesh->AddDeformer(lBlendShape);
-					List<ImportedMorphKeyframe^>^ keyframes = morph->KeyframeList;
-					for (int i = 0; i < morph->Channels->Count; i++)
+					lBlendShape->AddBlendShapeChannel(lBlendShapeChannel);
+
+					for each(ImportedMorphKeyframe^ keyframe in channel->KeyframeList)
 					{
-						FbxBlendShapeChannel* lBlendShapeChannel;
-						if (!flatInbetween)
+						FbxShape* lShape = FbxShape::Create(pScene, "");
+						lBlendShapeChannel->AddTargetShape(lShape, keyframe->Weight);
+
+						auto vectorCount = pMesh->GetControlPointsCount();
+						FbxVector4* orilVector4 = pMesh->GetControlPoints();
+						lShape->InitControlPoints(vectorCount);
+						FbxVector4* lVector4 = lShape->GetControlPoints();
+
+						for (int j = 0; j < vectorCount; j++)
 						{
-							WITH_MARSHALLED_STRING
-							(
-								pChannelName,
-								gcnew String(lBlendShape->GetName()) + "." + keyframes[morph->Channels[i]->Item2]->Name->Substring(0, keyframes[morph->Channels[i]->Item2]->Name->LastIndexOf("_")),
-								lBlendShapeChannel = FbxBlendShapeChannel::Create(pScene, pChannelName);
-							);
-							lBlendShapeChannel->DeformPercent = morph->Channels[i]->Item1;
-							lBlendShape->AddBlendShapeChannel(lBlendShapeChannel);
+							auto vertex = orilVector4[j];
+							lVector4[j] = FbxVector4(vertex);
 						}
-
-						for (int frameIdx = 0; frameIdx < morph->Channels[i]->Item3; frameIdx++)
+						for (int j = 0; j < keyframe->VertexList->Count; j++)
 						{
-							int shapeIdx = morph->Channels[i]->Item2 + frameIdx;
-							ImportedMorphKeyframe^ keyframe = keyframes[shapeIdx];
-
-							FbxShape* pShape;
-							if (!flatInbetween)
-							{
-								char* pMorphShapeName;
-								try
-								{
-									pMorphShapeName = StringToCharArray(keyframe->Name);
-									if (pScene->FindMember<FbxShape>(pMorphShapeName))
-									{
-										Marshal::FreeHGlobal((IntPtr)pMorphShapeName);
-										pMorphShapeName = StringToCharArray(morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) + "__" + keyframe->Name);
-									}
-									pShape = FbxShape::Create(pScene, pMorphShapeName);
-								}
-								finally
-								{
-									Marshal::FreeHGlobal((IntPtr)pMorphShapeName);
-								}
-									if (frameIdx == morph->Channels[i]->Item3 - 1)
-									{
-										FbxProperty::Create(lBlendShape, FbxStringDT, rootGroupProp.GetName() + "|" + pShape->GetName());
-									}
-								lBlendShapeChannel->AddTargetShape(pShape, keyframe->Weight);
-							}
-							else
-							{
-								lBlendShapeChannel = FbxBlendShapeChannel::Create(pScene, "");
-								lBlendShapeChannel->DeformPercent = morph->Channels[i]->Item1;
-								lBlendShape->AddBlendShapeChannel(lBlendShapeChannel);
-
-								WITH_MARSHALLED_STRING
-								(
-									pMorphShapeName,
-									morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) + "." + keyframe->Name,
-									pShape = FbxShape::Create(pScene, pMorphShapeName);
-								);
-								lBlendShapeChannel->AddTargetShape(pShape, 100);
-
-								FbxProperty weightProp;
-								WITH_MARSHALLED_STRING
-								(
-									pWeightName,
-									gcnew String(pShape->GetName()) + ".Weight",
-									weightProp = FbxProperty::Create(pBaseMesh, FbxDoubleDT, pWeightName);
-								);
-								weightProp.ModifyFlag(FbxPropertyFlags::eUserDefined, true);
-								weightProp.Set<double>(keyframe->Weight);
-							}
-
-							pShape->InitControlPoints(vertList->Count);
-							FbxVector4* pControlPoints = pShape->GetControlPoints();
-
-							for (int j = 0; j < vertList->Count; j++)
-							{
-								ImportedVertex^ vertex = vertList[j];
-								Vector3 coords = vertex->Position;
-								pControlPoints[j] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
-							}
-							List<unsigned short>^ meshIndices = keyframe->MorphedVertexIndices;
-							for (int j = 0; j < meshIndices->Count; j++)
-							{
-								int controlPointIndex = meshIndices[j] - meshVertexIndex;
-								if (controlPointIndex >= 0 && controlPointIndex < vertList->Count)
-								{
-									Vector3 coords = keyframe->VertexList[j]->Position;
-									pControlPoints[controlPointIndex] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
-								}
-							}
-							if (flatInbetween && meshIndices->Count == 0)
-							{
-								Vector3 coords = vertList[0]->Position;
-								pControlPoints[0] = FbxVector4(coords.X - 1.0e-6, coords.Y, coords.Z, 0);
-							}
-
-							if (flatInbetween && frameIdx > 0)
-							{
-								int shapeIdx = morph->Channels[i]->Item2 + frameIdx - 1;
-								ImportedMorphKeyframe^ keyframe = keyframes[shapeIdx];
-
-								List<unsigned short>^ meshIndices = keyframe->MorphedVertexIndices;
-								for (int j = 0; j < meshIndices->Count; j++)
-								{
-									int controlPointIndex = meshIndices[j] - meshVertexIndex;
-									if (controlPointIndex >= 0 && controlPointIndex < vertList->Count)
-									{
-										Vector3 coords = keyframe->VertexList[j]->Position - vertList[controlPointIndex]->Position;
-										pControlPoints[controlPointIndex] -= FbxVector4(coords.X, coords.Y, coords.Z, 0);
-									}
-								}
-							}
-
-							if (morphMask && frameIdx == 0)
-							{
-								int colourSetIdx = numColourSets + shapeIdx;
-								FbxGeometryElementVertexColor* lGeometryElementVertexColor = pBaseMesh->GetElementVertexColor(colourSetIdx);
-								if (lGeometryElementVertexColor == NULL)
-								{
-									lGeometryElementVertexColor = pBaseMesh->CreateElementVertexColor();
-								}
-								lGeometryElementVertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
-								lGeometryElementVertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
-								WITH_MARSHALLED_STRING
-								(
-									pColourLayerName, morph->ClipName + (meshList->SubmeshList->Count > 1 ? "_" + meshObjIdx : String::Empty) + "." + keyframe->Name,
-									lGeometryElementVertexColor->SetName(pColourLayerName);
-								);
-								for (int j = 0; j < vertList->Count; j++)
-								{
-									lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(1, 1, 1));
-								}
-								for (int j = 0; j < meshIndices->Count; j++)
-								{
-									int controlPointIndex = meshIndices[j] - meshVertexIndex;
-									if (controlPointIndex >= 0 && controlPointIndex < vertList->Count)
-									{
-										lGeometryElementVertexColor->GetDirectArray().SetAt(controlPointIndex, FbxColor(0, 0, 1));
-									}
-								}
-							}
+							auto index = keyframe->VertexList[j]->Index;
+							auto coords = keyframe->VertexList[j]->Vertex->Position;
+							lVector4[index] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
 						}
 					}
-					meshVertexIndex += meshList->SubmeshList[meshObjIdx]->VertexList->Count;
 				}
 			}
-		}*/
+		}
 	}
 }

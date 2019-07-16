@@ -246,18 +246,27 @@ namespace AssetStudio
     public class ImportedMorph
     {
         public string Path { get; set; }
-        public string ClipName { get; set; }
-        public List<Tuple<float, int, int>> Channels { get; set; }
+        public List<ImportedMorphChannel> Channels { get; set; }
+    }
+
+    public class ImportedMorphChannel
+    {
+        public string Name { get; set; }
         public List<ImportedMorphKeyframe> KeyframeList { get; set; }
-        public List<ushort> MorphedVertexIndices { get; set; }
     }
 
     public class ImportedMorphKeyframe
     {
-        public string Name { get; set; }
-        public List<ImportedVertex> VertexList { get; set; }
-        public List<ushort> MorphedVertexIndices { get; set; }
+        public bool hasNormals { get; set; }
+        public bool hasTangents { get; set; }
         public float Weight { get; set; }
+        public List<ImportedMorphVertex> VertexList { get; set; }
+    }
+
+    public class ImportedMorphVertex
+    {
+        public uint Index { get; set; }
+        public ImportedVertex Vertex { get; set; }
     }
 
     public static class ImportedHelpers

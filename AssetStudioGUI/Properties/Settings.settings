@@ -47,9 +47,6 @@
     <Setting Name="boneSize" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">10</Value>
     </Setting>
-    <Setting Name="flatInbetween" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="fbxVersion" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>

@@ -33,7 +33,6 @@ namespace AssetStudioGUI
             skins.Checked = (bool)Properties.Settings.Default["skins"];
             boneSize.Value = (decimal)Properties.Settings.Default["boneSize"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
-            flatInbetween.Checked = (bool)Properties.Settings.Default["flatInbetween"];
             fbxVersion.SelectedIndex = (int)Properties.Settings.Default["fbxVersion"];
             fbxFormat.SelectedIndex = (int)Properties.Settings.Default["fbxFormat"];
         }
@@ -63,7 +62,6 @@ namespace AssetStudioGUI
             Properties.Settings.Default["skins"] = skins.Checked;
             Properties.Settings.Default["boneSize"] = boneSize.Value;
             Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
-            Properties.Settings.Default["flatInbetween"] = flatInbetween.Checked;
             Properties.Settings.Default["fbxVersion"] = fbxVersion.SelectedIndex;
             Properties.Settings.Default["fbxFormat"] = fbxFormat.SelectedIndex;
             Properties.Settings.Default.Save();
