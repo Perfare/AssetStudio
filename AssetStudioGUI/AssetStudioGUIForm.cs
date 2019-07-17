@@ -1723,7 +1723,6 @@ namespace AssetStudioGUI
                 jumpToSceneHierarchyToolStripMenuItem.Visible = false;
                 showOriginalFileToolStripMenuItem.Visible = false;
                 exportAnimatorwithselectedAnimationClipMenuItem.Visible = false;
-                exportobjectswithselectedAnimationClipMenuItem.Visible = false;
 
                 if (assetListView.SelectedIndices.Count == 1)
                 {
@@ -1736,10 +1735,6 @@ namespace AssetStudioGUI
                     if (selectedAssets.Any(x => x.Type == ClassIDType.Animator) && selectedAssets.Any(x => x.Type == ClassIDType.AnimationClip))
                     {
                         exportAnimatorwithselectedAnimationClipMenuItem.Visible = true;
-                    }
-                    else if (selectedAssets.All(x => x.Type == ClassIDType.AnimationClip))
-                    {
-                        exportobjectswithselectedAnimationClipMenuItem.Visible = true;
                     }
                 }
 
@@ -1825,6 +1820,43 @@ namespace AssetStudioGUI
             else
             {
                 StatusStripUpdate("No Objects available for export");
+            }
+        }
+
+        private void exportSelectedObjectsmergeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                var gameObjects = new List<GameObject>();
+                GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
+                saveFileDialog.AddExtension = false;
+                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var exportPath = saveFileDialog.FileName;
+                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects);
+                }
+            }
+        }
+
+        private void exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sceneTreeView.Nodes.Count > 0)
+            {
+                var gameObjects = new List<GameObject>();
+                GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
+                saveFileDialog.AddExtension = false;
+                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var exportPath = saveFileDialog.FileName;
+                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects, animationList.Count == 0 ? null : animationList);
+                }
             }
         }
 

@@ -22,46 +22,72 @@ namespace AssetStudio
         private Dictionary<Texture2D, string> textureNameDictionary = new Dictionary<Texture2D, string>();
         private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
 
-        public ModelConverter(GameObject m_GameObject)
+        public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList = null)
         {
             if (m_GameObject.m_Animator != null)
             {
                 InitWithAnimator(m_GameObject.m_Animator);
-                CollectAnimationClip(m_GameObject.m_Animator);
+                if (animationList == null)
+                {
+                    CollectAnimationClip(m_GameObject.m_Animator);
+                }
             }
             else
+            {
                 InitWithGameObject(m_GameObject);
+            }
+            if (animationList != null)
+            {
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
+            }
             ConvertAnimations();
         }
 
-        public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList)
+        public ModelConverter(string rootName, List<GameObject> m_GameObjects, AnimationClip[] animationList = null)
         {
-            if (m_GameObject.m_Animator != null)
+            RootFrame = CreateFrame(rootName, Vector3.Zero, new Quaternion(0, 0, 0, 0), Vector3.One);
+            foreach (var m_GameObject in m_GameObjects)
             {
-                InitWithAnimator(m_GameObject.m_Animator);
+                if (m_GameObject.m_Animator != null && animationList == null)
+                {
+                    CollectAnimationClip(m_GameObject.m_Animator);
+                }
+
+                var m_Transform = m_GameObject.m_Transform;
+                ConvertTransforms(m_Transform, RootFrame);
+                CreateBonePathHash(m_Transform);
+            }
+            foreach (var m_GameObject in m_GameObjects)
+            {
+                var m_Transform = m_GameObject.m_Transform;
+                ConvertMeshRenderer(m_Transform);
+            }
+            if (animationList != null)
+            {
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
+            }
+            ConvertAnimations();
+        }
+
+        public ModelConverter(Animator m_Animator, AnimationClip[] animationList = null)
+        {
+            InitWithAnimator(m_Animator);
+            if (animationList == null)
+            {
+                CollectAnimationClip(m_Animator);
             }
             else
-                InitWithGameObject(m_GameObject);
-            foreach (var animationClip in animationList)
             {
-                animationClipHashSet.Add(animationClip);
-            }
-            ConvertAnimations();
-        }
-
-        public ModelConverter(Animator m_Animator)
-        {
-            InitWithAnimator(m_Animator);
-            CollectAnimationClip(m_Animator);
-            ConvertAnimations();
-        }
-
-        public ModelConverter(Animator m_Animator, AnimationClip[] animationList)
-        {
-            InitWithAnimator(m_Animator);
-            foreach (var animationClip in animationList)
-            {
-                animationClipHashSet.Add(animationClip);
+                foreach (var animationClip in animationList)
+                {
+                    animationClipHashSet.Add(animationClip);
+                }
             }
             ConvertAnimations();
         }

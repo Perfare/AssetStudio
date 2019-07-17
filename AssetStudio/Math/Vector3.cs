@@ -89,6 +89,8 @@ namespace AssetStudio
 
         public static Vector3 Zero => new Vector3();
 
+        public static Vector3 One => new Vector3(1.0f, 1.0f, 1.0f);
+
         public static Vector3 operator +(Vector3 a, Vector3 b)
         {
             return new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);

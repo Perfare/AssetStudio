@@ -82,7 +82,7 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + ".shader";
             if (ExportFileExists(exportFullName))
                 return false;
-            var m_Shader = (Shader) item.Asset;
+            var m_Shader = (Shader)item.Asset;
             if (m_Shader.compressedBlob != null) //5.5 and up
             {
                 var strs = ShaderConverter.ConvertMultiple(m_Shader);
@@ -299,17 +299,25 @@ namespace AssetStudioGUI
             var m_Animator = (Animator)item.Asset;
             var convert = animationList != null ? new ModelConverter(m_Animator, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(m_Animator);
             exportPath = $"{exportPath}{item.Text}\\{item.Text}.fbx";
-            return ExportFbx(convert, exportPath);
+            ExportFbx(convert, exportPath);
+            return true;
         }
 
-        public static bool ExportGameObject(GameObject gameObject, string exportPath, List<AssetItem> animationList = null)
+        public static void ExportGameObject(GameObject gameObject, string exportPath, List<AssetItem> animationList = null)
         {
             var convert = animationList != null ? new ModelConverter(gameObject, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(gameObject);
             exportPath = exportPath + Studio.FixFileName(gameObject.m_Name) + ".fbx";
-            return ExportFbx(convert, exportPath);
+            ExportFbx(convert, exportPath);
         }
 
-        private static bool ExportFbx(IImported convert, string exportPath)
+        public static void ExportGameObjectMerge(List<GameObject> gameObject, string exportPath, List<AssetItem> animationList = null)
+        {
+            var rootName = Path.GetFileNameWithoutExtension(exportPath);
+            var convert = animationList != null ? new ModelConverter(rootName, gameObject, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(rootName, gameObject);
+            ExportFbx(convert, exportPath);
+        }
+
+        private static void ExportFbx(IImported convert, string exportPath)
         {
             var eulerFilter = (bool)Properties.Settings.Default["eulerFilter"];
             var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
@@ -321,7 +329,6 @@ namespace AssetStudioGUI
             var fbxVersion = (int)Properties.Settings.Default["fbxVersion"];
             var fbxFormat = (int)Properties.Settings.Default["fbxFormat"];
             ModelExporter.ExportFbx(exportPath, convert, eulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, scaleFactor, fbxVersion, fbxFormat == 1);
-            return true;
         }
     }
 }
