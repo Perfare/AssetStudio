@@ -77,7 +77,10 @@ namespace AssetStudio
                                     }
                                     using (var matr = new Matrix())
                                     {
-                                        if (m_Sprite.m_Pivot == Vector2.Zero) //5.4.2 down
+                                        var version = m_Sprite.version;
+                                        if (version[0] < 5
+                                           || (version[0] == 5 && version[1] < 4)
+                                           || (version[0] == 5 && version[1] == 4 && version[2] <= 1)) //5.4.1p3 down
                                         {
                                             matr.Translate(m_Sprite.m_Rect.Width * 0.5f - textureRectOffset.X, m_Sprite.m_Rect.Height * 0.5f - textureRectOffset.Y);
                                         }
