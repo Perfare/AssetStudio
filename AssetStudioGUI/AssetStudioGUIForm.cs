@@ -684,20 +684,16 @@ namespace AssetStudioGUI
                         break;
                     case Animator _:
                         StatusStripUpdate("Can be exported to FBX file.");
-                        break;
+                        goto default;
                     case AnimationClip _:
                         StatusStripUpdate("Can be exported with Animator or Objects");
-                        break;
+                        goto default;
                     default:
                         var str = assetItem.Asset.Dump();
                         if (str != null)
                         {
                             textPreviewBox.Text = str;
                             textPreviewBox.Visible = true;
-                        }
-                        else
-                        {
-                            StatusStripUpdate("Only supported export the raw file.");
                         }
                         break;
                 }
@@ -1790,22 +1786,15 @@ namespace AssetStudioGUI
 
         private void exportSelectedObjectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
-                {
-                    var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked);
-                }
-            }
-            else
-            {
-                StatusStripUpdate("No Objects available for export");
-            }
+            ExportObjects(false);
         }
 
         private void exportObjectswithAnimationClipMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportObjects(true);
+        }
+
+        private void ExportObjects(bool animation)
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
@@ -1813,8 +1802,16 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
-                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked, animationList.Count == 0 ? null : animationList);
+                    List<AssetItem> animationList = null;
+                    if (animation)
+                    {
+                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                        if (animationList.Count == 0)
+                        {
+                            animationList = null;
+                        }
+                    }
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked, animationList);
                 }
             }
             else
@@ -1825,23 +1822,15 @@ namespace AssetStudioGUI
 
         private void exportSelectedObjectsmergeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var gameObjects = new List<GameObject>();
-                GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
-                saveFileDialog.AddExtension = false;
-                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    var exportPath = saveFileDialog.FileName;
-                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects);
-                }
-            }
+            ExportMergeObjects(false);
         }
 
         private void exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportMergeObjects(true);
+        }
+
+        private void ExportMergeObjects(bool animation)
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
@@ -1854,8 +1843,16 @@ namespace AssetStudioGUI
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     var exportPath = saveFileDialog.FileName;
-                    var animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects, animationList.Count == 0 ? null : animationList);
+                    List<AssetItem> animationList = null;
+                    if (animation)
+                    {
+                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                        if (animationList.Count == 0)
+                        {
+                            animationList = null;
+                        }
+                    }
+                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects, animationList);
                 }
             }
         }

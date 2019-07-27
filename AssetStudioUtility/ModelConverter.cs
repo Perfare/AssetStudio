@@ -888,28 +888,6 @@ namespace AssetStudio
             return boneName;
         }
 
-        private static string BlendShapeNameGroup(Mesh mesh, int index)
-        {
-            string name = mesh.m_Shapes.channels[index].name;
-            int dotPos = name.IndexOf('.');
-            if (dotPos >= 0)
-            {
-                return name.Substring(0, dotPos);
-            }
-            return "Ungrouped";
-        }
-
-        private static string BlendShapeNameExtension(Mesh mesh, int index)
-        {
-            string name = mesh.m_Shapes.channels[index].name;
-            int dotPos = name.IndexOf('.');
-            if (dotPos >= 0)
-            {
-                return name.Substring(dotPos + 1);
-            }
-            return name;
-        }
-
         private static ImportedVertex GetSourceVertex(List<ImportedSubmesh> submeshList, int morphVertIndex)
         {
             foreach (var submesh in submeshList)
