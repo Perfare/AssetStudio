@@ -566,6 +566,14 @@ namespace AssetStudio
                 }
                 iMat = new ImportedMaterial();
                 iMat.Name = mat.m_Name;
+                //default values
+                iMat.Diffuse = new Color(0.8f, 0.8f, 0.8f, 1);
+                iMat.Ambient = new Color(0.2f, 0.2f, 0.2f, 1);
+                iMat.Emissive = new Color(0, 0, 0, 1);
+                iMat.Specular = new Color(0.2f, 0.2f, 0.2f, 1);
+                iMat.Reflection = new Color(0, 0, 0, 1);
+                iMat.Shininess = 20f;
+                iMat.Transparency = 0f;
                 foreach (var col in mat.m_SavedProperties.m_Colors)
                 {
                     switch (col.Key)
