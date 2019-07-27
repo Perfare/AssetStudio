@@ -167,24 +167,25 @@ namespace AssetStudioGUI
             #endregion
 
             #region UV
-            if (m_Mesh.m_UV0 != null && m_Mesh.m_UV0.Length == m_Mesh.m_VertexCount * 2)
+            if (m_Mesh.m_UV0?.Length > 0)
             {
-                for (int v = 0; v < m_Mesh.m_VertexCount; v++)
+                if (m_Mesh.m_UV0.Length == m_Mesh.m_VertexCount * 2)
                 {
-                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV0[v * 2], m_Mesh.m_UV0[v * 2 + 1]);
+                    c = 2;
                 }
-            }
-            else if (m_Mesh.m_UV1 != null && m_Mesh.m_UV1.Length == m_Mesh.m_VertexCount * 2)
-            {
+                else if (m_Mesh.m_UV0.Length == m_Mesh.m_VertexCount * 3)
+                {
+                    c = 3;
+                }
                 for (int v = 0; v < m_Mesh.m_VertexCount; v++)
                 {
-                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV1[v * 2], m_Mesh.m_UV1[v * 2 + 1]);
+                    sb.AppendFormat("vt {0} {1}\r\n", m_Mesh.m_UV0[v * c], m_Mesh.m_UV0[v * c + 1]);
                 }
             }
             #endregion
 
             #region Normals
-            if (m_Mesh.m_Normals != null && m_Mesh.m_Normals.Length > 0)
+            if (m_Mesh.m_Normals?.Length > 0)
             {
                 if (m_Mesh.m_Normals.Length == m_Mesh.m_VertexCount * 3)
                 {

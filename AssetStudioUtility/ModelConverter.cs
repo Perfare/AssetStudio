@@ -341,13 +341,17 @@ namespace AssetStudio
                         }
                     }
                     //UV
-                    if (mesh.m_UV0 != null && mesh.m_UV0.Length == mesh.m_VertexCount * 2)
+                    if (mesh.m_UV0?.Length > 0)
                     {
-                        iVertex.UV = new[] { mesh.m_UV0[j * 2], mesh.m_UV0[j * 2 + 1] };
-                    }
-                    else if (mesh.m_UV1 != null && mesh.m_UV1.Length == mesh.m_VertexCount * 2)
-                    {
-                        iVertex.UV = new[] { mesh.m_UV1[j * 2], mesh.m_UV1[j * 2 + 1] };
+                        if (mesh.m_UV0.Length == mesh.m_VertexCount * 2)
+                        {
+                            c = 2;
+                        }
+                        else if (mesh.m_UV0.Length == mesh.m_VertexCount * 3)
+                        {
+                            c = 3;
+                        }
+                        iVertex.UV = new[] { mesh.m_UV0[j * c], mesh.m_UV0[j * c + 1] };
                     }
                     //Tangent
                     if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
@@ -576,7 +580,6 @@ namespace AssetStudio
                             iMat.Emissive = col.Value;
                             break;
                         case "_SpecularColor":
-                        case "_SpecColor":
                             iMat.Specular = col.Value;
                             break;
                         case "_ReflectColor":

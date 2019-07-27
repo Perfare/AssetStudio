@@ -451,6 +451,10 @@ namespace AssetStudio
         public float[] m_UV1;
         public float[] m_UV2;
         public float[] m_UV3;
+        public float[] m_UV4;
+        public float[] m_UV5;
+        public float[] m_UV6;
+        public float[] m_UV7;
         public float[] m_Tangents;
         private VertexData m_VertexData;
         private CompressedMesh m_CompressedMesh;
@@ -759,10 +763,18 @@ namespace AssetStudio
                                 case 7: //kShaderChannelTexCoord3
                                     m_UV3 = componentsFloatArray;
                                     break;
-                                //kShaderChannelTexCoord4 8
-                                //kShaderChannelTexCoord5 9
-                                //kShaderChannelTexCoord6 10
-                                //kShaderChannelTexCoord7 11
+                                case 8: //kShaderChannelTexCoord4
+                                    m_UV4 = componentsFloatArray;
+                                    break;
+                                case 9: //kShaderChannelTexCoord5
+                                    m_UV5 = componentsFloatArray;
+                                    break;
+                                case 10: //kShaderChannelTexCoord6
+                                    m_UV6 = componentsFloatArray;
+                                    break;
+                                case 11: //kShaderChannelTexCoord7
+                                    m_UV7 = componentsFloatArray;
+                                    break;
                                 //2018.2 and up
                                 case 12: //kShaderChannelBlendWeight
                                     if (m_Skin == null)
@@ -840,23 +852,40 @@ namespace AssetStudio
             if (m_CompressedMesh.m_Vertices.m_NumItems > 0)
             {
                 m_VertexCount = (int)m_CompressedMesh.m_Vertices.m_NumItems / 3;
-                m_Vertices = m_CompressedMesh.m_Vertices.UnpackFloats(3, 4);
+                m_Vertices = m_CompressedMesh.m_Vertices.UnpackFloats(3, 3 * 4);
             }
             //UV
             if (m_CompressedMesh.m_UV.m_NumItems > 0)
             {
-                m_UV0 = m_CompressedMesh.m_UV.UnpackFloats(2, 4, 0, m_VertexCount);
-                if (m_CompressedMesh.m_UV.m_NumItems >= m_VertexCount * 4)
+                var m_UVInfo = m_CompressedMesh.m_UVInfo;
+                if (m_UVInfo != 0)
                 {
-                    m_UV1 = m_CompressedMesh.m_UV.UnpackFloats(2, 4, m_VertexCount * 2, m_VertexCount);
+                    const int kInfoBitsPerUV = 4;
+                    const int kUVDimensionMask = 3;
+                    const int kUVChannelExists = 4;
+                    const int kMaxTexCoordShaderChannels = 8;
+
+                    int uvSrcOffset = 0;
+                    for (int uv = 0; uv < kMaxTexCoordShaderChannels; uv++)
+                    {
+                        var texCoordBits = m_UVInfo >> (uv * kInfoBitsPerUV);
+                        texCoordBits &= (1u << kInfoBitsPerUV) - 1u;
+                        if ((texCoordBits & kUVChannelExists) != 0)
+                        {
+                            var uvDim = 1 + (int)(texCoordBits & kUVDimensionMask);
+                            var m_UV = m_CompressedMesh.m_UV.UnpackFloats(uvDim, uvDim * 4, uvSrcOffset, m_VertexCount);
+                            SetUV(uv, m_UV);
+                            uvSrcOffset += uvDim * m_VertexCount;
+                        }
+                    }
                 }
-                if (m_CompressedMesh.m_UV.m_NumItems >= m_VertexCount * 6)
+                else
                 {
-                    m_UV2 = m_CompressedMesh.m_UV.UnpackFloats(2, 4, m_VertexCount * 4, m_VertexCount);
-                }
-                if (m_CompressedMesh.m_UV.m_NumItems >= m_VertexCount * 8)
-                {
-                    m_UV3 = m_CompressedMesh.m_UV.UnpackFloats(2, 4, m_VertexCount * 6, m_VertexCount);
+                    m_UV0 = m_CompressedMesh.m_UV.UnpackFloats(2, 2 * 4, 0, m_VertexCount);
+                    if (m_CompressedMesh.m_UV.m_NumItems >= m_VertexCount * 4)
+                    {
+                        m_UV1 = m_CompressedMesh.m_UV.UnpackFloats(2, 2 * 4, m_VertexCount * 2, m_VertexCount);
+                    }
                 }
             }
             //BindPose
@@ -1064,6 +1093,39 @@ namespace AssetStudio
             for (int i = 0; i < m_VertexCount; i++)
             {
                 m_Skin[i] = new BoneWeights4();
+            }
+        }
+
+        private void SetUV(int uv, float[] m_UV)
+        {
+            switch (uv)
+            {
+                case 0:
+                    m_UV0 = m_UV;
+                    break;
+                case 1:
+                    m_UV1 = m_UV;
+                    break;
+                case 2:
+                    m_UV2 = m_UV;
+                    break;
+                case 3:
+                    m_UV3 = m_UV;
+                    break;
+                case 4:
+                    m_UV4 = m_UV;
+                    break;
+                case 5:
+                    m_UV5 = m_UV;
+                    break;
+                case 6:
+                    m_UV6 = m_UV;
+                    break;
+                case 7:
+                    m_UV7 = m_UV;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }
