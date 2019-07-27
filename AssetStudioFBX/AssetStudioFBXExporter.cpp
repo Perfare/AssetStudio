@@ -539,23 +539,20 @@ namespace AssetStudio
 				for (int j = 0; j < boneList->Count; j++)
 				{
 					FbxCluster* pCluster = pClusterArray->GetAt(j);
-					if (pCluster->GetControlPointIndicesCount() > 0)
+					auto boneMatrix = boneList[j]->Matrix;
+					FbxAMatrix lBoneMatrix;
+					for (int m = 0; m < 4; m++)
 					{
-						auto boneMatrix = boneList[j]->Matrix;
-						FbxAMatrix lBoneMatrix;
-						for (int m = 0; m < 4; m++)
+						for (int n = 0; n < 4; n++)
 						{
-							for (int n = 0; n < 4; n++)
-							{
-								lBoneMatrix.mData[m][n] = boneMatrix[m, n];
-							}
+							lBoneMatrix.mData[m][n] = boneMatrix[m, n];
 						}
-
-						pCluster->SetTransformMatrix(lMeshMatrix);
-						pCluster->SetTransformLinkMatrix(lMeshMatrix * lBoneMatrix.Inverse());
-
-						pSkin->AddCluster(pCluster);
 					}
+
+					pCluster->SetTransformMatrix(lMeshMatrix);
+					pCluster->SetTransformLinkMatrix(lMeshMatrix * lBoneMatrix.Inverse());
+
+					pSkin->AddCluster(pCluster);
 				}
 
 				if (pSkin->GetClusterCount() > 0)
