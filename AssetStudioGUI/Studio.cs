@@ -355,7 +355,7 @@ namespace AssetStudioGUI
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport)
+        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport, bool raw)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -379,6 +379,14 @@ namespace AssetStudioGUI
                     Logger.Info($"Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
+                        if (raw)
+                        {
+                            if (ExportRawFile(asset, exportpath))
+                            {
+                                exportedCount++;
+                            }
+                            continue;
+                        }
                         switch (asset.Type)
                         {
                             case ClassIDType.Texture2D:

@@ -58,6 +58,10 @@
             this.exportFilteredAssetsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportRawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.allAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.filteredAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filterTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -137,6 +141,7 @@
             this.optionsToolStripMenuItem,
             this.modelToolStripMenuItem,
             this.exportToolStripMenuItem,
+            this.exportRawToolStripMenuItem,
             this.filterTypeToolStripMenuItem,
             this.debugMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -346,21 +351,21 @@
             this.exportAllAssetsMenuItem.Name = "exportAllAssetsMenuItem";
             this.exportAllAssetsMenuItem.Size = new System.Drawing.Size(334, 22);
             this.exportAllAssetsMenuItem.Text = "All assets";
-            this.exportAllAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
+            this.exportAllAssetsMenuItem.Click += new System.EventHandler(this.exportAllAssetsMenuItem_Click);
             // 
             // exportSelectedAssetsMenuItem
             // 
             this.exportSelectedAssetsMenuItem.Name = "exportSelectedAssetsMenuItem";
             this.exportSelectedAssetsMenuItem.Size = new System.Drawing.Size(334, 22);
             this.exportSelectedAssetsMenuItem.Text = "Selected assets";
-            this.exportSelectedAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
+            this.exportSelectedAssetsMenuItem.Click += new System.EventHandler(this.exportSelectedAssetsMenuItem_Click);
             // 
             // exportFilteredAssetsMenuItem
             // 
             this.exportFilteredAssetsMenuItem.Name = "exportFilteredAssetsMenuItem";
             this.exportFilteredAssetsMenuItem.Size = new System.Drawing.Size(334, 22);
             this.exportFilteredAssetsMenuItem.Text = "Filtered assets";
-            this.exportFilteredAssetsMenuItem.Click += new System.EventHandler(this.ExportAssets_Click);
+            this.exportFilteredAssetsMenuItem.Click += new System.EventHandler(this.exportFilteredAssetsMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -373,6 +378,37 @@
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem.Size = new System.Drawing.Size(334, 22);
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem.Text = "Export Animator with selected AnimationClip";
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem.Click += new System.EventHandler(this.exportAnimatorwithAnimationClipMenuItem_Click);
+            // 
+            // exportRawToolStripMenuItem
+            // 
+            this.exportRawToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.allAssetsToolStripMenuItem,
+            this.selectedAssetsToolStripMenuItem,
+            this.filteredAssetsToolStripMenuItem});
+            this.exportRawToolStripMenuItem.Name = "exportRawToolStripMenuItem";
+            this.exportRawToolStripMenuItem.Size = new System.Drawing.Size(86, 21);
+            this.exportRawToolStripMenuItem.Text = "Export Raw";
+            // 
+            // allAssetsToolStripMenuItem
+            // 
+            this.allAssetsToolStripMenuItem.Name = "allAssetsToolStripMenuItem";
+            this.allAssetsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.allAssetsToolStripMenuItem.Text = "All assets";
+            this.allAssetsToolStripMenuItem.Click += new System.EventHandler(this.allAssetsToolStripMenuItem_Click);
+            // 
+            // selectedAssetsToolStripMenuItem
+            // 
+            this.selectedAssetsToolStripMenuItem.Name = "selectedAssetsToolStripMenuItem";
+            this.selectedAssetsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.selectedAssetsToolStripMenuItem.Text = "Selected assets";
+            this.selectedAssetsToolStripMenuItem.Click += new System.EventHandler(this.selectedAssetsToolStripMenuItem_Click);
+            // 
+            // filteredAssetsToolStripMenuItem
+            // 
+            this.filteredAssetsToolStripMenuItem.Name = "filteredAssetsToolStripMenuItem";
+            this.filteredAssetsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.filteredAssetsToolStripMenuItem.Text = "Filtered assets";
+            this.filteredAssetsToolStripMenuItem.Click += new System.EventHandler(this.filteredAssetsToolStripMenuItem_Click);
             // 
             // filterTypeToolStripMenuItem
             // 
@@ -896,7 +932,7 @@
             this.jumpToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(335, 92);
             // 
             // exportSelectedAssetsToolStripMenuItem
             // 
@@ -1057,6 +1093,10 @@
         private System.Windows.Forms.ToolStripMenuItem exportSelectedObjectsmergeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem exportRawToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem allAssetsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectedAssetsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem filteredAssetsToolStripMenuItem;
     }
 }
 

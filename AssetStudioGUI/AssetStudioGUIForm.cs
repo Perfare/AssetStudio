@@ -1369,41 +1369,6 @@ namespace AssetStudioGUI
             return false;
         }
 
-        private void ExportAssets_Click(object sender, EventArgs e)
-        {
-            if (exportableAssets.Count > 0)
-            {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
-                {
-                    timer.Stop();
-
-                    List<AssetItem> toExportAssets = null;
-                    switch (((ToolStripItem)sender).Name)
-                    {
-                        case "exportAllAssetsMenuItem":
-                            toExportAssets = exportableAssets;
-                            break;
-                        case "exportFilteredAssetsMenuItem":
-                            toExportAssets = visibleAssets;
-                            break;
-                        case "exportSelectedAssetsMenuItem":
-                            toExportAssets = new List<AssetItem>(assetListView.SelectedIndices.Count);
-                            foreach (int i in assetListView.SelectedIndices)
-                            {
-                                toExportAssets.Add((AssetItem)assetListView.Items[i]);
-                            }
-                            break;
-                    }
-                    ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked);
-                }
-            }
-            else
-            {
-                StatusStripUpdate("No exportable assets loaded");
-            }
-        }
-
         private void SetProgressBarValue(int value)
         {
             if (InvokeRequired)
@@ -1740,12 +1705,7 @@ namespace AssetStudioGUI
 
         private void exportSelectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var saveFolderDialog1 = new OpenFolderDialog();
-            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
-            {
-                timer.Stop();
-                ExportAssets(saveFolderDialog1.Folder, GetSelectedAssets(), assetGroupOptions.SelectedIndex, openAfterExport.Checked);
-            }
+            ExportAssets(2, false);
         }
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1857,6 +1817,21 @@ namespace AssetStudioGUI
             }
         }
 
+        private void allAssetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(1, true);
+        }
+
+        private void selectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(2, true);
+        }
+
+        private void filteredAssetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(3, true);
+        }
+
         private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
@@ -1865,6 +1840,21 @@ namespace AssetStudioGUI
                 sceneTreeView.SelectedNode = selectasset.TreeNode;
                 tabControl1.SelectedTab = tabPage1;
             }
+        }
+
+        private void exportAllAssetsMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(1, false);
+        }
+
+        private void exportSelectedAssetsMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(2, false);
+        }
+
+        private void exportFilteredAssetsMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAssets(3, false);
         }
 
         private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -1886,7 +1876,7 @@ namespace AssetStudioGUI
 
         private List<AssetItem> GetSelectedAssets()
         {
-            var selectedAssets = new List<AssetItem>();
+            var selectedAssets = new List<AssetItem>(assetListView.SelectedIndices.Count);
             foreach (int index in assetListView.SelectedIndices)
             {
                 selectedAssets.Add((AssetItem)assetListView.Items[index]);
@@ -1922,6 +1912,37 @@ namespace AssetStudioGUI
             }
             assetListView.VirtualListSize = visibleAssets.Count;
             assetListView.EndUpdate();
+        }
+
+        private void ExportAssets(int type, bool raw)
+        {
+            if (exportableAssets.Count > 0)
+            {
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    timer.Stop();
+
+                    List<AssetItem> toExportAssets = null;
+                    switch (type)
+                    {
+                        case 1: //All Assets
+                            toExportAssets = exportableAssets;
+                            break;
+                        case 2: //Selected Assets
+                            toExportAssets = GetSelectedAssets();
+                            break;
+                        case 3: //Filtered Assets
+                            toExportAssets = visibleAssets;
+                            break;
+                    }
+                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked, raw);
+                }
+            }
+            else
+            {
+                StatusStripUpdate("No exportable assets loaded");
+            }
         }
     }
 }
