@@ -854,6 +854,11 @@ namespace AssetStudio
             if (binding.typeID == ClassIDType.SkinnedMeshRenderer) //BlendShape
             {
                 var channelName = GetChannelNameFromHash(binding.attribute);
+                if (string.IsNullOrEmpty(channelName))
+                {
+                    curveIndex++;
+                    return;
+                }
                 int dotPos = channelName.IndexOf('.');
                 if (dotPos >= 0)
                 {
