@@ -96,7 +96,7 @@ namespace AssetStudio
 		}
 
 		pBindPose = FbxPose::Create(pScene, "BindPose");
-		pBindPose->SetIsBindPose(true);
+		pScene->AddPose(pBindPose);
 
 		frameToNode = gcnew Dictionary<ImportedFrame^, size_t>();
 		meshFrames = imported->MeshList != nullptr ? gcnew List<ImportedFrame^>() : nullptr;
@@ -173,12 +173,24 @@ namespace AssetStudio
 		if (frameToNode->TryGetValue(frame, pointer))
 		{
 			auto pNode = (FbxNode*)pointer;
-			if (allBones || bonePaths->Contains(frame->Path))
+			if (allBones)
 			{
 				FbxSkeleton* pJoint = FbxSkeleton::Create(pScene, "");
 				pJoint->Size.Set(FbxDouble(boneSize));
 				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
 				pNode->SetNodeAttribute(pJoint);
+			}
+			else if (bonePaths->Contains(frame->Path))
+			{
+				FbxSkeleton* pJoint = FbxSkeleton::Create(pScene, "");
+				pJoint->Size.Set(FbxDouble(boneSize));
+				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
+				pNode->SetNodeAttribute(pJoint);
+
+				pJoint = FbxSkeleton::Create(pScene, "");
+				pJoint->Size.Set(FbxDouble(boneSize));
+				pJoint->SetSkeletonType(FbxSkeleton::eLimbNode);
+				pNode->GetParent()->SetNodeAttribute(pJoint);
 			}
 			else
 			{
@@ -344,7 +356,7 @@ namespace AssetStudio
 				}
 			}
 
-			FbxMesh* pMesh = FbxMesh::Create(pScene, "");
+			FbxMesh* pMesh = FbxMesh::Create(pScene, pFrameNode->GetName());
 			pFrameNode->SetNodeAttribute(pMesh);
 
 			int vertexCount = 0;
@@ -755,6 +767,42 @@ namespace AssetStudio
 					eulerFilter->SetQualityTolerance(filterPrecision);
 					eulerFilter->Apply(lCurve, 3);
 				}
+
+				//BlendShape
+				if (keyframeList->BlendShape != nullptr)
+				{
+					FbxString channelName;
+					WITH_MARSHALLED_STRING
+					(
+						pClipName,
+						keyframeList->BlendShape->ChannelName,
+						channelName = FbxString(pClipName);
+					);
+
+					auto lGeometry = (FbxGeometry*)pNode->GetNodeAttribute();
+					FbxBlendShape* lBlendShape = (FbxBlendShape*)lGeometry->GetDeformer(0, FbxDeformer::eBlendShape);
+					int lBlendShapeChannelCount = lBlendShape->GetBlendShapeChannelCount();
+					for (int lChannelIndex = 0; lChannelIndex < lBlendShapeChannelCount; ++lChannelIndex)
+					{
+						FbxBlendShapeChannel* lChannel = lBlendShape->GetBlendShapeChannel(lChannelIndex);
+						FbxString lChannelName = lChannel->GetNameOnly();
+						if (lChannelName == channelName)
+						{
+							FbxAnimCurve* lAnimCurve = lGeometry->GetShapeChannel(0, lChannelIndex, lAnimLayer, true);
+							lAnimCurve->KeyModifyBegin();
+
+							for each (auto keyframe in keyframeList->BlendShape->Keyframes)
+							{
+								lTime.SetSecondDouble(keyframe->time);
+								int lKeyIndex = lAnimCurve->KeyAdd(lTime);
+								lAnimCurve->KeySetValue(lKeyIndex, keyframe->value);
+								lAnimCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationCubic);
+							}
+
+							lAnimCurve->KeyModifyEnd();
+						}
+					}
+				}
 			}
 		}
 	}
@@ -773,7 +821,7 @@ namespace AssetStudio
 				FbxNode* pNode = (FbxNode*)frameToNode[frame];
 				FbxMesh* pMesh = pNode->GetMesh();
 
-				FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, pNode->GetName());
+				FbxBlendShape* lBlendShape = FbxBlendShape::Create(pScene, pMesh->GetNameOnly() + FbxString("BlendShape"));
 				pMesh->AddDeformer(lBlendShape);
 
 				for (int i = 0; i < morph->Channels->Count; i++)
@@ -791,7 +839,7 @@ namespace AssetStudio
 
 					for each(ImportedMorphKeyframe^ keyframe in channel->KeyframeList)
 					{
-						FbxShape* lShape = FbxShape::Create(pScene, "");
+						FbxShape* lShape = FbxShape::Create(pScene, FbxString(keyframe->Weight));
 						lBlendShapeChannel->AddTargetShape(lShape, keyframe->Weight);
 
 						auto vectorCount = pMesh->GetControlPointsCount();

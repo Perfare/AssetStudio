@@ -227,6 +227,7 @@ namespace AssetStudio
         public List<ImportedKeyframe<Vector3>> Scalings = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Rotations = new List<ImportedKeyframe<Vector3>>();
         public List<ImportedKeyframe<Vector3>> Translations = new List<ImportedKeyframe<Vector3>>();
+        public ImportedBlendShape BlendShape;
     }
 
     public class ImportedKeyframe<T>
@@ -241,6 +242,12 @@ namespace AssetStudio
             this.time = time;
             this.value = value;
         }
+    }
+
+    public class ImportedBlendShape
+    {
+        public string ChannelName;
+        public List<ImportedKeyframe<float>> Keyframes = new List<ImportedKeyframe<float>>();
     }
 
     public class ImportedMorph

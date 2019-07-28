@@ -21,6 +21,7 @@ namespace AssetStudio
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
         private Dictionary<Texture2D, string> textureNameDictionary = new Dictionary<Texture2D, string>();
         private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
+        Dictionary<uint, string> morphChannelNames = new Dictionary<uint, string>();
 
         public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList = null)
         {
@@ -444,6 +445,9 @@ namespace AssetStudio
                         var channel = new ImportedMorphChannel();
                         morph.Channels.Add(channel);
                         var shapeChannel = mesh.m_Shapes.channels[i];
+
+                        morphChannelNames.Add(shapeChannel.nameHash, shapeChannel.name);
+
                         channel.Name = shapeChannel.name;
                         channel.KeyframeList = new List<ImportedMorphKeyframe>(shapeChannel.frameCount);
                         var frameEnd = shapeChannel.frameIndex + shapeChannel.frameCount;
@@ -773,6 +777,31 @@ namespace AssetStudio
                             }
                         }
                     }
+                    foreach (var m_FloatCurve in animationClip.m_FloatCurves)
+                    {
+                        if (m_FloatCurve.classID == ClassIDType.SkinnedMeshRenderer) //BlendShape
+                        {
+                            var channelName = m_FloatCurve.attribute;
+                            int dotPos = channelName.IndexOf('.');
+                            if (dotPos >= 0)
+                            {
+                                channelName = channelName.Substring(dotPos + 1);
+                            }
+
+                            var path = FixBonePath(m_FloatCurve.path);
+                            if (string.IsNullOrEmpty(path))
+                            {
+                                path = GetPathByChannelName(channelName);
+                            }
+                            var track = iAnim.FindTrack(path);
+                            track.BlendShape = new ImportedBlendShape();
+                            track.BlendShape.ChannelName = channelName;
+                            foreach (var m_Curve in m_FloatCurve.curve.m_Curve)
+                            {
+                                track.BlendShape.Keyframes.Add(new ImportedKeyframe<float>(m_Curve.time, m_Curve.value));
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -822,6 +851,26 @@ namespace AssetStudio
         private void ReadCurveData(ImportedKeyframedAnimation iAnim, AnimationClipBindingConstant m_ClipBindingConstant, int index, float time, float[] data, int offset, ref int curveIndex)
         {
             var binding = m_ClipBindingConstant.FindBinding(index);
+            if (binding.typeID == ClassIDType.SkinnedMeshRenderer) //BlendShape
+            {
+                var channelName = GetChannelNameFromHash(binding.attribute);
+                int dotPos = channelName.IndexOf('.');
+                if (dotPos >= 0)
+                {
+                    channelName = channelName.Substring(dotPos + 1);
+                }
+
+                var bPath = FixBonePath(GetPathFromHash(binding.path));
+                if (string.IsNullOrEmpty(bPath))
+                {
+                    bPath = GetPathByChannelName(channelName);
+                }
+                var bTrack = iAnim.FindTrack(bPath);
+                bTrack.BlendShape = new ImportedBlendShape();
+                bTrack.BlendShape.ChannelName = channelName;
+                bTrack.BlendShape.Keyframes.Add(new ImportedKeyframe<float>(time, data[curveIndex++ + offset]));
+                return;
+            }
             if (binding.path == 0)
             {
                 curveIndex++;
@@ -868,7 +917,6 @@ namespace AssetStudio
                     )));
                     break;
                 default:
-                    //track.Curve.Add(new ImportedKeyframe<float>(time, data[curveIndex++]));
                     curveIndex++;
                     break;
             }
@@ -972,6 +1020,33 @@ namespace AssetStudio
                     frame = CreateFrame(transformName, xform.t, xform.q, xform.s);
                     parentFrame.AddChild(frame);
                 }
+            }
+        }
+
+        private string GetPathByChannelName(string channelName)
+        {
+            foreach (var morph in MorphList)
+            {
+                foreach (var channel in morph.Channels)
+                {
+                    if (channel.Name == channelName)
+                    {
+                        return morph.Path;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private string GetChannelNameFromHash(uint attribute)
+        {
+            if (morphChannelNames.TryGetValue(attribute, out var name))
+            {
+                return name;
+            }
+            else
+            {
+                return null;
             }
         }
     }
