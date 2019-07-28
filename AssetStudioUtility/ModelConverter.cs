@@ -874,56 +874,56 @@ namespace AssetStudio
                 bTrack.BlendShape = new ImportedBlendShape();
                 bTrack.BlendShape.ChannelName = channelName;
                 bTrack.BlendShape.Keyframes.Add(new ImportedKeyframe<float>(time, data[curveIndex++ + offset]));
-                return;
             }
-            if (binding.path == 0)
+            else if (binding.typeID == ClassIDType.Transform)
+            {
+                var path = FixBonePath(GetPathFromHash(binding.path));
+                var track = iAnim.FindTrack(path);
+
+                switch (binding.attribute)
+                {
+                    case 1:
+                        track.Translations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            -data[curveIndex++ + offset],
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        )));
+                        break;
+                    case 2:
+                        var value = Fbx.QuaternionToEuler(new Quaternion
+                        (
+                            data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        ));
+                        track.Rotations.Add(new ImportedKeyframe<Vector3>(time, value));
+                        break;
+                    case 3:
+                        track.Scalings.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset],
+                            data[curveIndex++ + offset]
+                        )));
+                        break;
+                    case 4:
+                        track.Rotations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
+                        (
+                            data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset],
+                            -data[curveIndex++ + offset]
+                        )));
+                        break;
+                    default:
+                        curveIndex++;
+                        break;
+                }
+            }
+            else
             {
                 curveIndex++;
-                return;
-            }
-
-            var path = FixBonePath(GetPathFromHash(binding.path));
-            var track = iAnim.FindTrack(path);
-
-            switch (binding.attribute)
-            {
-                case 1:
-                    track.Translations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        -data[curveIndex++ + offset],
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    )));
-                    break;
-                case 2:
-                    var value = Fbx.QuaternionToEuler(new Quaternion
-                    (
-                        data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    ));
-                    track.Rotations.Add(new ImportedKeyframe<Vector3>(time, value));
-                    break;
-                case 3:
-                    track.Scalings.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset],
-                        data[curveIndex++ + offset]
-                    )));
-                    break;
-                case 4:
-                    track.Rotations.Add(new ImportedKeyframe<Vector3>(time, new Vector3
-                    (
-                        data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset],
-                        -data[curveIndex++ + offset]
-                    )));
-                    break;
-                default:
-                    curveIndex++;
-                    break;
             }
         }
 
