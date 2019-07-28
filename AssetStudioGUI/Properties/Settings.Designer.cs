@@ -158,36 +158,36 @@ namespace AssetStudioGUI.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool allFrames {
+        public bool exportAllNodes {
             get {
-                return ((bool)(this["allFrames"]));
+                return ((bool)(this["exportAllNodes"]));
             }
             set {
-                this["allFrames"] = value;
+                this["exportAllNodes"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool allBones {
+        public bool exportSkins {
             get {
-                return ((bool)(this["allBones"]));
+                return ((bool)(this["exportSkins"]));
             }
             set {
-                this["allBones"] = value;
+                this["exportSkins"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool skins {
+        public bool exportAnimations {
             get {
-                return ((bool)(this["skins"]));
+                return ((bool)(this["exportAnimations"]));
             }
             set {
-                this["skins"] = value;
+                this["exportAnimations"] = value;
             }
         }
         
@@ -236,6 +236,30 @@ namespace AssetStudioGUI.Properties {
             }
             set {
                 this["scaleFactor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool exportBlendShape {
+            get {
+                return ((bool)(this["exportBlendShape"]));
+            }
+            set {
+                this["exportBlendShape"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool castToBone {
+            get {
+                return ((bool)(this["castToBone"]));
+            }
+            set {
+                this["castToBone"] = value;
             }
         }
     }

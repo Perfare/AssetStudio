@@ -2,7 +2,8 @@
 
 namespace AssetStudio
 {
-	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
+	void Fbx::Exporter::Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision,
+		bool allNodes, bool skins, bool animation, bool blendShape, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		FileInfo^ file = gcnew FileInfo(path);
 		DirectoryInfo^ dir = file->Directory;
@@ -13,16 +14,22 @@ namespace AssetStudio
 		String^ currentDir = Directory::GetCurrentDirectory();
 		Directory::SetCurrentDirectory(dir->FullName);
 		auto name = Path::GetFileName(path);
-		Exporter^ exporter = gcnew Exporter(name, imported, allFrames, allBones, skins, boneSize, scaleFactor, versionIndex, isAscii);
-		exporter->ExportMorphs();
-		exporter->ExportAnimations(eulerFilter, filterPrecision);
+		Exporter^ exporter = gcnew Exporter(name, imported, allNodes, skins, castToBone, boneSize, scaleFactor, versionIndex, isAscii);
+		if (blendShape)
+		{
+			exporter->ExportMorphs();
+		}
+		if (animation)
+		{
+			exporter->ExportAnimations(eulerFilter, filterPrecision);
+		}
 		exporter->pExporter->Export(exporter->pScene);
 		delete exporter;
 
 		Directory::SetCurrentDirectory(currentDir);
 	}
 
-	Fbx::Exporter::Exporter(String^ name, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
+	Fbx::Exporter::Exporter(String^ name, IImported^ imported, bool allNodes, bool skins, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii)
 	{
 		this->imported = imported;
 		exportSkins = skins;
@@ -86,7 +93,7 @@ namespace AssetStudio
 		}
 
 		framePaths = nullptr;
-		if (!allFrames)
+		if (!allNodes)
 		{
 			framePaths = SearchHierarchy();
 			if (!framePaths)
@@ -104,7 +111,7 @@ namespace AssetStudio
 
 		if (imported->MeshList != nullptr)
 		{
-			SetJointsFromImportedMeshes(allBones);
+			SetJointsFromImportedMeshes(castToBone);
 
 			pMaterials = new FbxArray<FbxSurfacePhong*>();
 			pTextures = new FbxArray<FbxFileTexture*>();
@@ -167,13 +174,13 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::SetJointsNode(ImportedFrame^ frame, HashSet<String^>^ bonePaths, bool allBones)
+	void Fbx::Exporter::SetJointsNode(ImportedFrame^ frame, HashSet<String^>^ bonePaths, bool castToBone)
 	{
 		size_t pointer;
 		if (frameToNode->TryGetValue(frame, pointer))
 		{
 			auto pNode = (FbxNode*)pointer;
-			if (allBones)
+			if (castToBone)
 			{
 				FbxSkeleton* pJoint = FbxSkeleton::Create(pScene, "");
 				pJoint->Size.Set(FbxDouble(boneSize));
@@ -205,7 +212,7 @@ namespace AssetStudio
 		}
 		for (int i = 0; i < frame->Count; i++)
 		{
-			SetJointsNode(frame[i], bonePaths, allBones);
+			SetJointsNode(frame[i], bonePaths, castToBone);
 		}
 	}
 
@@ -256,7 +263,7 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::SetJointsFromImportedMeshes(bool allBones)
+	void Fbx::Exporter::SetJointsFromImportedMeshes(bool castToBone)
 	{
 		if (!exportSkins)
 		{
@@ -277,7 +284,7 @@ namespace AssetStudio
 			}
 		}
 
-		SetJointsNode(imported->RootFrame, bonePaths, allBones);
+		SetJointsNode(imported->RootFrame, bonePaths, castToBone);
 	}
 
 	void Fbx::Exporter::ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame)
@@ -780,26 +787,30 @@ namespace AssetStudio
 					);
 
 					auto lGeometry = (FbxGeometry*)pNode->GetNodeAttribute();
-					FbxBlendShape* lBlendShape = (FbxBlendShape*)lGeometry->GetDeformer(0, FbxDeformer::eBlendShape);
-					int lBlendShapeChannelCount = lBlendShape->GetBlendShapeChannelCount();
-					for (int lChannelIndex = 0; lChannelIndex < lBlendShapeChannelCount; ++lChannelIndex)
+					int lBlendShapeDeformerCount = lGeometry->GetDeformerCount(FbxDeformer::eBlendShape);
+					if (lBlendShapeDeformerCount > 0)
 					{
-						FbxBlendShapeChannel* lChannel = lBlendShape->GetBlendShapeChannel(lChannelIndex);
-						FbxString lChannelName = lChannel->GetNameOnly();
-						if (lChannelName == channelName)
+						FbxBlendShape* lBlendShape = (FbxBlendShape*)lGeometry->GetDeformer(0, FbxDeformer::eBlendShape);
+						int lBlendShapeChannelCount = lBlendShape->GetBlendShapeChannelCount();
+						for (int lChannelIndex = 0; lChannelIndex < lBlendShapeChannelCount; ++lChannelIndex)
 						{
-							FbxAnimCurve* lAnimCurve = lGeometry->GetShapeChannel(0, lChannelIndex, lAnimLayer, true);
-							lAnimCurve->KeyModifyBegin();
-
-							for each (auto keyframe in keyframeList->BlendShape->Keyframes)
+							FbxBlendShapeChannel* lChannel = lBlendShape->GetBlendShapeChannel(lChannelIndex);
+							FbxString lChannelName = lChannel->GetNameOnly();
+							if (lChannelName == channelName)
 							{
-								lTime.SetSecondDouble(keyframe->time);
-								int lKeyIndex = lAnimCurve->KeyAdd(lTime);
-								lAnimCurve->KeySetValue(lKeyIndex, keyframe->value);
-								lAnimCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationCubic);
-							}
+								FbxAnimCurve* lAnimCurve = lGeometry->GetShapeChannel(0, lChannelIndex, lAnimLayer, true);
+								lAnimCurve->KeyModifyBegin();
 
-							lAnimCurve->KeyModifyEnd();
+								for each (auto keyframe in keyframeList->BlendShape->Keyframes)
+								{
+									lTime.SetSecondDouble(keyframe->time);
+									int lKeyIndex = lAnimCurve->KeyAdd(lTime);
+									lAnimCurve->KeySetValue(lKeyIndex, keyframe->value);
+									lAnimCurve->KeySetInterpolation(lKeyIndex, FbxAnimCurveDef::eInterpolationCubic);
+								}
+
+								lAnimCurve->KeyModifyEnd();
+							}
 						}
 					}
 				}

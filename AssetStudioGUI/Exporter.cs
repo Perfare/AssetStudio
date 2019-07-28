@@ -322,14 +322,17 @@ namespace AssetStudioGUI
         {
             var eulerFilter = (bool)Properties.Settings.Default["eulerFilter"];
             var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
-            var allFrames = (bool)Properties.Settings.Default["allFrames"];
-            var allBones = (bool)Properties.Settings.Default["allBones"];
-            var skins = (bool)Properties.Settings.Default["skins"];
+            var exportAllNodes = (bool)Properties.Settings.Default["exportAllNodes"];
+            var exportSkins = (bool)Properties.Settings.Default["exportSkins"];
+            var exportAnimations = (bool)Properties.Settings.Default["exportAnimations"];
+            var exportBlendShape = (bool)Properties.Settings.Default["exportBlendShape"];
+            var castToBone = (bool)Properties.Settings.Default["castToBone"];
             var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
             var scaleFactor = (float)(decimal)Properties.Settings.Default["scaleFactor"];
             var fbxVersion = (int)Properties.Settings.Default["fbxVersion"];
             var fbxFormat = (int)Properties.Settings.Default["fbxFormat"];
-            ModelExporter.ExportFbx(exportPath, convert, eulerFilter, filterPrecision, allFrames, allBones, skins, boneSize, scaleFactor, fbxVersion, fbxFormat == 1);
+            ModelExporter.ExportFbx(exportPath, convert, eulerFilter, filterPrecision,
+                exportAllNodes, exportSkins, exportAnimations, exportBlendShape, castToBone, boneSize, scaleFactor, fbxVersion, fbxFormat == 1);
         }
     }
 }

@@ -48,7 +48,8 @@ namespace AssetStudio {
 		ref class Exporter
 		{
 		public:
-			static void Export(String^ name, IImported^ imported, bool eulerFilter, float filterPrecision, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
+			static void Export(String^ path, IImported^ imported, bool eulerFilter, float filterPrecision,
+				bool allNodes, bool skins, bool animation, bool blendShape, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
 
 		private:
 			bool exportSkins;
@@ -66,7 +67,7 @@ namespace AssetStudio {
 			FbxArray<FbxFileTexture*>* pTextures;
 			FbxPose* pBindPose;
 
-			Exporter(String^ path, IImported^ imported, bool allFrames, bool allBones, bool skins, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
+			Exporter(String^ name, IImported^ imported, bool allNodes, bool skins, bool castToBone, float boneSize, float scaleFactor, int versionIndex, bool isAscii);
 			~Exporter();
 
 			void Exporter::LinkTexture(ImportedMaterialTexture^ texture, FbxFileTexture* pTexture, FbxProperty& prop);

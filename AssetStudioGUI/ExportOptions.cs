@@ -28,9 +28,11 @@ namespace AssetStudioGUI
             }
             eulerFilter.Checked = (bool)Properties.Settings.Default["eulerFilter"];
             filterPrecision.Value = (decimal)Properties.Settings.Default["filterPrecision"];
-            allFrames.Checked = (bool)Properties.Settings.Default["allFrames"];
-            allBones.Checked = (bool)Properties.Settings.Default["allBones"];
-            skins.Checked = (bool)Properties.Settings.Default["skins"];
+            exportAllNodes.Checked = (bool)Properties.Settings.Default["exportAllNodes"];
+            exportSkins.Checked = (bool)Properties.Settings.Default["exportSkins"];
+            exportAnimations.Checked = (bool)Properties.Settings.Default["exportAnimations"];
+            exportBlendShape.Checked = (bool)Properties.Settings.Default["exportBlendShape"];
+            castToBone.Checked = (bool)Properties.Settings.Default["castToBone"];
             boneSize.Value = (decimal)Properties.Settings.Default["boneSize"];
             scaleFactor.Value = (decimal)Properties.Settings.Default["scaleFactor"];
             fbxVersion.SelectedIndex = (int)Properties.Settings.Default["fbxVersion"];
@@ -57,9 +59,11 @@ namespace AssetStudioGUI
             }
             Properties.Settings.Default["eulerFilter"] = eulerFilter.Checked;
             Properties.Settings.Default["filterPrecision"] = filterPrecision.Value;
-            Properties.Settings.Default["allFrames"] = allFrames.Checked;
-            Properties.Settings.Default["allBones"] = allBones.Checked;
-            Properties.Settings.Default["skins"] = skins.Checked;
+            Properties.Settings.Default["exportAllNodes"] = exportAllNodes.Checked;
+            Properties.Settings.Default["exportSkins"] = exportSkins.Checked;
+            Properties.Settings.Default["exportAnimations"] = exportAnimations.Checked;
+            Properties.Settings.Default["exportBlendShape"] = exportBlendShape.Checked;
+            Properties.Settings.Default["castToBone"] = castToBone.Checked;
             Properties.Settings.Default["boneSize"] = boneSize.Value;
             Properties.Settings.Default["scaleFactor"] = scaleFactor.Value;
             Properties.Settings.Default["fbxVersion"] = fbxVersion.SelectedIndex;

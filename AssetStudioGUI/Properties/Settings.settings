@@ -35,13 +35,13 @@
     <Setting Name="filterPrecision" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">0.25</Value>
     </Setting>
-    <Setting Name="allFrames" Type="System.Boolean" Scope="User">
+    <Setting Name="exportAllNodes" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="allBones" Type="System.Boolean" Scope="User">
+    <Setting Name="exportSkins" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="skins" Type="System.Boolean" Scope="User">
+    <Setting Name="exportAnimations" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="boneSize" Type="System.Decimal" Scope="User">
@@ -55,6 +55,12 @@
     </Setting>
     <Setting Name="scaleFactor" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="exportBlendShape" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="castToBone" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>
