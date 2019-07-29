@@ -333,33 +333,31 @@ namespace AssetStudio
 			hasBones = false;
 		}
 
-		FbxArray<FbxNode*>* pBoneNodeList = nullptr;
 		FbxArray<FbxCluster*>* pClusterArray = nullptr;
 
 		try
 		{
 			if (hasBones)
 			{
-				pBoneNodeList = new FbxArray<FbxNode*>();
-				pBoneNodeList->Reserve(boneList->Count);
+				pClusterArray = new FbxArray<FbxCluster*>(boneList->Count);
+
 				for (int i = 0; i < boneList->Count; i++)
 				{
 					auto bone = boneList[i];
-					auto frame = imported->RootFrame->FindFrameByPath(bone->Path);
-					auto frameNode = (FbxNode*)frameToNode[frame];
-					pBoneNodeList->Add(frameNode);
-				}
-
-				pClusterArray = new FbxArray<FbxCluster*>();
-				pClusterArray->Reserve(boneList->Count);
-				for (int i = 0; i < boneList->Count; i++)
-				{
-					FbxNode* pNode = pBoneNodeList->GetAt(i);
-					FbxString lClusterName = pNode->GetNameOnly() + FbxString("Cluster");
-					FbxCluster* pCluster = FbxCluster::Create(pScene, lClusterName.Buffer());
-					pCluster->SetLink(pNode);
-					pCluster->SetLinkMode(FbxCluster::eTotalOne);
-					pClusterArray->Add(pCluster);
+					if (bone->Path != nullptr)
+					{
+						auto frame = imported->RootFrame->FindFrameByPath(bone->Path);
+						auto boneNode = (FbxNode*)frameToNode[frame];
+						FbxString lClusterName = boneNode->GetNameOnly() + FbxString("Cluster");
+						FbxCluster* pCluster = FbxCluster::Create(pScene, lClusterName.Buffer());
+						pCluster->SetLink(boneNode);
+						pCluster->SetLinkMode(FbxCluster::eTotalOne);
+						pClusterArray->Add(pCluster);
+					}
+					else
+					{
+						pClusterArray->Add(NULL);
+					}
 				}
 			}
 
@@ -532,7 +530,10 @@ namespace AssetStudio
 							if (boneIndices[k] < boneList->Count && weights4[k] > 0)
 							{
 								FbxCluster* pCluster = pClusterArray->GetAt(boneIndices[k]);
-								pCluster->AddControlPointIndex(j + firstVertex, weights4[k]);
+								if (pCluster)
+								{
+									pCluster->AddControlPointIndex(j + firstVertex, weights4[k]);
+								}
 							}
 						}
 					}
@@ -558,20 +559,23 @@ namespace AssetStudio
 				for (int j = 0; j < boneList->Count; j++)
 				{
 					FbxCluster* pCluster = pClusterArray->GetAt(j);
-					auto boneMatrix = boneList[j]->Matrix;
-					FbxAMatrix lBoneMatrix;
-					for (int m = 0; m < 4; m++)
+					if (pCluster)
 					{
-						for (int n = 0; n < 4; n++)
+						auto boneMatrix = boneList[j]->Matrix;
+						FbxAMatrix lBoneMatrix;
+						for (int m = 0; m < 4; m++)
 						{
-							lBoneMatrix.mData[m][n] = boneMatrix[m, n];
+							for (int n = 0; n < 4; n++)
+							{
+								lBoneMatrix.mData[m][n] = boneMatrix[m, n];
+							}
 						}
+
+						pCluster->SetTransformMatrix(lMeshMatrix);
+						pCluster->SetTransformLinkMatrix(lMeshMatrix * lBoneMatrix.Inverse());
+
+						pSkin->AddCluster(pCluster);
 					}
-
-					pCluster->SetTransformMatrix(lMeshMatrix);
-					pCluster->SetTransformLinkMatrix(lMeshMatrix * lBoneMatrix.Inverse());
-
-					pSkin->AddCluster(pCluster);
 				}
 
 				if (pSkin->GetClusterCount() > 0)
@@ -582,10 +586,6 @@ namespace AssetStudio
 		}
 		finally
 		{
-			if (pBoneNodeList != NULL)
-			{
-				delete pBoneNodeList;
-			}
 			if (pClusterArray != NULL)
 			{
 				delete pClusterArray;

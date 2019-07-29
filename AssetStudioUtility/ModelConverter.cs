@@ -392,44 +392,78 @@ namespace AssetStudio
             if (meshR is SkinnedMeshRenderer sMesh)
             {
                 //Bone
+                /*
+                 * 0 - None
+                 * 1 - m_Bones
+                 * 2 - m_BoneNameHashes
+                 */
+                var boneType = 0;
                 if (sMesh.m_Bones.Length > 0)
                 {
-                    var boneMax = Math.Min(sMesh.m_Bones.Length, mesh.m_BindPose.Length);
-                    iMesh.BoneList = new List<ImportedBone>(boneMax);
-                    for (int i = 0; i < boneMax; i++)
+                    if (sMesh.m_Bones.Length == mesh.m_BindPose.Length)
+                    {
+                        var verifiedBoneCount = sMesh.m_Bones.Count(x => x.TryGet(out _));
+                        if (verifiedBoneCount > 0)
+                        {
+                            boneType = 1;
+                        }
+                        if (verifiedBoneCount != sMesh.m_Bones.Length)
+                        {
+                            //尝试使用m_BoneNameHashes 4.3 and up
+                            if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
+                            {
+                                //有效bone数量是否大于SkinnedMeshRenderer
+                                var verifiedBoneCount2 = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+                                if (verifiedBoneCount2 > verifiedBoneCount)
+                                {
+                                    boneType = 2;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Logger.Error("");
+                    }
+                }
+                else
+                {
+                    //尝试使用m_BoneNameHashes 4.3 and up
+                    if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
+                    {
+                        boneType = 2;
+                    }
+                }
+
+                if (boneType == 1)
+                {
+                    var boneCount = sMesh.m_Bones.Length;
+                    iMesh.BoneList = new List<ImportedBone>(boneCount);
+                    for (int i = 0; i < boneCount; i++)
                     {
                         var bone = new ImportedBone();
                         if (sMesh.m_Bones[i].TryGet(out var m_Transform))
                         {
                             bone.Path = GetTransformPath(m_Transform);
                         }
-                        if (!string.IsNullOrEmpty(bone.Path))
-                        {
-                            var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
-                            bone.Matrix = convert * mesh.m_BindPose[i] * convert;
-                            iMesh.BoneList.Add(bone);
-                        }
+                        var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                        bone.Matrix = convert * mesh.m_BindPose[i] * convert;
+                        iMesh.BoneList.Add(bone);
                     }
                 }
-                if (iMesh.BoneList == null || iMesh.BoneList.Count == 0)
+                else if (boneType == 2)
                 {
-                    if (mesh.m_BindPose.Length > 0 && mesh.m_BoneNameHashes?.Length > 0)
+                    var boneCount = mesh.m_BindPose.Length;
+                    iMesh.BoneList = new List<ImportedBone>(boneCount);
+                    for (int i = 0; i < boneCount; i++)
                     {
-                        var boneMax = Math.Min(mesh.m_BindPose.Length, mesh.m_BoneNameHashes.Length);
-                        iMesh.BoneList = new List<ImportedBone>(boneMax);
-                        for (int i = 0; i < boneMax; i++)
-                        {
-                            var bone = new ImportedBone();
-                            var boneHash = mesh.m_BoneNameHashes[i];
-                            var path = GetPathFromHash(boneHash);
-                            bone.Path = FixBonePath(path);
-                            if (!string.IsNullOrEmpty(bone.Path))
-                            {
-                                var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
-                                bone.Matrix = convert * mesh.m_BindPose[i] * convert;
-                                iMesh.BoneList.Add(bone);
-                            }
-                        }
+                        var bone = new ImportedBone();
+                        var boneHash = mesh.m_BoneNameHashes[i];
+                        var path = GetPathFromHash(boneHash);
+                        bone.Path = FixBonePath(path);
+                        var convert = Matrix4x4.Scale(new Vector3(-1, 1, 1));
+                        bone.Matrix = convert * mesh.m_BindPose[i] * convert;
+                        iMesh.BoneList.Add(bone);
                     }
                 }
 
@@ -446,7 +480,7 @@ namespace AssetStudio
                         morph.Channels.Add(channel);
                         var shapeChannel = mesh.m_Shapes.channels[i];
 
-                        morphChannelNames.Add(shapeChannel.nameHash, shapeChannel.name);
+                        morphChannelNames[shapeChannel.nameHash] = shapeChannel.name;
 
                         channel.Name = shapeChannel.name;
                         channel.KeyframeList = new List<ImportedMorphKeyframe>(shapeChannel.frameCount);
