@@ -480,7 +480,11 @@ namespace AssetStudio
                         morph.Channels.Add(channel);
                         var shapeChannel = mesh.m_Shapes.channels[i];
 
-                        morphChannelNames[shapeChannel.nameHash] = shapeChannel.name;
+                        var blendShapeName = "blendShape." + shapeChannel.name;
+                        var crc = new SevenZip.CRC();
+                        var bytes = Encoding.UTF8.GetBytes(blendShapeName);
+                        crc.Update(bytes, 0, (uint)bytes.Length);
+                        morphChannelNames[crc.GetDigest()] = blendShapeName;
 
                         channel.Name = shapeChannel.name;
                         channel.KeyframeList = new List<ImportedMorphKeyframe>(shapeChannel.frameCount);

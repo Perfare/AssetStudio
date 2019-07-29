@@ -684,10 +684,10 @@ namespace AssetStudioGUI
                         break;
                     case Animator _:
                         StatusStripUpdate("Can be exported to FBX file.");
-                        goto default;
+                        break;
                     case AnimationClip _:
                         StatusStripUpdate("Can be exported with Animator or Objects");
-                        goto default;
+                        break;
                     default:
                         var str = assetItem.Asset.Dump();
                         if (str != null)
