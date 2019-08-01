@@ -37,11 +37,12 @@ namespace AssetStudio
                 using (originalImage)
                 {
                     //var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
-                    var spriteImage = new Bitmap((int)textureRect.Width, (int)textureRect.Height, PixelFormat.Format32bppArgb);
-                    var destRect = new Rectangle(0, 0, (int)textureRect.Width, (int)textureRect.Height);
+                    var textureRectI = Rectangle.Round(textureRect);
+                    var spriteImage = new Bitmap(textureRectI.Width, textureRectI.Height, PixelFormat.Format32bppArgb);
+                    var destRect = new Rectangle(0, 0, textureRectI.Width, textureRectI.Height);
                     using (var graphic = Graphics.FromImage(spriteImage))
                     {
-                        graphic.DrawImage(originalImage, destRect, textureRect, GraphicsUnit.Pixel);
+                        graphic.DrawImage(originalImage, destRect, textureRectI, GraphicsUnit.Pixel);
                     }
                     if (settingsRaw.packed == 1)
                     {
@@ -90,7 +91,7 @@ namespace AssetStudio
                                         }
                                         matr.Scale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits);
                                         path.Transform(matr);
-                                        var bitmap = new Bitmap((int)textureRect.Width, (int)textureRect.Height);
+                                        var bitmap = new Bitmap(textureRectI.Width, textureRectI.Height);
                                         using (var graphic = Graphics.FromImage(bitmap))
                                         {
                                             using (var brush = new TextureBrush(spriteImage))
