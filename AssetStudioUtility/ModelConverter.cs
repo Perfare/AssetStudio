@@ -283,6 +283,12 @@ namespace AssetStudio
                 }
                 combine = true;
             }
+
+            iMesh.hasNormal = mesh.m_Normals?.Length > 0;
+            iMesh.hasUV = mesh.m_UV0?.Length > 0;
+            iMesh.hasTangent = mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4;
+            iMesh.hasColor = mesh.m_Colors?.Length > 0;
+
             int firstFace = 0;
             for (int i = 0; i < mesh.m_SubMeshes.Length; i++)
             {
@@ -316,9 +322,8 @@ namespace AssetStudio
                     }
                     iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
                     //Normals
-                    if (mesh.m_Normals?.Length > 0)
+                    if (iMesh.hasNormal)
                     {
-                        iMesh.hasNormal = true;
                         if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
                         {
                             c = 3;
@@ -329,23 +334,9 @@ namespace AssetStudio
                         }
                         iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
                     }
-                    //Colors
-                    if (mesh.m_Colors?.Length > 0)
-                    {
-                        iMesh.hasColor = true;
-                        if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
-                        {
-                            iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
-                        }
-                        else
-                        {
-                            iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
-                        }
-                    }
                     //UV
-                    if (mesh.m_UV0?.Length > 0)
+                    if (iMesh.hasUV)
                     {
-                        iMesh.hasUV = true;
                         if (mesh.m_UV0.Length == mesh.m_VertexCount * 2)
                         {
                             c = 2;
@@ -357,10 +348,21 @@ namespace AssetStudio
                         iVertex.UV = new[] { mesh.m_UV0[j * c], mesh.m_UV0[j * c + 1] };
                     }
                     //Tangent
-                    if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
+                    if (iMesh.hasTangent)
                     {
-                        iMesh.hasTangent = true;
                         iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
+                    }
+                    //Colors
+                    if (iMesh.hasColor)
+                    {
+                        if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
+                        {
+                            iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                        }
+                        else
+                        {
+                            iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                        }
                     }
                     //BoneInfluence
                     if (mesh.m_Skin?.Length > 0)
