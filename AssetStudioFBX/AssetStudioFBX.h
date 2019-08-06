@@ -76,7 +76,7 @@ namespace AssetStudio {
 			void SearchHierarchy(ImportedFrame^ frame, HashSet<String^>^ exportFrames);
 			void SetJointsFromImportedMeshes(bool allBones);
 			void ExportFrame(FbxNode* pParentNode, ImportedFrame^ frame);
-			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList);
+			void ExportMesh(FbxNode* pFrameNode, ImportedMesh^ iMesh);
 			FbxFileTexture* ExportTexture(ImportedTexture^ matTex);
 			void ExportAnimations(bool eulerFilter, float filterValue);
 			void ExportKeyframedAnimation(ImportedKeyframedAnimation^ parser, FbxString& kTakeName, FbxAnimCurveFilterUnroll* eulerFilter, float filterPrecision);

@@ -134,6 +134,10 @@ namespace AssetStudio
         public string Path { get; set; }
         public List<ImportedSubmesh> SubmeshList { get; set; }
         public List<ImportedBone> BoneList { get; set; }
+        public bool hasNormal { get; set; }
+        public bool hasUV { get; set; }
+        public bool hasTangent { get; set; }
+        public bool hasColor { get; set; }
     }
 
     public class ImportedSubmesh
@@ -145,17 +149,13 @@ namespace AssetStudio
 
     public class ImportedVertex
     {
-        public Vector3 Position { get; set; }
-        public float[] Weights { get; set; }
-        public int[] BoneIndices { get; set; }
+        public Vector3 Vertex { get; set; }
         public Vector3 Normal { get; set; }
         public float[] UV { get; set; }
         public Vector4 Tangent { get; set; }
-    }
-
-    public class ImportedVertexWithColour : ImportedVertex
-    {
-        public Color Colour { get; set; }
+        public Color Color { get; set; }
+        public float[] Weights { get; set; }
+        public int[] BoneIndices { get; set; }
     }
 
     public class ImportedFace
@@ -234,8 +234,6 @@ namespace AssetStudio
     {
         public float time { get; set; }
         public T value { get; set; }
-        public T inSlope { get; set; }
-        public T outSlope { get; set; }
 
         public ImportedKeyframe(float time, T value)
         {

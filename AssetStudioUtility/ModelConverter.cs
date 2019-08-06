@@ -305,20 +305,20 @@ namespace AssetStudio
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
                 iSubmesh.VertexList = new List<ImportedVertex>((int)submesh.vertexCount);
-                var vertexColours = mesh.m_Colors != null && (mesh.m_Colors.Length == mesh.m_VertexCount * 3 || mesh.m_Colors.Length == mesh.m_VertexCount * 4);
                 for (var j = mesh.m_SubMeshes[i].firstVertex; j < mesh.m_SubMeshes[i].firstVertex + mesh.m_SubMeshes[i].vertexCount; j++)
                 {
-                    var iVertex = vertexColours ? new ImportedVertexWithColour() : new ImportedVertex();
+                    var iVertex = new ImportedVertex();
                     //Vertices
                     int c = 3;
                     if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
                     {
                         c = 4;
                     }
-                    iVertex.Position = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
+                    iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
                     //Normals
                     if (mesh.m_Normals?.Length > 0)
                     {
+                        iMesh.hasNormal = true;
                         if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
                         {
                             c = 3;
@@ -330,20 +330,22 @@ namespace AssetStudio
                         iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
                     }
                     //Colors
-                    if (vertexColours)
+                    if (mesh.m_Colors?.Length > 0)
                     {
+                        iMesh.hasColor = true;
                         if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
                         {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                            iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
                         }
                         else
                         {
-                            ((ImportedVertexWithColour)iVertex).Colour = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                            iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
                         }
                     }
                     //UV
                     if (mesh.m_UV0?.Length > 0)
                     {
+                        iMesh.hasUV = true;
                         if (mesh.m_UV0.Length == mesh.m_VertexCount * 2)
                         {
                             c = 2;
@@ -357,6 +359,7 @@ namespace AssetStudio
                     //Tangent
                     if (mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4)
                     {
+                        iMesh.hasTangent = true;
                         iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], -mesh.m_Tangents[j * 4 + 3]);
                     }
                     //BoneInfluence
@@ -508,7 +511,7 @@ namespace AssetStudio
                                 var sourceVertex = GetSourceVertex(iMesh.SubmeshList, (int)morphVertex.index);
                                 destVertex.Vertex = new ImportedVertex();
                                 var morphPos = morphVertex.vertex;
-                                destVertex.Vertex.Position = sourceVertex.Position + new Vector3(-morphPos.X, morphPos.Y, morphPos.Z);
+                                destVertex.Vertex.Vertex = sourceVertex.Vertex + new Vector3(-morphPos.X, morphPos.Y, morphPos.Z);
                                 if (shape.hasNormals)
                                 {
                                     var morphNormal = morphVertex.normal;

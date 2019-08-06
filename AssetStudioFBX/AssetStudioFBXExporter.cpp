@@ -320,9 +320,9 @@ namespace AssetStudio
 		}
 	}
 
-	void Fbx::Exporter::ExportMesh(FbxNode* pFrameNode, ImportedMesh^ meshList)
+	void Fbx::Exporter::ExportMesh(FbxNode* pFrameNode, ImportedMesh^ iMesh)
 	{
-		List<ImportedBone^>^ boneList = meshList->BoneList;
+		List<ImportedBone^>^ boneList = iMesh->BoneList;
 		bool hasBones;
 		if (exportSkins && boneList != nullptr)
 		{
@@ -365,29 +365,40 @@ namespace AssetStudio
 			pFrameNode->SetNodeAttribute(pMesh);
 
 			int vertexCount = 0;
-			for (int i = 0; i < meshList->SubmeshList->Count; i++)
+			for (int i = 0; i < iMesh->SubmeshList->Count; i++)
 			{
-				vertexCount += meshList->SubmeshList[i]->VertexList->Count;
+				vertexCount += iMesh->SubmeshList[i]->VertexList->Count;
 			}
 
 			pMesh->InitControlPoints(vertexCount);
 			FbxVector4* pControlPoints = pMesh->GetControlPoints();
 
-			FbxGeometryElementNormal* lGeometryElementNormal = pMesh->CreateElementNormal();
-			lGeometryElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementNormal* lGeometryElementNormal = NULL;
+			if (iMesh->hasNormal)
+			{
+				lGeometryElementNormal = pMesh->CreateElementNormal();
+				lGeometryElementNormal->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementUV* lGeometryElementUV = pMesh->CreateElementUV("UV0");
-			lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementUV* lGeometryElementUV = NULL;
+			if (iMesh->hasUV)
+			{
+				lGeometryElementUV = pMesh->CreateElementUV("UV0");
+				lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementTangent* lGeometryElementTangent = pMesh->CreateElementTangent();
-			lGeometryElementTangent->SetMappingMode(FbxGeometryElement::eByControlPoint);
-			lGeometryElementTangent->SetReferenceMode(FbxGeometryElement::eDirect);
+			FbxGeometryElementTangent* lGeometryElementTangent = NULL;
+			if (iMesh->hasTangent)
+			{
+				lGeometryElementTangent = pMesh->CreateElementTangent();
+				lGeometryElementTangent->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementTangent->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
 
-			FbxGeometryElementVertexColor* lGeometryElementVertexColor = nullptr;
-			bool vertexColours = vertexCount > 0 && dynamic_cast<ImportedVertexWithColour^>(meshList->SubmeshList[0]->VertexList[0]) != nullptr;
-			if (vertexColours)
+			FbxGeometryElementVertexColor* lGeometryElementVertexColor = NULL;
+			if (iMesh->hasColor)
 			{
 				lGeometryElementVertexColor = pMesh->CreateElementVertexColor();
 				lGeometryElementVertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
@@ -399,9 +410,9 @@ namespace AssetStudio
 			lGeometryElementMaterial->SetReferenceMode(FbxGeometryElement::eIndexToDirect);
 
 			int firstVertex = 0;
-			for (int i = 0; i < meshList->SubmeshList->Count; i++)
+			for (int i = 0; i < iMesh->SubmeshList->Count; i++)
 			{
-				ImportedSubmesh^ meshObj = meshList->SubmeshList[i];
+				ImportedSubmesh^ meshObj = iMesh->SubmeshList[i];
 				List<ImportedVertex^>^ vertexList = meshObj->VertexList;
 				List<ImportedFace^>^ faceList = meshObj->FaceList;
 
@@ -498,33 +509,39 @@ namespace AssetStudio
 
 				for (int j = 0; j < vertexList->Count; j++)
 				{
-					ImportedVertex^ vertex = vertexList[j];
+					ImportedVertex^ iVertex = vertexList[j];
 
-					Vector3 coords = vertex->Position;
-					pControlPoints[j + firstVertex] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
+					Vector3 vertex = iVertex->Vertex;
+					pControlPoints[j + firstVertex] = FbxVector4(vertex.X, vertex.Y, vertex.Z, 0);
 
-					Vector3 normal = vertex->Normal;
-					lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
-
-					array<float>^ uv = vertex->UV;
-					if (uv != nullptr)
+					if (iMesh->hasNormal)
 					{
+						Vector3 normal = iVertex->Normal;
+						lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
+					}
+
+					if (iMesh->hasUV)
+					{
+						array<float>^ uv = iVertex->UV;
 						lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], uv[1]));
 					}
 
-					Vector4 tangent = vertex->Tangent;
-					lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, tangent.W));
-
-					if (vertexColours)
+					if (iMesh->hasTangent)
 					{
-						ImportedVertexWithColour^ vert = (ImportedVertexWithColour^)vertexList[j];
-						lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(vert->Colour.R, vert->Colour.G, vert->Colour.B, vert->Colour.A));
+						Vector4 tangent = iVertex->Tangent;
+						lGeometryElementTangent->GetDirectArray().Add(FbxVector4(tangent.X, tangent.Y, tangent.Z, tangent.W));
 					}
 
-					if (hasBones && vertex->BoneIndices != nullptr)
+					if (iMesh->hasColor)
 					{
-						auto boneIndices = vertex->BoneIndices;
-						auto weights4 = vertex->Weights;
+						auto color = iVertex->Color;
+						lGeometryElementVertexColor->GetDirectArray().Add(FbxColor(color.R, color.G, color.B, color.A));
+					}
+
+					if (hasBones && iVertex->BoneIndices != nullptr)
+					{
+						auto boneIndices = iVertex->BoneIndices;
+						auto weights4 = iVertex->Weights;
 						for (int k = 0; k < 4; k++)
 						{
 							if (boneIndices[k] < boneList->Count && weights4[k] > 0)
@@ -866,8 +883,8 @@ namespace AssetStudio
 						for (int j = 0; j < keyframe->VertexList->Count; j++)
 						{
 							auto index = keyframe->VertexList[j]->Index;
-							auto coords = keyframe->VertexList[j]->Vertex->Position;
-							lVector4[index] = FbxVector4(coords.X, coords.Y, coords.Z, 0);
+							auto vertex = keyframe->VertexList[j]->Vertex->Vertex;
+							lVector4[index] = FbxVector4(vertex.X, vertex.Y, vertex.Z, 0);
 						}
 					}
 				}
