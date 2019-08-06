@@ -39,13 +39,7 @@ namespace AssetStudioGUI
             fbxFormat.SelectedIndex = (int)Properties.Settings.Default["fbxFormat"];
         }
 
-        private void exportOpnions_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default[((CheckBox)sender).Name] = ((CheckBox)sender).Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void fbxOKbutton_Click(object sender, EventArgs e)
+        private void OKbutton_Click(object sender, EventArgs e)
         {
             Properties.Settings.Default["convertTexture"] = converttexture.Checked;
             Properties.Settings.Default["convertAudio"] = convertAudio.Checked;

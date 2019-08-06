@@ -70,7 +70,7 @@
             this.OKbutton.TabIndex = 6;
             this.OKbutton.Text = "OK";
             this.OKbutton.UseVisualStyleBackColor = true;
-            this.OKbutton.Click += new System.EventHandler(this.fbxOKbutton_Click);
+            this.OKbutton.Click += new System.EventHandler(this.OKbutton_Click);
             // 
             // Cancel
             // 

@@ -334,5 +334,19 @@ namespace AssetStudioGUI
             ModelExporter.ExportFbx(exportPath, convert, eulerFilter, filterPrecision,
                 exportAllNodes, exportSkins, exportAnimations, exportBlendShape, castToBone, boneSize, scaleFactor, fbxVersion, fbxFormat == 1);
         }
+
+        public static bool ExportDumpFile(AssetItem item, string exportPath)
+        {
+            var exportFullName = exportPath + item.Text + ".txt";
+            if (ExportFileExists(exportFullName))
+                return false;
+            var str = item.Asset.Dump();
+            if (str != null)
+            {
+                File.WriteAllText(exportFullName, str);
+                return true;
+            }
+            return false;
+        }
     }
 }

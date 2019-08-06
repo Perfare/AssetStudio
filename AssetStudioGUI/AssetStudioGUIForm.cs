@@ -1705,7 +1705,7 @@ namespace AssetStudioGUI
 
         private void exportSelectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, false);
+            ExportAssets(2, ExportType.Convert);
         }
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1817,21 +1817,6 @@ namespace AssetStudioGUI
             }
         }
 
-        private void allAssetsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ExportAssets(1, true);
-        }
-
-        private void selectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ExportAssets(2, true);
-        }
-
-        private void filteredAssetsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ExportAssets(3, true);
-        }
-
         private void jumpToSceneHierarchyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectasset = (AssetItem)assetListView.Items[assetListView.SelectedIndices[0]];
@@ -1844,17 +1829,47 @@ namespace AssetStudioGUI
 
         private void exportAllAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(1, false);
+            ExportAssets(1, ExportType.Convert);
         }
 
         private void exportSelectedAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, false);
+            ExportAssets(2, ExportType.Convert);
         }
 
         private void exportFilteredAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(3, false);
+            ExportAssets(3, ExportType.Convert);
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            ExportAssets(1, ExportType.Raw);
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            ExportAssets(2, ExportType.Raw);
+        }
+
+        private void toolStripMenuItem6_Click(object sender, EventArgs e)
+        {
+            ExportAssets(3, ExportType.Raw);
+        }
+
+        private void toolStripMenuItem7_Click(object sender, EventArgs e)
+        {
+            ExportAssets(1, ExportType.Dump);
+        }
+
+        private void toolStripMenuItem8_Click(object sender, EventArgs e)
+        {
+            ExportAssets(2, ExportType.Dump);
+        }
+
+        private void toolStripMenuItem9_Click(object sender, EventArgs e)
+        {
+            ExportAssets(3, ExportType.Dump);
         }
 
         private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -1914,7 +1929,7 @@ namespace AssetStudioGUI
             assetListView.EndUpdate();
         }
 
-        private void ExportAssets(int type, bool raw)
+        private void ExportAssets(int type, ExportType exportType)
         {
             if (exportableAssets.Count > 0)
             {
@@ -1936,7 +1951,7 @@ namespace AssetStudioGUI
                             toExportAssets = visibleAssets;
                             break;
                     }
-                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked, raw);
+                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked, exportType);
                 }
             }
             else
