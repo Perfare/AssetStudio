@@ -138,7 +138,7 @@ namespace AssetStudioGUI
 
             var productName = string.Empty;
             var tempDic = new Dictionary<Object, AssetItem>();
-            if (!dontLoadAssetsMenuItem.Checked)
+            if (!dontBuildAssetListMenuItem.Checked)
             {
                 BuildAssetList(tempDic, displayAll.Checked, displayOriginalName.Checked, out productName);
             }
@@ -166,7 +166,7 @@ namespace AssetStudioGUI
                 {
                     Text = $"AssetStudioGUI - no productName - {assetsManager.assetsFileList[0].unityVersion} - {assetsManager.assetsFileList[0].m_TargetPlatform}";
                 }
-                if (!dontLoadAssetsMenuItem.Checked)
+                if (!dontBuildAssetListMenuItem.Checked)
                 {
                     assetListView.VirtualListSize = visibleAssets.Count;
                     resizeAssetListColumns();
@@ -239,22 +239,6 @@ namespace AssetStudioGUI
 
         private void AssetStudioForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Control && e.Alt && e.KeyCode == Keys.D)
-            {
-                debugMenuItem.Visible = !debugMenuItem.Visible;
-                buildClassStructuresMenuItem.Checked = debugMenuItem.Visible;
-                dontLoadAssetsMenuItem.Checked = debugMenuItem.Visible;
-                dontBuildHierarchyMenuItem.Checked = debugMenuItem.Visible;
-                if (tabControl1.TabPages.Contains(tabPage3))
-                {
-                    tabControl1.TabPages.Remove(tabPage3);
-                }
-                else
-                {
-                    tabControl1.TabPages.Add(tabPage3);
-                }
-            }
-
             if (glControl1.Visible)
             {
                 if (e.Control)
@@ -288,9 +272,9 @@ namespace AssetStudioGUI
             }
         }
 
-        private void dontLoadAssetsMenuItem_CheckedChanged(object sender, EventArgs e)
+        private void dontBuildAssetListMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (dontLoadAssetsMenuItem.Checked)
+            if (dontBuildAssetListMenuItem.Checked)
             {
                 dontBuildHierarchyMenuItem.Checked = true;
                 dontBuildHierarchyMenuItem.Enabled = false;
