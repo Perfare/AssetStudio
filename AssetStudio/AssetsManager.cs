@@ -52,7 +52,7 @@ namespace AssetStudio
             assetsFileListHash.Clear();
 
             ReadAssets();
-            ProcessGameObject();
+            ProcessAssets();
         }
 
         private void LoadFile(string fullName)
@@ -332,9 +332,9 @@ namespace AssetStudio
             }
         }
 
-        private void ProcessGameObject()
+        private void ProcessAssets()
         {
-            Logger.Info("Process GameObject...");
+            Logger.Info("Process Assets...");
 
             foreach (var assetsFile in assetsFileList)
             {
@@ -366,6 +366,19 @@ namespace AssetStudio
                                     case Animation m_Animation:
                                         m_GameObject.m_Animation = m_Animation;
                                         break;
+                                }
+                            }
+                        }
+                    }
+                    else if (obj is SpriteAtlas m_SpriteAtlas)
+                    {
+                        foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
+                        {
+                            if (m_PackedSprite.TryGet(out var m_Sprite))
+                            {
+                                if (m_Sprite.m_SpriteAtlas.IsNull)
+                                {
+                                    m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
                                 }
                             }
                         }

@@ -1407,6 +1407,7 @@ namespace AssetStudioGUI
 
             Logger.Default = new GUILogger(StatusStripUpdate);
             Progress.Default = new GUIProgress(SetProgressBarValue);
+            Studio.StatusStripUpdate = StatusStripUpdate;
         }
 
         private void InitOpenTK()

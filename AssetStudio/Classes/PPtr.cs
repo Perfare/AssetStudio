@@ -126,6 +126,6 @@ namespace AssetStudio
             m_PathID = m_Object.m_PathID;
         }
 
-        public bool IsNull() => m_PathID == 0 || m_FileID < 0;
+        public bool IsNull => m_PathID == 0 || m_FileID < 0;
     }
 }
