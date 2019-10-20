@@ -214,7 +214,14 @@ namespace AssetStudioGUI
                     filterTypeToolStripMenuItem.DropDownItems.Add(typeItem);
                 }
                 allToolStripMenuItem.Checked = true;
-                StatusStripUpdate($"Finished loading {assetsManager.assetsFileList.Count} files with {assetListView.Items.Count} exportable assets.");
+                var log = $"Finished loading {assetsManager.assetsFileList.Count} files with {assetListView.Items.Count} exportable assets";
+                var m_ObjectsCount = assetsManager.assetsFileList.Sum(x => x.m_Objects.Count);
+                var objectsCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
+                if (m_ObjectsCount != objectsCount)
+                {
+                    log += $" and {m_ObjectsCount - objectsCount} assets failed to read";
+                }
+                StatusStripUpdate(log);
                 treeSearch.Select();
             }));
         }
