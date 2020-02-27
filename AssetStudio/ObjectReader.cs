@@ -10,7 +10,7 @@ namespace AssetStudio
     {
         public SerializedFile assetsFile;
         public long m_PathID;
-        public uint byteStart;
+        public long byteStart;
         public uint byteSize;
         public ClassIDType type;
         public SerializedType serializedType;
