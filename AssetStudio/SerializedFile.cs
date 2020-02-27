@@ -55,6 +55,14 @@ namespace AssetStudio
                 m_FileEndianess = (EndianType)reader.ReadByte();
             }
 
+            if (header.m_Version >= 22)
+            {
+                header.m_MetadataSize = reader.ReadUInt32();
+                header.m_FileSize = reader.ReadInt64();
+                header.m_DataOffset = reader.ReadInt64();
+                reader.ReadInt64(); // unknown
+            }
+
             //ReadMetadata
             if (m_FileEndianess == EndianType.LittleEndian)
             {
@@ -106,7 +114,12 @@ namespace AssetStudio
                     reader.AlignStream();
                     objectInfo.m_PathID = reader.ReadInt64();
                 }
-                objectInfo.byteStart = reader.ReadUInt32();
+
+                if (header.m_Version >= 22)
+                    objectInfo.byteStart = reader.ReadInt64();
+                else
+                    objectInfo.byteStart = reader.ReadUInt32();
+
                 objectInfo.byteStart += header.m_DataOffset;
                 objectInfo.byteSize = reader.ReadUInt32();
                 objectInfo.typeID = reader.ReadInt32();

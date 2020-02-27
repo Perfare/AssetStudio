@@ -7,7 +7,7 @@ namespace AssetStudio
 {
     public class ObjectInfo
     {
-        public uint byteStart;
+        public long byteStart;
         public uint byteSize;
         public int typeID;
         public int classID;
