@@ -7,7 +7,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 ## Features
 * Support version:
-  * 2.5 - 2019.1
+  * 2.5 - 2019.3
 * Support asset types:
   * **Texture2D** : support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX
   * **Sprite** : bmp, png or jpeg
