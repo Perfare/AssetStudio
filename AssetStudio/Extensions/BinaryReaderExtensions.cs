@@ -122,6 +122,11 @@ namespace AssetStudio
             return ReadArray(reader.ReadUInt32, reader.ReadInt32());
         }
 
+        public static uint[][] ReadUInt32ArrayArray(this BinaryReader reader)
+        {
+            return ReadArray(reader.ReadUInt32Array, reader.ReadInt32());
+        }
+
         public static uint[] ReadUInt32Array(this BinaryReader reader, int length)
         {
             return ReadArray(reader.ReadUInt32, length);

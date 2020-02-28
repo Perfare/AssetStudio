@@ -591,6 +591,7 @@ namespace AssetStudio
         public SerializedProgram progGeometry;
         public SerializedProgram progHull;
         public SerializedProgram progDomain;
+        public SerializedProgram progRayTracing;
         public bool m_HasInstancingVariant;
         public string m_UseName;
         public string m_Name;
@@ -616,6 +617,10 @@ namespace AssetStudio
             progGeometry = new SerializedProgram(reader);
             progHull = new SerializedProgram(reader);
             progDomain = new SerializedProgram(reader);
+            if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+            {
+                progRayTracing = new SerializedProgram(reader);
+            }
             m_HasInstancingVariant = reader.ReadBoolean();
             if (version[0] >= 2018) //2018 and up
             {
@@ -759,9 +764,18 @@ namespace AssetStudio
             {
                 m_ParsedForm = new SerializedShader(reader);
                 platforms = reader.ReadUInt32Array().Select(x => (ShaderCompilerPlatform)x).ToArray();
-                offsets = reader.ReadUInt32Array();
-                compressedLengths = reader.ReadUInt32Array();
-                decompressedLengths = reader.ReadUInt32Array();
+                if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+                {
+                    offsets = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
+                    compressedLengths = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
+                    decompressedLengths = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
+                }
+                else
+                {
+                    offsets = reader.ReadUInt32Array();
+                    compressedLengths = reader.ReadUInt32Array();
+                    decompressedLengths = reader.ReadUInt32Array();
+                }
                 compressedBlob = reader.ReadBytes(reader.ReadInt32());
             }
             else

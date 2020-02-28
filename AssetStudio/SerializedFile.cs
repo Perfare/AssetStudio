@@ -186,6 +186,11 @@ namespace AssetStudio
             {
                 //var userInformation = reader.ReadStringToNull();
             }
+
+            if (header.m_Version >= 21)
+            {
+                //var unknown = reader.ReadInt32();
+            }
         }
 
         public void SetVersion(string stringVersion)
@@ -307,7 +312,10 @@ namespace AssetStudio
                 }
                 reader.Position += stringBufferSize;
             }
-
+            if (header.m_Version >= 21)
+            {
+                reader.Position += 4;
+            }
             string ReadString(BinaryReader stringBufferReader, uint value)
             {
                 var isOffset = (value & 0x80000000) == 0;

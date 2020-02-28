@@ -46,6 +46,10 @@ namespace AssetStudio
                     var m_MotionVectors = reader.ReadByte();
                     var m_LightProbeUsage = reader.ReadByte();
                     var m_ReflectionProbeUsage = reader.ReadByte();
+                    if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+                    {
+                        var m_RayTracingMode = reader.ReadByte();
+                    }
                     reader.AlignStream();
                 }
                 else

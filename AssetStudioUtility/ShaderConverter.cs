@@ -20,7 +20,7 @@ namespace AssetStudio
                 }
                 using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                 {
-                    var program = new ShaderProgram(blobReader);
+                    var program = new ShaderProgram(blobReader, shader.version);
                     return program.Export(Encoding.UTF8.GetString(shader.m_Script));
                 }
             }
@@ -49,7 +49,7 @@ namespace AssetStudio
                     }
                     using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                     {
-                        var program = new ShaderProgram(blobReader);
+                        var program = new ShaderProgram(blobReader, shader.version);
                         var m_Script = ConvertSerializedShader(shader.m_ParsedForm, shader.platforms[i]);
                         strs[i] = header + program.Export(m_Script);
                     }
@@ -556,13 +556,22 @@ namespace AssetStudio
     {
         private ShaderSubProgram[] m_SubPrograms;
 
-        public ShaderProgram(BinaryReader reader)
+        public ShaderProgram(BinaryReader reader, int[] version)
         {
             var subProgramsCapacity = reader.ReadInt32();
             m_SubPrograms = new ShaderSubProgram[subProgramsCapacity];
+            int entrySize;
+            if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+            {
+                entrySize = 12;
+            }
+            else
+            {
+                entrySize = 8;
+            }
             for (int i = 0; i < subProgramsCapacity; i++)
             {
-                reader.BaseStream.Position = 4 + i * 8;
+                reader.BaseStream.Position = 4 + i * entrySize;
                 var offset = reader.ReadInt32();
                 reader.BaseStream.Position = offset;
                 m_SubPrograms[i] = new ShaderSubProgram(reader);
