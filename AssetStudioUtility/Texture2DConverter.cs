@@ -921,6 +921,7 @@ namespace AssetStudio
             var gch = GCHandle.Alloc(buff, GCHandleType.Pinned);
             var imagePtr = gch.AddrOfPinnedObject();
             var bitmap = new Bitmap(m_Width, m_Height, stride, PixelFormat.Format16bppRgb565, imagePtr);
+            bitmap = bitmap.Clone(new Rectangle(0, 0, bitmap.Width, bitmap.Height), PixelFormat.Format32bppArgb);
             gch.Free();
             return bitmap;
         }
