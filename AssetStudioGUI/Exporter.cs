@@ -20,6 +20,7 @@ namespace AssetStudioGUI
                     return false;
                 ImageFormat format = null;
                 var ext = (string)Properties.Settings.Default["convertType"];
+                bool tga = false;
                 switch (ext)
                 {
                     case "BMP":
@@ -31,11 +32,20 @@ namespace AssetStudioGUI
                     case "JPEG":
                         format = ImageFormat.Jpeg;
                         break;
+                    case "TGA":
+                        tga = true;
+                        break;
                 }
                 var exportFullName = exportPathName + item.Text + "." + ext.ToLower();
                 if (ExportFileExists(exportFullName))
                     return false;
-                bitmap.Save(exportFullName, format);
+                if (tga)
+                {
+                    TGASharpLib.TGA file = new TGASharpLib.TGA(bitmap);
+                    file.Save(exportFullName);
+                }
+                else
+                    bitmap.Save(exportFullName, format);
                 bitmap.Dispose();
                 return true;
             }
@@ -251,6 +261,7 @@ namespace AssetStudioGUI
         {
             ImageFormat format = null;
             var type = (string)Properties.Settings.Default["convertType"];
+            bool tga = false;
             switch (type)
             {
                 case "BMP":
@@ -262,6 +273,9 @@ namespace AssetStudioGUI
                 case "JPEG":
                     format = ImageFormat.Jpeg;
                     break;
+                case "TGA":
+                    tga = true;
+                    break;
             }
             var exportFullName = exportPath + item.Text + "." + type.ToLower();
             if (ExportFileExists(exportFullName))
@@ -269,7 +283,13 @@ namespace AssetStudioGUI
             var bitmap = SpriteHelper.GetImageFromSprite((Sprite)item.Asset);
             if (bitmap != null)
             {
-                bitmap.Save(exportFullName, format);
+                if (tga)
+                {
+                    TGASharpLib.TGA file = new TGASharpLib.TGA(bitmap);
+                    file.Save(exportFullName);
+                }
+                else
+                    bitmap.Save(exportFullName, format);
                 bitmap.Dispose();
                 return true;
             }
