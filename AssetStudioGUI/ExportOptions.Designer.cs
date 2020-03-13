@@ -33,6 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.convertAudio = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.totga = new System.Windows.Forms.RadioButton();
             this.tojpg = new System.Windows.Forms.RadioButton();
             this.topng = new System.Windows.Forms.RadioButton();
             this.tobmp = new System.Windows.Forms.RadioButton();
@@ -110,13 +111,24 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.totga);
             this.panel1.Controls.Add(this.tojpg);
             this.panel1.Controls.Add(this.topng);
             this.panel1.Controls.Add(this.tobmp);
             this.panel1.Location = new System.Drawing.Point(30, 42);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(146, 30);
+            this.panel1.Size = new System.Drawing.Size(196, 30);
             this.panel1.TabIndex = 5;
+            // 
+            // totga
+            // 
+            this.totga.AutoSize = true;
+            this.totga.Location = new System.Drawing.Point(144, 6);
+            this.totga.Name = "totga";
+            this.totga.Size = new System.Drawing.Size(47, 16);
+            this.totga.TabIndex = 2;
+            this.totga.Text = "TGA";
+            this.totga.UseVisualStyleBackColor = true;
             // 
             // tojpg
             // 
@@ -421,6 +433,7 @@
         private System.Windows.Forms.RadioButton tojpg;
         private System.Windows.Forms.RadioButton topng;
         private System.Windows.Forms.RadioButton tobmp;
+        private System.Windows.Forms.RadioButton totga;
         private System.Windows.Forms.CheckBox convertAudio;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.GroupBox groupBox2;
