@@ -36,6 +36,11 @@ namespace AssetStudioGUI
 
         private Bitmap imageTexture;
 
+        #region TexControl
+        private static char[] textureChannelNames = new char[4] { 'R', 'G', 'B', 'A' };
+        private bool[] textureChannels = new bool[4] { true, true, true, true };
+        #endregion
+
         #region GLControl
         private bool glControlLoaded;
         private int mdx, mdy;
@@ -253,27 +258,55 @@ namespace AssetStudioGUI
                     switch (e.KeyCode)
                     {
                         case Keys.W:
-                            if (e.Control) //Toggle WireFrame
-                            {
-                                wireFrameMode = (wireFrameMode + 1) % 3;
-                                glControl1.Invalidate();
-                            }
+                            //Toggle WireFrame
+                            wireFrameMode = (wireFrameMode + 1) % 3;
+                            glControl1.Invalidate();
                             break;
                         case Keys.S:
-                            if (e.Control) //Toggle Shade
-                            {
-                                shadeMode = (shadeMode + 1) % 2;
-                                glControl1.Invalidate();
-                            }
+                            //Toggle Shade
+                            shadeMode = (shadeMode + 1) % 2;
+                            glControl1.Invalidate();
                             break;
                         case Keys.N:
-                            if (e.Control) //Normal mode
-                            {
-                                normalMode = (normalMode + 1) % 2;
-                                CreateVAO();
-                                glControl1.Invalidate();
-                            }
+                            //Normal mode
+                            normalMode = (normalMode + 1) % 2;
+                            CreateVAO();
+                            glControl1.Invalidate();
                             break;
+                    }
+                }
+            }
+            else if (previewPanel.Visible)
+            {
+                if (e.Control)
+                {
+                    bool dirty = false;
+                    switch (e.KeyCode)
+                    {
+                        case Keys.R:
+                            textureChannels[0] = !textureChannels[0];
+                            dirty = true;
+                            break;
+                        case Keys.G:
+                            textureChannels[1] = !textureChannels[1];
+                            dirty = true;
+                            break;
+                        case Keys.B:
+                            textureChannels[2] = !textureChannels[2];
+                            dirty = true;
+                            break;
+                        case Keys.A:
+                            textureChannels[3] = !textureChannels[3];
+                            dirty = true;
+                            break;
+                    }
+                    if (dirty)
+                    {
+                        PreviewAsset(lastLoadedAsset);
+                        if (assetInfoLabel.Text != null)
+                        {
+                            assetInfoLabel.Text = lastSelectedItem.InfoText;
+                        }
                     }
                 }
             }
@@ -714,8 +747,71 @@ namespace AssetStudioGUI
                     case 0: assetItem.InfoText += "\nWrap mode: Repeat"; break;
                     case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
                 }
-
+                assetItem.InfoText += "\nChannels: ";
+                bool dirty = false;
+                int validChannel = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (textureChannels[i])
+                    {
+                        assetItem.InfoText += textureChannelNames[i];
+                        validChannel++;
+                    }
+                    else
+                        dirty = true;
+                }
+                if (validChannel == 0)
+                    assetItem.InfoText += "None";
+                if (dirty)
+                {
+                    Action<byte[], int> handler = delegate { };
+                    if (validChannel == 0)
+                    {
+                        handler = (data, offset) => {
+                            for (int i = 0; i < 4; i++)
+                                data[i + offset] = (i == 3) ? (byte)255 : (byte)0;
+                        };
+                    }
+                    else if (validChannel == 1)
+                    {
+                        int c = 3;
+                        if (textureChannels[0])
+                            c = 0;
+                        else if (textureChannels[1])
+                            c = 1;
+                        else if (textureChannels[2])
+                            c = 2;
+                        handler = (data, offset) => {
+                            for (int i = 0; i < 4; i++)
+                                data[i + offset] = (i == 3) ? (byte)255 : data[c + offset];
+                        };
+                    }
+                    else
+                    {
+                        handler = (data, offset) => {
+                            for (int i = 0; i < 4; i++)
+                                data[i + offset] = textureChannels[i] ? data[i + offset] : (byte)(i == 3 ? 255 : 0);
+                        };
+                    }
+                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    int bytes = Math.Abs(bmpData.Stride) * bitmap.Height;
+                    byte[] values = new byte[bytes];
+                    Marshal.Copy(bmpData.Scan0, values, 0, bytes);
+                    for (int i = 0; i < bmpData.Height; i++)
+                    {
+                        int offset = Math.Abs(bmpData.Stride) * i;
+                        for (int j = 0; j < bitmap.Height; j++)
+                        {
+                            handler(values, offset);
+                            offset += 4;
+                        }
+                    }
+                    Marshal.Copy(values, 0, bmpData.Scan0, bytes);
+                    bitmap.UnlockBits(bmpData);
+                }
                 PreviewTexture(bitmap);
+
+                StatusStripUpdate("'Ctrl'+'R'/'G'/'B'/'A' for Channel Toggle");
             }
             else
             {
