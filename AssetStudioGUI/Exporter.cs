@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AssetStudio;
+using TGASharpLib;
 
 namespace AssetStudioGUI
 {
@@ -41,7 +42,7 @@ namespace AssetStudioGUI
                     return false;
                 if (tga)
                 {
-                    TGASharpLib.TGA file = new TGASharpLib.TGA(bitmap);
+                    var file = new TGA(bitmap);
                     file.Save(exportFullName);
                 }
                 else

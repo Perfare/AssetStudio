@@ -116,6 +116,7 @@
     </Compile>
     <Compile Include="Components\TypeTreeItem.cs" />
     <Compile Include="Components\TreeViewExtensions.cs" />
+    <Compile Include="TGASharpLib.cs" />
     <EmbeddedResource Include="ExportOptions.resx">
       <DependentUpon>ExportOptions.cs</DependentUpon>
     </EmbeddedResource>

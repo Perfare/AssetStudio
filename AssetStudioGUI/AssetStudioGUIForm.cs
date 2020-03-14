@@ -767,7 +767,8 @@ namespace AssetStudioGUI
                     Action<byte[], int> handler = delegate { };
                     if (validChannel == 0)
                     {
-                        handler = (data, offset) => {
+                        handler = (data, offset) =>
+                        {
                             for (int i = 0; i < 4; i++)
                                 data[i + offset] = (i == 3) ? (byte)255 : (byte)0;
                         };
@@ -781,14 +782,16 @@ namespace AssetStudioGUI
                             c = 1;
                         else if (textureChannels[2])
                             c = 2;
-                        handler = (data, offset) => {
+                        handler = (data, offset) =>
+                        {
                             for (int i = 0; i < 4; i++)
                                 data[i + offset] = (i == 3) ? (byte)255 : data[c + offset];
                         };
                     }
                     else
                     {
-                        handler = (data, offset) => {
+                        handler = (data, offset) =>
+                        {
                             for (int i = 0; i < 4; i++)
                                 data[i + offset] = textureChannels[i] ? data[i + offset] : (byte)(i == 3 ? 255 : 0);
                         };

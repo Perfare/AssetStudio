@@ -65,7 +65,6 @@
     <Compile Include="Math\Vector2.cs" />
     <Compile Include="Math\Vector3.cs" />
     <Compile Include="Math\Vector4.cs" />
-    <Compile Include="TGASharpLib\TGASharpLib.cs" />
     <Compile Include="UType.cs" />
     <Compile Include="ResourceReader.cs" />
     <Compile Include="IImported.cs" />

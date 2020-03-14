@@ -117,15 +117,15 @@
             this.panel1.Controls.Add(this.tobmp);
             this.panel1.Location = new System.Drawing.Point(30, 42);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(196, 30);
+            this.panel1.Size = new System.Drawing.Size(207, 30);
             this.panel1.TabIndex = 5;
             // 
             // totga
             // 
             this.totga.AutoSize = true;
-            this.totga.Location = new System.Drawing.Point(144, 6);
+            this.totga.Location = new System.Drawing.Point(150, 6);
             this.totga.Name = "totga";
-            this.totga.Size = new System.Drawing.Size(47, 16);
+            this.totga.Size = new System.Drawing.Size(41, 16);
             this.totga.TabIndex = 2;
             this.totga.Text = "TGA";
             this.totga.UseVisualStyleBackColor = true;
