@@ -674,6 +674,8 @@ namespace AssetStudioGUI
 
         private void PreviewAsset(AssetItem assetItem)
         {
+            if (assetItem == null)
+                return;
             try
             {
                 switch (assetItem.Asset)
