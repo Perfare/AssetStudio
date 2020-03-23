@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioGUI", "AssetStudioGUI\AssetStudioGUI.csproj", "{24551E2D-E9B6-4CD6-8F2A-D9F4A13E7853}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioUtility", "AssetStudioUtility\AssetStudioUtility.csproj", "{9131C403-7FE8-444D-9AF5-5FE5DF76FF24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{AF56B63C-1764-41B7-9E60-8D485422AC3B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Texture2DDecoder", "Texture2DDecoder\Texture2DDecoder.vcxproj", "{57CFF625-57AB-424A-9B6B-B5ED01282E92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x64.Build.0 = Release|Any CPU
 		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x86.ActiveCfg = Release|Any CPU
 		{AF56B63C-1764-41B7-9E60-8D485422AC3B}.Release|x86.Build.0 = Release|Any CPU
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Debug|x64.ActiveCfg = Debug|x64
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Debug|x64.Build.0 = Debug|x64
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Debug|x86.ActiveCfg = Debug|Win32
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Debug|x86.Build.0 = Debug|Win32
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Release|x64.ActiveCfg = Release|x64
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Release|x64.Build.0 = Release|x64
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Release|x86.ActiveCfg = Release|Win32
+		{57CFF625-57AB-424A-9B6B-B5ED01282E92}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

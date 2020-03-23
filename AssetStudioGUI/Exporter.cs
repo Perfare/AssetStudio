@@ -12,11 +12,11 @@ namespace AssetStudioGUI
     {
         public static bool ExportTexture2D(AssetItem item, string exportPathName)
         {
-            var converter = new Texture2DConverter((Texture2D)item.Asset);
+            var m_Texture2D = (Texture2D)item.Asset;
             var convertTexture = (bool)Properties.Settings.Default["convertTexture"];
             if (convertTexture)
             {
-                var bitmap = converter.ConvertToBitmap(true);
+                var bitmap = m_Texture2D.ConvertToBitmap(true);
                 if (bitmap == null)
                     return false;
                 ImageFormat format = null;
@@ -52,10 +52,10 @@ namespace AssetStudioGUI
             }
             else
             {
-                var exportFullName = exportPathName + item.Text + converter.GetExtensionName();
+                var exportFullName = exportPathName + item.Text + ".tex";
                 if (ExportFileExists(exportFullName))
                     return false;
-                File.WriteAllBytes(exportFullName, converter.ConvertToContainer());
+                File.WriteAllBytes(exportFullName, m_Texture2D.image_data.Value);
                 return true;
             }
         }

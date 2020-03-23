@@ -73,6 +73,7 @@
     <Compile Include="ShaderConverter.cs" />
     <Compile Include="SpriteHelper.cs" />
     <Compile Include="Texture2DConverter.cs" />
+    <Compile Include="Texture2DExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AssetStudioFBX\AssetStudioFBX.vcxproj">
@@ -82,6 +83,10 @@
     <ProjectReference Include="..\AssetStudio\AssetStudio.csproj">
       <Project>{af56b63c-1764-41b7-9e60-8d485422ac3b}</Project>
       <Name>AssetStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Texture2DDecoder\Texture2DDecoder.vcxproj">
+      <Project>{57cff625-57ab-424a-9b6b-b5ed01282e92}</Project>
+      <Name>Texture2DDecoder</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
