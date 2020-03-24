@@ -39,14 +39,14 @@ namespace AssetStudio
                     var m_Enabled = reader.ReadBoolean();
                     var m_CastShadows = reader.ReadByte();
                     var m_ReceiveShadows = reader.ReadByte();
-                    if (version[0] > 2017 || (version[0] == 2017 && version[0] >= 2)) //2017.2 and up
+                    if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
                     {
                         var m_DynamicOccludee = reader.ReadByte();
                     }
                     var m_MotionVectors = reader.ReadByte();
                     var m_LightProbeUsage = reader.ReadByte();
                     var m_ReflectionProbeUsage = reader.ReadByte();
-                    if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+                    if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
                     {
                         var m_RayTracingMode = reader.ReadByte();
                     }

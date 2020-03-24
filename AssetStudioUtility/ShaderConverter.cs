@@ -561,7 +561,7 @@ namespace AssetStudio
             var subProgramsCapacity = reader.ReadInt32();
             m_SubPrograms = new ShaderSubProgram[subProgramsCapacity];
             int entrySize;
-            if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+            if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
             {
                 entrySize = 12;
             }

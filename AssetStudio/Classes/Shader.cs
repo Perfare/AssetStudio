@@ -617,7 +617,7 @@ namespace AssetStudio
             progGeometry = new SerializedProgram(reader);
             progHull = new SerializedProgram(reader);
             progDomain = new SerializedProgram(reader);
-            if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+            if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
             {
                 progRayTracing = new SerializedProgram(reader);
             }
@@ -764,7 +764,7 @@ namespace AssetStudio
             {
                 m_ParsedForm = new SerializedShader(reader);
                 platforms = reader.ReadUInt32Array().Select(x => (ShaderCompilerPlatform)x).ToArray();
-                if (version[0] > 2019 || (version[0] == 2019 && version[0] >= 3)) //2019.3 and up
+                if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
                 {
                     offsets = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
                     compressedLengths = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
