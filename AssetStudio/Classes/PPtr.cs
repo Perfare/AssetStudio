@@ -35,10 +35,10 @@ namespace AssetStudio
                 if (index == -2)
                 {
                     var m_External = assetsFile.m_Externals[m_FileID - 1];
-                    var name = m_External.fileName.ToUpper();
+                    var name = m_External.fileName;
                     if (!assetsFileIndexCache.TryGetValue(name, out index))
                     {
-                        index = assetsFileList.FindIndex(x => x.upperFileName == name);
+                        index = assetsFileList.FindIndex(x => x.fileName.Equals(name, StringComparison.OrdinalIgnoreCase));
                         assetsFileIndexCache.Add(name, index);
                     }
                 }
@@ -91,8 +91,8 @@ namespace AssetStudio
 
         public void Set(T m_Object)
         {
-            var name = m_Object.assetsFile.upperFileName;
-            if (string.Equals(assetsFile.upperFileName, name, StringComparison.Ordinal))
+            var name = m_Object.assetsFile.fileName;
+            if (string.Equals(assetsFile.fileName, name, StringComparison.OrdinalIgnoreCase))
             {
                 m_FileID = 0;
             }
@@ -119,7 +119,7 @@ namespace AssetStudio
 
             if (!assetsFileIndexCache.TryGetValue(name, out index))
             {
-                index = assetsFileList.FindIndex(x => x.upperFileName == name);
+                index = assetsFileList.FindIndex(x => x.fileName.Equals(name, StringComparison.OrdinalIgnoreCase));
                 assetsFileIndexCache.Add(name, index);
             }
 

@@ -34,7 +34,7 @@ namespace AssetStudio
             {
                 var resourceFileName = Path.GetFileName(path);
 
-                if (assetsFile.assetsManager.resourceFileReaders.TryGetValue(resourceFileName.ToUpper(), out var reader))
+                if (assetsFile.assetsManager.resourceFileReaders.TryGetValue(resourceFileName, out var reader))
                 {
                     reader.Position = offset;
                     return reader.ReadBytes(size);

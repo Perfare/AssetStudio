@@ -13,7 +13,6 @@ namespace AssetStudio
         public string fullName;
         public string originalPath;
         public string fileName;
-        public string upperFileName;
         public int[] version = { 0, 0, 0, 0 };
         public BuildType buildType;
         public Dictionary<long, Object> Objects;
@@ -34,7 +33,6 @@ namespace AssetStudio
             this.reader = reader;
             this.fullName = fullName;
             fileName = Path.GetFileName(fullName);
-            upperFileName = fileName.ToUpper();
 
             //ReadHeader
             header = new SerializedFileHeader();

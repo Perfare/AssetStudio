@@ -101,7 +101,7 @@ namespace AssetStudioGUI
             StatusStripUpdate("Building asset list...");
 
             productName = string.Empty;
-            var assetsNameHash = new HashSet<string>();
+            var assetsNameHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var progressCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
             int j = 0;
             Progress.Reset();
@@ -186,7 +186,7 @@ namespace AssetStudioGUI
                     }
                     assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString() });
                     //处理同名文件
-                    if (!assetsNameHash.Add((assetItem.TypeString + assetItem.Text).ToUpper()))
+                    if (!assetsNameHash.Add(assetItem.TypeString + assetItem.Text))
                     {
                         assetItem.Text += assetItem.UniqueID;
                     }
@@ -217,7 +217,7 @@ namespace AssetStudioGUI
                             }
 
                             item.Text = Path.GetDirectoryName(originalPath) + "\\" + Path.GetFileNameWithoutExtension(originalPath);
-                            if (!assetsNameHash.Add((item.TypeString + item.Text).ToUpper()))
+                            if (!assetsNameHash.Add(item.TypeString + item.Text))
                             {
                                 item.Text += item.UniqueID;
                             }

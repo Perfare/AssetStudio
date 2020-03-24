@@ -9,12 +9,12 @@ namespace AssetStudio
     public class AssetsManager
     {
         public List<SerializedFile> assetsFileList = new List<SerializedFile>();
-        internal Dictionary<string, int> assetsFileIndexCache = new Dictionary<string, int>();
-        internal Dictionary<string, EndianBinaryReader> resourceFileReaders = new Dictionary<string, EndianBinaryReader>();
+        internal Dictionary<string, int> assetsFileIndexCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        internal Dictionary<string, EndianBinaryReader> resourceFileReaders = new Dictionary<string, EndianBinaryReader>(StringComparer.OrdinalIgnoreCase);
 
         private List<string> importFiles = new List<string>();
-        private HashSet<string> importFilesHash = new HashSet<string>();
-        private HashSet<string> assetsFileListHash = new HashSet<string>();
+        private HashSet<string> importFilesHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> assetsFileListHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public void LoadFiles(params string[] files)
         {
@@ -37,7 +37,7 @@ namespace AssetStudio
             foreach (var file in files)
             {
                 importFiles.Add(file);
-                importFilesHash.Add(Path.GetFileName(file).ToUpper());
+                importFilesHash.Add(Path.GetFileName(file));
             }
 
             Progress.Reset();
@@ -75,21 +75,21 @@ namespace AssetStudio
         private void LoadAssetsFile(string fullName, EndianBinaryReader reader)
         {
             var fileName = Path.GetFileName(fullName);
-            if (!assetsFileListHash.Contains(fileName.ToUpper()))
+            if (!assetsFileListHash.Contains(fileName))
             {
                 Logger.Info($"Loading {fileName}");
                 try
                 {
                     var assetsFile = new SerializedFile(this, fullName, reader);
                     assetsFileList.Add(assetsFile);
-                    assetsFileListHash.Add(assetsFile.upperFileName);
+                    assetsFileListHash.Add(assetsFile.fileName);
 
                     foreach (var sharedFile in assetsFile.m_Externals)
                     {
                         var sharedFilePath = Path.GetDirectoryName(fullName) + "\\" + sharedFile.fileName;
                         var sharedFileName = sharedFile.fileName;
 
-                        if (!importFilesHash.Contains(sharedFileName.ToUpper()))
+                        if (!importFilesHash.Contains(sharedFileName))
                         {
                             if (!File.Exists(sharedFilePath))
                             {
@@ -103,7 +103,7 @@ namespace AssetStudio
                             if (File.Exists(sharedFilePath))
                             {
                                 importFiles.Add(sharedFilePath);
-                                importFilesHash.Add(sharedFileName.ToUpper());
+                                importFilesHash.Add(sharedFileName);
                             }
                         }
                     }
@@ -123,8 +123,7 @@ namespace AssetStudio
         private void LoadAssetsFromMemory(string fullName, EndianBinaryReader reader, string originalPath, string unityVersion = null)
         {
             var fileName = Path.GetFileName(fullName);
-            var upperFileName = fileName.ToUpper();
-            if (!assetsFileListHash.Contains(upperFileName))
+            if (!assetsFileListHash.Contains(fileName))
             {
                 try
                 {
@@ -135,7 +134,7 @@ namespace AssetStudio
                         assetsFile.SetVersion(unityVersion);
                     }
                     assetsFileList.Add(assetsFile);
-                    assetsFileListHash.Add(assetsFile.upperFileName);
+                    assetsFileListHash.Add(assetsFile.fileName);
                 }
                 catch
                 {
@@ -143,7 +142,7 @@ namespace AssetStudio
                 }
                 finally
                 {
-                    resourceFileReaders.Add(upperFileName, reader);
+                    resourceFileReaders.Add(fileName, reader);
                 }
             }
         }
