@@ -9,10 +9,10 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 * Support version:
   * 2.5 - 2019.3
 * Support asset types:
-  * **Texture2D** : support convert to bmp, png or jpeg. export to containers: DDS, PVR and KTX
-  * **Sprite** : bmp, png or jpeg
+  * **Texture2D** : convert to png, tga, jpeg, bmp
+  * **Sprite** : crop Texture2D to png, tga, jpeg, bmp
   * **AudioClip** : mp3, ogg, wav, m4a, fsb. support convert FSB file to WAV(PCM)
-  * **Font**
+  * **Font** : ttf, otf
   * **Mesh** : obj
   * **TextAsset**
   * **Shader**
@@ -25,8 +25,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 ### Requirements
 
 - [.NET Framework 4.0](https://www.microsoft.com/en-us/download/details.aspx?id=17718)
-- [Microsoft Visual C++ 2013 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
-- [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=53840)
+- [Microsoft Visual C++ 2017 Redistributable](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads)
 
 ### How to use
 
@@ -42,6 +41,13 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
   
 ## Build
 
-* The project uses some C# 7 syntax, need Visual Studio 2017 or newer
-* **AssetStudioFBX** uses FBX SDK 2019.0 VS2015, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
-* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudioGUI/Libraries/x86/` and `AssetStudioGUI/Libraries/x64` directory to the new version
+* Visual Studio 2017 or newer
+* **AssetStudioFBX** uses FBX SDK 2020.0.1 VS2017, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
+* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudioGUI/Libraries/x86/` and `AssetStudioGUI/Libraries/x64/` directory to the new version
+
+## Open source libraries used
+
+### Texture2DDecoder
+* [Ishotihadus/mikunyan](https://github.com/Ishotihadus/mikunyan)
+* [BinomialLLC/crunch](https://github.com/BinomialLLC/crunch)
+* [Unity-Technologies/crunch](https://github.com/Unity-Technologies/crunch/tree/unity)
