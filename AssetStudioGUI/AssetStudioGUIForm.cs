@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Drawing.Text;
+using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using AssetStudio;
@@ -18,6 +19,7 @@ using Object = AssetStudio.Object;
 using Font = AssetStudio.Font;
 using Vector3 = OpenTK.Vector3;
 using Vector4 = OpenTK.Vector4;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace AssetStudioGUI
 {
@@ -283,7 +285,7 @@ namespace AssetStudioGUI
                     bool dirty = false;
                     switch (e.KeyCode)
                     {
-                        case Keys.R:
+                        case Keys.B:
                             textureChannels[0] = !textureChannels[0];
                             dirty = true;
                             break;
@@ -291,7 +293,7 @@ namespace AssetStudioGUI
                             textureChannels[1] = !textureChannels[1];
                             dirty = true;
                             break;
-                        case Keys.B:
+                        case Keys.R:
                             textureChannels[2] = !textureChannels[2];
                             dirty = true;
                             break;
@@ -798,20 +800,19 @@ namespace AssetStudioGUI
                                 data[i + offset] = textureChannels[i] ? data[i + offset] : (byte)(i == 3 ? 255 : 0);
                         };
                     }
-                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    int bytes = Math.Abs(bmpData.Stride) * bitmap.Height;
-                    byte[] values = new byte[bytes];
-                    Marshal.Copy(bmpData.Scan0, values, 0, bytes);
+                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                    var bytes = new byte[bitmap.Width * bitmap.Height * 4];
+                    Marshal.Copy(bmpData.Scan0, bytes, 0, bytes.Length);
                     for (int i = 0; i < bmpData.Height; i++)
                     {
                         int offset = Math.Abs(bmpData.Stride) * i;
-                        for (int j = 0; j < bitmap.Height; j++)
+                        for (int j = 0; j < bmpData.Width; j++)
                         {
-                            handler(values, offset);
+                            handler(bytes, offset);
                             offset += 4;
                         }
                     }
-                    Marshal.Copy(values, 0, bmpData.Scan0, bytes);
+                    Marshal.Copy(bytes, 0, bmpData.Scan0, bytes.Length);
                     bitmap.UnlockBits(bmpData);
                 }
                 PreviewTexture(bitmap);
