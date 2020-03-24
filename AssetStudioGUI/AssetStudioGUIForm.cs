@@ -734,8 +734,7 @@ namespace AssetStudioGUI
 
         private void PreviewTexture2D(AssetItem assetItem, Texture2D m_Texture2D)
         {
-            var converter = new Texture2DConverter(m_Texture2D);
-            var bitmap = converter.ConvertToBitmap(true);
+            var bitmap = m_Texture2D.ConvertToBitmap(true);
             if (bitmap != null)
             {
                 assetItem.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";

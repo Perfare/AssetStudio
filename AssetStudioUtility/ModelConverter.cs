@@ -717,7 +717,7 @@ namespace AssetStudio
             return iMat;
         }
 
-        private void ConvertTexture2D(Texture2D tex2D, string name)
+        private void ConvertTexture2D(Texture2D m_Texture2D, string name)
         {
             var iTex = ImportedHelpers.FindTexture(name, TextureList);
             if (iTex != null)
@@ -725,7 +725,7 @@ namespace AssetStudio
                 return;
             }
 
-            var bitmap = new Texture2DConverter(tex2D).ConvertToBitmap(true);
+            var bitmap = m_Texture2D.ConvertToBitmap(true);
             if (bitmap != null)
             {
                 using (var stream = new MemoryStream())

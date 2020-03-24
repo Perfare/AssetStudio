@@ -30,8 +30,7 @@ namespace AssetStudio
 
         private static Bitmap CutImage(Texture2D m_Texture2D, Sprite m_Sprite, RectangleF textureRect, Vector2 textureRectOffset, SpriteSettings settingsRaw)
         {
-            var texture2D = new Texture2DConverter(m_Texture2D);
-            var originalImage = texture2D.ConvertToBitmap(false);
+            var originalImage = m_Texture2D.ConvertToBitmap(false);
             if (originalImage != null)
             {
                 using (originalImage)
@@ -63,6 +62,7 @@ namespace AssetStudio
                                 break;
                         }
                     }
+
                     //Tight
                     if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
                     {

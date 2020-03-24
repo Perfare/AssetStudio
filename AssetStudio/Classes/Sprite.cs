@@ -32,6 +32,12 @@ namespace AssetStudio
         kSPMRectangle
     };
 
+    public enum SpriteMeshType
+    {
+        kSpriteMeshTypeFullRect,
+        kSpriteMeshTypeTight
+    };
+
     public class SpriteSettings
     {
         public uint settingsRaw;
@@ -39,6 +45,7 @@ namespace AssetStudio
         public uint packed;
         public SpritePackingMode packingMode;
         public SpritePackingRotation packingRotation;
+        public SpriteMeshType meshType;
 
         public SpriteSettings(BinaryReader reader)
         {
@@ -47,8 +54,7 @@ namespace AssetStudio
             packed = settingsRaw & 1; //1
             packingMode = (SpritePackingMode)((settingsRaw >> 1) & 1); //1
             packingRotation = (SpritePackingRotation)((settingsRaw >> 2) & 0xf); //4
-
-            //meshType = (settingsRaw >> 6) & 1; //1
+            meshType = (SpriteMeshType)((settingsRaw >> 6) & 1); //1
             //reserved
         }
     }
