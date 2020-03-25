@@ -147,7 +147,7 @@ namespace AssetStudioGUI
             var tempDic = new Dictionary<Object, AssetItem>();
             if (!dontBuildAssetListMenuItem.Checked)
             {
-                BuildAssetList(tempDic, displayAll.Checked, displayOriginalName.Checked, out productName);
+                BuildAssetList(tempDic, out productName);
             }
 
             List<TreeNode> treeNodeCollection = null;
@@ -412,7 +412,7 @@ namespace AssetStudioGUI
                 PreviewAsset(lastLoadedAsset);
             }
 
-            Properties.Settings.Default["enablePreview"] = enablePreview.Checked;
+            Properties.Settings.Default.enablePreview = enablePreview.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -427,7 +427,7 @@ namespace AssetStudioGUI
                 assetInfoLabel.Visible = false;
             }
 
-            Properties.Settings.Default["displayInfo"] = displayInfo.Checked;
+            Properties.Settings.Default.displayInfo = displayInfo.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -439,7 +439,7 @@ namespace AssetStudioGUI
 
         private void assetGroupOptions_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default["assetGroupOption"] = ((ToolStripComboBox)sender).SelectedIndex;
+            Properties.Settings.Default.assetGroupOption = ((ToolStripComboBox)sender).SelectedIndex;
             Properties.Settings.Default.Save();
         }
 
@@ -1489,12 +1489,12 @@ namespace AssetStudioGUI
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
-            displayOriginalName.Checked = (bool)Properties.Settings.Default["displayOriginalName"];
-            displayAll.Checked = (bool)Properties.Settings.Default["displayAll"];
-            displayInfo.Checked = (bool)Properties.Settings.Default["displayInfo"];
-            enablePreview.Checked = (bool)Properties.Settings.Default["enablePreview"];
-            openAfterExport.Checked = (bool)Properties.Settings.Default["openAfterExport"];
-            assetGroupOptions.SelectedIndex = (int)Properties.Settings.Default["assetGroupOption"];
+            displayOriginalName.Checked = Properties.Settings.Default.displayOriginalName;
+            displayAll.Checked = Properties.Settings.Default.displayAll;
+            displayInfo.Checked = Properties.Settings.Default.displayInfo;
+            enablePreview.Checked = Properties.Settings.Default.enablePreview;
+            openAfterExport.Checked = Properties.Settings.Default.openAfterExport;
+            assetGroupOptions.SelectedIndex = Properties.Settings.Default.assetGroupOption;
             FMODinit();
 
             Logger.Default = new GUILogger(StatusStripUpdate);
@@ -1832,7 +1832,7 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
-                    ExportAnimatorWithAnimationClip(animator, animationList, exportPath, openAfterExport.Checked);
+                    ExportAnimatorWithAnimationClip(animator, animationList, exportPath);
                 }
             }
         }
@@ -1864,7 +1864,7 @@ namespace AssetStudioGUI
                             animationList = null;
                         }
                     }
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, openAfterExport.Checked, animationList);
+                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList);
                 }
             }
             else
@@ -1905,7 +1905,7 @@ namespace AssetStudioGUI
                             animationList = null;
                         }
                     }
-                    ExportObjectsMergeWithAnimationClip(exportPath, openAfterExport.Checked, gameObjects, animationList);
+                    ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
                 }
             }
         }
@@ -1973,7 +1973,7 @@ namespace AssetStudioGUI
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
                     var savePath = saveFolderDialog1.Folder + "\\";
-                    ExportSplitObjects(savePath, sceneTreeView.Nodes, openAfterExport.Checked);
+                    ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
             }
             else
@@ -2044,7 +2044,7 @@ namespace AssetStudioGUI
                             toExportAssets = visibleAssets;
                             break;
                     }
-                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, assetGroupOptions.SelectedIndex, openAfterExport.Checked, exportType);
+                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, exportType);
                 }
             }
             else

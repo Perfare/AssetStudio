@@ -96,7 +96,7 @@ namespace AssetStudioGUI
             return extractedCount;
         }
 
-        public static void BuildAssetList(Dictionary<Object, AssetItem> tempDic, bool displayAll, bool displayOriginalName, out string productName)
+        public static void BuildAssetList(Dictionary<Object, AssetItem> tempDic, out string productName)
         {
             StatusStripUpdate("Building asset list...");
 
@@ -192,18 +192,14 @@ namespace AssetStudioGUI
                     }
                     //处理非法文件名
                     assetItem.Text = FixFileName(assetItem.Text);
-                    if (displayAll)
-                    {
-                        exportable = true;
-                    }
-                    if (exportable)
+                    if (Properties.Settings.Default.displayAll || exportable)
                     {
                         tempExportableAssets.Add(assetItem);
                     }
 
                     Progress.Report(++j, progressCount);
                 }
-                if (displayOriginalName && ab != null)
+                if (Properties.Settings.Default.displayOriginalName && ab != null)
                 {
                     foreach (var item in tempExportableAssets)
                     {
@@ -351,7 +347,7 @@ namespace AssetStudioGUI
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
-        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, int assetGroupSelectedIndex, bool openAfterExport, ExportType exportType)
+        public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, ExportType exportType)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -364,11 +360,11 @@ namespace AssetStudioGUI
                 foreach (var asset in toExportAssets)
                 {
                     var exportpath = savePath + "\\";
-                    if (assetGroupSelectedIndex == 1)
+                    if (Properties.Settings.Default.assetGroupOption == 1)
                     {
                         exportpath += Path.GetFileNameWithoutExtension(asset.SourceFile.fullName) + "_export\\";
                     }
-                    else if (assetGroupSelectedIndex == 0)
+                    else if (Properties.Settings.Default.assetGroupOption == 0)
                     {
                         exportpath = savePath + "\\" + asset.TypeString + "\\";
                     }
@@ -487,14 +483,14 @@ namespace AssetStudioGUI
 
                 StatusStripUpdate(statusText);
 
-                if (openAfterExport && exportedCount > 0)
+                if (Properties.Settings.Default.openAfterExport && exportedCount > 0)
                 {
                     Process.Start(savePath);
                 }
             });
         }
 
-        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes, bool openAfterExport)
+        public static void ExportSplitObjects(string savePath, TreeNodeCollection nodes)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -547,7 +543,7 @@ namespace AssetStudioGUI
                         StatusStripUpdate($"Finished exporting {filename}.fbx");
                     }
                 }
-                if (openAfterExport)
+                if (Properties.Settings.Default.openAfterExport)
                 {
                     Process.Start(savePath);
                 }
@@ -564,7 +560,7 @@ namespace AssetStudioGUI
             }
         }
 
-        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath, bool openAfterExport)
+        public static void ExportAnimatorWithAnimationClip(AssetItem animator, List<AssetItem> animationList, string exportPath)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -573,7 +569,7 @@ namespace AssetStudioGUI
                 try
                 {
                     ExportAnimator(animator, exportPath, animationList);
-                    if (openAfterExport)
+                    if (Properties.Settings.Default.openAfterExport)
                     {
                         Process.Start(exportPath);
                     }
@@ -588,7 +584,7 @@ namespace AssetStudioGUI
             });
         }
 
-        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, bool openAfterExport, List<AssetItem> animationList = null)
+        public static void ExportObjectsWithAnimationClip(string exportPath, TreeNodeCollection nodes, List<AssetItem> animationList = null)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -615,7 +611,7 @@ namespace AssetStudioGUI
 
                         Progress.Report(++i, count);
                     }
-                    if (openAfterExport)
+                    if (Properties.Settings.Default.openAfterExport)
                     {
                         Process.Start(exportPath);
                     }
@@ -627,7 +623,7 @@ namespace AssetStudioGUI
             });
         }
 
-        public static void ExportObjectsMergeWithAnimationClip(string exportPath, bool openAfterExport, List<GameObject> gameObjects, List<AssetItem> animationList = null)
+        public static void ExportObjectsMergeWithAnimationClip(string exportPath, List<GameObject> gameObjects, List<AssetItem> animationList = null)
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
@@ -645,7 +641,7 @@ namespace AssetStudioGUI
                     MessageBox.Show($"Export Model:{name} error\r\n{ex.Message}\r\n{ex.StackTrace}");
                     StatusStripUpdate("Error in export");
                 }
-                if (openAfterExport)
+                if (Properties.Settings.Default.openAfterExport)
                 {
                     Process.Start(Path.GetDirectoryName(exportPath));
                 }

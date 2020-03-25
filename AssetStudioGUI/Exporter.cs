@@ -13,14 +13,13 @@ namespace AssetStudioGUI
         public static bool ExportTexture2D(AssetItem item, string exportPathName)
         {
             var m_Texture2D = (Texture2D)item.Asset;
-            var convertTexture = (bool)Properties.Settings.Default["convertTexture"];
-            if (convertTexture)
+            if (Properties.Settings.Default.convertTexture)
             {
                 var bitmap = m_Texture2D.ConvertToBitmap(true);
                 if (bitmap == null)
                     return false;
                 ImageFormat format = null;
-                var ext = (string)Properties.Settings.Default["convertType"];
+                var ext = Properties.Settings.Default.convertType;
                 bool tga = false;
                 switch (ext)
                 {
@@ -66,9 +65,8 @@ namespace AssetStudioGUI
             var m_AudioData = m_AudioClip.m_AudioData.Value;
             if (m_AudioData == null || m_AudioData.Length == 0)
                 return false;
-            var convertAudio = (bool)Properties.Settings.Default["convertAudio"];
             var converter = new AudioClipConverter(m_AudioClip);
-            if (convertAudio && converter.IsFMODSupport)
+            if (Properties.Settings.Default.convertAudio && converter.IsFMODSupport)
             {
                 var exportFullName = exportPath + item.Text + ".wav";
                 if (ExportFileExists(exportFullName))
@@ -261,7 +259,7 @@ namespace AssetStudioGUI
         public static bool ExportSprite(AssetItem item, string exportPath)
         {
             ImageFormat format = null;
-            var type = (string)Properties.Settings.Default["convertType"];
+            var type = Properties.Settings.Default.convertType;
             bool tga = false;
             switch (type)
             {
@@ -341,17 +339,17 @@ namespace AssetStudioGUI
 
         private static void ExportFbx(IImported convert, string exportPath)
         {
-            var eulerFilter = (bool)Properties.Settings.Default["eulerFilter"];
-            var filterPrecision = (float)(decimal)Properties.Settings.Default["filterPrecision"];
-            var exportAllNodes = (bool)Properties.Settings.Default["exportAllNodes"];
-            var exportSkins = (bool)Properties.Settings.Default["exportSkins"];
-            var exportAnimations = (bool)Properties.Settings.Default["exportAnimations"];
-            var exportBlendShape = (bool)Properties.Settings.Default["exportBlendShape"];
-            var castToBone = (bool)Properties.Settings.Default["castToBone"];
-            var boneSize = (int)(decimal)Properties.Settings.Default["boneSize"];
-            var scaleFactor = (float)(decimal)Properties.Settings.Default["scaleFactor"];
-            var fbxVersion = (int)Properties.Settings.Default["fbxVersion"];
-            var fbxFormat = (int)Properties.Settings.Default["fbxFormat"];
+            var eulerFilter = Properties.Settings.Default.eulerFilter;
+            var filterPrecision = (float)Properties.Settings.Default.filterPrecision;
+            var exportAllNodes = Properties.Settings.Default.exportAllNodes;
+            var exportSkins = Properties.Settings.Default.exportSkins;
+            var exportAnimations = Properties.Settings.Default.exportAnimations;
+            var exportBlendShape = Properties.Settings.Default.exportBlendShape;
+            var castToBone = Properties.Settings.Default.castToBone;
+            var boneSize = (int)Properties.Settings.Default.boneSize;
+            var scaleFactor = (float)Properties.Settings.Default.scaleFactor;
+            var fbxVersion = Properties.Settings.Default.fbxVersion;
+            var fbxFormat = Properties.Settings.Default.fbxFormat;
             ModelExporter.ExportFbx(exportPath, convert, eulerFilter, filterPrecision,
                 exportAllNodes, exportSkins, exportAnimations, exportBlendShape, castToBone, boneSize, scaleFactor, fbxVersion, fbxFormat == 1);
         }

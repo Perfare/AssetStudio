@@ -183,21 +183,21 @@
   <ItemGroup Condition="'$(Platform)' == 'x86'">
     <ContentWithTargetPath Include="Libraries\x86\fmod.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  <TargetPath>fmod.dll</TargetPath>
+      <TargetPath>fmod.dll</TargetPath>
     </ContentWithTargetPath>
     <ContentWithTargetPath Include="Libraries\x86\libfbxsdk.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  <TargetPath>libfbxsdk.dll</TargetPath>
+      <TargetPath>libfbxsdk.dll</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x64'">
     <ContentWithTargetPath Include="Libraries\x64\fmod.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  <TargetPath>fmod.dll</TargetPath>
+      <TargetPath>fmod.dll</TargetPath>
     </ContentWithTargetPath>
     <ContentWithTargetPath Include="Libraries\x64\libfbxsdk.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  <TargetPath>libfbxsdk.dll</TargetPath>
+      <TargetPath>libfbxsdk.dll</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
