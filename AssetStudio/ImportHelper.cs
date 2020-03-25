@@ -8,7 +8,8 @@ namespace AssetStudio
     {
         AssetsFile,
         BundleFile,
-        WebFile
+        WebFile,
+        ResourceFile
     }
 
     public static class ImportHelper
@@ -96,7 +97,14 @@ namespace AssetStudio
                         {
                             return FileType.WebFile;
                         }
-                        return FileType.AssetsFile;
+                        if (SerializedFile.IsSerializedFile(reader))
+                        {
+                            return FileType.AssetsFile;
+                        }
+                        else
+                        {
+                            return FileType.ResourceFile;
+                        }
                     }
             }
         }

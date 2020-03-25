@@ -139,9 +139,6 @@ namespace AssetStudio
                 catch
                 {
                     //Logger.Error($"Unable to load assets file {fileName} from {Path.GetFileName(originalPath)}");
-                }
-                finally
-                {
                     resourceFileReaders.Add(fileName, reader);
                 }
             }
@@ -156,8 +153,16 @@ namespace AssetStudio
                 var bundleFile = new BundleFile(reader, fullName);
                 foreach (var file in bundleFile.fileList)
                 {
-                    var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
-                    LoadAssetsFromMemory(dummyPath, new EndianBinaryReader(file.stream), parentPath ?? fullName, bundleFile.versionEngine);
+                    var subReader = new EndianBinaryReader(file.stream);
+                    if (SerializedFile.IsSerializedFile(subReader))
+                    {
+                        var dummyPath = Path.GetDirectoryName(fullName) + Path.DirectorySeparatorChar + file.fileName;
+                        LoadAssetsFromMemory(dummyPath, subReader, parentPath ?? fullName, bundleFile.versionEngine);
+                    }
+                    else
+                    {
+                        resourceFileReaders.Add(file.fileName, subReader);
+                    }
                 }
             }
             catch
@@ -195,6 +200,9 @@ namespace AssetStudio
                             break;
                         case FileType.WebFile:
                             LoadWebFile(dummyPath, fileReader);
+                            break;
+                        case FileType.ResourceFile:
+                            resourceFileReaders.Add(file.fileName, fileReader);
                             break;
                     }
                 }

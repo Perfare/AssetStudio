@@ -330,5 +330,30 @@ namespace AssetStudio
                 return offset.ToString();
             }
         }
+
+        public static bool IsSerializedFile(EndianBinaryReader reader)
+        {
+            var fileSize = reader.BaseStream.Length;
+            if (fileSize < 16)
+            {
+                return false;
+            }
+            var m_MetadataSize = reader.ReadUInt32();
+            var m_FileSize = reader.ReadUInt32();
+            if (m_FileSize != fileSize)
+            {
+                reader.Position = 0;
+                return false;
+            }
+            var m_Version = reader.ReadUInt32();
+            var m_DataOffset = reader.ReadUInt32();
+            if (m_DataOffset > fileSize)
+            {
+                reader.Position = 0;
+                return false;
+            }
+            reader.Position = 0;
+            return true;
+        }
     }
 }
