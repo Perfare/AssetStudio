@@ -135,33 +135,35 @@ namespace AssetStudio
             {
                 blocksInfoBytes = bundleReader.ReadBytes(compressedSize);
             }
-            MemoryStream blocksInfoStream;
+            var blocksInfoCompressedStream = new MemoryStream(blocksInfoBytes);
+            MemoryStream blocksInfoDecompressedStream;
             switch (flag & 0x3F)
             {
                 default://None
                     {
-                        blocksInfoStream = new MemoryStream(blocksInfoBytes);
+                        blocksInfoDecompressedStream = blocksInfoCompressedStream;
                         break;
                     }
                 case 1://LZMA
                     {
-                        blocksInfoStream = SevenZipHelper.StreamDecompress(new MemoryStream(blocksInfoBytes));
+                        blocksInfoDecompressedStream = SevenZipHelper.StreamDecompress(blocksInfoCompressedStream);
+                        blocksInfoCompressedStream.Close();
                         break;
                     }
                 case 2://LZ4
                 case 3://LZ4HC
                     {
                         byte[] uncompressedBytes = new byte[uncompressedSize];
-                        using (var decoder = new Lz4DecoderStream(new MemoryStream(blocksInfoBytes)))
+                        using (var decoder = new Lz4DecoderStream(blocksInfoCompressedStream))
                         {
                             decoder.Read(uncompressedBytes, 0, uncompressedSize);
                         }
-                        blocksInfoStream = new MemoryStream(uncompressedBytes);
+                        blocksInfoDecompressedStream = new MemoryStream(uncompressedBytes);
                         break;
                     }
                     //case 4:LZHAM?
             }
-            using (var blocksInfoReader = new EndianBinaryReader(blocksInfoStream))
+            using (var blocksInfoReader = new EndianBinaryReader(blocksInfoDecompressedStream))
             {
                 blocksInfoReader.Position = 0x10;
                 int blockcount = blocksInfoReader.ReadInt32();
@@ -185,7 +187,7 @@ namespace AssetStudio
                 }
                 else
                 {
-                    dataStream = new MemoryStream();
+                    dataStream = new MemoryStream((int)uncompressedSizeSum);
                 }
                 foreach (var blockInfo in blockInfos)
                 {
@@ -232,7 +234,7 @@ namespace AssetStudio
                         }
                         else
                         {
-                            file.stream = new MemoryStream();
+                            file.stream = new MemoryStream((int)entryinfo_size);
                         }
                         dataStream.Position = entryinfo_offset;
                         dataStream.CopyTo(file.stream, entryinfo_size);
