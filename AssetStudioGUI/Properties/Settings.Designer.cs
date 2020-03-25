@@ -250,5 +250,17 @@ namespace AssetStudioGUI.Properties {
                 this["castToBone"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool restoreExtensionName {
+            get {
+                return ((bool)(this["restoreExtensionName"]));
+            }
+            set {
+                this["restoreExtensionName"] = value;
+            }
+        }
     }
 }

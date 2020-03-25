@@ -15,6 +15,8 @@ namespace AssetStudioGUI
         public ExportOptions()
         {
             InitializeComponent();
+            assetGroupOptions.SelectedIndex = Properties.Settings.Default.assetGroupOption;
+            restoreExtensionName.Checked = Properties.Settings.Default.restoreExtensionName;
             converttexture.Checked = Properties.Settings.Default.convertTexture;
             convertAudio.Checked = Properties.Settings.Default.convertAudio;
             var str = Properties.Settings.Default.convertType;
@@ -26,6 +28,7 @@ namespace AssetStudioGUI
                     break;
                 }
             }
+            openAfterExport.Checked = Properties.Settings.Default.openAfterExport;
             eulerFilter.Checked = Properties.Settings.Default.eulerFilter;
             filterPrecision.Value = Properties.Settings.Default.filterPrecision;
             exportAllNodes.Checked = Properties.Settings.Default.exportAllNodes;
@@ -41,6 +44,8 @@ namespace AssetStudioGUI
 
         private void OKbutton_Click(object sender, EventArgs e)
         {
+            Properties.Settings.Default.assetGroupOption = assetGroupOptions.SelectedIndex;
+            Properties.Settings.Default.restoreExtensionName = restoreExtensionName.Checked;
             Properties.Settings.Default.convertTexture = converttexture.Checked;
             Properties.Settings.Default.convertAudio = convertAudio.Checked;
             foreach (Control c in panel1.Controls)
@@ -51,6 +56,7 @@ namespace AssetStudioGUI
                     break;
                 }
             }
+            Properties.Settings.Default.openAfterExport = openAfterExport.Checked;
             Properties.Settings.Default.eulerFilter = eulerFilter.Checked;
             Properties.Settings.Default.filterPrecision = filterPrecision.Value;
             Properties.Settings.Default.exportAllNodes = exportAllNodes.Checked;

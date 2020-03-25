@@ -112,7 +112,15 @@ namespace AssetStudioGUI
         public static bool ExportTextAsset(AssetItem item, string exportPath)
         {
             var m_TextAsset = (TextAsset)(item.Asset);
-            var exportFullName = exportPath + item.Text + ".txt";
+            var extension = ".txt";
+            if (Properties.Settings.Default.restoreExtensionName)
+            {
+                if (!string.IsNullOrEmpty(item.Container))
+                {
+                    extension = Path.GetExtension(item.Container);
+                }
+            }
+            var exportFullName = exportPath + item.Text + extension;
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_TextAsset.m_Script);
@@ -284,7 +292,7 @@ namespace AssetStudioGUI
             {
                 if (tga)
                 {
-                    TGASharpLib.TGA file = new TGASharpLib.TGA(bitmap);
+                    var file = new TGA(bitmap);
                     file.Save(exportFullName);
                 }
                 else
@@ -366,6 +374,39 @@ namespace AssetStudioGUI
                 return true;
             }
             return false;
+        }
+
+        public static bool ExportConvertFile(AssetItem item, string exportPath)
+        {
+            switch (item.Type)
+            {
+                case ClassIDType.Texture2D:
+                    return ExportTexture2D(item, exportPath);
+                case ClassIDType.AudioClip:
+                    return ExportAudioClip(item, exportPath);
+                case ClassIDType.Shader:
+                    return ExportShader(item, exportPath);
+                case ClassIDType.TextAsset:
+                    return ExportTextAsset(item, exportPath);
+                case ClassIDType.MonoBehaviour:
+                    return ExportMonoBehaviour(item, exportPath);
+                case ClassIDType.Font:
+                    return ExportFont(item, exportPath);
+                case ClassIDType.Mesh:
+                    return ExportMesh(item, exportPath);
+                case ClassIDType.VideoClip:
+                    return ExportVideoClip(item, exportPath);
+                case ClassIDType.MovieTexture:
+                    return ExportMovieTexture(item, exportPath);
+                case ClassIDType.Sprite:
+                    return ExportSprite(item, exportPath);
+                case ClassIDType.Animator:
+                    return ExportAnimator(item, exportPath);
+                case ClassIDType.AnimationClip:
+                    return false;
+                default:
+                    return ExportRawFile(item, exportPath);
+            }
         }
     }
 }

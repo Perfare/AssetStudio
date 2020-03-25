@@ -41,8 +41,6 @@
             this.displayAll = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePreview = new System.Windows.Forms.ToolStripMenuItem();
             this.displayInfo = new System.Windows.Forms.ToolStripMenuItem();
-            this.openAfterExport = new System.Windows.Forms.ToolStripMenuItem();
-            this.assetGroupOptions = new System.Windows.Forms.ToolStripComboBox();
             this.showExpOpt = new System.Windows.Forms.ToolStripMenuItem();
             this.modelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllObjectssplitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -206,8 +204,6 @@
             this.displayAll,
             this.enablePreview,
             this.displayInfo,
-            this.openAfterExport,
-            this.assetGroupOptions,
             this.showExpOpt});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(66, 21);
@@ -217,11 +213,11 @@
             // 
             this.displayAll.CheckOnClick = true;
             this.displayAll.Name = "displayAll";
-            this.displayAll.Size = new System.Drawing.Size(252, 22);
+            this.displayAll.Size = new System.Drawing.Size(223, 22);
             this.displayAll.Text = "Display all assets";
             this.displayAll.ToolTipText = "Check this option will display all types assets. Not extractable assets can expor" +
     "t the RAW file.";
-            this.displayAll.CheckedChanged += new System.EventHandler(this.MenuItem_CheckedChanged);
+            this.displayAll.CheckedChanged += new System.EventHandler(this.displayAll_CheckedChanged);
             // 
             // enablePreview
             // 
@@ -229,7 +225,7 @@
             this.enablePreview.CheckOnClick = true;
             this.enablePreview.CheckState = System.Windows.Forms.CheckState.Checked;
             this.enablePreview.Name = "enablePreview";
-            this.enablePreview.Size = new System.Drawing.Size(252, 22);
+            this.enablePreview.Size = new System.Drawing.Size(223, 22);
             this.enablePreview.Text = "Enable preview";
             this.enablePreview.ToolTipText = "Toggle the loading and preview of readable assets, such as images, sounds, text, " +
     "etc.\r\nDisable preview if you have performance or compatibility issues.";
@@ -241,38 +237,16 @@
             this.displayInfo.CheckOnClick = true;
             this.displayInfo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.displayInfo.Name = "displayInfo";
-            this.displayInfo.Size = new System.Drawing.Size(252, 22);
+            this.displayInfo.Size = new System.Drawing.Size(223, 22);
             this.displayInfo.Text = "Display asset infromation";
             this.displayInfo.ToolTipText = "Toggle the overlay that shows information about each asset, eg. image size, forma" +
     "t, audio bitrate, etc.";
             this.displayInfo.CheckedChanged += new System.EventHandler(this.displayAssetInfo_Check);
             // 
-            // openAfterExport
-            // 
-            this.openAfterExport.Checked = true;
-            this.openAfterExport.CheckOnClick = true;
-            this.openAfterExport.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.openAfterExport.Name = "openAfterExport";
-            this.openAfterExport.Size = new System.Drawing.Size(252, 22);
-            this.openAfterExport.Text = "Open file/folder after export";
-            this.openAfterExport.CheckedChanged += new System.EventHandler(this.MenuItem_CheckedChanged);
-            // 
-            // assetGroupOptions
-            // 
-            this.assetGroupOptions.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.assetGroupOptions.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
-            this.assetGroupOptions.Items.AddRange(new object[] {
-            "Group by type",
-            "Group by source file",
-            "Do not group"});
-            this.assetGroupOptions.Name = "assetGroupOptions";
-            this.assetGroupOptions.Size = new System.Drawing.Size(192, 25);
-            this.assetGroupOptions.SelectedIndexChanged += new System.EventHandler(this.assetGroupOptions_SelectedIndexChanged);
-            // 
             // showExpOpt
             // 
             this.showExpOpt.Name = "showExpOpt";
-            this.showExpOpt.Size = new System.Drawing.Size(252, 22);
+            this.showExpOpt.Size = new System.Drawing.Size(223, 22);
             this.showExpOpt.Text = "Export options";
             this.showExpOpt.Click += new System.EventHandler(this.showExpOpt_Click);
             // 
@@ -1102,8 +1076,6 @@
         private System.Windows.Forms.ToolStripMenuItem extractFolderToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.ToolStripComboBox assetGroupOptions;
-        private System.Windows.Forms.ToolStripMenuItem openAfterExport;
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
         private GOHierarchy sceneTreeView;
         private System.Windows.Forms.ToolStripMenuItem debugMenuItem;

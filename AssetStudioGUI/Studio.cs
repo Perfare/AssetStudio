@@ -349,109 +349,51 @@ namespace AssetStudioGUI
                 Progress.Reset();
                 foreach (var asset in toExportAssets)
                 {
-                    var exportpath = savePath + "\\";
-                    if (Properties.Settings.Default.assetGroupOption == 1)
+                    string exportPath;
+                    switch (Properties.Settings.Default.assetGroupOption)
                     {
-                        exportpath += Path.GetFileNameWithoutExtension(asset.SourceFile.fullName) + "_export\\";
+                        case 0: //type name
+                            exportPath = Path.Combine(savePath, asset.TypeString);
+                            break;
+                        case 1: //container path
+                            if (!string.IsNullOrEmpty(asset.Container))
+                            {
+                                exportPath = Path.Combine(savePath, Path.GetDirectoryName(asset.Container));
+                            }
+                            else
+                            {
+                                exportPath = savePath;
+                            }
+                            break;
+                        case 2: //source file
+                            exportPath = Path.Combine(savePath, asset.SourceFile.fullName + "_export");
+                            break;
+                        default:
+                            exportPath = savePath;
+                            break;
                     }
-                    else if (Properties.Settings.Default.assetGroupOption == 0)
-                    {
-                        exportpath = savePath + "\\" + asset.TypeString + "\\";
-                    }
+                    exportPath += Path.DirectorySeparatorChar;
                     StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
                         switch (exportType)
                         {
                             case ExportType.Raw:
-                                if (ExportRawFile(asset, exportpath))
+                                if (ExportRawFile(asset, exportPath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ExportType.Dump:
-                                if (ExportDumpFile(asset, exportpath))
+                                if (ExportDumpFile(asset, exportPath))
                                 {
                                     exportedCount++;
                                 }
                                 break;
                             case ExportType.Convert:
-                                switch (asset.Type)
+                                if (ExportConvertFile(asset, exportPath))
                                 {
-                                    case ClassIDType.Texture2D:
-                                        if (ExportTexture2D(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.AudioClip:
-                                        if (ExportAudioClip(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.Shader:
-                                        if (ExportShader(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.TextAsset:
-                                        if (ExportTextAsset(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.MonoBehaviour:
-                                        if (ExportMonoBehaviour(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.Font:
-                                        if (ExportFont(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.Mesh:
-                                        if (ExportMesh(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.VideoClip:
-                                        if (ExportVideoClip(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.MovieTexture:
-                                        if (ExportMovieTexture(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.Sprite:
-                                        if (ExportSprite(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.Animator:
-                                        if (ExportAnimator(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
-                                    case ClassIDType.AnimationClip:
-                                        break;
-                                    default:
-                                        if (ExportRawFile(asset, exportpath))
-                                        {
-                                            exportedCount++;
-                                        }
-                                        break;
+                                    exportedCount++;
                                 }
                                 break;
                         }

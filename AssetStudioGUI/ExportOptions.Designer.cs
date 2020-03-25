@@ -31,6 +31,10 @@
             this.OKbutton = new System.Windows.Forms.Button();
             this.Cancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.openAfterExport = new System.Windows.Forms.CheckBox();
+            this.restoreExtensionName = new System.Windows.Forms.CheckBox();
+            this.assetGroupOptions = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.convertAudio = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.totga = new System.Windows.Forms.RadioButton();
@@ -65,7 +69,7 @@
             // 
             // OKbutton
             // 
-            this.OKbutton.Location = new System.Drawing.Point(321, 293);
+            this.OKbutton.Location = new System.Drawing.Point(308, 320);
             this.OKbutton.Name = "OKbutton";
             this.OKbutton.Size = new System.Drawing.Size(75, 21);
             this.OKbutton.TabIndex = 6;
@@ -76,7 +80,7 @@
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(402, 293);
+            this.Cancel.Location = new System.Drawing.Point(389, 320);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 21);
             this.Cancel.TabIndex = 7;
@@ -87,22 +91,73 @@
             // groupBox1
             // 
             this.groupBox1.AutoSize = true;
+            this.groupBox1.Controls.Add(this.openAfterExport);
+            this.groupBox1.Controls.Add(this.restoreExtensionName);
+            this.groupBox1.Controls.Add(this.assetGroupOptions);
+            this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.convertAudio);
             this.groupBox1.Controls.Add(this.panel1);
             this.groupBox1.Controls.Add(this.converttexture);
-            this.groupBox1.Location = new System.Drawing.Point(232, 12);
+            this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(245, 114);
+            this.groupBox1.Size = new System.Drawing.Size(232, 302);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Convert";
+            this.groupBox1.Text = "Export";
+            // 
+            // openAfterExport
+            // 
+            this.openAfterExport.AutoSize = true;
+            this.openAfterExport.Checked = true;
+            this.openAfterExport.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.openAfterExport.Location = new System.Drawing.Point(6, 160);
+            this.openAfterExport.Name = "openAfterExport";
+            this.openAfterExport.Size = new System.Drawing.Size(168, 16);
+            this.openAfterExport.TabIndex = 10;
+            this.openAfterExport.Text = "Open folder after export";
+            this.openAfterExport.UseVisualStyleBackColor = true;
+            // 
+            // restoreExtensionName
+            // 
+            this.restoreExtensionName.AutoSize = true;
+            this.restoreExtensionName.Checked = true;
+            this.restoreExtensionName.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.restoreExtensionName.Location = new System.Drawing.Point(6, 58);
+            this.restoreExtensionName.Name = "restoreExtensionName";
+            this.restoreExtensionName.Size = new System.Drawing.Size(216, 16);
+            this.restoreExtensionName.TabIndex = 9;
+            this.restoreExtensionName.Text = "Restore TextAsset extension name";
+            this.restoreExtensionName.UseVisualStyleBackColor = true;
+            // 
+            // assetGroupOptions
+            // 
+            this.assetGroupOptions.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.assetGroupOptions.FormattingEnabled = true;
+            this.assetGroupOptions.Items.AddRange(new object[] {
+            "type name",
+            "container path",
+            "source file name",
+            "do not group"});
+            this.assetGroupOptions.Location = new System.Drawing.Point(6, 32);
+            this.assetGroupOptions.Name = "assetGroupOptions";
+            this.assetGroupOptions.Size = new System.Drawing.Size(149, 20);
+            this.assetGroupOptions.TabIndex = 8;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 17);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(149, 12);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Group exported assets by";
             // 
             // convertAudio
             // 
             this.convertAudio.AutoSize = true;
             this.convertAudio.Checked = true;
             this.convertAudio.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.convertAudio.Location = new System.Drawing.Point(6, 78);
+            this.convertAudio.Location = new System.Drawing.Point(6, 138);
             this.convertAudio.Name = "convertAudio";
             this.convertAudio.Size = new System.Drawing.Size(198, 16);
             this.convertAudio.TabIndex = 6;
@@ -115,9 +170,9 @@
             this.panel1.Controls.Add(this.tojpg);
             this.panel1.Controls.Add(this.topng);
             this.panel1.Controls.Add(this.tobmp);
-            this.panel1.Location = new System.Drawing.Point(30, 42);
+            this.panel1.Location = new System.Drawing.Point(20, 102);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(207, 30);
+            this.panel1.Size = new System.Drawing.Size(202, 30);
             this.panel1.TabIndex = 5;
             // 
             // totga
@@ -167,7 +222,7 @@
             this.converttexture.AutoSize = true;
             this.converttexture.Checked = true;
             this.converttexture.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.converttexture.Location = new System.Drawing.Point(6, 20);
+            this.converttexture.Location = new System.Drawing.Point(6, 80);
             this.converttexture.Name = "converttexture";
             this.converttexture.Size = new System.Drawing.Size(126, 16);
             this.converttexture.TabIndex = 1;
@@ -193,7 +248,7 @@
             this.groupBox2.Controls.Add(this.castToBone);
             this.groupBox2.Controls.Add(this.exportAllNodes);
             this.groupBox2.Controls.Add(this.eulerFilter);
-            this.groupBox2.Location = new System.Drawing.Point(12, 12);
+            this.groupBox2.Location = new System.Drawing.Point(250, 12);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(214, 302);
             this.groupBox2.TabIndex = 11;
@@ -398,7 +453,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(490, 328);
+            this.ClientSize = new System.Drawing.Size(477, 351);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.Cancel);
@@ -453,5 +508,9 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox exportBlendShape;
         private System.Windows.Forms.CheckBox exportAnimations;
+        private System.Windows.Forms.ComboBox assetGroupOptions;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.CheckBox restoreExtensionName;
+        private System.Windows.Forms.CheckBox openAfterExport;
     }
 }

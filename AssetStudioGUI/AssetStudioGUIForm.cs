@@ -307,7 +307,7 @@ namespace AssetStudioGUI
                     if (dirty)
                     {
                         PreviewAsset(lastLoadedAsset);
-                        if (assetInfoLabel.Text != null)
+                        if (lastSelectedItem != null && assetInfoLabel.Text != null)
                         {
                             assetInfoLabel.Text = lastSelectedItem.InfoText;
                         }
@@ -354,6 +354,12 @@ namespace AssetStudioGUI
                     StatusStripUpdate("Finished exporting class structures");
                 }
             }
+        }
+
+        private void displayAll_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.displayAll = displayAll.Checked;
+            Properties.Settings.Default.Save();
         }
 
         private void enablePreview_Check(object sender, EventArgs e)
@@ -430,18 +436,6 @@ namespace AssetStudioGUI
             }
 
             Properties.Settings.Default.displayInfo = displayInfo.Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void MenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default[((ToolStripMenuItem)sender).Name] = ((ToolStripMenuItem)sender).Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void assetGroupOptions_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.assetGroupOption = ((ToolStripComboBox)sender).SelectedIndex;
             Properties.Settings.Default.Save();
         }
 
@@ -1480,8 +1474,6 @@ namespace AssetStudioGUI
             displayAll.Checked = Properties.Settings.Default.displayAll;
             displayInfo.Checked = Properties.Settings.Default.displayInfo;
             enablePreview.Checked = Properties.Settings.Default.enablePreview;
-            openAfterExport.Checked = Properties.Settings.Default.openAfterExport;
-            assetGroupOptions.SelectedIndex = Properties.Settings.Default.assetGroupOption;
             FMODinit();
 
             Logger.Default = new GUILogger(StatusStripUpdate);
