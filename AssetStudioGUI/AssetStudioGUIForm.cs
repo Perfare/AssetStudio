@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Drawing.Text;
 using System.Drawing.Imaging;
+using System.Timers;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using AssetStudio;
@@ -68,10 +69,12 @@ namespace AssetStudioGUI
         private int normalMode;
         #endregion
 
-        //asset list sorting helpers
-        private int firstSortColumn = -1;
-        private int secondSortColumn;
+        //asset list sorting
+        private int sortColumn = -1;
         private bool reverseSort;
+
+        //asset list filter
+        private System.Timers.Timer delayTimer;
         private bool enableFiltering;
 
         //tree search
@@ -176,7 +179,6 @@ namespace AssetStudioGUI
                 if (!dontBuildAssetListMenuItem.Checked)
                 {
                     assetListView.VirtualListSize = visibleAssets.Count;
-                    resizeAssetListColumns();
                 }
                 if (!dontBuildHierarchyMenuItem.Checked)
                 {
@@ -462,7 +464,6 @@ namespace AssetStudioGUI
                     treeSearch.Select();
                     break;
                 case 1:
-                    resizeAssetListColumns(); //required because the ListView is not visible on app launch
                     classPreviewPanel.Visible = false;
                     previewPanel.Visible = true;
                     listSearch.Select();
@@ -524,7 +525,7 @@ namespace AssetStudioGUI
 
         private void TreeNodeSearch(TreeNode treeNode)
         {
-            if (treeNode.Text.IndexOf(treeSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0)
+            if (treeNode.Text.IndexOf(treeSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 treeSrcResults.Add(treeNode);
             }
@@ -541,23 +542,6 @@ namespace AssetStudioGUI
             {
                 childNode.Checked = e.Node.Checked;
             }
-        }
-
-        private void resizeAssetListColumns()
-        {
-            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.HeaderSize);
-            assetListView.AutoResizeColumn(1, ColumnHeaderAutoResizeStyle.ColumnContent);
-            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.HeaderSize);
-            assetListView.AutoResizeColumn(2, ColumnHeaderAutoResizeStyle.ColumnContent);
-
-            var vscrollwidth = SystemInformation.VerticalScrollBarWidth;
-            var hasvscroll = (visibleAssets.Count / (float)assetListView.Height) > 0.0567f;
-            columnHeaderName.Width = assetListView.Width - columnHeaderType.Width - columnHeaderSize.Width - (hasvscroll ? (5 + vscrollwidth) : 5);
-        }
-
-        private void tabPage2_Resize(object sender, EventArgs e)
-        {
-            resizeAssetListColumns();
         }
 
         private void listSearch_Enter(object sender, EventArgs e)
@@ -584,54 +568,56 @@ namespace AssetStudioGUI
         {
             if (enableFiltering)
             {
-                FilterAssetList();
+                if (delayTimer.Enabled)
+                {
+                    delayTimer.Stop();
+                    delayTimer.Start();
+                }
+                else
+                {
+                    delayTimer.Start();
+                }
             }
+        }
+
+        private void delayTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            delayTimer.Stop();
+            Invoke(new Action(FilterAssetList));
         }
 
         private void assetListView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            if (firstSortColumn != e.Column)
+            if (sortColumn != e.Column)
             {
-                //sorting column has been changed
                 reverseSort = false;
-                secondSortColumn = firstSortColumn;
             }
-            else { reverseSort = !reverseSort; }
-            firstSortColumn = e.Column;
-
+            else
+            {
+                reverseSort = !reverseSort;
+            }
+            sortColumn = e.Column;
             assetListView.BeginUpdate();
             assetListView.SelectedIndices.Clear();
-            switch (e.Column)
+            if (sortColumn == 4) //FullSize
             {
-                case 0:
-                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
-                    {
-                        int xdiff = reverseSort ? b.Text.CompareTo(a.Text) : a.Text.CompareTo(b.Text);
-                        if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.FullSize.CompareTo(b.FullSize);
-                    });
-                    break;
-                case 1:
-                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
-                    {
-                        int xdiff = reverseSort ? b.TypeString.CompareTo(a.TypeString) : a.TypeString.CompareTo(b.TypeString);
-                        if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 2 ? a.FullSize.CompareTo(b.FullSize) : a.Text.CompareTo(b.Text);
-                    });
-                    break;
-                case 2:
-                    visibleAssets.Sort(delegate (AssetItem a, AssetItem b)
-                    {
-                        int xdiff = reverseSort ? b.FullSize.CompareTo(a.FullSize) : a.FullSize.CompareTo(b.FullSize);
-                        if (xdiff != 0) return xdiff;
-                        return secondSortColumn == 1 ? a.TypeString.CompareTo(b.TypeString) : a.Text.CompareTo(b.Text);
-                    });
-                    break;
+                visibleAssets.Sort((a, b) =>
+                {
+                    var asf = a.FullSize;
+                    var bsf = b.FullSize;
+                    return reverseSort ? bsf.CompareTo(asf) : asf.CompareTo(bsf);
+                });
             }
-
+            else
+            {
+                visibleAssets.Sort((a, b) =>
+                {
+                    var at = a.SubItems[sortColumn].Text;
+                    var bt = b.SubItems[sortColumn].Text;
+                    return reverseSort ? bt.CompareTo(at) : at.CompareTo(bt);
+                });
+            }
             assetListView.EndUpdate();
-
-            resizeAssetListColumns();
         }
 
         private void selectAsset(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -1489,7 +1475,8 @@ namespace AssetStudioGUI
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
-            displayOriginalName.Checked = Properties.Settings.Default.displayOriginalName;
+            delayTimer = new System.Timers.Timer(800);
+            delayTimer.Elapsed += new ElapsedEventHandler(delayTimer_Elapsed);
             displayAll.Checked = Properties.Settings.Default.displayAll;
             displayInfo.Checked = Properties.Settings.Default.displayInfo;
             enablePreview.Checked = Properties.Settings.Default.enablePreview;
@@ -1749,8 +1736,7 @@ namespace AssetStudioGUI
             glControl1.Visible = false;
             lastSelectedItem = null;
             lastLoadedAsset = null;
-            firstSortColumn = -1;
-            secondSortColumn = 0;
+            sortColumn = -1;
             reverseSort = false;
             enableFiltering = false;
             listSearch.Text = " Filter ";
@@ -2016,7 +2002,10 @@ namespace AssetStudioGUI
             }
             if (listSearch.Text != " Filter ")
             {
-                visibleAssets = visibleAssets.FindAll(x => x.Text.IndexOf(listSearch.Text, StringComparison.CurrentCultureIgnoreCase) >= 0);
+                visibleAssets = visibleAssets.FindAll(
+                    x => x.Text.IndexOf(listSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.SubItems[1].Text.IndexOf(listSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.SubItems[3].Text.IndexOf(listSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0);
             }
             assetListView.VirtualListSize = visibleAssets.Count;
             assetListView.EndUpdate();

@@ -184,7 +184,6 @@ namespace AssetStudioGUI
                     {
                         assetItem.Text = assetItem.TypeString + assetItem.UniqueID;
                     }
-                    assetItem.SubItems.AddRange(new[] { assetItem.TypeString, assetItem.FullSize.ToString() });
                     //处理同名文件
                     if (!assetsNameHash.Add(assetItem.TypeString + assetItem.Text))
                     {
@@ -199,26 +198,17 @@ namespace AssetStudioGUI
 
                     Progress.Report(++j, progressCount);
                 }
-                if (Properties.Settings.Default.displayOriginalName && ab != null)
+                foreach (var item in tempExportableAssets)
                 {
-                    foreach (var item in tempExportableAssets)
+                    if (ab != null)
                     {
-                        var originalPath = ab.m_Container.FirstOrDefault(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
-                        if (!string.IsNullOrEmpty(originalPath))
+                        var container = ab.m_Container.FirstOrDefault(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
+                        if (!string.IsNullOrEmpty(container))
                         {
-                            var extension = Path.GetExtension(originalPath);
-                            if (!string.IsNullOrEmpty(extension) && item.Type == ClassIDType.TextAsset)
-                            {
-                                item.Extension = extension;
-                            }
-
-                            item.Text = Path.GetDirectoryName(originalPath) + "\\" + Path.GetFileNameWithoutExtension(originalPath);
-                            if (!assetsNameHash.Add(item.TypeString + item.Text))
-                            {
-                                item.Text += item.UniqueID;
-                            }
+                            item.Container = container;
                         }
                     }
+                    item.SetSubItems();
                 }
                 exportableAssets.AddRange(tempExportableAssets);
                 tempExportableAssets.Clear();

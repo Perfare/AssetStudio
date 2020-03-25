@@ -112,7 +112,7 @@ namespace AssetStudioGUI
         public static bool ExportTextAsset(AssetItem item, string exportPath)
         {
             var m_TextAsset = (TextAsset)(item.Asset);
-            var exportFullName = exportPath + item.Text + (item.Extension ?? ".txt");
+            var exportFullName = exportPath + item.Text + ".txt";
             if (ExportFileExists(exportFullName))
                 return false;
             File.WriteAllBytes(exportFullName, m_TextAsset.m_Script);
