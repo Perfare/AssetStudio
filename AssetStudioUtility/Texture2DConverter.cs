@@ -395,7 +395,7 @@ namespace AssetStudio
             {
                 buff[i] = 0;
                 buff[i + 1] = 0;
-                buff[i + 2] = (byte)Math.Ceiling(Half.ToHalf(image_data, i / 2) * 255f);
+                buff[i + 2] = (byte)Math.Round(Half.ToHalf(image_data, i / 2) * 255f);
                 buff[i + 3] = 255;
             }
             return buff;
@@ -407,8 +407,8 @@ namespace AssetStudio
             for (var i = 0; i < buff.Length; i += 4)
             {
                 buff[i] = 0;
-                buff[i + 1] = (byte)Math.Ceiling(Half.ToHalf(image_data, i + 2) * 255f);
-                buff[i + 2] = (byte)Math.Ceiling(Half.ToHalf(image_data, i) * 255f);
+                buff[i + 1] = (byte)Math.Round(Half.ToHalf(image_data, i + 2) * 255f);
+                buff[i + 2] = (byte)Math.Round(Half.ToHalf(image_data, i) * 255f);
                 buff[i + 3] = 255;
             }
             return buff;
@@ -419,10 +419,10 @@ namespace AssetStudio
             var buff = new byte[m_Width * m_Height * 4];
             for (var i = 0; i < buff.Length; i += 4)
             {
-                buff[i] = (byte)Math.Ceiling(Half.ToHalf(image_data, i * 2 + 4) * 255f);
-                buff[i + 1] = (byte)Math.Ceiling(Half.ToHalf(image_data, i * 2 + 2) * 255f);
-                buff[i + 2] = (byte)Math.Ceiling(Half.ToHalf(image_data, i * 2) * 255f);
-                buff[i + 3] = (byte)Math.Ceiling(Half.ToHalf(image_data, i * 2 + 6) * 255f);
+                buff[i] = (byte)Math.Round(Half.ToHalf(image_data, i * 2 + 4) * 255f);
+                buff[i + 1] = (byte)Math.Round(Half.ToHalf(image_data, i * 2 + 2) * 255f);
+                buff[i + 2] = (byte)Math.Round(Half.ToHalf(image_data, i * 2) * 255f);
+                buff[i + 3] = (byte)Math.Round(Half.ToHalf(image_data, i * 2 + 6) * 255f);
             }
             return buff;
         }
@@ -434,7 +434,7 @@ namespace AssetStudio
             {
                 buff[i] = 0;
                 buff[i + 1] = 0;
-                buff[i + 2] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i) * 255f);
+                buff[i + 2] = (byte)Math.Round(BitConverter.ToSingle(image_data, i) * 255f);
                 buff[i + 3] = 255;
             }
             return buff;
@@ -446,8 +446,8 @@ namespace AssetStudio
             for (var i = 0; i < buff.Length; i += 4)
             {
                 buff[i] = 0;
-                buff[i + 1] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 2 + 4) * 255f);
-                buff[i + 2] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 2) * 255f);
+                buff[i + 1] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 2 + 4) * 255f);
+                buff[i + 2] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 2) * 255f);
                 buff[i + 3] = 255;
             }
             return buff;
@@ -458,10 +458,10 @@ namespace AssetStudio
             var buff = new byte[m_Width * m_Height * 4];
             for (var i = 0; i < buff.Length; i += 4)
             {
-                buff[i] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 4 + 8) * 255f);
-                buff[i + 1] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 4 + 4) * 255f);
-                buff[i + 2] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 4) * 255f);
-                buff[i + 3] = (byte)Math.Ceiling(BitConverter.ToSingle(image_data, i * 4 + 12) * 255f);
+                buff[i] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4 + 8) * 255f);
+                buff[i + 1] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4 + 4) * 255f);
+                buff[i + 2] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4) * 255f);
+                buff[i + 3] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4 + 12) * 255f);
             }
             return buff;
         }
@@ -513,9 +513,9 @@ namespace AssetStudio
                 var b = n >> 18 & 0x1ff;
                 var g = n >> 9 & 0x1ff;
                 var r = n & 0x1ff;
-                buff[i] = (byte)Math.Ceiling(b * scalef * 255f);
-                buff[i + 1] = (byte)Math.Ceiling(g * scalef * 255f);
-                buff[i + 2] = (byte)Math.Ceiling(r * scalef * 255f);
+                buff[i] = (byte)Math.Round(b * scalef * 255f);
+                buff[i + 1] = (byte)Math.Round(g * scalef * 255f);
+                buff[i + 2] = (byte)Math.Round(r * scalef * 255f);
                 buff[i + 3] = 255;
             }
             return buff;
