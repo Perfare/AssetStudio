@@ -67,10 +67,6 @@
             this.filterTypeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.buildClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dontBuildAssetListMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dontBuildHierarchyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -87,8 +83,8 @@
             this.listSearch = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.classesListView = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressbarPanel = new System.Windows.Forms.Panel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.previewPanel = new System.Windows.Forms.Panel();
@@ -117,7 +113,7 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportSelectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.jumpToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.goToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -439,46 +435,15 @@
             // debugMenuItem
             // 
             this.debugMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.buildClassStructuresMenuItem,
-            this.dontBuildAssetListMenuItem,
-            this.dontBuildHierarchyMenuItem,
-            this.toolStripSeparator2,
             this.exportClassStructuresMenuItem});
             this.debugMenuItem.Name = "debugMenuItem";
             this.debugMenuItem.Size = new System.Drawing.Size(59, 21);
             this.debugMenuItem.Text = "Debug";
             // 
-            // buildClassStructuresMenuItem
-            // 
-            this.buildClassStructuresMenuItem.CheckOnClick = true;
-            this.buildClassStructuresMenuItem.Name = "buildClassStructuresMenuItem";
-            this.buildClassStructuresMenuItem.Size = new System.Drawing.Size(224, 22);
-            this.buildClassStructuresMenuItem.Text = "Build class structures";
-            // 
-            // dontBuildAssetListMenuItem
-            // 
-            this.dontBuildAssetListMenuItem.CheckOnClick = true;
-            this.dontBuildAssetListMenuItem.Name = "dontBuildAssetListMenuItem";
-            this.dontBuildAssetListMenuItem.Size = new System.Drawing.Size(224, 22);
-            this.dontBuildAssetListMenuItem.Text = "Don\'t build asset list";
-            this.dontBuildAssetListMenuItem.CheckedChanged += new System.EventHandler(this.dontBuildAssetListMenuItem_CheckedChanged);
-            // 
-            // dontBuildHierarchyMenuItem
-            // 
-            this.dontBuildHierarchyMenuItem.CheckOnClick = true;
-            this.dontBuildHierarchyMenuItem.Name = "dontBuildHierarchyMenuItem";
-            this.dontBuildHierarchyMenuItem.Size = new System.Drawing.Size(224, 22);
-            this.dontBuildHierarchyMenuItem.Text = "Don\'t build hierarchy tree";
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(221, 6);
-            // 
             // exportClassStructuresMenuItem
             // 
             this.exportClassStructuresMenuItem.Name = "exportClassStructuresMenuItem";
-            this.exportClassStructuresMenuItem.Size = new System.Drawing.Size(224, 22);
+            this.exportClassStructuresMenuItem.Size = new System.Drawing.Size(207, 22);
             this.exportClassStructuresMenuItem.Text = "Export class structures";
             this.exportClassStructuresMenuItem.Click += new System.EventHandler(this.exportClassStructuresMenuItem_Click);
             // 
@@ -657,16 +622,15 @@
             this.classesListView.View = System.Windows.Forms.View.Details;
             this.classesListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.classesListView_ItemSelectionChanged);
             // 
-            // columnHeader1
-            // 
-            this.columnHeader1.DisplayIndex = 1;
-            this.columnHeader1.Text = "Name";
-            this.columnHeader1.Width = 328;
-            // 
             // columnHeader2
             // 
-            this.columnHeader2.DisplayIndex = 0;
-            this.columnHeader2.Text = "ID";
+            this.columnHeader2.Text = "Name";
+            this.columnHeader2.Width = 300;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "ID";
+            this.columnHeader1.Width = 70;
             // 
             // progressbarPanel
             // 
@@ -946,7 +910,7 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportSelectedAssetsToolStripMenuItem,
             this.exportAnimatorwithselectedAnimationClipMenuItem,
-            this.jumpToSceneHierarchyToolStripMenuItem,
+            this.goToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(327, 92);
@@ -966,13 +930,13 @@
             this.exportAnimatorwithselectedAnimationClipMenuItem.Visible = false;
             this.exportAnimatorwithselectedAnimationClipMenuItem.Click += new System.EventHandler(this.exportAnimatorwithAnimationClipMenuItem_Click);
             // 
-            // jumpToSceneHierarchyToolStripMenuItem
+            // goToSceneHierarchyToolStripMenuItem
             // 
-            this.jumpToSceneHierarchyToolStripMenuItem.Name = "jumpToSceneHierarchyToolStripMenuItem";
-            this.jumpToSceneHierarchyToolStripMenuItem.Size = new System.Drawing.Size(326, 22);
-            this.jumpToSceneHierarchyToolStripMenuItem.Text = "Jump to scene hierarchy";
-            this.jumpToSceneHierarchyToolStripMenuItem.Visible = false;
-            this.jumpToSceneHierarchyToolStripMenuItem.Click += new System.EventHandler(this.jumpToSceneHierarchyToolStripMenuItem_Click);
+            this.goToSceneHierarchyToolStripMenuItem.Name = "goToSceneHierarchyToolStripMenuItem";
+            this.goToSceneHierarchyToolStripMenuItem.Size = new System.Drawing.Size(326, 22);
+            this.goToSceneHierarchyToolStripMenuItem.Text = "Go to scene hierarchy";
+            this.goToSceneHierarchyToolStripMenuItem.Visible = false;
+            this.goToSceneHierarchyToolStripMenuItem.Click += new System.EventHandler(this.goToSceneHierarchyToolStripMenuItem_Click);
             // 
             // showOriginalFileToolStripMenuItem
             // 
@@ -1079,16 +1043,12 @@
         private System.Windows.Forms.ToolStripMenuItem showExpOpt;
         private GOHierarchy sceneTreeView;
         private System.Windows.Forms.ToolStripMenuItem debugMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem buildClassStructuresMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dontBuildAssetListMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dontBuildHierarchyMenuItem;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.ListView classesListView;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.Panel classPreviewPanel;
         private System.Windows.Forms.TextBox classTextBox;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
         private System.Windows.Forms.Label FMODcopyright;
         private OpenTK.GLControl glControl1;
@@ -1103,7 +1063,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem exportAnimatorWithSelectedAnimationClipToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllObjectssplitToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem jumpToSceneHierarchyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem goToSceneHierarchyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedObjectsmergeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;

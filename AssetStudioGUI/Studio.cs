@@ -96,14 +96,15 @@ namespace AssetStudioGUI
             return extractedCount;
         }
 
-        public static void BuildAssetList(Dictionary<Object, AssetItem> tempDic, out string productName)
+        public static Tuple<string, List<TreeNode>> BuildAssetData()
         {
             StatusStripUpdate("Building asset list...");
 
-            productName = string.Empty;
+            string productName = null;
             var assetsNameHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var progressCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
-            int j = 0;
+            var objectCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
+            var objectAssetItemDic = new Dictionary<Object, AssetItem>(objectCount);
+            int i = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
@@ -112,8 +113,8 @@ namespace AssetStudioGUI
                 foreach (var asset in assetsFile.Objects.Values)
                 {
                     var assetItem = new AssetItem(asset);
-                    tempDic.Add(asset, assetItem);
-                    assetItem.UniqueID = " #" + j;
+                    objectAssetItemDic.Add(asset, assetItem);
+                    assetItem.UniqueID = " #" + i;
                     var exportable = false;
                     switch (asset)
                     {
@@ -195,8 +196,7 @@ namespace AssetStudioGUI
                     {
                         tempExportableAssets.Add(assetItem);
                     }
-
-                    Progress.Report(++j, progressCount);
+                    Progress.Report(++i, objectCount);
                 }
                 foreach (var item in tempExportableAssets)
                 {
@@ -213,19 +213,15 @@ namespace AssetStudioGUI
                 exportableAssets.AddRange(tempExportableAssets);
                 tempExportableAssets.Clear();
             }
-
             visibleAssets = exportableAssets;
             assetsNameHash.Clear();
-        }
 
-        public static List<TreeNode> BuildTreeStructure(Dictionary<Object, AssetItem> tempDic)
-        {
             StatusStripUpdate("Building tree structure...");
 
             var treeNodeCollection = new List<TreeNode>();
             var treeNodeDictionary = new Dictionary<GameObject, GameObjectTreeNode>();
-            var progressCount = assetsManager.assetsFileList.Count;
-            int i = 0;
+            var assetsFileCount = assetsManager.assetsFileList.Count;
+            int j = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
@@ -241,24 +237,26 @@ namespace AssetStudioGUI
                             treeNodeDictionary.Add(m_GameObject, currentNode);
                         }
 
-                        if (m_GameObject.m_MeshFilter != null)
+                        foreach (var pptr in m_GameObject.m_Components)
                         {
-                            if (m_GameObject.m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
+                            if (pptr.TryGet(out var m_Component))
                             {
-                                var item = tempDic[m_Mesh];
-                                item.TreeNode = currentNode;
+                                objectAssetItemDic[m_Component].TreeNode = currentNode;
+                                if (m_Component is MeshFilter m_MeshFilter)
+                                {
+                                    if (m_MeshFilter.m_Mesh.TryGet(out var m_Mesh))
+                                    {
+                                        objectAssetItemDic[m_Mesh].TreeNode = currentNode;
+                                    }
+                                }
+                                else if (m_Component is SkinnedMeshRenderer m_SkinnedMeshRenderer)
+                                {
+                                    if (m_SkinnedMeshRenderer.m_Mesh.TryGet(out var m_Mesh))
+                                    {
+                                        objectAssetItemDic[m_Mesh].TreeNode = currentNode;
+                                    }
+                                }
                             }
-                            tempDic[m_GameObject.m_MeshFilter].TreeNode = currentNode;
-                        }
-
-                        if (m_GameObject.m_SkinnedMeshRenderer != null)
-                        {
-                            if (m_GameObject.m_SkinnedMeshRenderer.m_Mesh.TryGet(out var m_Mesh))
-                            {
-                                var item = tempDic[m_Mesh];
-                                item.TreeNode = currentNode;
-                            }
-                            tempDic[m_GameObject.m_SkinnedMeshRenderer].TreeNode = currentNode;
                         }
 
                         var parentNode = fileNode;
@@ -287,12 +285,13 @@ namespace AssetStudioGUI
                     treeNodeCollection.Add(fileNode);
                 }
 
-                Progress.Report(++i, progressCount);
+                Progress.Report(++j, assetsFileCount);
             }
-
             treeNodeDictionary.Clear();
 
-            return treeNodeCollection;
+            objectAssetItemDic.Clear();
+
+            return new Tuple<string, List<TreeNode>>(productName, treeNodeCollection);
         }
 
         public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> BuildClassStructure()
