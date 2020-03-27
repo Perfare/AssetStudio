@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using System.Threading;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System.Drawing.Text;
-using System.Drawing.Imaging;
-using System.Timers;
+﻿using AssetStudio;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using AssetStudio;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Timers;
+using System.Windows.Forms;
 using static AssetStudioGUI.Studio;
-using Object = AssetStudio.Object;
 using Font = AssetStudio.Font;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Vector3 = OpenTK.Vector3;
 using Vector4 = OpenTK.Vector4;
-using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace AssetStudioGUI
 {
@@ -39,8 +38,8 @@ namespace AssetStudioGUI
         private float FMODVolume = 0.8f;
 
         #region TexControl
-        private static char[] textureChannelNames = new char[4] { 'R', 'G', 'B', 'A' };
-        private bool[] textureChannels = new bool[4] { true, true, true, true };
+        private static char[] textureChannelNames = new[] { 'B', 'G', 'R', 'A' };
+        private bool[] textureChannels = new[] { true, true, true, true };
         #endregion
 
         #region GLControl
@@ -705,7 +704,6 @@ namespace AssetStudioGUI
                     case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
                 }
                 assetItem.InfoText += "\nChannels: ";
-                bool dirty = false;
                 int validChannel = 0;
                 for (int i = 0; i < 4; i++)
                 {
@@ -714,46 +712,12 @@ namespace AssetStudioGUI
                         assetItem.InfoText += textureChannelNames[i];
                         validChannel++;
                     }
-                    else
-                        dirty = true;
                 }
                 if (validChannel == 0)
                     assetItem.InfoText += "None";
-                if (dirty)
+                if (validChannel != 4)
                 {
-                    Action<byte[], int> handler = delegate { };
-                    if (validChannel == 0)
-                    {
-                        handler = (data, offset) =>
-                        {
-                            for (int i = 0; i < 4; i++)
-                                data[i + offset] = (i == 3) ? (byte)255 : (byte)0;
-                        };
-                    }
-                    else if (validChannel == 1)
-                    {
-                        int c = 3;
-                        if (textureChannels[0])
-                            c = 0;
-                        else if (textureChannels[1])
-                            c = 1;
-                        else if (textureChannels[2])
-                            c = 2;
-                        handler = (data, offset) =>
-                        {
-                            for (int i = 0; i < 4; i++)
-                                data[i + offset] = (i == 3) ? (byte)255 : data[c + offset];
-                        };
-                    }
-                    else
-                    {
-                        handler = (data, offset) =>
-                        {
-                            for (int i = 0; i < 4; i++)
-                                data[i + offset] = textureChannels[i] ? data[i + offset] : (byte)(i == 3 ? 255 : 0);
-                        };
-                    }
-                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
                     var bytes = new byte[bitmap.Width * bitmap.Height * 4];
                     Marshal.Copy(bmpData.Scan0, bytes, 0, bytes.Length);
                     for (int i = 0; i < bmpData.Height; i++)
@@ -761,7 +725,10 @@ namespace AssetStudioGUI
                         int offset = Math.Abs(bmpData.Stride) * i;
                         for (int j = 0; j < bmpData.Width; j++)
                         {
-                            handler(bytes, offset);
+                            bytes[offset] = textureChannels[0] ? bytes[offset] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                            bytes[offset + 1] = textureChannels[1] ? bytes[offset + 1] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                            bytes[offset + 2] = textureChannels[2] ? bytes[offset + 2] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                            bytes[offset + 3] = textureChannels[3] ? bytes[offset + 3] : byte.MaxValue;
                             offset += 4;
                         }
                     }
