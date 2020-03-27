@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using static AssetStudioGUI.Studio;
@@ -82,47 +83,49 @@ namespace AssetStudioGUI
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
+        public AssetStudioGUIForm()
+        {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            InitializeComponent();
+            Text = $"AssetStudioGUI v{Application.ProductVersion}";
+            delayTimer = new System.Timers.Timer(800);
+            delayTimer.Elapsed += new ElapsedEventHandler(delayTimer_Elapsed);
+            displayAll.Checked = Properties.Settings.Default.displayAll;
+            displayInfo.Checked = Properties.Settings.Default.displayInfo;
+            enablePreview.Checked = Properties.Settings.Default.enablePreview;
+            FMODinit();
 
-        private void loadFile_Click(object sender, EventArgs e)
+            Logger.Default = new GUILogger(StatusStripUpdate);
+            Progress.Default = new GUIProgress(SetProgressBarValue);
+            Studio.StatusStripUpdate = StatusStripUpdate;
+        }
+
+        private async void loadFile_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 ResetForm();
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    assetsManager.LoadFiles(openFileDialog1.FileNames);
-                    BuildAssetStructures();
-                });
+                await Task.Run(() => assetsManager.LoadFiles(openFileDialog1.FileNames));
+                BuildAssetStructures();
             }
         }
 
-        private void loadFolder_Click(object sender, EventArgs e)
+        private async void loadFolder_Click(object sender, EventArgs e)
         {
             var openFolderDialog = new OpenFolderDialog();
             if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
             {
                 ResetForm();
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    assetsManager.LoadFolder(openFolderDialog.Folder);
-                    BuildAssetStructures();
-                });
+                await Task.Run(() => assetsManager.LoadFolder(openFolderDialog.Folder));
+                BuildAssetStructures();
             }
         }
 
         private void extractFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var openBundleDialog = new OpenFileDialog
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                Filter = "All types|*.*",
-                FilterIndex = 1,
-                RestoreDirectory = true,
-                Multiselect = true
-            };
-
-            if (openBundleDialog.ShowDialog() == DialogResult.OK)
-            {
-                ExtractFile(openBundleDialog.FileNames);
+                ExtractFile(openFileDialog1.FileNames);
             }
         }
 
@@ -136,7 +139,7 @@ namespace AssetStudioGUI
             }
         }
 
-        private void BuildAssetStructures()
+        private async void BuildAssetStructures()
         {
             if (assetsManager.assetsFileList.Count == 0)
             {
@@ -144,72 +147,66 @@ namespace AssetStudioGUI
                 return;
             }
 
-            var data = BuildAssetData();
-            var productName = data.Item1;
-            var treeNodeCollection = data.Item2;
-            var typeMap = BuildClassStructure();
+            (var productName, var treeNodeCollection) = await Task.Run(() => BuildAssetData());
+            var typeMap = await Task.Run(() => BuildClassStructure());
 
-            BeginInvoke(new Action(() =>
+            if (!string.IsNullOrEmpty(productName))
             {
-                if (!string.IsNullOrEmpty(productName))
-                {
-                    Text = $"AssetStudioGUI - {productName} - {assetsManager.assetsFileList[0].unityVersion} - {assetsManager.assetsFileList[0].m_TargetPlatform}";
-                }
-                else
-                {
-                    Text = $"AssetStudioGUI - no productName - {assetsManager.assetsFileList[0].unityVersion} - {assetsManager.assetsFileList[0].m_TargetPlatform}";
-                }
+                Text = $"AssetStudioGUI v{Application.ProductVersion} - {productName} - {assetsManager.assetsFileList[0].unityVersion} - {assetsManager.assetsFileList[0].m_TargetPlatform}";
+            }
+            else
+            {
+                Text = $"AssetStudioGUI v{Application.ProductVersion} - no productName - {assetsManager.assetsFileList[0].unityVersion} - {assetsManager.assetsFileList[0].m_TargetPlatform}";
+            }
 
-                assetListView.VirtualListSize = visibleAssets.Count;
+            assetListView.VirtualListSize = visibleAssets.Count;
 
-                sceneTreeView.BeginUpdate();
-                sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
-                foreach (TreeNode node in sceneTreeView.Nodes)
-                {
-                    node.HideCheckBox();
-                }
-                sceneTreeView.EndUpdate();
-                treeNodeCollection.Clear();
+            sceneTreeView.BeginUpdate();
+            sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
+            foreach (var node in treeNodeCollection)
+            {
+                node.HideCheckBox();
+            }
+            sceneTreeView.EndUpdate();
+            treeNodeCollection.Clear();
 
-                classesListView.BeginUpdate();
-                foreach (var version in typeMap)
-                {
-                    var versionGroup = new ListViewGroup(version.Key);
-                    classesListView.Groups.Add(versionGroup);
+            classesListView.BeginUpdate();
+            foreach (var version in typeMap)
+            {
+                var versionGroup = new ListViewGroup(version.Key);
+                classesListView.Groups.Add(versionGroup);
 
-                    foreach (var uclass in version.Value)
-                    {
-                        uclass.Value.Group = versionGroup;
-                        classesListView.Items.Add(uclass.Value);
-                    }
+                foreach (var uclass in version.Value)
+                {
+                    uclass.Value.Group = versionGroup;
+                    classesListView.Items.Add(uclass.Value);
                 }
-                typeMap.Clear();
-                classesListView.EndUpdate();
+            }
+            typeMap.Clear();
+            classesListView.EndUpdate();
 
-                var types = exportableAssets.Select(x => x.Type).Distinct().OrderBy(x => x.ToString()).ToArray();
-                foreach (var type in types)
+            var types = exportableAssets.Select(x => x.Type).Distinct().OrderBy(x => x.ToString()).ToArray();
+            foreach (var type in types)
+            {
+                var typeItem = new ToolStripMenuItem
                 {
-                    var typeItem = new ToolStripMenuItem
-                    {
-                        CheckOnClick = true,
-                        Name = type.ToString(),
-                        Size = new Size(180, 22),
-                        Text = type.ToString()
-                    };
-                    typeItem.Click += typeToolStripMenuItem_Click;
-                    filterTypeToolStripMenuItem.DropDownItems.Add(typeItem);
-                }
-                allToolStripMenuItem.Checked = true;
-                var log = $"Finished loading {assetsManager.assetsFileList.Count} files with {assetListView.Items.Count} exportable assets";
-                var m_ObjectsCount = assetsManager.assetsFileList.Sum(x => x.m_Objects.Count);
-                var objectsCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
-                if (m_ObjectsCount != objectsCount)
-                {
-                    log += $" and {m_ObjectsCount - objectsCount} assets failed to read";
-                }
-                StatusStripUpdate(log);
-                treeSearch.Select();
-            }));
+                    CheckOnClick = true,
+                    Name = type.ToString(),
+                    Size = new Size(180, 22),
+                    Text = type.ToString()
+                };
+                typeItem.Click += typeToolStripMenuItem_Click;
+                filterTypeToolStripMenuItem.DropDownItems.Add(typeItem);
+            }
+            allToolStripMenuItem.Checked = true;
+            var log = $"Finished loading {assetsManager.assetsFileList.Count} files with {assetListView.Items.Count} exportable assets";
+            var m_ObjectsCount = assetsManager.assetsFileList.Sum(x => x.m_Objects.Count);
+            var objectsCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
+            if (m_ObjectsCount != objectsCount)
+            {
+                log += $" and {m_ObjectsCount - objectsCount} assets failed to read";
+            }
+            StatusStripUpdate(log);
         }
 
         private void typeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1138,26 +1135,9 @@ namespace AssetStudioGUI
             }
         }
 
-        public AssetStudioGUIForm()
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            InitializeComponent();
-            delayTimer = new System.Timers.Timer(800);
-            delayTimer.Elapsed += new ElapsedEventHandler(delayTimer_Elapsed);
-            displayAll.Checked = Properties.Settings.Default.displayAll;
-            displayInfo.Checked = Properties.Settings.Default.displayInfo;
-            enablePreview.Checked = Properties.Settings.Default.enablePreview;
-            FMODinit();
-
-            Logger.Default = new GUILogger(StatusStripUpdate);
-            Progress.Default = new GUIProgress(SetProgressBarValue);
-            Studio.StatusStripUpdate = StatusStripUpdate;
-        }
-
-
         private void ResetForm()
         {
-            Text = "AssetStudioGUI";
+            Text = $"AssetStudioGUI v{Application.ProductVersion}";
             assetsManager.Clear();
             exportableAssets.Clear();
             visibleAssets.Clear();

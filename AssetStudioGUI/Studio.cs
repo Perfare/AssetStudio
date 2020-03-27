@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AssetStudio;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using AssetStudio;
 using static AssetStudioGUI.Exporter;
 using Object = AssetStudio.Object;
 
@@ -96,7 +96,7 @@ namespace AssetStudioGUI
             return extractedCount;
         }
 
-        public static Tuple<string, List<TreeNode>> BuildAssetData()
+        public static (string, List<TreeNode>) BuildAssetData()
         {
             StatusStripUpdate("Building asset list...");
 
@@ -109,7 +109,7 @@ namespace AssetStudioGUI
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
                 var tempExportableAssets = new List<AssetItem>();
-                AssetBundle ab = null;
+                Dictionary<long, string> containers = null;
                 foreach (var asset in assetsFile.Objects.Values)
                 {
                     var assetItem = new AssetItem(asset);
@@ -174,8 +174,8 @@ namespace AssetStudioGUI
                             productName = m_PlayerSettings.productName;
                             break;
                         case AssetBundle m_AssetBundle:
-                            ab = m_AssetBundle;
-                            assetItem.Text = ab.m_Name;
+                            containers = m_AssetBundle.m_Container.ToDictionary(x => x.Value.asset.m_PathID, x => x.Key);
+                            assetItem.Text = m_AssetBundle.m_Name;
                             break;
                         case NamedObject m_NamedObject:
                             assetItem.Text = m_NamedObject.m_Name;
@@ -200,18 +200,21 @@ namespace AssetStudioGUI
                 }
                 foreach (var item in tempExportableAssets)
                 {
-                    if (ab != null)
+                    if (containers != null)
                     {
-                        var container = ab.m_Container.FirstOrDefault(y => y.Value.asset.m_PathID == item.Asset.m_PathID).Key;
-                        if (!string.IsNullOrEmpty(container))
+                        if (containers.TryGetValue(item.Asset.m_PathID, out var container))
                         {
-                            item.Container = container;
+                            if (!string.IsNullOrEmpty(container))
+                            {
+                                item.Container = container;
+                            }
                         }
                     }
                     item.SetSubItems();
                 }
                 exportableAssets.AddRange(tempExportableAssets);
                 tempExportableAssets.Clear();
+                containers?.Clear();
             }
             visibleAssets = exportableAssets;
             assetsNameHash.Clear();
@@ -291,7 +294,7 @@ namespace AssetStudioGUI
 
             objectAssetItemDic.Clear();
 
-            return new Tuple<string, List<TreeNode>>(productName, treeNodeCollection);
+            return (productName, treeNodeCollection);
         }
 
         public static Dictionary<string, SortedDictionary<int, TypeTreeItem>> BuildClassStructure()

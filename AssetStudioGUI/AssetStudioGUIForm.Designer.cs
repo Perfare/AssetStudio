@@ -83,8 +83,8 @@
             this.listSearch = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.classesListView = new System.Windows.Forms.ListView();
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressbarPanel = new System.Windows.Forms.Panel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.previewPanel = new System.Windows.Forms.Panel();
@@ -622,15 +622,15 @@
             this.classesListView.View = System.Windows.Forms.View.Details;
             this.classesListView.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.classesListView_ItemSelectionChanged);
             // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Name";
-            this.columnHeader2.Width = 300;
-            // 
             // columnHeader1
             // 
             this.columnHeader1.Text = "ID";
             this.columnHeader1.Width = 70;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Name";
+            this.columnHeader2.Width = 300;
             // 
             // progressbarPanel
             // 
