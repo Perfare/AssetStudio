@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AF56B63C-1764-41B7-9E60-8D485422AC3B}</ProjectGuid>
+    <ProjectGuid>{7662F8C2-7BFD-442E-A948-A43B4F7EB06E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AssetStudio</RootNamespace>
     <AssemblyName>AssetStudio</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -38,6 +38,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -56,22 +57,7 @@
     <Compile Include="7zip\Compress\RangeCoder\RangeCoderBit.cs" />
     <Compile Include="7zip\Compress\RangeCoder\RangeCoderBitTree.cs" />
     <Compile Include="7zip\ICoder.cs" />
-    <Compile Include="Classes\RuntimeAnimatorController.cs" />
-    <Compile Include="Math\Color.cs" />
-    <Compile Include="Math\Half.cs" />
-    <Compile Include="Math\HalfHelper.cs" />
-    <Compile Include="Math\Matrix4x4.cs" />
-    <Compile Include="Math\Quaternion.cs" />
-    <Compile Include="Math\Vector2.cs" />
-    <Compile Include="Math\Vector3.cs" />
-    <Compile Include="Math\Vector4.cs" />
-    <Compile Include="UType.cs" />
-    <Compile Include="ResourceReader.cs" />
-    <Compile Include="IImported.cs" />
-    <Compile Include="SerializedFile.cs" />
     <Compile Include="AssetsManager.cs" />
-    <Compile Include="Extensions\BinaryReaderExtensions.cs" />
-    <Compile Include="Extensions\BinaryWriterExtensions.cs" />
     <Compile Include="Brotli\BitReader.cs" />
     <Compile Include="Brotli\BrotliInputStream.cs" />
     <Compile Include="Brotli\BrotliRuntimeException.cs" />
@@ -114,8 +100,10 @@
     <Compile Include="Classes\NamedObject.cs" />
     <Compile Include="Classes\Object.cs" />
     <Compile Include="Classes\PlayerSettings.cs" />
+    <Compile Include="Classes\PPtr.cs" />
     <Compile Include="Classes\RectTransform.cs" />
     <Compile Include="Classes\Renderer.cs" />
+    <Compile Include="Classes\RuntimeAnimatorController.cs" />
     <Compile Include="Classes\Shader.cs" />
     <Compile Include="Classes\SkinnedMeshRenderer.cs" />
     <Compile Include="Classes\Sprite.cs" />
@@ -128,26 +116,38 @@
     <Compile Include="ClassIDType.cs" />
     <Compile Include="CommonString.cs" />
     <Compile Include="EndianBinaryReader.cs" />
+    <Compile Include="Extensions\BinaryReaderExtensions.cs" />
+    <Compile Include="Extensions\BinaryWriterExtensions.cs" />
+    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="FileIdentifier.cs" />
+    <Compile Include="IImported.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="ImportHelper.cs" />
     <Compile Include="IProgress.cs" />
     <Compile Include="LocalSerializedObjectIdentifier.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Lz4DecoderStream.cs" />
+    <Compile Include="Math\Color.cs" />
+    <Compile Include="Math\Half.cs" />
+    <Compile Include="Math\HalfHelper.cs" />
+    <Compile Include="Math\Matrix4x4.cs" />
+    <Compile Include="Math\Quaternion.cs" />
+    <Compile Include="Math\Vector2.cs" />
+    <Compile Include="Math\Vector3.cs" />
+    <Compile Include="Math\Vector4.cs" />
     <Compile Include="ObjectInfo.cs" />
     <Compile Include="ObjectReader.cs" />
-    <Compile Include="Classes\PPtr.cs" />
     <Compile Include="Progress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceReader.cs" />
+    <Compile Include="SerializedFile.cs" />
     <Compile Include="SerializedFileHeader.cs" />
     <Compile Include="SerializedType.cs" />
     <Compile Include="SevenZipHelper.cs" />
-    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="TypeTreeHelper.cs" />
     <Compile Include="TypeTreeNode.cs" />
+    <Compile Include="UType.cs" />
     <Compile Include="WebFile.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
