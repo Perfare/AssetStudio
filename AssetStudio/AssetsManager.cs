@@ -244,7 +244,6 @@ namespace AssetStudio
             Progress.Reset();
             foreach (var assetsFile in assetsFileList)
             {
-                assetsFile.Objects = new Dictionary<long, Object>(assetsFile.m_Objects.Count);
                 foreach (var objectInfo in assetsFile.m_Objects)
                 {
                     var objectReader = new ObjectReader(assetsFile.reader, assetsFile, objectInfo);
@@ -338,7 +337,7 @@ namespace AssetStudio
                                 obj = new Object(objectReader);
                                 break;
                         }
-                        assetsFile.Objects.Add(objectInfo.m_PathID, obj);
+                        assetsFile.AddObject(obj);
                     }
                     catch (Exception e)
                     {
@@ -362,7 +361,7 @@ namespace AssetStudio
 
             foreach (var assetsFile in assetsFileList)
             {
-                foreach (var obj in assetsFile.Objects.Values)
+                foreach (var obj in assetsFile.Objects)
                 {
                     if (obj is GameObject m_GameObject)
                     {

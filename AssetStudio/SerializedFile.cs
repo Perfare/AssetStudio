@@ -15,7 +15,8 @@ namespace AssetStudio
         public string fileName;
         public int[] version = { 0, 0, 0, 0 };
         public BuildType buildType;
-        public Dictionary<long, Object> Objects;
+        public List<Object> Objects;
+        public Dictionary<long, Object> ObjectsDic;
 
         public SerializedFileHeader header;
         private EndianType m_FileEndianess;
@@ -100,6 +101,8 @@ namespace AssetStudio
             //ReadObjects
             int objectCount = reader.ReadInt32();
             m_Objects = new List<ObjectInfo>(objectCount);
+            Objects = new List<Object>(objectCount);
+            ObjectsDic = new Dictionary<long, Object>(objectCount);
             for (int i = 0; i < objectCount; i++)
             {
                 var objectInfo = new ObjectInfo();
@@ -329,6 +332,12 @@ namespace AssetStudio
                 }
                 return offset.ToString();
             }
+        }
+
+        public void AddObject(Object obj)
+        {
+            Objects.Add(obj);
+            ObjectsDic.Add(obj.m_PathID, obj);
         }
 
         public static bool IsSerializedFile(EndianBinaryReader reader)

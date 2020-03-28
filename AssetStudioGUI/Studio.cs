@@ -110,7 +110,7 @@ namespace AssetStudioGUI
             {
                 var tempExportableAssets = new List<AssetItem>();
                 Dictionary<long, string> containers = null;
-                foreach (var asset in assetsFile.Objects.Values)
+                foreach (var asset in assetsFile.Objects)
                 {
                     var assetItem = new AssetItem(asset);
                     objectAssetItemDic.Add(asset, assetItem);
@@ -230,7 +230,7 @@ namespace AssetStudioGUI
             {
                 var fileNode = new GameObjectTreeNode(assetsFile.fileName); //RootNode
 
-                foreach (var obj in assetsFile.Objects.Values)
+                foreach (var obj in assetsFile.Objects)
                 {
                     if (obj is GameObject m_GameObject)
                     {

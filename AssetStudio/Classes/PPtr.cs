@@ -57,7 +57,7 @@ namespace AssetStudio
         {
             if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
+                if (sourceFile.ObjectsDic.TryGetValue(m_PathID, out var obj))
                 {
                     if (obj is T variable)
                     {
@@ -75,7 +75,7 @@ namespace AssetStudio
         {
             if (TryGetAssetsFile(out var sourceFile))
             {
-                if (sourceFile.Objects.TryGetValue(m_PathID, out var obj))
+                if (sourceFile.ObjectsDic.TryGetValue(m_PathID, out var obj))
                 {
                     if (obj is T2 variable)
                     {
