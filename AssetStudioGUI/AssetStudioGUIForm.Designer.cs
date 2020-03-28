@@ -624,13 +624,15 @@
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "ID";
-            this.columnHeader1.Width = 70;
+            this.columnHeader1.DisplayIndex = 1;
+            this.columnHeader1.Text = "Name";
+            this.columnHeader1.Width = 300;
             // 
             // columnHeader2
             // 
-            this.columnHeader2.Text = "Name";
-            this.columnHeader2.Width = 300;
+            this.columnHeader2.DisplayIndex = 0;
+            this.columnHeader2.Text = "ID";
+            this.columnHeader2.Width = 70;
             // 
             // progressbarPanel
             // 
