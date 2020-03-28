@@ -8,7 +8,7 @@ namespace AssetStudio
 {
     public sealed class VideoClip : NamedObject
     {
-        public Lazy<byte[]> m_VideoData;
+        public ResourceReader m_VideoData;
         public string m_OriginalPath;
         public string m_Source;
         public ulong m_Size;
@@ -47,7 +47,7 @@ namespace AssetStudio
             {
                 resourceReader = new ResourceReader(reader, reader.BaseStream.Position, (int)m_Size);
             }
-            m_VideoData = new Lazy<byte[]>(resourceReader.GetData);
+            m_VideoData = resourceReader;
         }
     }
 }

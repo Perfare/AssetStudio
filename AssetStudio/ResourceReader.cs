@@ -34,17 +34,18 @@ namespace AssetStudio
             {
                 var resourceFileName = Path.GetFileName(path);
 
-                if (assetsFile.assetsManager.resourceFileReaders.TryGetValue(resourceFileName, out var reader))
+                if (assetsFile.assetsManager.resourceFileReaders.TryGetValue(resourceFileName, out reader))
                 {
-                    reader.Position = offset;
+                    needSearch = false;
+                    reader.BaseStream.Position = offset;
                     return reader.ReadBytes(size);
                 }
 
-                var currentDirectory = Path.GetDirectoryName(assetsFile.fullName);
-                var resourceFilePath = currentDirectory + "\\" + resourceFileName;
+                var assetsFileDirectory = Path.GetDirectoryName(assetsFile.fullName);
+                var resourceFilePath = assetsFileDirectory + Path.DirectorySeparatorChar + resourceFileName;
                 if (!File.Exists(resourceFilePath))
                 {
-                    var findFiles = Directory.GetFiles(currentDirectory, resourceFileName, SearchOption.AllDirectories);
+                    var findFiles = Directory.GetFiles(assetsFileDirectory, resourceFileName, SearchOption.AllDirectories);
                     if (findFiles.Length > 0)
                     {
                         resourceFilePath = findFiles[0];
@@ -52,11 +53,11 @@ namespace AssetStudio
                 }
                 if (File.Exists(resourceFilePath))
                 {
-                    using (var resourceReader = new BinaryReader(File.OpenRead(resourceFilePath)))
-                    {
-                        resourceReader.BaseStream.Position = offset;
-                        return resourceReader.ReadBytes(size);
-                    }
+                    reader = new BinaryReader(File.OpenRead(resourceFilePath));
+                    needSearch = false;
+                    assetsFile.assetsManager.resourceFileReaders.Add(resourceFileName, reader);
+                    reader.BaseStream.Position = offset;
+                    return reader.ReadBytes(size);
                 }
 
                 throw new FileNotFoundException($"Can't find the resource file {resourceFileName}");

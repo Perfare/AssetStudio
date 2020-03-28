@@ -54,7 +54,7 @@ namespace AssetStudioGUI
                 var exportFullName = exportPathName + item.Text + ".tex";
                 if (ExportFileExists(exportFullName))
                     return false;
-                File.WriteAllBytes(exportFullName, m_Texture2D.image_data.Value);
+                File.WriteAllBytes(exportFullName, m_Texture2D.image_data.GetData());
                 return true;
             }
         }
@@ -62,7 +62,7 @@ namespace AssetStudioGUI
         public static bool ExportAudioClip(AssetItem item, string exportPath)
         {
             var m_AudioClip = (AudioClip)item.Asset;
-            var m_AudioData = m_AudioClip.m_AudioData.Value;
+            var m_AudioData = m_AudioClip.m_AudioData.GetData();
             if (m_AudioData == null || m_AudioData.Length == 0)
                 return false;
             var converter = new AudioClipConverter(m_AudioClip);
@@ -242,7 +242,7 @@ namespace AssetStudioGUI
         public static bool ExportVideoClip(AssetItem item, string exportPath)
         {
             var m_VideoClip = (VideoClip)item.Asset;
-            var m_VideoData = m_VideoClip.m_VideoData.Value;
+            var m_VideoData = m_VideoClip.m_VideoData.GetData();
             if (m_VideoData != null && m_VideoData.Length != 0)
             {
                 var exportFullName = exportPath + item.Text + Path.GetExtension(m_VideoClip.m_OriginalPath);

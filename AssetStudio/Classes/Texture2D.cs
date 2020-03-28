@@ -51,7 +51,7 @@ namespace AssetStudio
         public bool m_MipMap;
         public int m_MipCount;
         public GLTextureSettings m_TextureSettings;
-        public Lazy<byte[]> image_data;
+        public ResourceReader image_data;
         public StreamingInfo m_StreamData;
 
         public Texture2D(ObjectReader reader) : base(reader)
@@ -102,7 +102,7 @@ namespace AssetStudio
             {
                 resourceReader = new ResourceReader(reader, reader.BaseStream.Position, image_data_size);
             }
-            image_data = new Lazy<byte[]>(resourceReader.GetData);
+            image_data = resourceReader;
         }
     }
 

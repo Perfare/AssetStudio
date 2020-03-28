@@ -15,7 +15,7 @@ namespace AssetStudio
 
         public byte[] ConvertToWav()
         {
-            var m_AudioData = m_AudioClip.m_AudioData.Value;
+            var m_AudioData = m_AudioClip.m_AudioData.GetData();
             if (m_AudioData == null || m_AudioData.Length == 0)
                 return null;
             var exinfo = new FMOD.CREATESOUNDEXINFO();

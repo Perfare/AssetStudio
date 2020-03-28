@@ -29,7 +29,7 @@ namespace AssetStudio
         public string m_Source;
         public long m_Offset;
         public long m_Size;
-        public Lazy<byte[]> m_AudioData;
+        public ResourceReader m_AudioData;
 
         public AudioClip(ObjectReader reader) : base(reader)
         {
@@ -87,7 +87,7 @@ namespace AssetStudio
             {
                 resourceReader = new ResourceReader(reader, reader.BaseStream.Position, (int)m_Size);
             }
-            m_AudioData = new Lazy<byte[]>(resourceReader.GetData);
+            m_AudioData = resourceReader;
         }
     }
 
