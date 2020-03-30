@@ -396,11 +396,21 @@ namespace AssetStudio
         }
     }
 
+    public enum GfxPrimitiveType : int
+    {
+        kPrimitiveTriangles = 0,
+        kPrimitiveTriangleStrip = 1,
+        kPrimitiveQuads = 2,
+        kPrimitiveLines = 3,
+        kPrimitiveLineStrip = 4,
+        kPrimitivePoints = 5,
+    };
+
     public class SubMesh
     {
         public uint firstByte;
         public uint indexCount;
-        public int topology;
+        public GfxPrimitiveType topology;
         public uint triangleCount;
         public uint baseVertex;
         public uint firstVertex;
@@ -413,7 +423,7 @@ namespace AssetStudio
 
             firstByte = reader.ReadUInt32();
             indexCount = reader.ReadUInt32();
-            topology = reader.ReadInt32();
+            topology = (GfxPrimitiveType)reader.ReadInt32();
 
             if (version[0] < 4) //4.0 down
             {
@@ -460,7 +470,7 @@ namespace AssetStudio
         private CompressedMesh m_CompressedMesh;
         private StreamingInfo m_StreamData;
 
-        public List<uint> m_Indices = new List<uint>(); //use a list because I don't always know the facecount for triangle strips
+        public List<uint> m_Indices = new List<uint>();
 
         public Mesh(ObjectReader reader) : base(reader)
         {
@@ -684,7 +694,7 @@ namespace AssetStudio
                 DecompressCompressedMesh();
             }
 
-            BuildFaces();
+            GetTriangles();
         }
 
         private void ReadVertexData()
@@ -1037,7 +1047,7 @@ namespace AssetStudio
             }
         }
 
-        private void BuildFaces()
+        private void GetTriangles()
         {
             foreach (var m_SubMesh in m_SubMeshes)
             {
@@ -1046,43 +1056,65 @@ namespace AssetStudio
                 {
                     firstIndex /= 2;
                 }
-
-                if (m_SubMesh.topology == 0)
+                var indexCount = m_SubMesh.indexCount;
+                var topology = m_SubMesh.topology;
+                if (topology == GfxPrimitiveType.kPrimitiveTriangles)
                 {
-                    for (int i = 0; i < m_SubMesh.indexCount / 3; i++)
+                    for (int i = 0; i < indexCount; i += 3)
                     {
-                        m_Indices.Add(m_IndexBuffer[firstIndex + i * 3]);
-                        m_Indices.Add(m_IndexBuffer[firstIndex + i * 3 + 1]);
-                        m_Indices.Add(m_IndexBuffer[firstIndex + i * 3 + 2]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + i]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + i + 1]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + i + 2]);
                     }
+                }
+                else if (version[0] < 4 || topology == GfxPrimitiveType.kPrimitiveTriangleStrip)
+                {
+                    // de-stripify :
+                    uint triIndex = 0;
+                    for (int i = 0; i < indexCount - 2; i++)
+                    {
+                        var a = m_IndexBuffer[firstIndex + i];
+                        var b = m_IndexBuffer[firstIndex + i + 1];
+                        var c = m_IndexBuffer[firstIndex + i + 2];
+
+                        // skip degenerates
+                        if (a == b || a == c || b == c)
+                            continue;
+
+                        // do the winding flip-flop of strips :
+                        if ((i & 1) == 1)
+                        {
+                            m_Indices.Add(b);
+                            m_Indices.Add(a);
+                        }
+                        else
+                        {
+                            m_Indices.Add(a);
+                            m_Indices.Add(b);
+                        }
+                        m_Indices.Add(c);
+                        triIndex += 3;
+                    }
+                    //fix indexCount
+                    m_SubMesh.indexCount = triIndex;
+                }
+                else if (topology == GfxPrimitiveType.kPrimitiveQuads)
+                {
+                    for (int q = 0; q < indexCount; q += 4)
+                    {
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q + 1]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q + 2]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q + 2]);
+                        m_Indices.Add(m_IndexBuffer[firstIndex + q + 3]);
+                    }
+                    //fix indexCount
+                    m_SubMesh.indexCount = indexCount / 2 * 3;
                 }
                 else
                 {
-                    uint j = 0;
-                    for (int i = 0; i < m_SubMesh.indexCount - 2; i++)
-                    {
-                        uint fa = m_IndexBuffer[firstIndex + i];
-                        uint fb = m_IndexBuffer[firstIndex + i + 1];
-                        uint fc = m_IndexBuffer[firstIndex + i + 2];
-
-                        if ((fa != fb) && (fa != fc) && (fc != fb))
-                        {
-                            m_Indices.Add(fa);
-                            if ((i % 2) == 0)
-                            {
-                                m_Indices.Add(fb);
-                                m_Indices.Add(fc);
-                            }
-                            else
-                            {
-                                m_Indices.Add(fc);
-                                m_Indices.Add(fb);
-                            }
-                            j++;
-                        }
-                    }
-                    //fix indexCount
-                    m_SubMesh.indexCount = j * 3;
+                    throw new NotSupportedException("Failed getting triangles. Submesh topology is lines or points.");
                 }
             }
         }
