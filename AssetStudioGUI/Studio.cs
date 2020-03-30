@@ -174,7 +174,11 @@ namespace AssetStudioGUI
                             productName = m_PlayerSettings.productName;
                             break;
                         case AssetBundle m_AssetBundle:
-                            containers = m_AssetBundle.m_Container.ToDictionary(x => x.Value.asset.m_PathID, x => x.Key);
+                            containers = new Dictionary<long, string>();
+                            foreach (var m_Container in m_AssetBundle.m_Container)
+                            {
+                                containers[m_Container.Value.asset.m_PathID] = m_Container.Key;
+                            }
                             assetItem.Text = m_AssetBundle.m_Name;
                             break;
                         case NamedObject m_NamedObject:
