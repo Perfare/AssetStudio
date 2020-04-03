@@ -1253,6 +1253,270 @@ namespace AssetStudioGUI
             ExportObjects(true);
         }
 
+        private void ExportAllSelectedFBXAnimationClips(object sender, EventArgs e)
+        {
+            List<AssetItem> animationList = null;
+            var SelectedAssets = GetSelectedAssets();
+            animationList = SelectedAssets.Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+
+            if (animationList.Count == 0)
+            {
+                animationList = null;
+            }
+
+            if (animationList != null)
+            {
+                var saveFolderDialog1 = new OpenFolderDialog();
+                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                {
+                    var exportPath = saveFolderDialog1.Folder + "\\FBXAnims\\";
+
+                    List<TreeNode> SecondLayerNodes = new List<TreeNode>();  
+                    for (int i = 0; i < sceneTreeView.Nodes.Count; ++i)
+                    {
+                        // Something named "CAB-......"
+                        var firstLayerNodes = sceneTreeView.Nodes[i].Nodes; 
+                        for (int j = 0; j < firstLayerNodes.Count; j++)
+                        {
+                            // Gameobject names
+                            SecondLayerNodes.Add(firstLayerNodes[j]); 
+                        }
+                    }
+                    
+
+
+                    foreach (var animAsset in animationList)
+                    {
+                        // Un-check all nodes in the tree first. 
+                        for (int i = 0; i < sceneTreeView.Nodes.Count; i++)
+                        {
+                            sceneTreeView.Nodes[i].Checked = false; 
+                        }
+
+                        AnimationClip clip = animAsset.Asset as AnimationClip; 
+
+                        AnimationClip[] clips = { clip };
+                        
+                        string containerPath = animAsset.Container; 
+                        bool ValidFBXAnim = containerPath.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase); 
+                        bool RawAnimFile = containerPath.EndsWith(".anim", StringComparison.OrdinalIgnoreCase);
+                        if (ValidFBXAnim)
+                        {
+                            // Now we need to find the game object in the scene tree. 
+                            string sceneTreeNodeToBeFound = containerPath.Split('/').Last();
+                            sceneTreeNodeToBeFound = sceneTreeNodeToBeFound.Split('.')[0]; 
+
+                            
+                            for (int i = 0; i < SecondLayerNodes.Count; i++)
+                            {
+                                if (SecondLayerNodes[i].Text == sceneTreeNodeToBeFound)
+                                {
+                                    GameObjectTreeNode node = SecondLayerNodes[i] as GameObjectTreeNode;
+                                    // Bingo! We've managed to find a valid node! 
+                                    node.Checked = true;
+                                    var convert = new ModelConverter(node.gameObject, clips);
+                                    string finalPath = exportPath + Studio.FixFileName(animAsset.Text) + ".fbx";
+                                    Exporter.ExportAllFBXAnimationDirectly(convert, finalPath);
+                                    break; 
+                                }
+                            }
+
+
+                        }
+                        else if (RawAnimFile)
+                        {
+                            var AnimCrcHashes = new HashSet<uint>();
+
+                            foreach (var binding in clip.m_ClipBindingConstant.genericBindings)
+                            {
+                                if (binding.path != 0)
+                                {
+                                    AnimCrcHashes.Add(binding.path);
+                                }
+                                
+                            }
+                            
+                            // Needs to find the same skeleton stuff. 
+                            foreach(var skeletonRoot in SecondLayerNodes)
+                            {
+                                HashSet<uint> newSkeletonSets = GetBindingsFromRootByNode(skeletonRoot, true); 
+
+                                if (CompareBindings(AnimCrcHashes, newSkeletonSets))
+                                {
+                                    // We've found a valid skeleton for this animation
+                                    GameObjectTreeNode node = skeletonRoot as GameObjectTreeNode;
+                                    node.Checked = true;
+                                    var convert = new ModelConverter(node.gameObject, clips);
+                                    string finalPath = exportPath + Studio.FixFileName(animAsset.Text) + ".fbx";
+                                    Exporter.ExportAllFBXAnimationDirectly(convert, finalPath);
+                                    break;
+                                }
+                            }
+
+
+                        }
+                    }
+
+                }
+            }
+        }
+
+
+        private void ExportAllSkeletonBindings(object sender, EventArgs e)
+        {
+            var saveFolderDialog1 = new OpenFolderDialog();
+            if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            {
+                var exportPath = saveFolderDialog1.Folder + "//Bindings.txt";
+
+                // You are guaranteed to have such name in the second layer. 
+                List<TreeNode> ThirdLayerNodes = new List<TreeNode>();
+                for (int i = 0; i < sceneTreeView.Nodes.Count; ++i)
+                {
+                    var firstLayerNodes = sceneTreeView.Nodes[i].Nodes;
+                    for (int j = 0; j < firstLayerNodes.Count; j++)
+                    {
+                        var secondLayerNodes = firstLayerNodes[j].Nodes; 
+                        for (int o = 0; o < secondLayerNodes.Count; o++)
+                        {
+                            ThirdLayerNodes.Add(secondLayerNodes[o]);
+                        }
+
+                    }
+                }
+
+                Dictionary<string, uint> finalBindings = new Dictionary<string, uint>(); 
+
+                foreach (var rootNode in ThirdLayerNodes)
+                {
+                    var skeletalBindings = GetBindingDictFromRootByNode(rootNode);
+
+                    foreach (KeyValuePair<string, uint> kvp in skeletalBindings)
+                    {
+                        if (!finalBindings.ContainsKey(kvp.Key))
+                        {
+                            finalBindings[kvp.Key] = kvp.Value; 
+                        }
+
+                    }
+                }
+
+                // Write to a simple text
+
+                StreamWriter fs = new StreamWriter(exportPath);
+                foreach (KeyValuePair<string, uint> kvp in finalBindings)
+                {
+                    string lineContent = kvp.Key + ": " + kvp.Value;
+                    fs.WriteLine(lineContent); 
+                }
+
+            }
+
+
+        }
+
+        private bool CompareBindings(HashSet<uint> a, HashSet<uint> b)
+        {
+            // if (a.Count != b.Count) return false;
+            foreach (var n in a)
+            {
+                if (!b.Contains(n)) return false; 
+            }
+
+            return true; 
+        }
+
+
+        private HashSet<uint> GetBindingsFromRootByNode(TreeNode rootNode, bool ignoreRoot = false)
+        {
+            HashSet<uint> result = new HashSet<uint>();
+
+            Queue<TreeNode> bfsQueue = new Queue<TreeNode>();
+
+            bfsQueue.Enqueue(rootNode);
+
+
+            var crc32 = new Crc32();
+
+            
+            while (bfsQueue.Count > 0)
+            {
+                string head = GetPathFromRootToCurrentBone(rootNode, bfsQueue.Peek(), ignoreRoot);
+                var arrayOfBytes = Encoding.ASCII.GetBytes(head);
+                result.Add(crc32.Get(arrayOfBytes));
+
+                var nodes = bfsQueue.Peek().Nodes; 
+                for (int i = 0; i < nodes.Count; ++i)
+                {
+                    
+                    bfsQueue.Enqueue(nodes[i]); 
+                }
+
+                bfsQueue.Dequeue(); 
+            }
+
+
+            return result; 
+        }
+
+        private Dictionary<string, uint> GetBindingDictFromRootByNode(TreeNode rootNode)
+        {
+            Dictionary<string, uint> result = new Dictionary<string, uint>();
+
+            Queue<TreeNode> bfsQueue = new Queue<TreeNode>();
+            bfsQueue.Enqueue(rootNode);
+
+            var crc32 = new Crc32();
+
+
+            while (bfsQueue.Count > 0)
+            {
+                string head = GetPathFromRootToCurrentBone(rootNode, bfsQueue.Peek());
+                var arrayOfBytes = Encoding.ASCII.GetBytes(head);
+                result.Add(head, crc32.Get(arrayOfBytes));
+
+                var nodes = bfsQueue.Peek().Nodes;
+                for (int i = 0; i < nodes.Count; ++i)
+                {
+
+                    bfsQueue.Enqueue(nodes[i]);
+                }
+
+                bfsQueue.Dequeue();
+            }
+
+
+            return result;
+        }
+
+
+
+        private string GetPathFromRootToCurrentBone(TreeNode rootNode, TreeNode currentNode, bool ignoreRoot = false)
+        {
+            if (rootNode == currentNode) return rootNode.Text;
+
+            List<TreeNode> pathList = new List<TreeNode>();
+            TreeNode tmpNode = currentNode; 
+            while (tmpNode != rootNode)
+            {
+                pathList.Add(tmpNode);
+                tmpNode = tmpNode.Parent; 
+            }
+            if (!ignoreRoot)
+            {
+                pathList.Add(rootNode);
+            }
+            
+
+            string result = ""; 
+            for (int i = pathList.Count - 1; i >= 0; i--)
+            {
+                result += pathList[i].Text + "/"; 
+            }
+
+            return result.Substring(0, result.Length - 1); 
+        }
+
         private void ExportObjects(bool animation)
         {
             if (sceneTreeView.Nodes.Count > 0)
@@ -1264,7 +1528,8 @@ namespace AssetStudioGUI
                     List<AssetItem> animationList = null;
                     if (animation)
                     {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                        var SelectedAssets = GetSelectedAssets(); 
+                        animationList = SelectedAssets.Where(x => x.Type == ClassIDType.AnimationClip).ToList();
                         if (animationList.Count == 0)
                         {
                             animationList = null;
@@ -1387,6 +1652,19 @@ namespace AssetStudioGUI
                 StatusStripUpdate("No Objects available for export");
             }
         }
+
+        private void checkEverythingInSceneHierarchy(object sender, EventArgs e)
+        {
+
+            foreach (GameObjectTreeNode i in sceneTreeView.Nodes)
+            {
+                i.Checked = true; 
+            }
+        }
+
+
+
+
 
         private List<AssetItem> GetSelectedAssets()
         {

@@ -94,6 +94,7 @@
     <Compile Include="Components\OpenFolderDialog.cs" />
     <Compile Include="Components\TreeViewExtensions.cs" />
     <Compile Include="Components\TypeTreeItem.cs" />
+    <Compile Include="CRC32.cs" />
     <Compile Include="Exporter.cs" />
     <Compile Include="ExportOptions.cs">
       <SubType>Form</SubType>

@@ -6,6 +6,7 @@ using System.Text;
 using AssetStudio;
 using TGASharpLib;
 
+
 namespace AssetStudioGUI
 {
     internal static class Exporter
@@ -120,6 +121,7 @@ namespace AssetStudioGUI
                     extension = Path.GetExtension(item.Container);
                 }
             }
+            
             var exportFullName = exportPath + item.Text + extension;
             if (ExportFileExists(exportFullName))
                 return false;
@@ -322,6 +324,8 @@ namespace AssetStudioGUI
             return false;
         }
 
+        
+
         public static bool ExportAnimator(AssetItem item, string exportPath, List<AssetItem> animationList = null)
         {
             var m_Animator = (Animator)item.Asset;
@@ -336,6 +340,11 @@ namespace AssetStudioGUI
             var convert = animationList != null ? new ModelConverter(gameObject, animationList.Select(x => (AnimationClip)x.Asset).ToArray()) : new ModelConverter(gameObject);
             exportPath = exportPath + Studio.FixFileName(gameObject.m_Name) + ".fbx";
             ExportFbx(convert, exportPath);
+        }
+
+        public static void ExportAllFBXAnimationDirectly(ModelConverter convert, string path)
+        {
+            ExportFbx(convert, path);
         }
 
         public static void ExportGameObjectMerge(List<GameObject> gameObject, string exportPath, List<AssetItem> animationList = null)

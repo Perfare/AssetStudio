@@ -46,6 +46,9 @@
             this.exportAllObjectssplitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.exportSelectedObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportSelectedObjectsWithAnimationClipToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkAllSceneHierarchy = new System.Windows.Forms.ToolStripMenuItem(); 
+            this.autoExportAllSelectedFBXAnims = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportAllGameObjectBindings = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exportSelectedObjectsmergeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportSelectedObjectsmergeWithAnimationClipToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -250,6 +253,7 @@
             // 
             this.modelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportAllObjectssplitToolStripMenuItem1,
+            
             this.exportSelectedObjectsToolStripMenuItem,
             this.exportSelectedObjectsWithAnimationClipToolStripMenuItem,
             this.toolStripSeparator1,
@@ -258,6 +262,27 @@
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
             this.modelToolStripMenuItem.Size = new System.Drawing.Size(58, 21);
             this.modelToolStripMenuItem.Text = "Model";
+
+            // Select All
+            this.checkAllSceneHierarchy.Name = "checkEverythingInSceneHierarchy"; 
+            this.checkAllSceneHierarchy.Size = new System.Drawing.Size(417, 22);
+            this.checkAllSceneHierarchy.Text = "Check All Scene Hierarchy";
+            this.checkAllSceneHierarchy.Click += new System.EventHandler(this.checkEverythingInSceneHierarchy);
+
+
+            // Auto Export FBX Animations
+            this.autoExportAllSelectedFBXAnims.Name = "autoExportAllSelectedFBXAnims";
+            this.autoExportAllSelectedFBXAnims.Size = new System.Drawing.Size(417, 22);
+            this.autoExportAllSelectedFBXAnims.Text = "Auto Export All Selected FBX Anims";
+            this.autoExportAllSelectedFBXAnims.Click += new System.EventHandler(this.ExportAllSelectedFBXAnimationClips);
+
+            // export all skeleton bindings
+            
+            this.exportAllGameObjectBindings.Name = "exportAllGameObjectBindings";
+            this.exportAllGameObjectBindings.Size = new System.Drawing.Size(417, 22);
+            this.exportAllGameObjectBindings.Text = "Export All Game Object Bindings";
+            this.exportAllGameObjectBindings.Click += new System.EventHandler(this.ExportAllSkeletonBindings);
+
             // 
             // exportAllObjectssplitToolStripMenuItem1
             // 
@@ -306,6 +331,9 @@
             this.exportSelectedAssetsMenuItem,
             this.exportFilteredAssetsMenuItem,
             this.toolStripSeparator3,
+            this.exportAllGameObjectBindings,
+            this.autoExportAllSelectedFBXAnims,
+            this.checkAllSceneHierarchy,
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem,
             this.toolStripSeparator4,
             this.toolStripMenuItem2,
@@ -1055,6 +1083,9 @@
         private System.Windows.Forms.Label FMODcopyright;
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem checkAllSceneHierarchy;
+        private System.Windows.Forms.ToolStripMenuItem autoExportAllSelectedFBXAnims;
+        private System.Windows.Forms.ToolStripMenuItem exportAllGameObjectBindings;
         private System.Windows.Forms.ToolStripMenuItem showOriginalFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAnimatorwithselectedAnimationClipMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportSelectedAssetsToolStripMenuItem;
