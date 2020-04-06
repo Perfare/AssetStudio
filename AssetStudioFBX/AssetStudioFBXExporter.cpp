@@ -55,7 +55,7 @@ namespace AssetStudio
 		IOS_REF.SetBoolProp(EXP_FBX_GLOBAL_SETTINGS, true);
 
 		FbxGlobalSettings& globalSettings = pScene->GetGlobalSettings();
-		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor));
+		globalSettings.SetSystemUnit(FbxSystemUnit(scaleFactor, scaleFactor));
 
 		if (imported->AnimationList->Count > 0)
 		{
