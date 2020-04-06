@@ -285,7 +285,11 @@ namespace AssetStudio
             }
 
             iMesh.hasNormal = mesh.m_Normals?.Length > 0;
-            iMesh.hasUV = mesh.m_UV0?.Length > 0;
+            iMesh.hasUV = new bool[8];
+            for (int uv = 0; uv < 8; uv++)
+            {
+                iMesh.hasUV[uv] = mesh.GetUV(uv)?.Length > 0;
+            }
             iMesh.hasTangent = mesh.m_Tangents != null && mesh.m_Tangents.Length == mesh.m_VertexCount * 4;
             iMesh.hasColor = mesh.m_Colors?.Length > 0;
 
@@ -335,17 +339,22 @@ namespace AssetStudio
                         iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
                     }
                     //UV
-                    if (iMesh.hasUV)
+                    iVertex.UV = new float[8][];
+                    for (int uv = 0; uv < 8; uv++)
                     {
-                        if (mesh.m_UV0.Length == mesh.m_VertexCount * 2)
+                        if (iMesh.hasUV[uv])
                         {
-                            c = 2;
+                            var m_UV = mesh.GetUV(uv);
+                            if (m_UV.Length == mesh.m_VertexCount * 2)
+                            {
+                                c = 2;
+                            }
+                            else if (m_UV.Length == mesh.m_VertexCount * 3)
+                            {
+                                c = 3;
+                            }
+                            iVertex.UV[uv] = new[] { m_UV[j * c], m_UV[j * c + 1] };
                         }
-                        else if (mesh.m_UV0.Length == mesh.m_VertexCount * 3)
-                        {
-                            c = 3;
-                        }
-                        iVertex.UV = new[] { mesh.m_UV0[j * c], mesh.m_UV0[j * c + 1] };
                     }
                     //Tangent
                     if (iMesh.hasTangent)

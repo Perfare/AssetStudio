@@ -135,7 +135,7 @@ namespace AssetStudio
         public List<ImportedSubmesh> SubmeshList { get; set; }
         public List<ImportedBone> BoneList { get; set; }
         public bool hasNormal { get; set; }
-        public bool hasUV { get; set; }
+        public bool[] hasUV { get; set; }
         public bool hasTangent { get; set; }
         public bool hasColor { get; set; }
     }
@@ -151,7 +151,7 @@ namespace AssetStudio
     {
         public Vector3 Vertex { get; set; }
         public Vector3 Normal { get; set; }
-        public float[] UV { get; set; }
+        public float[][] UV { get; set; }
         public Vector4 Tangent { get; set; }
         public Color Color { get; set; }
         public float[] Weights { get; set; }

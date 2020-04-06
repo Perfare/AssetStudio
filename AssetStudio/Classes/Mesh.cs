@@ -1160,6 +1160,31 @@ namespace AssetStudio
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public float[] GetUV(int uv)
+        {
+            switch (uv)
+            {
+                case 0:
+                    return m_UV0;
+                case 1:
+                    return m_UV1;
+                case 2:
+                    return m_UV2;
+                case 3:
+                    return m_UV3;
+                case 4:
+                    return m_UV4;
+                case 5:
+                    return m_UV5;
+                case 6:
+                    return m_UV6;
+                case 7:
+                    return m_UV7;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 
     public static class MeshHelper

@@ -381,12 +381,14 @@ namespace AssetStudio
 				lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
 			}
 
-			FbxGeometryElementUV* lGeometryElementUV = NULL;
-			if (iMesh->hasUV)
+			for (int uv = 0; uv < 8; uv++)
 			{
-				lGeometryElementUV = pMesh->CreateElementUV("UV0");
-				lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
-				lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+				if (iMesh->hasUV[uv])
+				{
+					auto lGeometryElementUV = pMesh->CreateElementUV(FbxString("UV") + FbxString(uv));
+					lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+					lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+				}
 			}
 
 			FbxGeometryElementTangent* lGeometryElementTangent = NULL;
@@ -468,7 +470,7 @@ namespace AssetStudio
 
 						bool hasTexture = false;
 
-						for each (ImportedMaterialTexture^ texture in mat->Textures)
+						for each (ImportedMaterialTexture ^ texture in mat->Textures)
 						{
 							auto pTexture = ExportTexture(ImportedHelpers::FindTexture(texture->Name, imported->TextureList));
 							if (pTexture != NULL)
@@ -520,10 +522,14 @@ namespace AssetStudio
 						lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
 					}
 
-					if (iMesh->hasUV)
+					for (int uv = 0; uv < 8; uv++)
 					{
-						array<float>^ uv = iVertex->UV;
-						lGeometryElementUV->GetDirectArray().Add(FbxVector2(uv[0], uv[1]));
+						if (iMesh->hasUV[uv])
+						{
+							auto m_UV = iVertex->UV[uv];
+							auto lGeometryElementUV = pMesh->GetElementUV(FbxString("UV") + FbxString(uv));
+							lGeometryElementUV->GetDirectArray().Add(FbxVector2(m_UV[0], m_UV[1]));
+						}
 					}
 
 					if (iMesh->hasTangent)
@@ -841,7 +847,7 @@ namespace AssetStudio
 		{
 			return;
 		}
-		for each (ImportedMorph^ morph in imported->MorphList)
+		for each (ImportedMorph ^ morph in imported->MorphList)
 		{
 			auto frame = imported->RootFrame->FindFrameByPath(morph->Path);
 			if (frame != nullptr)
@@ -865,7 +871,7 @@ namespace AssetStudio
 					);
 					lBlendShape->AddBlendShapeChannel(lBlendShapeChannel);
 
-					for each(ImportedMorphKeyframe^ keyframe in channel->KeyframeList)
+					for each (ImportedMorphKeyframe ^ keyframe in channel->KeyframeList)
 					{
 						FbxShape* lShape = FbxShape::Create(pScene, FbxString(keyframe->Weight));
 						lBlendShapeChannel->AddTargetShape(lShape, keyframe->Weight);
