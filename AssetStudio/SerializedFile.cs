@@ -233,11 +233,20 @@ namespace AssetStudio
                 var typeTree = new List<TypeTreeNode>();
                 if (header.m_Version >= 12 || header.m_Version == 10)
                 {
-                    ReadTypeTree5(typeTree);
+                    TypeTreeBlobRead(typeTree);
                 }
                 else
                 {
                     ReadTypeTree(typeTree);
+                }
+
+                if (header.m_Version >= 21)
+                {
+                    var count = reader.ReadInt32();
+                    if (count > 0)
+                    {
+                        reader.Position += 4 * count;
+                    }
                 }
 
                 type.m_Nodes = typeTree;
@@ -276,13 +285,13 @@ namespace AssetStudio
             }
         }
 
-        private void ReadTypeTree5(List<TypeTreeNode> typeTree)
+        private void TypeTreeBlobRead(List<TypeTreeNode> typeTree)
         {
             int numberOfNodes = reader.ReadInt32();
             int stringBufferSize = reader.ReadInt32();
 
             var nodeSize = 24;
-            if (header.m_Version > 17)
+            if (header.m_Version >= 19)
             {
                 nodeSize = 32;
             }
@@ -303,20 +312,17 @@ namespace AssetStudio
                     typeTreeNode.m_Index = reader.ReadInt32();
                     typeTreeNode.m_MetaFlag = reader.ReadInt32();
 
-                    if (header.m_Version > 17)
+                    typeTreeNode.m_Type = ReadString(stringBufferReader, typeTreeNode.m_TypeStrOffset);
+                    typeTreeNode.m_Name = ReadString(stringBufferReader, typeTreeNode.m_NameStrOffset);
+
+                    if (header.m_Version >= 19)
                     {
                         reader.Position += 8;
                     }
-
-                    typeTreeNode.m_Type = ReadString(stringBufferReader, typeTreeNode.m_TypeStrOffset);
-                    typeTreeNode.m_Name = ReadString(stringBufferReader, typeTreeNode.m_NameStrOffset);
                 }
                 reader.Position += stringBufferSize;
             }
-            if (header.m_Version >= 21)
-            {
-                reader.Position += 4;
-            }
+
             string ReadString(BinaryReader stringBufferReader, uint value)
             {
                 var isOffset = (value & 0x80000000) == 0;
