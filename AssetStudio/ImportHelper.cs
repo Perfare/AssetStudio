@@ -77,7 +77,7 @@ namespace AssetStudio
             {
                 case "UnityWeb":
                 case "UnityRaw":
-                case "\xFA\xFA\xFA\xFA\xFA\xFA\xFA\xFA":
+                case "UnityArchive":
                 case "UnityFS":
                     return FileType.BundleFile;
                 case "UnityWebData1.0":

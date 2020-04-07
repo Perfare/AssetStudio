@@ -55,7 +55,7 @@ namespace AssetStudioGUI
             StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
             var bundleFile = new BundleFile(reader, bundleFileName);
             reader.Dispose();
-            if (bundleFile.fileList.Count > 0)
+            if (bundleFile.fileList.Length > 0)
             {
                 var extractPath = bundleFileName + "_unpacked\\";
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
@@ -68,7 +68,7 @@ namespace AssetStudioGUI
             StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
-            if (webFile.fileList.Count > 0)
+            if (webFile.fileList.Length > 0)
             {
                 var extractPath = webFileName + "_unpacked\\";
                 return ExtractStreamFile(extractPath, webFile.fileList);
@@ -76,7 +76,7 @@ namespace AssetStudioGUI
             return 0;
         }
 
-        private static int ExtractStreamFile(string extractPath, List<StreamFile> fileList)
+        private static int ExtractStreamFile(string extractPath,StreamFile[] fileList)
         {
             int extractedCount = 0;
             foreach (var file in fileList)

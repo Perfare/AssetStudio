@@ -12,7 +12,7 @@ namespace AssetStudio
     {
         public static byte[] gzipMagic = { 0x1f, 0x8b };
         public static byte[] brotliMagic = { 0x62, 0x72, 0x6F, 0x74, 0x6C, 0x69 };
-        public List<StreamFile> fileList = new List<StreamFile>();
+        public StreamFile[] fileList;
 
         private class WebData
         {
@@ -78,14 +78,15 @@ namespace AssetStudio
                 data.path = Encoding.UTF8.GetString(reader.ReadBytes(pathLength));
                 dataList.Add(data);
             }
-
-            foreach (var data in dataList)
+            fileList = new StreamFile[dataList.Count];
+            for (int i = 0; i < dataList.Count; i++)
             {
+                var data = dataList[i];
                 var file = new StreamFile();
                 file.fileName = Path.GetFileName(data.path);
                 reader.BaseStream.Position = data.dataOffset;
                 file.stream = new MemoryStream(reader.ReadBytes(data.dataLength));
-                fileList.Add(file);
+                fileList[i] = file;
             }
         }
     }

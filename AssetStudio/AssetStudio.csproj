@@ -144,6 +144,7 @@
     <Compile Include="SerializedFileHeader.cs" />
     <Compile Include="SerializedType.cs" />
     <Compile Include="SevenZipHelper.cs" />
+    <Compile Include="StreamFile.cs" />
     <Compile Include="TypeTreeHelper.cs" />
     <Compile Include="TypeTreeNode.cs" />
     <Compile Include="UType.cs" />

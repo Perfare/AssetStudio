@@ -157,7 +157,7 @@ namespace AssetStudio
                     if (SerializedFile.IsSerializedFile(subReader))
                     {
                         var dummyPath = Path.GetDirectoryName(fullName) + Path.DirectorySeparatorChar + file.fileName;
-                        LoadAssetsFromMemory(dummyPath, subReader, parentPath ?? fullName, bundleFile.versionEngine);
+                        LoadAssetsFromMemory(dummyPath, subReader, parentPath ?? fullName, bundleFile.m_Header.unityRevision);
                     }
                     else
                     {
