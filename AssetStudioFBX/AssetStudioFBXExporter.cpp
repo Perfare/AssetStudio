@@ -381,7 +381,21 @@ namespace AssetStudio
 				lGeometryElementNormal->SetReferenceMode(FbxGeometryElement::eDirect);
 			}
 
-			for (int uv = 0; uv < 8; uv++)
+			if (iMesh->hasUV[0]) 
+			{
+				auto lGeometryElementUV = pMesh->CreateElementUV("UV0", FbxLayerElement::eTextureDiffuse);
+				lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
+
+			if (iMesh->hasUV[1])
+			{
+				auto lGeometryElementUV = pMesh->CreateElementUV("UV1", FbxLayerElement::eTextureNormalMap);
+				lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+				lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
+			}
+
+			/*for (int uv = 0; uv < 8; uv++)
 			{
 				if (iMesh->hasUV[uv])
 				{
@@ -389,7 +403,7 @@ namespace AssetStudio
 					lGeometryElementUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
 					lGeometryElementUV->SetReferenceMode(FbxGeometryElement::eDirect);
 				}
-			}
+			}*/
 
 			FbxGeometryElementTangent* lGeometryElementTangent = NULL;
 			if (iMesh->hasTangent)
@@ -522,12 +536,13 @@ namespace AssetStudio
 						lGeometryElementNormal->GetDirectArray().Add(FbxVector4(normal.X, normal.Y, normal.Z, 0));
 					}
 
-					for (int uv = 0; uv < 8; uv++)
+					//for (int uv = 0; uv < 8; uv++)
+					for (int uv = 0; uv < 2; uv++)
 					{
 						if (iMesh->hasUV[uv])
 						{
 							auto m_UV = iVertex->UV[uv];
-							auto lGeometryElementUV = pMesh->GetElementUV(FbxString("UV") + FbxString(uv));
+							auto lGeometryElementUV = pMesh->GetElementUV(uv);
 							lGeometryElementUV->GetDirectArray().Add(FbxVector2(m_UV[0], m_UV[1]));
 						}
 					}
