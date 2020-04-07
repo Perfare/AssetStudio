@@ -93,9 +93,10 @@ namespace AssetStudio
                 m_Types.Add(ReadSerializedType());
             }
 
+            var bigIDEnabled = 0;
             if (header.m_Version >= 7 && header.m_Version < 14)
             {
-                var bigIDEnabled = reader.ReadInt32();
+                bigIDEnabled = reader.ReadInt32();
             }
 
             //ReadObjects
@@ -106,7 +107,11 @@ namespace AssetStudio
             for (int i = 0; i < objectCount; i++)
             {
                 var objectInfo = new ObjectInfo();
-                if (header.m_Version < 14)
+                if (bigIDEnabled != 0)
+                {
+                    objectInfo.m_PathID = reader.ReadInt64();
+                }
+                else if (header.m_Version < 14)
                 {
                     objectInfo.m_PathID = reader.ReadInt32();
                 }
@@ -349,19 +354,31 @@ namespace AssetStudio
         public static bool IsSerializedFile(EndianBinaryReader reader)
         {
             var fileSize = reader.BaseStream.Length;
-            if (fileSize < 16)
+            if (fileSize < 20)
             {
                 return false;
             }
             var m_MetadataSize = reader.ReadUInt32();
-            var m_FileSize = reader.ReadUInt32();
+            long m_FileSize = reader.ReadUInt32();
+            var m_Version = reader.ReadUInt32();
+            long m_DataOffset = reader.ReadUInt32();
+            var m_Endianess = reader.ReadByte();
+            var m_Reserved = reader.ReadBytes(3);
+            if (m_Version >= 22)
+            {
+                if (fileSize < 48)
+                {
+                    return false;
+                }
+                m_MetadataSize = reader.ReadUInt32();
+                m_FileSize = reader.ReadInt64();
+                m_DataOffset = reader.ReadInt64();
+            }
             if (m_FileSize != fileSize)
             {
                 reader.Position = 0;
                 return false;
             }
-            var m_Version = reader.ReadUInt32();
-            var m_DataOffset = reader.ReadUInt32();
             if (m_DataOffset > fileSize)
             {
                 reader.Position = 0;
