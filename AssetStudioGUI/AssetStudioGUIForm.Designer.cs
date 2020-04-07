@@ -111,6 +111,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportSelectedAssetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -545,7 +546,6 @@
             this.assetListView.FullRowSelect = true;
             this.assetListView.GridLines = true;
             this.assetListView.HideSelection = false;
-            this.assetListView.LabelEdit = true;
             this.assetListView.Location = new System.Drawing.Point(0, 21);
             this.assetListView.Name = "assetListView";
             this.assetListView.Size = new System.Drawing.Size(472, 587);
@@ -910,12 +910,20 @@
             // 
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyToolStripMenuItem,
             this.exportSelectedAssetsToolStripMenuItem,
             this.exportAnimatorwithselectedAnimationClipMenuItem,
             this.goToSceneHierarchyToolStripMenuItem,
             this.showOriginalFileToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(327, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(327, 114);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(326, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // exportSelectedAssetsToolStripMenuItem
             // 
@@ -1080,6 +1088,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem9;
         private System.Windows.Forms.ColumnHeader columnHeaderContainer;
         private System.Windows.Forms.ColumnHeader columnHeaderPathID;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
     }
 }
 

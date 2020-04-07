@@ -29,6 +29,7 @@ namespace AssetStudioGUI
         private AssetItem lastSelectedItem;
         private AssetItem lastLoadedAsset;
         private Bitmap imageTexture;
+        private string tempClipboard;
 
         private FMOD.System system;
         private FMOD.Sound sound;
@@ -1198,8 +1199,14 @@ namespace AssetStudioGUI
                     }
                 }
 
+                tempClipboard = assetListView.HitTest(new Point(e.X, e.Y)).SubItem.Text;
                 contextMenuStrip1.Show(assetListView, e.X, e.Y);
             }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetDataObject(tempClipboard);
         }
 
         private void exportSelectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
