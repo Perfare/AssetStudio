@@ -85,15 +85,19 @@ namespace AssetStudio
             var headerSize = reader.ReadUInt32();
             var numberOfLevelsToDownloadBeforeStreaming = reader.ReadUInt32();
             var levelCount = reader.ReadInt32();
-            m_BlocksInfo = new StorageBlock[levelCount];
+            m_BlocksInfo = new StorageBlock[1];
             for (int i = 0; i < levelCount; i++)
             {
-                m_BlocksInfo[i] = new StorageBlock()
+                var storageBlock = new StorageBlock()
                 {
                     compressedSize = reader.ReadUInt32(),
                     uncompressedSize = reader.ReadUInt32(),
                     flags = (ushort)(isCompressed ? 1 : 0)
                 };
+                if (i == levelCount - 1)
+                {
+                    m_BlocksInfo[0] = storageBlock;
+                }
             }
             if (m_Header.version >= 2)
             {
