@@ -1082,7 +1082,7 @@ namespace AssetStudioGUI
 
         private void PreviewSprite(AssetItem assetItem, Sprite m_Sprite)
         {
-            var bitmap = SpriteHelper.GetImageFromSprite(m_Sprite);
+            var bitmap = m_Sprite.GetImage();
             if (bitmap != null)
             {
                 assetItem.InfoText = $"Width: {bitmap.Width}\nHeight: {bitmap.Height}\n";

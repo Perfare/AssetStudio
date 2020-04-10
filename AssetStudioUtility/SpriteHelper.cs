@@ -9,7 +9,7 @@ namespace AssetStudio
 {
     public static class SpriteHelper
     {
-        public static Bitmap GetImageFromSprite(Sprite m_Sprite)
+        public static Bitmap GetImage(this Sprite m_Sprite)
         {
             if (m_Sprite.m_SpriteAtlas != null && m_Sprite.m_SpriteAtlas.TryGet(out var m_SpriteAtlas))
             {

@@ -287,7 +287,7 @@ namespace AssetStudioGUI
             var exportFullName = exportPath + item.Text + "." + type.ToLower();
             if (ExportFileExists(exportFullName))
                 return false;
-            var bitmap = SpriteHelper.GetImageFromSprite((Sprite)item.Asset);
+            var bitmap = ((Sprite)item.Asset).GetImage();
             if (bitmap != null)
             {
                 if (tga)
