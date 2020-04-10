@@ -116,24 +116,24 @@ namespace AssetStudio
                     case AudioCompressionFormat.MP3:
                         return ".fsb";
                     case AudioCompressionFormat.VAG:
-                        return ".vag";
+                        return ".fsb";
                     case AudioCompressionFormat.HEVAG:
-                        return ".vag";
+                        return ".fsb";
                     case AudioCompressionFormat.XMA:
-                        return ".wav";
+                        return ".fsb";
                     case AudioCompressionFormat.AAC:
                         return ".m4a";
                     case AudioCompressionFormat.GCADPCM:
                         return ".fsb";
                     case AudioCompressionFormat.ATRAC9:
-                        return ".at9";
+                        return ".fsb";
                 }
             }
 
             return ".AudioClip";
         }
 
-        public bool IsFMODSupport
+        public bool IsSupport
         {
             get
             {
@@ -147,7 +147,6 @@ namespace AssetStudio
                         case AudioType.S3M:
                         case AudioType.XM:
                         case AudioType.XMA:
-                        case AudioType.VAG:
                         case AudioType.AUDIOQUEUE:
                             return true;
                         default:
@@ -162,11 +161,7 @@ namespace AssetStudio
                         case AudioCompressionFormat.Vorbis:
                         case AudioCompressionFormat.ADPCM:
                         case AudioCompressionFormat.MP3:
-                        case AudioCompressionFormat.VAG:
-                        case AudioCompressionFormat.HEVAG:
                         case AudioCompressionFormat.XMA:
-                        case AudioCompressionFormat.GCADPCM:
-                        case AudioCompressionFormat.ATRAC9:
                             return true;
                         default:
                             return false;

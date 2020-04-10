@@ -66,7 +66,7 @@ namespace AssetStudioGUI
             if (m_AudioData == null || m_AudioData.Length == 0)
                 return false;
             var converter = new AudioClipConverter(m_AudioClip);
-            if (Properties.Settings.Default.convertAudio && converter.IsFMODSupport)
+            if (Properties.Settings.Default.convertAudio && converter.IsSupport)
             {
                 var exportFullName = exportPath + item.Text + ".wav";
                 if (ExportFileExists(exportFullName))
