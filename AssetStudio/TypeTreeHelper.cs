@@ -31,6 +31,7 @@ namespace AssetStudio
                     value = reader.ReadSByte();
                     break;
                 case "UInt8":
+                case "char":
                     value = reader.ReadByte();
                     break;
                 case "short":
@@ -56,6 +57,7 @@ namespace AssetStudio
                     break;
                 case "UInt64":
                 case "unsigned long long":
+                case "FileSize":
                     value = reader.ReadUInt64();
                     break;
                 case "float":
@@ -73,26 +75,6 @@ namespace AssetStudio
                     sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, str);
                     i += 3;
                     break;
-                case "vector":
-                    {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
-                            align = true;
-                        append = false;
-                        sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
-                        sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level + 1)), "Array", "Array");
-                        var size = reader.ReadInt32();
-                        sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level + 1)), "int", "size", size);
-                        var vector = GetMembers(members, level, i);
-                        i += vector.Count - 1;
-                        vector.RemoveRange(0, 3);
-                        for (int j = 0; j < size; j++)
-                        {
-                            sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 2)), j);
-                            int tmp = 0;
-                            ReadStringValue(sb, vector, reader, ref tmp);
-                        }
-                        break;
-                    }
                 case "map":
                     {
                         if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
@@ -102,12 +84,11 @@ namespace AssetStudio
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level + 1)), "Array", "Array");
                         var size = reader.ReadInt32();
                         sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level + 1)), "int", "size", size);
-                        var map = GetMembers(members, level, i);
+                        var map = GetMembers(members, i);
                         i += map.Count - 1;
-                        map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Level, 0);
-                        map.RemoveRange(0, first.Count);
-                        var second = map;
+                        var first = GetMembers(map, 4);
+                        var next = 4 + first.Count;
+                        var second = GetMembers(map, next);
                         for (int j = 0; j < size; j++)
                         {
                             sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 2)), j);
@@ -131,20 +112,37 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].m_Type == "Array")
+                        if (i < members.Count - 1 && members[i + 1].m_Type == "Array") //Array
                         {
-                            goto case "vector";
+                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                                align = true;
+                            append = false;
+                            sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                            sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level + 1)), "Array", "Array");
+                            var size = reader.ReadInt32();
+                            sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level + 1)), "int", "size", size);
+                            var vector = GetMembers(members, i);
+                            i += vector.Count - 1;
+                            for (int j = 0; j < size; j++)
+                            {
+                                sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 2)), j);
+                                int tmp = 3;
+                                ReadStringValue(sb, vector, reader, ref tmp);
+                            }
+                            break;
                         }
-                        append = false;
-                        sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
-                        var @class = GetMembers(members, level, i);
-                        @class.RemoveAt(0);
-                        i += @class.Count;
-                        for (int j = 0; j < @class.Count; j++)
+                        else //Class
                         {
-                            ReadStringValue(sb, @class, reader, ref j);
+                            append = false;
+                            sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
+                            var @class = GetMembers(members, i);
+                            i += @class.Count - 1;
+                            for (int j = 1; j < @class.Count; j++)
+                            {
+                                ReadStringValue(sb, @class, reader, ref j);
+                            }
+                            break;
                         }
-                        break;
                     }
             }
             if (append)
@@ -168,7 +166,6 @@ namespace AssetStudio
         private static object ReadValue(List<TypeTreeNode> members, BinaryReader reader, ref int i)
         {
             var member = members[i];
-            var level = member.m_Level;
             var varTypeStr = member.m_Type;
             object value;
             var align = (member.m_MetaFlag & 0x4000) != 0;
@@ -178,6 +175,7 @@ namespace AssetStudio
                     value = reader.ReadSByte();
                     break;
                 case "UInt8":
+                case "char":
                     value = reader.ReadByte();
                     break;
                 case "short":
@@ -203,6 +201,7 @@ namespace AssetStudio
                     break;
                 case "UInt64":
                 case "unsigned long long":
+                case "FileSize":
                     value = reader.ReadUInt64();
                     break;
                 case "float":
@@ -222,14 +221,13 @@ namespace AssetStudio
                     {
                         if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
+                        var map = GetMembers(members, i);
+                        i += map.Count - 1;
+                        var first = GetMembers(map, 4);
+                        var next = 4 + first.Count;
+                        var second = GetMembers(map, next);
                         var size = reader.ReadInt32();
                         var dic = new List<KeyValuePair<object, object>>(size);
-                        var map = GetMembers(members, level, i);
-                        i += map.Count - 1;
-                        map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Level, 0);
-                        map.RemoveRange(0, first.Count);
-                        var second = map;
                         for (int j = 0; j < size; j++)
                         {
                             int tmp1 = 0;
@@ -248,18 +246,17 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i != members.Count && members[i + 1].m_Type == "Array") //Array
+                        if (i < members.Count - 1 && members[i + 1].m_Type == "Array") //Array
                         {
                             if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
                                 align = true;
+                            var vector = GetMembers(members, i);
+                            i += vector.Count - 1;
                             var size = reader.ReadInt32();
                             var list = new List<object>(size);
-                            var vector = GetMembers(members, level, i);
-                            i += vector.Count - 1;
-                            vector.RemoveRange(0, 3);
                             for (int j = 0; j < size; j++)
                             {
-                                int tmp = 0;
+                                int tmp = 3;
                                 list.Add(ReadValue(vector, reader, ref tmp));
                             }
                             value = list;
@@ -267,11 +264,10 @@ namespace AssetStudio
                         }
                         else //Class
                         {
-                            var @class = GetMembers(members, level, i);
-                            @class.RemoveAt(0);
-                            i += @class.Count;
+                            var @class = GetMembers(members, i);
+                            i += @class.Count - 1;
                             var obj = new UType();
-                            for (int j = 0; j < @class.Count; j++)
+                            for (int j = 1; j < @class.Count; j++)
                             {
                                 var classmember = @class[j];
                                 var name = classmember.m_Name;
@@ -287,10 +283,11 @@ namespace AssetStudio
             return value;
         }
 
-        private static List<TypeTreeNode> GetMembers(List<TypeTreeNode> members, int level, int index)
+        private static List<TypeTreeNode> GetMembers(List<TypeTreeNode> members, int index)
         {
             var member2 = new List<TypeTreeNode>();
-            member2.Add(members[0]);
+            member2.Add(members[index]);
+            var level = members[index].m_Level;
             for (int i = index + 1; i < members.Count; i++)
             {
                 var member = members[i];
@@ -302,141 +299,6 @@ namespace AssetStudio
                 member2.Add(member);
             }
             return member2;
-        }
-
-        public static byte[] WriteUType(UType obj, List<TypeTreeNode> members)
-        {
-            var stream = new MemoryStream();
-            var write = new BinaryWriter(stream);
-            for (int i = 0; i < members.Count; i++)
-            {
-                var member = members[i];
-                var varNameStr = member.m_Name;
-                WriteValue(obj[varNameStr], members, write, ref i);
-            }
-            return stream.ToArray();
-        }
-
-        private static void WriteValue(object value, List<TypeTreeNode> members, BinaryWriter write, ref int i)
-        {
-            var member = members[i];
-            var level = member.m_Level;
-            var varTypeStr = member.m_Type;
-            var align = (member.m_MetaFlag & 0x4000) != 0;
-            switch (varTypeStr)
-            {
-                case "SInt8":
-                    write.Write((sbyte)value);
-                    break;
-                case "UInt8":
-                    write.Write((byte)value);
-                    break;
-                case "short":
-                case "SInt16":
-                    write.Write((short)value);
-                    break;
-                case "UInt16":
-                case "unsigned short":
-                    write.Write((ushort)value);
-                    break;
-                case "int":
-                case "SInt32":
-                    write.Write((int)value);
-                    break;
-                case "UInt32":
-                case "unsigned int":
-                case "Type*":
-                    write.Write((uint)value);
-                    break;
-                case "long long":
-                case "SInt64":
-                    write.Write((long)value);
-                    break;
-                case "UInt64":
-                case "unsigned long long":
-                    write.Write((ulong)value);
-                    break;
-                case "float":
-                    write.Write((float)value);
-                    break;
-                case "double":
-                    write.Write((double)value);
-                    break;
-                case "bool":
-                    write.Write((bool)value);
-                    break;
-                case "string":
-                    write.WriteAlignedString((string)value);
-                    i += 3;
-                    break;
-                case "map":
-                    {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
-                            align = true;
-                        var dic = (List<KeyValuePair<object, object>>)value;
-                        var size = dic.Count;
-                        write.Write(size);
-                        var map = GetMembers(members, level, i);
-                        i += map.Count - 1;
-                        map.RemoveRange(0, 4);
-                        var first = GetMembers(map, map[0].m_Level, 0);
-                        map.RemoveRange(0, first.Count);
-                        var second = map;
-                        for (int j = 0; j < size; j++)
-                        {
-                            int tmp1 = 0;
-                            int tmp2 = 0;
-                            WriteValue(dic[j].Key, first, write, ref tmp1);
-                            WriteValue(dic[j].Value, second, write, ref tmp2);
-                        }
-                        break;
-                    }
-                case "TypelessData":
-                    {
-                        var bytes = ((object[])value).Cast<byte>().ToArray();
-                        var size = bytes.Length;
-                        write.Write(size);
-                        write.Write(bytes);
-                        i += 2;
-                        break;
-                    }
-                default:
-                    {
-                        if (i != members.Count && members[i + 1].m_Type == "Array") //Array
-                        {
-                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
-                                align = true;
-                            var list = (List<object>)value;
-                            var size = list.Count;
-                            write.Write(size);
-                            var vector = GetMembers(members, level, i);
-                            i += vector.Count - 1;
-                            vector.RemoveRange(0, 3);
-                            for (int j = 0; j < size; j++)
-                            {
-                                int tmp = 0;
-                                WriteValue(list[j], vector, write, ref tmp);
-                            }
-                            break;
-                        }
-                        else //Class
-                        {
-                            var @class = GetMembers(members, level, i);
-                            @class.RemoveAt(0);
-                            i += @class.Count;
-                            var obj = (UType)value;
-                            for (int j = 0; j < @class.Count; j++)
-                            {
-                                var classmember = @class[j];
-                                var name = classmember.m_Name;
-                                WriteValue(obj[name], @class, write, ref j);
-                            }
-                            break;
-                        }
-                    }
-            }
-            if (align)
-                write.AlignStream(4);
         }
     }
 }

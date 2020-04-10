@@ -9,73 +9,37 @@ namespace AssetStudio
     public class UType : IDictionary<string, object>
     {
         private List<string> keys;
-        private List<object> values;
+        private IDictionary<string, object> values;
 
         public UType()
         {
             keys = new List<string>();
-            values = new List<object>();
-        }
-
-        private int GetValueIndex(string name)
-        {
-            for (int i = 0, n = keys.Count; i < n; i++)
-            {
-                if (string.Equals(keys[i], name, StringComparison.Ordinal))
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        public bool TryGetValue<T>(string key, out T value)
-        {
-            var index = GetValueIndex(key);
-            if (index != -1)
-            {
-                value = (T)values[index];
-                return true;
-            }
-            else
-            {
-                value = default(T);
-                return false;
-            }
+            values = new Dictionary<string, object>();
         }
 
         public object this[string key]
         {
             get
             {
-                var index = GetValueIndex(key);
-                if (index != -1)
-                {
-                    return values[index];
-                }
-                else
+                if (!values.ContainsKey(key))
                 {
                     return null;
                 }
+                return values[key];
             }
             set
             {
-                var index = GetValueIndex(key);
-                if (index == -1)
+                if (!values.ContainsKey(key))
                 {
                     keys.Add(key);
-                    values.Add(value);
                 }
-                else
-                {
-                    values[index] = value;
-                }
+                values[key] = value;
             }
         }
 
         public ICollection<string> Keys => keys;
 
-        public ICollection<object> Values => values;
+        public ICollection<object> Values => values.Values;
 
         public int Count => keys.Count;
 
@@ -84,13 +48,13 @@ namespace AssetStudio
         public void Add(string key, object value)
         {
             keys.Add(key);
-            values.Add(value);
+            values.Add(key, value);
         }
 
         public void Add(KeyValuePair<string, object> item)
         {
             keys.Add(item.Key);
-            values.Add(item.Value);
+            values.Add(item);
         }
 
         public void Clear()
@@ -101,55 +65,44 @@ namespace AssetStudio
 
         public bool Contains(KeyValuePair<string, object> item)
         {
-            throw new NotImplementedException();
+            return values.Contains(item);
         }
 
         public bool ContainsKey(string key)
         {
-            return GetValueIndex(key) != -1;
+            return values.ContainsKey(key);
         }
 
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            values.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            for (int i = 0, n = keys.Count; i < n; i++)
-            {
-                yield return new KeyValuePair<string, object>(keys[i], values[i]);
-            }
+            return values.GetEnumerator();
         }
 
         public bool Remove(string key)
         {
-            throw new NotImplementedException();
+            keys.Remove(key);
+            return values.Remove(key);
         }
 
         public bool Remove(KeyValuePair<string, object> item)
         {
-            throw new NotImplementedException();
+            keys.Remove(item.Key);
+            return values.Remove(item);
         }
 
         public bool TryGetValue(string key, out object value)
         {
-            var index = GetValueIndex(key);
-            if (index != -1)
-            {
-                value = values[index];
-                return true;
-            }
-            else
-            {
-                value = null;
-                return false;
-            }
+            return values.TryGetValue(key, out value);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return values.GetEnumerator();
         }
     }
 }

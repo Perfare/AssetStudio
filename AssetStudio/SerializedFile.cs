@@ -24,6 +24,7 @@ namespace AssetStudio
         public BuildTarget m_TargetPlatform = BuildTarget.UnknownPlatform;
         private bool m_EnableTypeTree = true;
         public List<SerializedType> m_Types;
+        public List<SerializedType> m_RefTypes;
         public List<ObjectInfo> m_Objects;
         private List<LocalSerializedObjectIdentifier> m_ScriptTypes;
         public List<FileIdentifier> m_Externals;
@@ -133,13 +134,22 @@ namespace AssetStudio
                 {
                     objectInfo.classID = reader.ReadUInt16();
                     objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
-                    var isDestroyed = reader.ReadUInt16();
                 }
                 else
                 {
                     var type = m_Types[objectInfo.typeID];
                     objectInfo.serializedType = type;
                     objectInfo.classID = type.classID;
+                }
+                if (header.m_Version < 11)
+                {
+                    var isDestroyed = reader.ReadUInt16();
+                }
+                if (header.m_Version >= 11 && header.m_Version < 17)
+                {
+                    var m_ScriptTypeIndex = reader.ReadInt16();
+                    if (objectInfo.serializedType != null)
+                        objectInfo.serializedType.m_ScriptTypeIndex = m_ScriptTypeIndex;
                 }
                 if (header.m_Version == 15 || header.m_Version == 16)
                 {
@@ -188,15 +198,22 @@ namespace AssetStudio
                 m_Externals.Add(m_External);
             }
 
-            if (header.m_Version >= 5)
+            if (header.m_Version >= 20)
             {
-                //var userInformation = reader.ReadStringToNull();
+                int refTypesCount = reader.ReadInt32();
+                m_RefTypes = new List<SerializedType>(refTypesCount);
+                for (int i = 0; i < refTypesCount; i++)
+                {
+                    m_RefTypes.Add(ReadSerializedType());
+                }
             }
 
-            if (header.m_Version >= 21)
+            if (header.m_Version >= 5)
             {
-                //var unknown = reader.ReadInt32();
+                var userInformation = reader.ReadStringToNull();
             }
+
+            //reader.AlignStream(16);
         }
 
         public void SetVersion(string stringVersion)
@@ -247,11 +264,7 @@ namespace AssetStudio
 
                 if (header.m_Version >= 21)
                 {
-                    var count = reader.ReadInt32();
-                    if (count > 0)
-                    {
-                        reader.Position += 4 * count;
-                    }
+                    type.m_TypeDependencies = reader.ReadInt32Array();
                 }
 
                 type.m_Nodes = typeTree;
@@ -294,38 +307,33 @@ namespace AssetStudio
         {
             int numberOfNodes = reader.ReadInt32();
             int stringBufferSize = reader.ReadInt32();
-
-            var nodeSize = 24;
-            if (header.m_Version >= 19)
+            for (int i = 0; i < numberOfNodes; i++)
             {
-                nodeSize = 32;
+                var typeTreeNode = new TypeTreeNode();
+                typeTree.Add(typeTreeNode);
+                typeTreeNode.m_Version = reader.ReadUInt16();
+                typeTreeNode.m_Level = reader.ReadByte();
+                typeTreeNode.m_IsArray = reader.ReadBoolean() ? 1 : 0;
+                typeTreeNode.m_TypeStrOffset = reader.ReadUInt32();
+                typeTreeNode.m_NameStrOffset = reader.ReadUInt32();
+                typeTreeNode.m_ByteSize = reader.ReadInt32();
+                typeTreeNode.m_Index = reader.ReadInt32();
+                typeTreeNode.m_MetaFlag = reader.ReadInt32();
+                if (header.m_Version >= 19)
+                {
+                    typeTreeNode.m_RefTypeHash = reader.ReadUInt64();
+                }
             }
-            reader.Position += numberOfNodes * nodeSize;
-            using (var stringBufferReader = new BinaryReader(new MemoryStream(reader.ReadBytes(stringBufferSize))))
+            var m_StringBuffer = reader.ReadBytes(stringBufferSize);
+
+            using (var stringBufferReader = new BinaryReader(new MemoryStream(m_StringBuffer)))
             {
-                reader.Position -= numberOfNodes * nodeSize + stringBufferSize;
                 for (int i = 0; i < numberOfNodes; i++)
                 {
-                    var typeTreeNode = new TypeTreeNode();
-                    typeTree.Add(typeTreeNode);
-                    typeTreeNode.m_Version = reader.ReadUInt16();
-                    typeTreeNode.m_Level = reader.ReadByte();
-                    typeTreeNode.m_IsArray = reader.ReadBoolean() ? 1 : 0;
-                    typeTreeNode.m_TypeStrOffset = reader.ReadUInt32();
-                    typeTreeNode.m_NameStrOffset = reader.ReadUInt32();
-                    typeTreeNode.m_ByteSize = reader.ReadInt32();
-                    typeTreeNode.m_Index = reader.ReadInt32();
-                    typeTreeNode.m_MetaFlag = reader.ReadInt32();
-
+                    var typeTreeNode = typeTree[i];
                     typeTreeNode.m_Type = ReadString(stringBufferReader, typeTreeNode.m_TypeStrOffset);
                     typeTreeNode.m_Name = ReadString(stringBufferReader, typeTreeNode.m_NameStrOffset);
-
-                    if (header.m_Version >= 19)
-                    {
-                        reader.Position += 8;
-                    }
                 }
-                reader.Position += stringBufferSize;
             }
 
             string ReadString(BinaryReader stringBufferReader, uint value)

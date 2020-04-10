@@ -13,5 +13,6 @@ namespace AssetStudio
         public List<TypeTreeNode> m_Nodes;
         public byte[] m_ScriptID; //Hash128
         public byte[] m_OldTypeHash; //Hash128
+        public int[] m_TypeDependencies;
     }
 }
