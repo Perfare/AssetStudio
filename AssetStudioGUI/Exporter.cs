@@ -179,7 +179,10 @@ namespace AssetStudioGUI
             }
             for (int v = 0; v < m_Mesh.m_VertexCount; v++)
             {
-                sb.AppendFormat("v {0} {1} {2}\r\n", -m_Mesh.m_Vertices[v * c], m_Mesh.m_Vertices[v * c + 1], m_Mesh.m_Vertices[v * c + 2]);
+                sb.AppendFormat("v {0} {1} {2}", -m_Mesh.m_Vertices[v * c], m_Mesh.m_Vertices[v * c + 1], m_Mesh.m_Vertices[v * c + 2]);
+                if (m_Mesh.m_Colors?.Length > 0)
+                    sb.AppendFormat(" {0} {1} {2}", m_Mesh.m_Colors[v * 4], m_Mesh.m_Colors[v * 4 + 1], m_Mesh.m_Colors[v * 4 + 2]);
+                sb.Append("\r\n");
             }
             #endregion
 
