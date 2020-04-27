@@ -33,8 +33,18 @@ namespace AssetStudioGUI
                 Container, //Container
                 TypeString, //Type
                 m_PathID.ToString(), //PathID
-                FullSize.ToString(), //Size
+                HumanSize(FullSize),//.ToString(), //Size
             });
+        }
+
+        private string HumanSize(long size)
+        {
+            if (size < 1024)
+                return size.ToString();
+            else if (size < 1024 * 1024)
+                return (size / 1024f).ToString("#.000K");
+            else //(size < 1024 * 1024 * 1024)
+                return (size / (1024 * 1024f)).ToString("#.000M");
         }
     }
 }
