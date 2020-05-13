@@ -564,7 +564,8 @@ namespace AssetStudioGUI
                     return reverseSort ? bsf.CompareTo(asf) : asf.CompareTo(bsf);
                 });
             }
-            else if (sortColumn == 3) { // PathID
+            else if (sortColumn == 3) // PathID
+            {
                 visibleAssets.Sort((x, y) =>
                 {
                     long pathID_X = x.m_PathID;
