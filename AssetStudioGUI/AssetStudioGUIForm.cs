@@ -567,9 +567,6 @@ namespace AssetStudioGUI
             else if (sortColumn == 3) { // PathID
                 visibleAssets.Sort((x, y) =>
                 {
-                    // <0: x is less than y.
-                    // 0 : x equals y.
-                    // >0: x is greater than y.
                     long pathID_X = x.m_PathID;
                     long pathID_Y = y.m_PathID;
                     return reverseSort ? pathID_Y.CompareTo(pathID_X) : pathID_X.CompareTo(pathID_Y);
