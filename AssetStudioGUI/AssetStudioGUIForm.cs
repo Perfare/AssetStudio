@@ -99,6 +99,35 @@ namespace AssetStudioGUI
             Logger.Default = new GUILogger(StatusStripUpdate);
             Progress.Default = new GUIProgress(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
+
+            this.AllowDrop = true;
+            this.DragEnter += AssetStudioGUIForm_DragEnter;
+            this.DragDrop += AssetStudioGUIForm_DragDrop;
+        }
+
+        private void AssetStudioGUIForm_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Move;
+        }
+
+        private async void AssetStudioGUIForm_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (paths.Length > 0)
+            {
+                ResetForm();
+
+                if (paths.Length == 1 && Directory.Exists(paths[0]))
+                {
+                    await Task.Run(() => assetsManager.LoadFolder(paths[0]));
+                }
+                else
+                {
+                    await Task.Run(() => assetsManager.LoadFiles(paths));
+                }
+
+                BuildAssetStructures();
+            }
         }
 
         private async void loadFile_Click(object sender, EventArgs e)
