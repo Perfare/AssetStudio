@@ -543,7 +543,9 @@ namespace AssetStudio
 						{
 							auto m_UV = iVertex->UV[uv];
 							auto lGeometryElementUV = pMesh->GetElementUV(uv);
-							lGeometryElementUV->GetDirectArray().Add(FbxVector2(m_UV[0], m_UV[1]));
+							if (lGeometryElementUV != NULL) {
+								lGeometryElementUV->GetDirectArray().Add(FbxVector2(m_UV[0], m_UV[1]));
+							}
 						}
 					}
 
