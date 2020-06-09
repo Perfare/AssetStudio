@@ -648,7 +648,7 @@ namespace AssetStudio
                 }
                 sb.Append("}\n");
             }
-            if (m_LocalKeywords.Length > 0)
+            if (m_LocalKeywords != null && m_LocalKeywords.Length > 0)
             {
                 sb.Append("Local Keywords { ");
                 foreach (string keyword in m_LocalKeywords)
