@@ -84,7 +84,7 @@ namespace AssetStudio.FbxInterop
             var framePathList = new List<string>(framePaths);
             var framePathArray = framePathList.ToArray();
 
-            AsFbxSetFramePaths(_pContext, framePathArray, framePathArray.Length);
+            AsFbxSetFramePaths(_pContext, framePathArray);
         }
 
         internal void ExportScene()
@@ -111,11 +111,7 @@ namespace AssetStudio.FbxInterop
                 var parentNode = nodeStack.Pop();
                 var frame = frameStack.Pop();
 
-                var childNode = AsFbxExportSingleFrame(
-                    _pContext, parentNode, frame.Path, frame.Name,
-                    frame.LocalPosition.X, frame.LocalPosition.Y, frame.LocalPosition.Z,
-                    frame.LocalRotation.X, frame.LocalRotation.Y, frame.LocalRotation.Z,
-                    frame.LocalScale.X, frame.LocalScale.Y, frame.LocalScale.Z);
+                var childNode = AsFbxExportSingleFrame(_pContext, parentNode, frame.Path, frame.Name, frame.LocalPosition, frame.LocalRotation, frame.LocalScale);
 
                 if (meshList != null && ImportedHelpers.FindMesh(frame.Path, meshList) != null)
                 {
@@ -303,13 +299,7 @@ namespace AssetStudio.FbxInterop
                             var specular = mat.Specular;
                             var reflection = mat.Reflection;
 
-                            pMat = AsFbxCreateMaterial(_pContext, mat.Name,
-                                diffuse.R, diffuse.G, diffuse.B,
-                                ambient.R, ambient.G, ambient.B,
-                                emissive.R, emissive.G, emissive.B,
-                                specular.R, specular.G, specular.B,
-                                reflection.R, reflection.G, reflection.B,
-                                mat.Shininess, mat.Transparency);
+                            pMat = AsFbxCreateMaterial(_pContext, mat.Name, in diffuse, in ambient, in emissive, in specular, in reflection, mat.Shininess, mat.Transparency);
 
                             _createdMaterials.Add(new KeyValuePair<string, IntPtr>(mat.Name, pMat));
                         }

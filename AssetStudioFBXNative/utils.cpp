@@ -1,10 +1,7 @@
 #include <fbxsdk.h>
 #include <cassert>
 
-#include <Windows.h>
-
 #include "utils.h"
-#include "defer.hpp"
 
 Vector3::Vector3()
 	: X(0), Y(0), Z(0)
@@ -43,26 +40,4 @@ Quaternion EulerToQuaternion(Vector3 v) {
 	lMatrixRot.SetR(FbxVector4(v.X, v.Y, v.Z));
 	FbxQuaternion lQuaternion = lMatrixRot.GetQ();
 	return Quaternion((float)lQuaternion[0], (float)lQuaternion[1], (float)lQuaternion[2], (float)lQuaternion[3]);
-}
-
-char* StringToUTF8(const char* s) {
-	assert(s != nullptr);
-
-	// TODO: different implementations on other platforms
-	int nLength = MultiByteToWideChar(CP_ACP, 0, s, -1, nullptr, 0);
-	BSTR bstrWide = SysAllocStringLen(nullptr, nLength);
-
-	auto_defer([&] {
-		SysFreeString(bstrWide);
-		});
-
-	MultiByteToWideChar(CP_ACP, 0, s, -1, bstrWide, nLength);
-
-	nLength = WideCharToMultiByte(CP_UTF8, 0, bstrWide, -1, nullptr, 0, nullptr, nullptr);
-
-	auto result = new char[nLength];
-
-	WideCharToMultiByte(CP_UTF8, 0, bstrWide, -1, result, nLength, nullptr, nullptr);
-
-	return result;
 }

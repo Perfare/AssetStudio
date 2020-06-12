@@ -4,7 +4,6 @@
 
 AsFbxContext::AsFbxContext()
 {
-	cDest = nullptr;
 	pSdkManager = nullptr;
 	pScene = nullptr;
 	pTextures = nullptr;
@@ -16,8 +15,6 @@ AsFbxContext::AsFbxContext()
 AsFbxContext::~AsFbxContext()
 {
 	framePaths.clear();
-
-	delete[] cDest;
 
 	delete pMaterials;
 	delete pTextures;

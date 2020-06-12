@@ -44,9 +44,6 @@
     <ClInclude Include="utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="defer.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="bool32_t.h">
       <Filter>头文件</Filter>
     </ClInclude>

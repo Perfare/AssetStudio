@@ -19,12 +19,15 @@ struct AsFbxSkinContext;
 struct AsFbxAnimContext;
 struct AsFbxMorphContext;
 
-AS_API(void) AsUtilQuaternionToEuler(float qx, float qy, float qz, float qw, float* vx, float* vy, float *vz);
+AS_API(void) AsUtilQuaternionToEuler(float qx, float qy, float qz, float qw, float* vx, float* vy, float* vz);
 
 AS_API(void) AsUtilEulerToQuaternion(float vx, float vy, float vz, float* qx, float* qy, float* qz, float* qw);
 
+// All strings ([const] char *) in this header are UTF-8 strings.
+
 AS_API(AsFbxContext*) AsFbxCreateContext();
 
+// Do not free pErrMsg
 AS_API(bool32_t) AsFbxInitializeContext(AsFbxContext* pContext, const char* pFileName, float scaleFactor, int32_t versionIndex, bool32_t isAscii, bool32_t is60Fps, const char** pErrMsg);
 
 AS_API(void) AsFbxDisposeContext(AsFbxContext** ppContext);
@@ -77,7 +80,7 @@ AS_API(fbxsdk::FbxSurfacePhong*) AsFbxCreateMaterial(AsFbxContext* pContext, con
 	float emissiveR, float emissiveG, float emissiveB,
 	float specularR, float specularG, float specularB,
 	float reflectR, float reflectG, float reflectB,
-	float shininess, float transparancy);
+	float shininess, float transparency);
 
 AS_API(int32_t) AsFbxAddMaterialToFrame(fbxsdk::FbxNode* pFrameNode, fbxsdk::FbxSurfacePhong* pMaterial);
 

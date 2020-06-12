@@ -27,6 +27,3 @@ struct Quaternion {
 Vector3 QuaternionToEuler(Quaternion q);
 
 Quaternion EulerToQuaternion(Vector3 v);
-
-// Remember to delete[] the returned pointer
-char* StringToUTF8(const char* s);

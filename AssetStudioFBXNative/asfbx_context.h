@@ -19,7 +19,6 @@ namespace fbxsdk
 struct AsFbxContext
 {
 
-	char* cDest;
 	fbxsdk::FbxManager* pSdkManager;
 	fbxsdk::FbxScene* pScene;
 	fbxsdk::FbxArray<fbxsdk::FbxFileTexture*>* pTextures;

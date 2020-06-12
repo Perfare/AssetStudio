@@ -169,7 +169,6 @@
     <ClInclude Include="asfbx_morph_context.h" />
     <ClInclude Include="asfbx_skin_context.h" />
     <ClInclude Include="bool32_t.h" />
-    <ClInclude Include="defer.hpp" />
     <ClInclude Include="dllexport.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="utils.h" />

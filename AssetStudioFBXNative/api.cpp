@@ -7,7 +7,6 @@
 #include "asfbx_anim_context.h"
 #include "asfbx_morph_context.h"
 #include "utils.h"
-#include "defer.hpp"
 
 using namespace fbxsdk;
 
@@ -113,8 +112,6 @@ AS_API(bool32_t) AsFbxInitializeContext(AsFbxContext* pContext, const char* pFil
 		globalSettings.SetTimeMode(FbxTime::eFrames60);
 	}
 
-	pContext->cDest = StringToUTF8(pFileName);
-
 	auto pExporter = FbxExporter::Create(pScene, "");
 	pContext->pExporter = pExporter;
 
@@ -139,7 +136,7 @@ AS_API(bool32_t) AsFbxInitializeContext(AsFbxContext* pContext, const char* pFil
 		}
 	}
 
-	if (!pExporter->Initialize(pContext->cDest, pFileFormat, pSdkManager->GetIOSettings()))
+	if (!pExporter->Initialize(pFileName, pFileFormat, pSdkManager->GetIOSettings()))
 	{
 		if (pErrMsg != nullptr)
 		{
@@ -228,13 +225,7 @@ AS_API(FbxNode*) AsFbxExportSingleFrame(AsFbxContext* pContext, FbxNode* pParent
 		return nullptr;
 	}
 
-	auto pNodeName = StringToUTF8(pFrameName);
-
-	auto_defer([&] {
-		delete[] pNodeName;
-		});
-
-	auto pFrameNode = FbxNode::Create(pContext->pScene, pNodeName);
+	auto pFrameNode = FbxNode::Create(pContext->pScene, pFrameName);
 
 	pFrameNode->LclScaling.Set(FbxDouble3(localScaleX, localScaleY, localScaleZ));
 	pFrameNode->LclRotation.Set(FbxDouble3(localRotationX, localRotationY, localRotationZ));
@@ -335,14 +326,8 @@ AS_API(FbxFileTexture*) AsFbxCreateTexture(AsFbxContext* pContext, const char* p
 		return nullptr;
 	}
 
-	auto pTexName = StringToUTF8(pMatTexName);
-
-	auto_defer([&] {
-		delete[] pTexName;
-		});
-
-	auto pTex = FbxFileTexture::Create(pContext->pScene, pTexName);
-	pTex->SetFileName(pTexName);
+	auto pTex = FbxFileTexture::Create(pContext->pScene, pMatTexName);
+	pTex->SetFileName(pMatTexName);
 	pTex->SetTextureUse(FbxTexture::eStandard);
 	pTex->SetMappingType(FbxTexture::eUV);
 	pTex->SetMaterialUse(FbxFileTexture::eModelMaterial);
@@ -531,7 +516,7 @@ AS_API(FbxSurfacePhong*) AsFbxCreateMaterial(AsFbxContext* pContext, const char*
 	float emissiveR, float emissiveG, float emissiveB,
 	float specularR, float specularG, float specularB,
 	float reflectR, float reflectG, float reflectB,
-	float shininess, float transparancy)
+	float shininess, float transparency)
 {
 	if (pContext == nullptr || pContext->pScene == nullptr)
 	{
@@ -543,13 +528,7 @@ AS_API(FbxSurfacePhong*) AsFbxCreateMaterial(AsFbxContext* pContext, const char*
 		return nullptr;
 	}
 
-	auto pMatNameUtf8 = StringToUTF8(pMatName);
-
-	auto_defer([&] {
-		delete[] pMatNameUtf8;
-		});
-
-	auto pMat = FbxSurfacePhong::Create(pContext->pScene, pMatNameUtf8);
+	auto pMat = FbxSurfacePhong::Create(pContext->pScene, pMatName);
 
 	pMat->Diffuse.Set(FbxDouble3(diffuseR, diffuseG, diffuseB));
 	pMat->Ambient.Set(FbxDouble3(ambientR, ambientG, ambientB));
@@ -557,7 +536,7 @@ AS_API(FbxSurfacePhong*) AsFbxCreateMaterial(AsFbxContext* pContext, const char*
 	pMat->Specular.Set(FbxDouble3(specularR, specularG, specularB));
 	pMat->Reflection.Set(FbxDouble3(reflectR, reflectG, reflectB));
 	pMat->Shininess.Set(FbxDouble(shininess));
-	pMat->TransparencyFactor.Set(FbxDouble(transparancy));
+	pMat->TransparencyFactor.Set(FbxDouble(transparency));
 	pMat->ShadingModel.Set("Phong");
 
 	if (pContext->pMaterials)
@@ -809,13 +788,7 @@ AS_API(void) AsFbxAnimPrepareStackAndLayer(AsFbxContext* pContext, AsFbxAnimCont
 		return;
 	}
 
-	auto takeNameUtf8 = StringToUTF8(pTakeName);
-
-	auto_defer([&] {
-		delete[] takeNameUtf8;
-		});
-
-	pAnimContext->lAnimStack = FbxAnimStack::Create(pContext->pScene, takeNameUtf8);
+	pAnimContext->lAnimStack = FbxAnimStack::Create(pContext->pScene, pTakeName);
 	pAnimContext->lAnimLayer = FbxAnimLayer::Create(pContext->pScene, "Base Layer");
 
 	pAnimContext->lAnimStack->AddMember(pAnimContext->lAnimLayer);
@@ -999,13 +972,7 @@ AS_API(bool32_t) AsFbxAnimIsBlendShapeChannelMatch(AsFbxAnimContext* pAnimContex
 	FbxBlendShapeChannel* lChannel = pAnimContext->lBlendShape->GetBlendShapeChannel(channelIndex);
 	auto lChannelName = lChannel->GetNameOnly();
 
-	auto channelNameUtf8 = StringToUTF8(channelName);
-
-	auto_defer([&] {
-		delete[] channelNameUtf8;
-		});
-
-	FbxString chanName(channelNameUtf8);
+	FbxString chanName(channelName);
 
 	return lChannelName == chanName;
 }
@@ -1105,13 +1072,7 @@ AS_API(void) AsFbxMorphAddBlendShapeChannel(AsFbxContext* pContext, AsFbxMorphCo
 		return;
 	}
 
-	auto channelNameUtf8 = StringToUTF8(channelName);
-
-	auto_defer([&] {
-		delete[] channelNameUtf8;
-		});
-
-	auto lBlendShapeChannel = FbxBlendShapeChannel::Create(pContext->pScene, channelNameUtf8);
+	auto lBlendShapeChannel = FbxBlendShapeChannel::Create(pContext->pScene, channelName);
 	pMorphContext->lBlendShapeChannel = lBlendShapeChannel;
 
 	if (pMorphContext->lBlendShape != nullptr)
