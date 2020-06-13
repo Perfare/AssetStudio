@@ -41,18 +41,16 @@
 #endif
 #endif
 
-#ifndef _STDCALL
+#ifndef _AS_CALL
 #if defined(WIN32) || defined(_WIN32)
-#ifndef _STDCALL
-#define _STDCALL __stdcall
-#endif
+#define _AS_CALL __stdcall
 #else
-#define _STDCALL
+#define _AS_CALL /* __cdecl */
 #endif
 #endif
 
 #if defined(_MSC_VER)
-#define AS_API(ret_type) _EXTERN_C_STMT _AS_EXPORT ret_type _STDCALL
+#define AS_API(ret_type) _EXTERN_C_STMT _AS_EXPORT ret_type _AS_CALL
 #else
-#define AS_API(ret_type) _EXTERN_C_STMT _AS_EXPORT _STDCALL ret_type
+#define AS_API(ret_type) _EXTERN_C_STMT _AS_EXPORT _AS_CALL ret_type
 #endif
