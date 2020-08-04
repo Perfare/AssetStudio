@@ -56,6 +56,8 @@ namespace AssetStudio.PInvoke
                 }
             }
 
+            // HMODULE LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+            // HMODULE LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
             [DllImport("kernel32.dll", SetLastError = true)]
             private static extern IntPtr LoadLibraryEx(string lpLibFileName, IntPtr hFile, uint dwFlags);
 
@@ -87,20 +89,27 @@ namespace AssetStudio.PInvoke
                 var dllFileName = $"lib{dllName}{dllExtension}";
                 var directedDllPath = Path.Combine(dllDir, dllFileName);
 
-                var hLibrary = DlOpen(directedDllPath, RTLD_NOW | RTLD_GLOBAL);
+                const int ldFlags = RTLD_NOW | RTLD_GLOBAL;
+                var hLibrary = DlOpen(directedDllPath, ldFlags);
 
                 if (hLibrary == IntPtr.Zero)
                 {
                     var pErrStr = DlError();
+                    // `PtrToStringAnsi` always uses the specific constructor of `String` (see dotnet/core#2325),
+                    // which in turn interprets the byte sequence with system default codepage. On OSX and Linux
+                    // the codepage is UTF-8 so the error message should be handled correctly.
                     var errorMessage = Marshal.PtrToStringAnsi(pErrStr);
 
                     throw new DllNotFoundException(errorMessage);
                 }
             }
 
+            // OSX and most Linux OS use LP64 so `int` is still 32-bit even on 64-bit platforms.
+            // void *dlopen(const char *filename, int flag);
             [DllImport("libdl", EntryPoint = "dlopen")]
             private static extern IntPtr DlOpen([MarshalAs(UnmanagedType.LPStr)] string fileName, int flags);
 
+            // char *dlerror(void);
             [DllImport("libdl", EntryPoint = "dlerror")]
             private static extern IntPtr DlError();
 
