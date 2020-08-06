@@ -103,12 +103,11 @@ namespace AssetStudioGUI
             string productName = null;
             var objectCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
             var objectAssetItemDic = new Dictionary<Object, AssetItem>(objectCount);
+            var containers = new List<(PPtr<Object>, string)>();
             int i = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                var tempExportableAssets = new List<AssetItem>();
-                Dictionary<long, string> containers = null;
                 foreach (var asset in assetsFile.Objects)
                 {
                     var assetItem = new AssetItem(asset);
@@ -173,7 +172,6 @@ namespace AssetStudioGUI
                             productName = m_PlayerSettings.productName;
                             break;
                         case AssetBundle m_AssetBundle:
-                            containers = new Dictionary<long, string>();
                             foreach (var m_Container in m_AssetBundle.m_Container)
                             {
                                 var preloadIndex = m_Container.Value.preloadIndex;
@@ -181,14 +179,16 @@ namespace AssetStudioGUI
                                 var preloadEnd = preloadIndex + preloadSize;
                                 for (int k = preloadIndex; k < preloadEnd; k++)
                                 {
-                                    var m_PreloadTable = m_AssetBundle.m_PreloadTable[k];
-                                    if (m_PreloadTable.m_FileID == 0)
-                                    {
-                                        containers[m_AssetBundle.m_PreloadTable[k].m_PathID] = m_Container.Key;
-                                    }
+                                    containers.Add((m_AssetBundle.m_PreloadTable[k], m_Container.Key));
                                 }
                             }
                             assetItem.Text = m_AssetBundle.m_Name;
+                            break;
+                        case ResourceManager m_ResourceManager:
+                            foreach (var m_Container in m_ResourceManager.m_Container)
+                            {
+                                containers.Add((m_Container.Value, m_Container.Key));
+                            }
                             break;
                         case NamedObject m_NamedObject:
                             assetItem.Text = m_NamedObject.m_Name;
@@ -200,28 +200,24 @@ namespace AssetStudioGUI
                     }
                     if (Properties.Settings.Default.displayAll || exportable)
                     {
-                        tempExportableAssets.Add(assetItem);
+                        exportableAssets.Add(assetItem);
                     }
                     Progress.Report(++i, objectCount);
                 }
-                foreach (var item in tempExportableAssets)
-                {
-                    if (containers != null)
-                    {
-                        if (containers.TryGetValue(item.Asset.m_PathID, out var container))
-                        {
-                            if (!string.IsNullOrEmpty(container))
-                            {
-                                item.Container = container;
-                            }
-                        }
-                    }
-                    item.SetSubItems();
-                }
-                exportableAssets.AddRange(tempExportableAssets);
-                tempExportableAssets.Clear();
-                containers?.Clear();
             }
+            foreach ((var pptr, var container) in containers)
+            {
+                if (pptr.TryGet(out var obj))
+                {
+                    objectAssetItemDic[obj].Container = container;
+                }
+            }
+            foreach (var tmp in exportableAssets)
+            {
+                tmp.SetSubItems();
+            }
+            containers.Clear();
+
             visibleAssets = exportableAssets;
 
             StatusStripUpdate("Building tree structure...");

@@ -333,6 +333,9 @@ namespace AssetStudio
                             case ClassIDType.VideoClip:
                                 obj = new VideoClip(objectReader);
                                 break;
+                            case ClassIDType.ResourceManager:
+                                obj = new ResourceManager(objectReader);
+                                break;
                             default:
                                 obj = new Object(objectReader);
                                 break;

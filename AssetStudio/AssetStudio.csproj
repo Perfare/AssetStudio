@@ -103,6 +103,7 @@
     <Compile Include="Classes\PPtr.cs" />
     <Compile Include="Classes\RectTransform.cs" />
     <Compile Include="Classes\Renderer.cs" />
+    <Compile Include="Classes\ResourceManager.cs" />
     <Compile Include="Classes\RuntimeAnimatorController.cs" />
     <Compile Include="Classes\Shader.cs" />
     <Compile Include="Classes\SkinnedMeshRenderer.cs" />
