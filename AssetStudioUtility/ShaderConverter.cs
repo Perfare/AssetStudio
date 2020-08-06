@@ -648,6 +648,15 @@ namespace AssetStudio
                 }
                 sb.Append("}\n");
             }
+            if (m_LocalKeywords != null && m_LocalKeywords.Length > 0)
+            {
+                sb.Append("Local Keywords { ");
+                foreach (string keyword in m_LocalKeywords)
+                {
+                    sb.Append($"\"{keyword}\" ");
+                }
+                sb.Append("}\n");
+            }
 
             sb.Append("\"");
             if (m_ProgramCode.Length > 0)
