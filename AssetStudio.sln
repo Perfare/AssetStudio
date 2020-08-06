@@ -12,10 +12,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetStudioFBXNative", "AssetStudioFBXNative\AssetStudioFBXNative.vcxproj", "{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioFBXWrapper", "AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj", "{BD76E63F-1517-47FA-8233-33E853A3ACEE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027} = {11EA25A3-ED68-40EE-A9D0-7FDE3B583027}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Texture2DDecoderNative", "Texture2DDecoderNative\Texture2DDecoderNative.vcxproj", "{29356642-C46E-4144-83D8-22DC09D0D7FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Texture2DDecoderWrapper", "Texture2DDecoderWrapper\Texture2DDecoderWrapper.csproj", "{2AFCE830-B463-49B3-A026-877E5EAFC0A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{29356642-C46E-4144-83D8-22DC09D0D7FD} = {29356642-C46E-4144-83D8-22DC09D0D7FD}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio.PInvoke", "AssetStudio.PInvoke\AssetStudio.PInvoke.csproj", "{40C796B5-88CE-4ADC-ACD6-2F4862B7F136}"
 EndProject
@@ -66,11 +72,13 @@ Global
 		{52B196FB-4C8A-499B-B877-1A0EB4F33EC0}.Release|x86.ActiveCfg = Release|Any CPU
 		{52B196FB-4C8A-499B-B877-1A0EB4F33EC0}.Release|x86.Build.0 = Release|Any CPU
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|Any CPU.Build.0 = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.ActiveCfg = Debug|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.Build.0 = Debug|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.ActiveCfg = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.Build.0 = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|Any CPU.ActiveCfg = Release|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|Any CPU.Build.0 = Release|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.ActiveCfg = Release|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.Build.0 = Release|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x86.ActiveCfg = Release|Win32
@@ -88,11 +96,13 @@ Global
 		{BD76E63F-1517-47FA-8233-33E853A3ACEE}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD76E63F-1517-47FA-8233-33E853A3ACEE}.Release|x86.Build.0 = Release|Any CPU
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|Any CPU.Build.0 = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x64.ActiveCfg = Debug|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x64.Build.0 = Debug|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x86.ActiveCfg = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x86.Build.0 = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|Any CPU.Build.0 = Release|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x64.ActiveCfg = Release|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x64.Build.0 = Release|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x86.ActiveCfg = Release|Win32
