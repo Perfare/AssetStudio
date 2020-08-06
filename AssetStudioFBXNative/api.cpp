@@ -462,7 +462,7 @@ AS_API(void) AsFbxMeshCreateElementNormal(FbxMesh* pMesh)
 	pNormal->SetReferenceMode(FbxGeometryElement::eDirect);
 }
 
-AS_API(void) AsFbxMeshCreateElementUV(FbxMesh* pMesh, int32_t uv)
+AS_API(void) AsFbxMeshCreateDiffuseUV(FbxMesh* pMesh, int32_t uv)
 {
 	if (pMesh == nullptr)
 	{
@@ -470,6 +470,18 @@ AS_API(void) AsFbxMeshCreateElementUV(FbxMesh* pMesh, int32_t uv)
 	}
 
 	auto pUV = pMesh->CreateElementUV(FbxString("UV") + FbxString(uv), FbxLayerElement::eTextureDiffuse);
+	pUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
+	pUV->SetReferenceMode(FbxGeometryElement::eDirect);
+}
+
+AS_API(void) AsFbxMeshCreateNormalMapUV(FbxMesh* pMesh, int32_t uv)
+{
+	if (pMesh == nullptr)
+	{
+		return;
+	}
+
+	auto pUV = pMesh->CreateElementUV(FbxString("UV") + FbxString(uv), FbxLayerElement::eTextureNormalMap);
 	pUV->SetMappingMode(FbxGeometryElement::eByControlPoint);
 	pUV->SetReferenceMode(FbxGeometryElement::eDirect);
 }
@@ -613,7 +625,7 @@ AS_API(void) AsFbxMeshElementUVAdd(FbxMesh* pMesh, int32_t elementIndex, float u
 		return;
 	}
 
-	auto pElem = pMesh->GetElementUV(elementIndex);
+	auto pElem = pMesh->GetElementUV(FbxString("UV") + FbxString(elementIndex));
 	auto& array = pElem->GetDirectArray();
 
 	array.Add(FbxVector2(u, v));

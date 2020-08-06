@@ -255,12 +255,14 @@ namespace AssetStudio.FbxInterop
                     AsFbxMeshCreateElementNormal(mesh);
                 }
 
-                for (var i = 0; i < 2; i += 1)
+                if (importedMesh.hasUV[0])
                 {
-                    if (importedMesh.hasUV[i])
-                    {
-                        AsFbxMeshCreateElementUV(mesh, i);
-                    }
+                    AsFbxMeshCreateDiffuseUV(mesh, 0);
+                }
+
+                if (importedMesh.hasUV[1])
+                {
+                    AsFbxMeshCreateNormalMapUV(mesh, 1);
                 }
 
                 if (importedMesh.hasTangent)
