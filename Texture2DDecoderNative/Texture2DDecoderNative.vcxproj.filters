@@ -15,6 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pvrtc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="unitycrunch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="crunch\crnlib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="crunch\crn_decomp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fp16\bitcasts.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fp16\fp16.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="unitycrunch\crnlib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="unitycrunch\crn_decomp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="unitycrunch\crn_defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="astc.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -39,39 +66,18 @@
     <ClInclude Include="fp16.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="pvrtc.h">
+    <ClInclude Include="dllexport.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Texture2DDecoder.h">
+    <ClInclude Include="bool32_t.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="unitycrunch.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="crunch\crn_decomp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="crunch\crnlib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="fp16\bitcasts.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="fp16\fp16.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="unitycrunch\crn_decomp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="unitycrunch\crn_defs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="unitycrunch\crnlib.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AssemblyInfo.cpp">
+    <ClCompile Include="unitycrunch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="astc.cpp">
@@ -92,11 +98,16 @@
     <ClCompile Include="pvrtc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Texture2DDecoder.cpp">
+    <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="unitycrunch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Texture2DDecoderNative.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
