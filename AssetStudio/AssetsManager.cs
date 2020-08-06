@@ -86,7 +86,7 @@ namespace AssetStudio
 
                     foreach (var sharedFile in assetsFile.m_Externals)
                     {
-                        var sharedFilePath = Path.GetDirectoryName(fullName) + "\\" + sharedFile.fileName;
+                        var sharedFilePath = Path.Combine(Path.GetDirectoryName(fullName), sharedFile.fileName);
                         var sharedFileName = sharedFile.fileName;
 
                         if (!importFilesHash.Contains(sharedFileName))
@@ -189,7 +189,7 @@ namespace AssetStudio
                 var webFile = new WebFile(reader);
                 foreach (var file in webFile.fileList)
                 {
-                    var dummyPath = Path.GetDirectoryName(fullName) + "\\" + file.fileName;
+                    var dummyPath = Path.Combine(Path.GetDirectoryName(fullName), file.fileName);
                     switch (CheckFileType(file.stream, out var fileReader))
                     {
                         case FileType.AssetsFile:

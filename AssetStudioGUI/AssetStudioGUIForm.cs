@@ -332,7 +332,7 @@ namespace AssetStudioGUI
                     Progress.Reset();
                     foreach (TypeTreeItem item in classesListView.Items)
                     {
-                        var versionPath = savePath + "\\" + item.Group.Header;
+                        var versionPath = Path.Combine(savePath, item.Group.Header);
                         Directory.CreateDirectory(versionPath);
 
                         var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
@@ -1422,7 +1422,7 @@ namespace AssetStudioGUI
                 var saveFolderDialog1 = new OpenFolderDialog();
                 if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
                 {
-                    var savePath = saveFolderDialog1.Folder + "\\";
+                    var savePath = saveFolderDialog1.Folder + Path.DirectorySeparatorChar;
                     ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
             }

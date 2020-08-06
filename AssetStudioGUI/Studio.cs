@@ -101,7 +101,6 @@ namespace AssetStudioGUI
             StatusStripUpdate("Building asset list...");
 
             string productName = null;
-            var assetsNameHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var objectCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
             var objectAssetItemDic = new Dictionary<Object, AssetItem>(objectCount);
             int i = 0;
@@ -177,7 +176,17 @@ namespace AssetStudioGUI
                             containers = new Dictionary<long, string>();
                             foreach (var m_Container in m_AssetBundle.m_Container)
                             {
-                                containers[m_Container.Value.asset.m_PathID] = m_Container.Key;
+                                var preloadIndex = m_Container.Value.preloadIndex;
+                                var preloadSize = m_Container.Value.preloadSize;
+                                var preloadEnd = preloadIndex + preloadSize;
+                                for (int k = preloadIndex; k < preloadEnd; k++)
+                                {
+                                    var m_PreloadTable = m_AssetBundle.m_PreloadTable[k];
+                                    if (m_PreloadTable.m_FileID == 0)
+                                    {
+                                        containers[m_AssetBundle.m_PreloadTable[k].m_PathID] = m_Container.Key;
+                                    }
+                                }
                             }
                             assetItem.Text = m_AssetBundle.m_Name;
                             break;
@@ -189,13 +198,6 @@ namespace AssetStudioGUI
                     {
                         assetItem.Text = assetItem.TypeString + assetItem.UniqueID;
                     }
-                    //处理同名文件
-                    if (!assetsNameHash.Add(assetItem.TypeString + assetItem.Text))
-                    {
-                        assetItem.Text += assetItem.UniqueID;
-                    }
-                    //处理非法文件名
-                    assetItem.Text = FixFileName(assetItem.Text);
                     if (Properties.Settings.Default.displayAll || exportable)
                     {
                         tempExportableAssets.Add(assetItem);
@@ -221,7 +223,6 @@ namespace AssetStudioGUI
                 containers?.Clear();
             }
             visibleAssets = exportableAssets;
-            assetsNameHash.Clear();
 
             StatusStripUpdate("Building tree structure...");
 
@@ -335,12 +336,6 @@ namespace AssetStudioGUI
             }
 
             return typeMap;
-        }
-
-        public static string FixFileName(string str)
-        {
-            if (str.Length >= 260) return Path.GetRandomFileName();
-            return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
         public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, ExportType exportType)
