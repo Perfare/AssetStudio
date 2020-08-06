@@ -210,8 +210,13 @@ namespace AssetStudio.FbxInterop
         private void ExportMesh(ImportedFrame rootFrame, List<ImportedMaterial> materialList, List<ImportedTexture> textureList, IntPtr frameNode, ImportedMesh importedMesh, bool exportSkins)
         {
             var boneList = importedMesh.BoneList;
-            var totalBoneCount = boneList.Count;
-            var hasBones = exportSkins && boneList != null && totalBoneCount > 0;
+            var totalBoneCount = 0;
+            var hasBones = false;
+            if (exportSkins && boneList?.Count > 0)
+            {
+                totalBoneCount = boneList.Count;
+                hasBones = true;
+            }
 
             var pClusterArray = IntPtr.Zero;
 

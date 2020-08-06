@@ -76,7 +76,7 @@ namespace AssetStudioGUI
             return 0;
         }
 
-        private static int ExtractStreamFile(string extractPath,StreamFile[] fileList)
+        private static int ExtractStreamFile(string extractPath, StreamFile[] fileList)
         {
             int extractedCount = 0;
             foreach (var file in fileList)
@@ -328,7 +328,7 @@ namespace AssetStudioGUI
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        items.Add(key, new TypeTreeItem(key, type.m_Nodes));
+                        items[key] = new TypeTreeItem(key, type.m_Nodes);
                     }
                     typeMap.Add(assetsFile.unityVersion, items);
                 }
