@@ -99,20 +99,19 @@ namespace AssetStudioGUI
             Logger.Default = new GUILogger(StatusStripUpdate);
             Progress.Default = new GUIProgress(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
-
-            this.AllowDrop = true;
-            this.DragEnter += AssetStudioGUIForm_DragEnter;
-            this.DragDrop += AssetStudioGUIForm_DragDrop;
         }
 
         private void AssetStudioGUIForm_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Move;
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Move;
+            }
         }
 
         private async void AssetStudioGUIForm_DragDrop(object sender, DragEventArgs e)
         {
-            string[] paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (paths.Length > 0)
             {
                 ResetForm();
