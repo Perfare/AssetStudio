@@ -27,50 +27,52 @@ namespace AssetStudioGUI
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
         internal static Action<string> StatusStripUpdate = x => { };
 
-        public static void ExtractFile(string[] fileNames)
+        public static int ExtractFolder(string path, string savePath)
         {
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                int extractedCount = 0;
-                Progress.Reset();
-                for (var i = 0; i < fileNames.Length; i++)
-                {
-                    var fileName = fileNames[i];
-                    var type = ImportHelper.CheckFileType(fileName, out var reader);
-                    if (type == FileType.BundleFile)
-                        extractedCount += ExtractBundleFile(fileName, reader);
-                    else if (type == FileType.WebFile)
-                        extractedCount += ExtractWebDataFile(fileName, reader);
-                    else
-                        reader.Dispose();
-                    Progress.Report(i + 1, fileNames.Length);
-                }
-
-                StatusStripUpdate($"Finished extracting {extractedCount} files.");
-            });
+            var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            return ExtractFile(files, savePath);
         }
 
-        private static int ExtractBundleFile(string bundleFileName, EndianBinaryReader reader)
+        public static int ExtractFile(string[] fileNames, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-            var bundleFile = new BundleFile(reader, bundleFileName);
+            int extractedCount = 0;
+            Progress.Reset();
+            for (var i = 0; i < fileNames.Length; i++)
+            {
+                var fileName = fileNames[i];
+                var type = ImportHelper.CheckFileType(fileName, out var reader);
+                if (type == FileType.BundleFile)
+                    extractedCount += ExtractBundleFile(fileName, reader, savePath);
+                else if (type == FileType.WebFile)
+                    extractedCount += ExtractWebDataFile(fileName, reader, savePath);
+                else
+                    reader.Dispose();
+                Progress.Report(i + 1, fileNames.Length);
+            }
+            return extractedCount;
+        }
+
+        private static int ExtractBundleFile(string bundleFilePath, EndianBinaryReader reader, string savePath)
+        {
+            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFilePath)} ...");
+            var bundleFile = new BundleFile(reader, bundleFilePath);
             reader.Dispose();
             if (bundleFile.fileList.Length > 0)
             {
-                var extractPath = bundleFileName + "_unpacked\\";
+                var extractPath = Path.Combine(savePath, Path.GetFileName(bundleFilePath) + "_unpacked");
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractWebDataFile(string webFileName, EndianBinaryReader reader)
+        private static int ExtractWebDataFile(string webFilePath, EndianBinaryReader reader, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
+            StatusStripUpdate($"Decompressing {Path.GetFileName(webFilePath)} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
             if (webFile.fileList.Length > 0)
             {
-                var extractPath = webFileName + "_unpacked\\";
+                var extractPath = Path.Combine(savePath, Path.GetFileName(webFilePath) + "_unpacked");
                 return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;
@@ -81,14 +83,17 @@ namespace AssetStudioGUI
             int extractedCount = 0;
             foreach (var file in fileList)
             {
-                var filePath = extractPath + file.fileName;
+                var filePath = Path.Combine(extractPath, file.fileName);
                 if (!Directory.Exists(extractPath))
                 {
                     Directory.CreateDirectory(extractPath);
                 }
-                if (!File.Exists(filePath) && file.stream is MemoryStream stream)
+                if (!File.Exists(filePath))
                 {
-                    File.WriteAllBytes(filePath, stream.ToArray());
+                    using (var fileStream = File.Create(filePath))
+                    {
+                        file.stream.CopyTo(fileStream);
+                    }
                     extractedCount += 1;
                 }
                 file.stream.Dispose();

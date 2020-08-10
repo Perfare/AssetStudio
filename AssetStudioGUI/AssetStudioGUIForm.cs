@@ -150,21 +150,36 @@ namespace AssetStudioGUI
             }
         }
 
-        private void extractFileToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void extractFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                ExtractFile(openFileDialog1.FileNames);
+                var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.Title = "Select the save folder";
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    var fileNames = openFileDialog1.FileNames;
+                    var savePath = saveFolderDialog.Folder;
+                    var extractedCount = await Task.Run(() => ExtractFile(fileNames, savePath));
+                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
+                }
             }
         }
 
-        private void extractFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void extractFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var openFolderDialog1 = new OpenFolderDialog();
-            if (openFolderDialog1.ShowDialog(this) == DialogResult.OK)
+            var openFolderDialog = new OpenFolderDialog();
+            if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
             {
-                var files = Directory.GetFiles(openFolderDialog1.Folder, "*.*", SearchOption.AllDirectories);
-                ExtractFile(files);
+                var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.Title = "Select the save folder";
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    var path = openFolderDialog.Folder;
+                    var savePath = saveFolderDialog.Folder;
+                    var extractedCount = await Task.Run(() => ExtractFolder(path, savePath));
+                    StatusStripUpdate($"Finished extracting {extractedCount} files.");
+                }
             }
         }
 
@@ -1278,10 +1293,10 @@ namespace AssetStudioGUI
 
             if (animator != null)
             {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                var saveFolderDialog = new OpenFolderDialog();
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var exportPath = saveFolderDialog1.Folder + "\\Animator\\";
+                    var exportPath = saveFolderDialog.Folder + "\\Animator\\";
                     ExportAnimatorWithAnimationClip(animator, animationList, exportPath);
                 }
             }
@@ -1301,10 +1316,10 @@ namespace AssetStudioGUI
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                var saveFolderDialog = new OpenFolderDialog();
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var exportPath = saveFolderDialog1.Folder + "\\GameObject\\";
+                    var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
                     List<AssetItem> animationList = null;
                     if (animation)
                     {
@@ -1419,10 +1434,10 @@ namespace AssetStudioGUI
         {
             if (sceneTreeView.Nodes.Count > 0)
             {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                var saveFolderDialog = new OpenFolderDialog();
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var savePath = saveFolderDialog1.Folder + Path.DirectorySeparatorChar;
+                    var savePath = saveFolderDialog.Folder + Path.DirectorySeparatorChar;
                     ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
             }
@@ -1479,8 +1494,8 @@ namespace AssetStudioGUI
         {
             if (exportableAssets.Count > 0)
             {
-                var saveFolderDialog1 = new OpenFolderDialog();
-                if (saveFolderDialog1.ShowDialog(this) == DialogResult.OK)
+                var saveFolderDialog = new OpenFolderDialog();
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
                     timer.Stop();
 
@@ -1497,7 +1512,7 @@ namespace AssetStudioGUI
                             toExportAssets = visibleAssets;
                             break;
                     }
-                    Studio.ExportAssets(saveFolderDialog1.Folder, toExportAssets, exportType);
+                    Studio.ExportAssets(saveFolderDialog.Folder, toExportAssets, exportType);
                 }
             }
             else
