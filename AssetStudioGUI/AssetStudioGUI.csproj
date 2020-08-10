@@ -127,17 +127,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>x86\fmod.dll</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="Libraries\x86\libfbxsdk.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>x86\libfbxsdk.dll</TargetPath>
-    </ContentWithTargetPath>
     <ContentWithTargetPath Include="Libraries\x64\fmod.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>x64\fmod.dll</TargetPath>
-    </ContentWithTargetPath>
-    <ContentWithTargetPath Include="Libraries\x64\libfbxsdk.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>x64\libfbxsdk.dll</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
