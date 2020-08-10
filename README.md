@@ -7,7 +7,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 ## Features
 * Support version:
-  * 2.5 - 2019.3
+  * 2.5 - 2019.4
 * Support asset types:
   * **Texture2D** : convert to png, tga, jpeg, bmp
   * **Sprite** : crop Texture2D to png, tga, jpeg, bmp
@@ -25,7 +25,6 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 ### Requirements
 
 - [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework/net472)
-- [Microsoft Visual C++ 2017 Redistributable](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads)
 
 ### How to use
 
@@ -43,7 +42,6 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 * Visual Studio 2019 or newer
 * **AssetStudioFBX** uses FBX SDK 2020.0.1 VS2017, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
-* If you want to change the FBX SDK version, you need to replace `libfbxsdk.dll` which in `AssetStudioGUI/Libraries/x86/` and `AssetStudioGUI/Libraries/x64/` directory to the new version
 
 ## Open source libraries used
 
