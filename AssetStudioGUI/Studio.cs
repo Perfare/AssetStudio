@@ -29,8 +29,18 @@ namespace AssetStudioGUI
 
         public static int ExtractFolder(string path, string savePath)
         {
+            int extractedCount = 0;
+            Progress.Reset();
             var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
-            return ExtractFile(files, savePath);
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var fileOriPath = Path.GetDirectoryName(file);
+                var fileSavePath = fileOriPath.Replace(path, savePath);
+                extractedCount += ExtractFile(file, fileSavePath);
+                Progress.Report(i + 1, files.Length);
+            }
+            return extractedCount;
         }
 
         public static int ExtractFile(string[] fileNames, string savePath)
@@ -40,15 +50,22 @@ namespace AssetStudioGUI
             for (var i = 0; i < fileNames.Length; i++)
             {
                 var fileName = fileNames[i];
-                var type = ImportHelper.CheckFileType(fileName, out var reader);
-                if (type == FileType.BundleFile)
-                    extractedCount += ExtractBundleFile(fileName, reader, savePath);
-                else if (type == FileType.WebFile)
-                    extractedCount += ExtractWebDataFile(fileName, reader, savePath);
-                else
-                    reader.Dispose();
+                extractedCount += ExtractFile(fileName, savePath);
                 Progress.Report(i + 1, fileNames.Length);
             }
+            return extractedCount;
+        }
+
+        public static int ExtractFile(string fileName, string savePath)
+        {
+            int extractedCount = 0;
+            var type = ImportHelper.CheckFileType(fileName, out var reader);
+            if (type == FileType.BundleFile)
+                extractedCount += ExtractBundleFile(fileName, reader, savePath);
+            else if (type == FileType.WebFile)
+                extractedCount += ExtractWebDataFile(fileName, reader, savePath);
+            else
+                reader.Dispose();
             return extractedCount;
         }
 
