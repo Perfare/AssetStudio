@@ -89,20 +89,8 @@ namespace AssetStudioGUI
             if (!TryExportFile(exportPath, item, ".shader", out var exportFullPath))
                 return false;
             var m_Shader = (Shader)item.Asset;
-            if (m_Shader.compressedBlob != null) //5.5 and up
-            {
-                var strs = ShaderConverter.ConvertMultiple(m_Shader);
-                for (int i = 0; i < strs.Length; i++)
-                {
-                    var platformName = ShaderConverter.GetPlatformString(m_Shader.platforms[i]);
-                    File.WriteAllText($"{exportPath}{item.Text}_{platformName}.shader", strs[i]);
-                }
-            }
-            else
-            {
-                var str = ShaderConverter.Convert(m_Shader);
-                File.WriteAllText(exportFullPath, str);
-            }
+            var str = m_Shader.Convert();
+            File.WriteAllText(exportFullPath, str);
             return true;
         }
 
