@@ -21,13 +21,13 @@ namespace AssetStudio
                 using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                 {
                     var program = new ShaderProgram(blobReader, shader.version);
-                    return program.Export(Encoding.UTF8.GetString(shader.m_Script));
+                    return header + program.Export(Encoding.UTF8.GetString(shader.m_Script));
                 }
             }
 
             if (shader.compressedBlob != null) //5.5 and up
             {
-                return ConvertSerializedShader(shader);
+                return header + ConvertSerializedShader(shader);
             }
 
             return header + Encoding.UTF8.GetString(shader.m_Script);
@@ -727,14 +727,14 @@ namespace AssetStudio
                     case ShaderGpuProgramType.kShaderGpuProgramDX11HullSM50:
                     case ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50:
                         {
-                            int start = 6;
+                            /*int start = 6;
                             if (m_Version == 201509030) // 5.3
                             {
                                 start = 5;
                             }
                             var buff = new byte[m_ProgramCode.Length - start];
                             Buffer.BlockCopy(m_ProgramCode, start, buff, 0, buff.Length);
-                            /*var shaderBytecode = new ShaderBytecode(buff);
+                            var shaderBytecode = new ShaderBytecode(buff);
                             sb.Append(shaderBytecode.Disassemble());*/
                             sb.Append("// shader disassembly not supported on DXBC");
                             break;
@@ -755,7 +755,14 @@ namespace AssetStudio
                         }
                         break;
                     case ShaderGpuProgramType.kShaderGpuProgramSPIRV:
-                        sb.Append("// shader disassembly not supported on SPIR-V\n");
+                        try
+                        {
+                            sb.Append(SpirVShaderConverter.Convert(m_ProgramCode));
+                        }
+                        catch (Exception e)
+                        {
+                            sb.Append($"// disassembly error {e.Message}\n");
+                        }
                         break;
                     case ShaderGpuProgramType.kShaderGpuProgramConsoleVS:
                     case ShaderGpuProgramType.kShaderGpuProgramConsoleFS:
