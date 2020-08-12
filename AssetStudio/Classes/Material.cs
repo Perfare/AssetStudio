@@ -95,6 +95,8 @@ namespace AssetStudio
             }
 
             m_SavedProperties = new UnityPropertySheet(reader);
+
+            //vector m_BuildTextureStacks 2020 and up
         }
     }
 }

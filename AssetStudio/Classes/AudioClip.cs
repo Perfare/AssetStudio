@@ -27,7 +27,7 @@ namespace AssetStudio
         public AudioCompressionFormat m_CompressionFormat;
 
         public string m_Source;
-        public long m_Offset;
+        public ulong m_Offset;
         public long m_Size;
         public ResourceReader m_AudioData;
 
@@ -48,7 +48,7 @@ namespace AssetStudio
                     var tsize = m_Size % 4 != 0 ? m_Size + 4 - m_Size % 4 : m_Size;
                     if (reader.byteSize + reader.byteStart - reader.Position != tsize)
                     {
-                        m_Offset = reader.ReadInt32();
+                        m_Offset = reader.ReadUInt32();
                         m_Source = assetsFile.fullName + ".resS";
                     }
                 }
@@ -72,8 +72,9 @@ namespace AssetStudio
                 m_Legacy3D = reader.ReadBoolean();
                 reader.AlignStream();
 
+                //StreamedResource m_Resource
                 m_Source = reader.ReadAlignedString();
-                m_Offset = reader.ReadInt64();
+                m_Offset = reader.ReadUInt64();
                 m_Size = reader.ReadInt64();
                 m_CompressionFormat = (AudioCompressionFormat)reader.ReadInt32();
             }

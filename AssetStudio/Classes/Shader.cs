@@ -201,6 +201,7 @@ namespace AssetStudio
         public SerializedShaderFloatValue zTest;
         public SerializedShaderFloatValue zWrite;
         public SerializedShaderFloatValue culling;
+        public SerializedShaderFloatValue conservative;
         public SerializedShaderFloatValue offsetFactor;
         public SerializedShaderFloatValue offsetUnits;
         public SerializedShaderFloatValue alphaToMask;
@@ -239,6 +240,10 @@ namespace AssetStudio
             zTest = new SerializedShaderFloatValue(reader);
             zWrite = new SerializedShaderFloatValue(reader);
             culling = new SerializedShaderFloatValue(reader);
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                conservative = new SerializedShaderFloatValue(reader);
+            }
             offsetFactor = new SerializedShaderFloatValue(reader);
             offsetUnits = new SerializedShaderFloatValue(reader);
             alphaToMask = new SerializedShaderFloatValue(reader);
@@ -357,11 +362,18 @@ namespace AssetStudio
     {
         public int m_NameIndex;
         public int m_Index;
+        public int m_ArraySize;
 
-        public BufferBinding(BinaryReader reader)
+        public BufferBinding(ObjectReader reader)
         {
+            var version = reader.version;
+
             m_NameIndex = reader.ReadInt32();
             m_Index = reader.ReadInt32();
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                m_ArraySize = reader.ReadInt32();
+            }
         }
     }
 

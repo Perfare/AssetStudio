@@ -4,13 +4,22 @@ namespace AssetStudio
 {
     public class StreamingInfo
     {
-        public uint offset;
+        public ulong offset;
         public uint size;
         public string path;
 
         public StreamingInfo(ObjectReader reader)
         {
-            offset = reader.ReadUInt32();
+            var version = reader.version;
+
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                offset = reader.ReadUInt64();
+            }
+            else
+            {
+                offset = reader.ReadUInt32();
+            }
             size = reader.ReadUInt32();
             path = reader.ReadAlignedString();
         }
@@ -59,6 +68,10 @@ namespace AssetStudio
             m_Width = reader.ReadInt32();
             m_Height = reader.ReadInt32();
             var m_CompleteImageSize = reader.ReadInt32();
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                var m_MipsStripped = reader.ReadInt32();
+            }
             m_TextureFormat = (TextureFormat)reader.ReadInt32();
             if (version[0] < 5 || (version[0] == 5 && version[1] < 2)) //5.2 down
             {
@@ -68,9 +81,29 @@ namespace AssetStudio
             {
                 m_MipCount = reader.ReadInt32();
             }
-            var m_IsReadable = reader.ReadBoolean(); //2.6.0 and up
-            var m_ReadAllowed = reader.ReadBoolean(); //3.0.0 - 5.4
-            //bool m_StreamingMipmaps 2018.2 and up
+            if (version[0] > 2 || (version[0] == 2 && version[1] >= 6)) //2.6.0 and up
+            {
+                var m_IsReadable = reader.ReadBoolean();
+            }
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                var m_IsPreProcessed = reader.ReadBoolean();
+            }
+            if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
+            {
+                var m_IgnoreMasterTextureLimit = reader.ReadBoolean();
+            }
+            if (version[0] >= 3) //3.0.0 - 5.4
+            {
+                if (version[0] < 5 || (version[0] == 5 && version[1] <= 4))
+                {
+                    var m_ReadAllowed = reader.ReadBoolean();
+                }
+            }
+            if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
+            {
+                var m_StreamingMipmaps = reader.ReadBoolean();
+            }
             reader.AlignStream();
             if (version[0] > 2018 || (version[0] == 2018 && version[1] >= 2)) //2018.2 and up
             {

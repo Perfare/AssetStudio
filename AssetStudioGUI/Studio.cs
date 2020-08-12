@@ -155,7 +155,7 @@ namespace AssetStudioGUI
                             break;
                         case VideoClip m_VideoClip:
                             if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_Size;
+                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_ExternalResources.m_Size;
                             assetItem.Text = m_VideoClip.m_Name;
                             exportable = true;
                             break;
