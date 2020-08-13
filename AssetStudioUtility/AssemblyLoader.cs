@@ -35,7 +35,19 @@ namespace AssetStudio
         {
             if (moduleDic.TryGetValue(assemblyName, out var module))
             {
-                return module.GetType(fullName);
+                var typeDef = module.GetType(fullName);
+                if (typeDef == null && assemblyName == "UnityEngine.dll")
+                {
+                    foreach (var pair in moduleDic)
+                    {
+                        typeDef = pair.Value.GetType(fullName);
+                        if (typeDef != null)
+                        {
+                            break;
+                        }
+                    }
+                }
+                return typeDef;
             }
             return null;
         }
