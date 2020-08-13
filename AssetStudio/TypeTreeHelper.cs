@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace AssetStudio
 {
     public static class TypeTreeHelper
     {
-        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, BinaryReader reader)
+        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, ObjectReader reader)
         {
+            reader.Reset();
             for (int i = 0; i < members.Count; i++)
             {
                 ReadStringValue(sb, members, reader, ref i);
+            }
+            var readed = reader.Position - reader.byteStart;
+            if (readed != reader.byteSize)
+            {
+                Logger.Error($"Error while read type, read {readed} bytes but expected {reader.byteSize} bytes");
             }
         }
 

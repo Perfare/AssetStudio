@@ -34,9 +34,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="dnlib, Version=3.3.2.0, Culture=neutral, PublicKeyToken=50e96378b6e77999, processorArchitecture=MSIL">
-      <HintPath>..\packages\dnlib.3.3.2\lib\net45\dnlib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -46,8 +43,18 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.Cecil">
+      <HintPath>Libraries\Unity.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.CecilTools">
+      <HintPath>Libraries\Unity.CecilTools.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.SerializationLogic">
+      <HintPath>Libraries\Unity.SerializationLogic.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyLoader.cs" />
     <Compile Include="AudioClipConverter.cs" />
     <Compile Include="CSspv\Disassembler.cs" />
     <Compile Include="CSspv\EnumValuesExtensions.cs" />
@@ -64,8 +71,11 @@
     <Compile Include="FMOD Studio API\fmod_errors.cs" />
     <Compile Include="ModelConverter.cs" />
     <Compile Include="ModelExporter.cs" />
+    <Compile Include="MonoBehaviourConverter.cs" />
+    <Compile Include="SerializedTypeHelper.cs" />
+    <Compile Include="TypeDefinitionConverter.cs" />
+    <Compile Include="MyAssemblyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptDumper.cs" />
     <Compile Include="ShaderConverter.cs" />
     <Compile Include="Smolv\OpData.cs" />
     <Compile Include="Smolv\SmolvDecoder.cs" />
@@ -92,9 +102,6 @@
       <Project>{2afce830-b463-49b3-a026-877e5eafc0a4}</Project>
       <Name>Texture2DDecoderWrapper</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -116,7 +116,7 @@ namespace AssetStudioGUI
             if (!TryExportFile(exportPath, item, ".txt", out var exportFullPath))
                 return false;
             var m_MonoBehaviour = (MonoBehaviour)item.Asset;
-            var str = m_MonoBehaviour.Dump() ?? Studio.GetScriptString(item.Asset.reader);
+            var str = m_MonoBehaviour.Dump() ?? Studio.DeserializeMonoBehaviour(m_MonoBehaviour);
             File.WriteAllText(exportFullPath, str);
             return true;
         }

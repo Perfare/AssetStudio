@@ -8,7 +8,7 @@ namespace AssetStudio
     public sealed class MonoScript : NamedObject
     {
         public string m_ClassName;
-        public string m_Namespace = string.Empty;
+        public string m_Namespace;
         public string m_AssemblyName;
 
         public MonoScript(ObjectReader reader) : base(reader)

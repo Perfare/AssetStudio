@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using static AssetStudioGUI.Exporter;
@@ -22,7 +23,7 @@ namespace AssetStudioGUI
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
-        public static ScriptDumper scriptDumper = new ScriptDumper();
+        public static AssemblyLoader assemblyLoader = new AssemblyLoader();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
         internal static Action<string> StatusStripUpdate = x => { };
@@ -614,23 +615,29 @@ namespace AssetStudioGUI
             }
         }
 
-        public static string GetScriptString(ObjectReader reader)
+        public static string DeserializeMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
-            if (scriptDumper == null)
+            if (!assemblyLoader.Loaded)
             {
                 var openFolderDialog = new OpenFolderDialog();
                 openFolderDialog.Title = "Select Assembly Folder";
                 if (openFolderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    scriptDumper = new ScriptDumper(openFolderDialog.Folder);
+                    assemblyLoader.Load(openFolderDialog.Folder);
                 }
                 else
                 {
-                    scriptDumper = new ScriptDumper();
+                    assemblyLoader.Loaded = true;
                 }
             }
-
-            return scriptDumper.DumpScript(reader);
+            var nodes = m_MonoBehaviour.ConvertToTypeTreeNode(assemblyLoader);
+            if (nodes != null)
+            {
+                var sb = new StringBuilder();
+                TypeTreeHelper.ReadTypeString(sb, nodes, m_MonoBehaviour.reader);
+                return sb.ToString();
+            }
+            return null;
         }
     }
 }

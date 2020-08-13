@@ -43,7 +43,6 @@ namespace AssetStudio
 
         public string Dump()
         {
-            reader.Reset();
             if (serializedType?.m_Nodes != null)
             {
                 var sb = new StringBuilder();

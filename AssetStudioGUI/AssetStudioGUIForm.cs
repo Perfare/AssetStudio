@@ -930,7 +930,7 @@ namespace AssetStudioGUI
 
         private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
-            PreviewText(m_MonoBehaviour.Dump() ?? GetScriptString(m_MonoBehaviour.reader));
+            PreviewText(m_MonoBehaviour.Dump() ?? DeserializeMonoBehaviour(m_MonoBehaviour));
         }
 
         private void PreviewFont(Font m_Font)
@@ -1192,6 +1192,7 @@ namespace AssetStudioGUI
         {
             Text = $"AssetStudioGUI v{Application.ProductVersion}";
             assetsManager.Clear();
+            assemblyLoader.Clear();
             exportableAssets.Clear();
             visibleAssets.Clear();
             sceneTreeView.Nodes.Clear();
@@ -1221,12 +1222,6 @@ namespace AssetStudioGUI
             }
 
             FMODreset();
-
-            if (scriptDumper != null)
-            {
-                scriptDumper.Dispose();
-                scriptDumper = null;
-            }
         }
 
         private void assetListView_MouseClick(object sender, MouseEventArgs e)

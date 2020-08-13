@@ -18,5 +18,15 @@ namespace AssetStudio
         public uint m_TypeStrOffset;
         public uint m_NameStrOffset;
         public ulong m_RefTypeHash;
+
+        public TypeTreeNode() { }
+
+        public TypeTreeNode(string type, string name, int level, bool align)
+        {
+            m_Type = type;
+            m_Name = name;
+            m_Level = level;
+            m_MetaFlag = align ? 0x4000 : 0;
+        }
     }
 }
