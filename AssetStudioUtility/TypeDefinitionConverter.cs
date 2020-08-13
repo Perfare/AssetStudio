@@ -140,7 +140,7 @@ namespace AssetStudio
         private List<TypeTreeNode> ProcessingFieldRef(FieldReference fieldDef)
         {
             var typeRef = TypeResolver.Resolve(fieldDef.FieldType);
-            return TypeRefToTypeTreeNodes(typeRef, fieldDef.Name, Indent);
+            return TypeRefToTypeTreeNodes(typeRef, fieldDef.Name, Indent, false);
         }
 
         private static bool IsStruct(TypeReference typeRef)
@@ -178,7 +178,7 @@ namespace AssetStudio
             return typeRef.FullName == "System.String";
         }
 
-        private List<TypeTreeNode> TypeRefToTypeTreeNodes(TypeReference typeRef, string name, int indent)
+        private List<TypeTreeNode> TypeRefToTypeTreeNodes(TypeReference typeRef, string name, int indent, bool isElement)
         {
             var align = false;
 
@@ -235,6 +235,10 @@ namespace AssetStudio
                     default:
                         throw new NotSupportedException();
                 }
+                if (isElement)
+                {
+                    align = false;
+                }
                 nodes.Add(new TypeTreeNode(primitiveName, name, indent, align));
             }
             else if (IsSystemString(typeRef))
@@ -250,14 +254,14 @@ namespace AssetStudio
                 var elementRef = CecilUtils.ElementTypeOfCollection(typeRef);
                 nodes.Add(new TypeTreeNode(typeRef.Name, name, indent, align));
                 Helper.AddArray(nodes, indent + 1);
-                nodes.AddRange(TypeRefToTypeTreeNodes(elementRef, "data", indent + 2));
+                nodes.AddRange(TypeRefToTypeTreeNodes(elementRef, "data", indent + 2, true));
             }
             else if (typeRef.IsArray)
             {
                 var elementRef = typeRef.GetElementType();
                 nodes.Add(new TypeTreeNode(typeRef.Name, name, indent, align));
                 Helper.AddArray(nodes, indent + 1);
-                nodes.AddRange(TypeRefToTypeTreeNodes(elementRef, "data", indent + 2));
+                nodes.AddRange(TypeRefToTypeTreeNodes(elementRef, "data", indent + 2, true));
             }
             else if (UnityEngineTypePredicates.IsUnityEngineObject(typeRef))
             {
