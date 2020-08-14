@@ -28,7 +28,6 @@ namespace AssetStudioGUI
     partial class AssetStudioGUIForm : Form
     {
         private AssetItem lastSelectedItem;
-        private AssetItem lastLoadedAsset;
         private Bitmap imageTexture;
         private string tempClipboard;
 
@@ -303,31 +302,31 @@ namespace AssetStudioGUI
             {
                 if (e.Control)
                 {
-                    bool dirty = false;
+                    var need = false;
                     switch (e.KeyCode)
                     {
                         case Keys.B:
                             textureChannels[0] = !textureChannels[0];
-                            dirty = true;
+                            need = true;
                             break;
                         case Keys.G:
                             textureChannels[1] = !textureChannels[1];
-                            dirty = true;
+                            need = true;
                             break;
                         case Keys.R:
                             textureChannels[2] = !textureChannels[2];
-                            dirty = true;
+                            need = true;
                             break;
                         case Keys.A:
                             textureChannels[3] = !textureChannels[3];
-                            dirty = true;
+                            need = true;
                             break;
                     }
-                    if (dirty)
+                    if (need)
                     {
-                        PreviewAsset(lastLoadedAsset);
-                        if (lastSelectedItem != null && assetInfoLabel.Text != null)
+                        if (lastSelectedItem != null)
                         {
+                            PreviewAsset(lastSelectedItem);
                             assetInfoLabel.Text = lastSelectedItem.InfoText;
                         }
                     }
@@ -370,9 +369,9 @@ namespace AssetStudioGUI
 
         private void enablePreview_Check(object sender, EventArgs e)
         {
-            if (lastLoadedAsset != null)
+            if (lastSelectedItem != null)
             {
-                switch (lastLoadedAsset.Type)
+                switch (lastSelectedItem.Type)
                 {
                     case ClassIDType.Texture2D:
                     case ClassIDType.Sprite:
@@ -411,7 +410,7 @@ namespace AssetStudioGUI
                             }
                             else if (FMODpanel.Visible)
                             {
-                                PreviewAsset(lastLoadedAsset);
+                                PreviewAsset(lastSelectedItem);
                             }
 
                             break;
@@ -422,8 +421,7 @@ namespace AssetStudioGUI
             }
             else if (lastSelectedItem != null && enablePreview.Checked)
             {
-                lastLoadedAsset = lastSelectedItem;
-                PreviewAsset(lastLoadedAsset);
+                PreviewAsset(lastSelectedItem);
             }
 
             Properties.Settings.Default.enablePreview = enablePreview.Checked;
@@ -464,13 +462,7 @@ namespace AssetStudioGUI
                     treeSearch.Select();
                     break;
                 case 1:
-                    classPreviewPanel.Visible = false;
-                    previewPanel.Visible = true;
                     listSearch.Select();
-                    break;
-                case 2:
-                    previewPanel.Visible = false;
-                    classPreviewPanel.Visible = true;
                     break;
             }
         }
@@ -633,13 +625,13 @@ namespace AssetStudioGUI
         {
             previewPanel.BackgroundImage = Properties.Resources.preview;
             previewPanel.BackgroundImageLayout = ImageLayout.Center;
+            classTextBox.Visible = false;
             assetInfoLabel.Visible = false;
             assetInfoLabel.Text = null;
             textPreviewBox.Visible = false;
             fontPreviewBox.Visible = false;
             FMODpanel.Visible = false;
             glControl1.Visible = false;
-            lastLoadedAsset = null;
             StatusStripUpdate("");
 
             FMODreset();
@@ -648,15 +640,18 @@ namespace AssetStudioGUI
 
             if (e.IsSelected)
             {
+                if (tabControl2.SelectedIndex == 1)
+                {
+                    dumpTextBox.Text = DumpAsset(lastSelectedItem.Asset);
+                }
                 if (enablePreview.Checked)
                 {
-                    lastLoadedAsset = lastSelectedItem;
-                    PreviewAsset(lastLoadedAsset);
-                }
-                if (displayInfo.Checked && assetInfoLabel.Text != null)//only display the label if asset has info text
-                {
-                    assetInfoLabel.Text = lastSelectedItem.InfoText;
-                    assetInfoLabel.Visible = true;
+                    PreviewAsset(lastSelectedItem);
+                    if (displayInfo.Checked && lastSelectedItem.InfoText != null)
+                    {
+                        assetInfoLabel.Text = lastSelectedItem.InfoText;
+                        assetInfoLabel.Visible = true;
+                    }
                 }
             }
         }
@@ -665,6 +660,11 @@ namespace AssetStudioGUI
         {
             if (e.IsSelected)
             {
+                if (!classTextBox.Visible)
+                {
+                    assetInfoLabel.Visible = false;
+                    classTextBox.Visible = true;
+                }
                 classTextBox.Text = ((TypeTreeItem)classesListView.SelectedItems[0]).ToString();
             }
         }
@@ -1217,7 +1217,6 @@ namespace AssetStudioGUI
             fontPreviewBox.Visible = false;
             glControl1.Visible = false;
             lastSelectedItem = null;
-            lastLoadedAsset = null;
             sortColumn = -1;
             reverseSort = false;
             enableFiltering = false;
@@ -1950,6 +1949,14 @@ namespace AssetStudioGUI
             GL.BindVertexArray(0);
             GL.Flush();
             glControl1.SwapBuffers();
+        }
+
+        private void tabControl2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl2.SelectedIndex == 1 && lastSelectedItem != null)
+            {
+                dumpTextBox.Text = DumpAsset(lastSelectedItem.Asset);
+            }
         }
 
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)

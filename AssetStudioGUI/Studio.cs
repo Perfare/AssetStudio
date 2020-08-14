@@ -632,5 +632,16 @@ namespace AssetStudioGUI
             }
             return m_MonoBehaviour.ConvertToTypeTreeNodes(assemblyLoader);
         }
+
+        public static string DumpAsset(Object obj)
+        {
+            var str = obj.Dump();
+            if (str == null && obj is MonoBehaviour m_MonoBehaviour)
+            {
+                var nodes = MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
+                str = m_MonoBehaviour.Dump(nodes);
+            }
+            return str;
+        }
     }
 }

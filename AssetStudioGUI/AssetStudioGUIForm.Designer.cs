@@ -87,6 +87,8 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressbarPanel = new System.Windows.Forms.Panel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.previewPanel = new System.Windows.Forms.Panel();
             this.assetInfoLabel = new System.Windows.Forms.Label();
             this.FMODpanel = new System.Windows.Forms.Panel();
@@ -101,10 +103,11 @@
             this.FMODpauseButton = new System.Windows.Forms.Button();
             this.FMODplayButton = new System.Windows.Forms.Button();
             this.fontPreviewBox = new System.Windows.Forms.RichTextBox();
-            this.textPreviewBox = new System.Windows.Forms.TextBox();
             this.glControl1 = new OpenTK.GLControl();
-            this.classPreviewPanel = new System.Windows.Forms.Panel();
+            this.textPreviewBox = new System.Windows.Forms.TextBox();
             this.classTextBox = new System.Windows.Forms.TextBox();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.dumpTextBox = new System.Windows.Forms.TextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer = new System.Windows.Forms.Timer(this.components);
@@ -125,11 +128,13 @@
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.progressbarPanel.SuspendLayout();
+            this.tabControl2.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.previewPanel.SuspendLayout();
             this.FMODpanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FMODprogressBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FMODvolumeBar)).BeginInit();
-            this.classPreviewPanel.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -462,8 +467,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.previewPanel);
-            this.splitContainer1.Panel2.Controls.Add(this.classPreviewPanel);
+            this.splitContainer1.Panel2.Controls.Add(this.tabControl2);
             this.splitContainer1.Panel2.Controls.Add(this.statusStrip1);
             this.splitContainer1.Panel2MinSize = 400;
             this.splitContainer1.Size = new System.Drawing.Size(1264, 656);
@@ -652,6 +656,28 @@
             this.progressBar1.Step = 1;
             this.progressBar1.TabIndex = 1;
             // 
+            // tabControl2
+            // 
+            this.tabControl2.Controls.Add(this.tabPage4);
+            this.tabControl2.Controls.Add(this.tabPage5);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.Location = new System.Drawing.Point(0, 0);
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.SelectedIndex = 0;
+            this.tabControl2.Size = new System.Drawing.Size(776, 632);
+            this.tabControl2.TabIndex = 4;
+            this.tabControl2.SelectedIndexChanged += new System.EventHandler(this.tabControl2_SelectedIndexChanged);
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.previewPanel);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(768, 606);
+            this.tabPage4.TabIndex = 0;
+            this.tabPage4.Text = "Preview";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
             // previewPanel
             // 
             this.previewPanel.BackColor = System.Drawing.SystemColors.ControlDark;
@@ -660,12 +686,13 @@
             this.previewPanel.Controls.Add(this.assetInfoLabel);
             this.previewPanel.Controls.Add(this.FMODpanel);
             this.previewPanel.Controls.Add(this.fontPreviewBox);
-            this.previewPanel.Controls.Add(this.textPreviewBox);
             this.previewPanel.Controls.Add(this.glControl1);
+            this.previewPanel.Controls.Add(this.textPreviewBox);
+            this.previewPanel.Controls.Add(this.classTextBox);
             this.previewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.previewPanel.Location = new System.Drawing.Point(0, 0);
             this.previewPanel.Name = "previewPanel";
-            this.previewPanel.Size = new System.Drawing.Size(776, 632);
+            this.previewPanel.Size = new System.Drawing.Size(768, 606);
             this.previewPanel.TabIndex = 1;
             this.previewPanel.Resize += new System.EventHandler(this.preview_Resize);
             // 
@@ -695,7 +722,7 @@
             this.FMODpanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.FMODpanel.Location = new System.Drawing.Point(0, 0);
             this.FMODpanel.Name = "FMODpanel";
-            this.FMODpanel.Size = new System.Drawing.Size(776, 632);
+            this.FMODpanel.Size = new System.Drawing.Size(768, 606);
             this.FMODpanel.TabIndex = 2;
             this.FMODpanel.Visible = false;
             // 
@@ -703,7 +730,7 @@
             // 
             this.FMODcopyright.AutoSize = true;
             this.FMODcopyright.ForeColor = System.Drawing.SystemColors.ControlLight;
-            this.FMODcopyright.Location = new System.Drawing.Point(232, 350);
+            this.FMODcopyright.Location = new System.Drawing.Point(214, 337);
             this.FMODcopyright.Name = "FMODcopyright";
             this.FMODcopyright.Size = new System.Drawing.Size(341, 12);
             this.FMODcopyright.TabIndex = 9;
@@ -713,7 +740,7 @@
             // 
             this.FMODinfoLabel.AutoSize = true;
             this.FMODinfoLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODinfoLabel.Location = new System.Drawing.Point(287, 248);
+            this.FMODinfoLabel.Location = new System.Drawing.Point(269, 235);
             this.FMODinfoLabel.Name = "FMODinfoLabel";
             this.FMODinfoLabel.Size = new System.Drawing.Size(0, 12);
             this.FMODinfoLabel.TabIndex = 8;
@@ -721,7 +748,7 @@
             // FMODtimerLabel
             // 
             this.FMODtimerLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODtimerLabel.Location = new System.Drawing.Point(422, 248);
+            this.FMODtimerLabel.Location = new System.Drawing.Point(404, 235);
             this.FMODtimerLabel.Name = "FMODtimerLabel";
             this.FMODtimerLabel.Size = new System.Drawing.Size(155, 12);
             this.FMODtimerLabel.TabIndex = 7;
@@ -731,7 +758,7 @@
             // FMODstatusLabel
             // 
             this.FMODstatusLabel.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FMODstatusLabel.Location = new System.Drawing.Point(231, 248);
+            this.FMODstatusLabel.Location = new System.Drawing.Point(213, 235);
             this.FMODstatusLabel.Name = "FMODstatusLabel";
             this.FMODstatusLabel.Size = new System.Drawing.Size(50, 12);
             this.FMODstatusLabel.TabIndex = 6;
@@ -740,7 +767,7 @@
             // FMODprogressBar
             // 
             this.FMODprogressBar.AutoSize = false;
-            this.FMODprogressBar.Location = new System.Drawing.Point(231, 266);
+            this.FMODprogressBar.Location = new System.Drawing.Point(213, 253);
             this.FMODprogressBar.Maximum = 1000;
             this.FMODprogressBar.Name = "FMODprogressBar";
             this.FMODprogressBar.Size = new System.Drawing.Size(350, 22);
@@ -753,7 +780,7 @@
             // FMODvolumeBar
             // 
             this.FMODvolumeBar.LargeChange = 2;
-            this.FMODvolumeBar.Location = new System.Drawing.Point(478, 293);
+            this.FMODvolumeBar.Location = new System.Drawing.Point(460, 280);
             this.FMODvolumeBar.Name = "FMODvolumeBar";
             this.FMODvolumeBar.Size = new System.Drawing.Size(104, 45);
             this.FMODvolumeBar.TabIndex = 4;
@@ -764,7 +791,7 @@
             // FMODloopButton
             // 
             this.FMODloopButton.Appearance = System.Windows.Forms.Appearance.Button;
-            this.FMODloopButton.Location = new System.Drawing.Point(417, 293);
+            this.FMODloopButton.Location = new System.Drawing.Point(399, 280);
             this.FMODloopButton.Name = "FMODloopButton";
             this.FMODloopButton.Size = new System.Drawing.Size(55, 42);
             this.FMODloopButton.TabIndex = 3;
@@ -775,7 +802,7 @@
             // 
             // FMODstopButton
             // 
-            this.FMODstopButton.Location = new System.Drawing.Point(356, 293);
+            this.FMODstopButton.Location = new System.Drawing.Point(338, 280);
             this.FMODstopButton.Name = "FMODstopButton";
             this.FMODstopButton.Size = new System.Drawing.Size(55, 42);
             this.FMODstopButton.TabIndex = 2;
@@ -785,7 +812,7 @@
             // 
             // FMODpauseButton
             // 
-            this.FMODpauseButton.Location = new System.Drawing.Point(295, 293);
+            this.FMODpauseButton.Location = new System.Drawing.Point(277, 280);
             this.FMODpauseButton.Name = "FMODpauseButton";
             this.FMODpauseButton.Size = new System.Drawing.Size(55, 42);
             this.FMODpauseButton.TabIndex = 1;
@@ -795,7 +822,7 @@
             // 
             // FMODplayButton
             // 
-            this.FMODplayButton.Location = new System.Drawing.Point(234, 293);
+            this.FMODplayButton.Location = new System.Drawing.Point(216, 280);
             this.FMODplayButton.Name = "FMODplayButton";
             this.FMODplayButton.Size = new System.Drawing.Size(55, 42);
             this.FMODplayButton.TabIndex = 0;
@@ -810,25 +837,11 @@
             this.fontPreviewBox.Location = new System.Drawing.Point(0, 0);
             this.fontPreviewBox.Name = "fontPreviewBox";
             this.fontPreviewBox.ReadOnly = true;
-            this.fontPreviewBox.Size = new System.Drawing.Size(776, 632);
+            this.fontPreviewBox.Size = new System.Drawing.Size(768, 606);
             this.fontPreviewBox.TabIndex = 0;
             this.fontPreviewBox.Text = resources.GetString("fontPreviewBox.Text");
             this.fontPreviewBox.Visible = false;
             this.fontPreviewBox.WordWrap = false;
-            // 
-            // textPreviewBox
-            // 
-            this.textPreviewBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textPreviewBox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textPreviewBox.Location = new System.Drawing.Point(0, 0);
-            this.textPreviewBox.Multiline = true;
-            this.textPreviewBox.Name = "textPreviewBox";
-            this.textPreviewBox.ReadOnly = true;
-            this.textPreviewBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textPreviewBox.Size = new System.Drawing.Size(776, 632);
-            this.textPreviewBox.TabIndex = 2;
-            this.textPreviewBox.Visible = false;
-            this.textPreviewBox.WordWrap = false;
             // 
             // glControl1
             // 
@@ -836,7 +849,7 @@
             this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.glControl1.Location = new System.Drawing.Point(0, 0);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(776, 632);
+            this.glControl1.Size = new System.Drawing.Size(768, 606);
             this.glControl1.TabIndex = 4;
             this.glControl1.Visible = false;
             this.glControl1.VSync = false;
@@ -847,15 +860,19 @@
             this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseUp);
             this.glControl1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseWheel);
             // 
-            // classPreviewPanel
+            // textPreviewBox
             // 
-            this.classPreviewPanel.Controls.Add(this.classTextBox);
-            this.classPreviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.classPreviewPanel.Location = new System.Drawing.Point(0, 0);
-            this.classPreviewPanel.Name = "classPreviewPanel";
-            this.classPreviewPanel.Size = new System.Drawing.Size(776, 632);
-            this.classPreviewPanel.TabIndex = 3;
-            this.classPreviewPanel.Visible = false;
+            this.textPreviewBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textPreviewBox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textPreviewBox.Location = new System.Drawing.Point(0, 0);
+            this.textPreviewBox.Multiline = true;
+            this.textPreviewBox.Name = "textPreviewBox";
+            this.textPreviewBox.ReadOnly = true;
+            this.textPreviewBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textPreviewBox.Size = new System.Drawing.Size(768, 606);
+            this.textPreviewBox.TabIndex = 2;
+            this.textPreviewBox.Visible = false;
+            this.textPreviewBox.WordWrap = false;
             // 
             // classTextBox
             // 
@@ -865,9 +882,32 @@
             this.classTextBox.Name = "classTextBox";
             this.classTextBox.ReadOnly = true;
             this.classTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.classTextBox.Size = new System.Drawing.Size(776, 632);
+            this.classTextBox.Size = new System.Drawing.Size(768, 606);
             this.classTextBox.TabIndex = 3;
+            this.classTextBox.Visible = false;
             this.classTextBox.WordWrap = false;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.dumpTextBox);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Size = new System.Drawing.Size(768, 606);
+            this.tabPage5.TabIndex = 1;
+            this.tabPage5.Text = "Dump";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // dumpTextBox
+            // 
+            this.dumpTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dumpTextBox.Location = new System.Drawing.Point(0, 0);
+            this.dumpTextBox.Multiline = true;
+            this.dumpTextBox.Name = "dumpTextBox";
+            this.dumpTextBox.ReadOnly = true;
+            this.dumpTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.dumpTextBox.Size = new System.Drawing.Size(768, 606);
+            this.dumpTextBox.TabIndex = 0;
+            this.dumpTextBox.WordWrap = false;
             // 
             // statusStrip1
             // 
@@ -982,14 +1022,16 @@
             this.tabPage2.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.progressbarPanel.ResumeLayout(false);
+            this.tabControl2.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
             this.previewPanel.ResumeLayout(false);
             this.previewPanel.PerformLayout();
             this.FMODpanel.ResumeLayout(false);
             this.FMODpanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FMODprogressBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.FMODvolumeBar)).EndInit();
-            this.classPreviewPanel.ResumeLayout(false);
-            this.classPreviewPanel.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
@@ -1053,7 +1095,6 @@
         private System.Windows.Forms.ListView classesListView;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.Panel classPreviewPanel;
         private System.Windows.Forms.TextBox classTextBox;
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
         private System.Windows.Forms.Label FMODcopyright;
@@ -1085,6 +1126,10 @@
         private System.Windows.Forms.ColumnHeader columnHeaderContainer;
         private System.Windows.Forms.ColumnHeader columnHeaderPathID;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.TextBox dumpTextBox;
     }
 }
 
