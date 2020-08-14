@@ -7,7 +7,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 ## Features
 * Support version:
-  * 2.5 - 2019.4
+  * 2.5 - 2020.1
 * Support asset types:
   * **Texture2D** : convert to png, tga, jpeg, bmp
   * **Sprite** : crop Texture2D to png, tga, jpeg, bmp
@@ -18,7 +18,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
   * **Shader**
   * **MovieTexture**
   * **VideoClip**
-  * **MonoBehaviour**
+  * **MonoBehaviour** : json
   * **Animator** : export to FBX file with bound AnimationClip
 
 ## Usage
