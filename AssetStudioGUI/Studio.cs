@@ -615,7 +615,7 @@ namespace AssetStudioGUI
             }
         }
 
-        public static string DeserializeMonoBehaviour(MonoBehaviour m_MonoBehaviour)
+        public static List<TypeTreeNode> MonoBehaviourToTypeTreeNodes(MonoBehaviour m_MonoBehaviour)
         {
             if (!assemblyLoader.Loaded)
             {
@@ -630,14 +630,7 @@ namespace AssetStudioGUI
                     assemblyLoader.Loaded = true;
                 }
             }
-            var nodes = m_MonoBehaviour.ConvertToTypeTreeNode(assemblyLoader);
-            if (nodes != null)
-            {
-                var sb = new StringBuilder();
-                TypeTreeHelper.ReadTypeString(sb, nodes, m_MonoBehaviour.reader);
-                return sb.ToString();
-            }
-            return null;
+            return m_MonoBehaviour.ConvertToTypeTreeNodes(assemblyLoader);
         }
     }
 }

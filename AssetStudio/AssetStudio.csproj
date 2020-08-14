@@ -148,7 +148,6 @@
     <Compile Include="StreamFile.cs" />
     <Compile Include="TypeTreeHelper.cs" />
     <Compile Include="TypeTreeNode.cs" />
-    <Compile Include="UType.cs" />
     <Compile Include="WebFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

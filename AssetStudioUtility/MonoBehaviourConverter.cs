@@ -4,7 +4,7 @@ namespace AssetStudio
 {
     public static class MonoBehaviourConverter
     {
-        public static List<TypeTreeNode> ConvertToTypeTreeNode(this MonoBehaviour m_MonoBehaviour, AssemblyLoader assemblyLoader)
+        public static List<TypeTreeNode> ConvertToTypeTreeNodes(this MonoBehaviour m_MonoBehaviour, AssemblyLoader assemblyLoader)
         {
             var nodes = new List<TypeTreeNode>();
             var helper = new SerializedTypeHelper(m_MonoBehaviour.version);
@@ -15,7 +15,7 @@ namespace AssetStudio
                 if (typeDef != null)
                 {
                     var typeDefinitionConverter = new TypeDefinitionConverter(typeDef, helper, 1);
-                    nodes.AddRange(typeDefinitionConverter.ConvertToTypeTreeNode());
+                    nodes.AddRange(typeDefinitionConverter.ConvertToTypeTreeNodes());
                 }
             }
             return nodes;

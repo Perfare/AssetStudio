@@ -1,4 +1,5 @@
 ﻿using AssetStudio;
+using Newtonsoft.Json;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
@@ -930,7 +931,14 @@ namespace AssetStudioGUI
 
         private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
         {
-            PreviewText(m_MonoBehaviour.Dump() ?? DeserializeMonoBehaviour(m_MonoBehaviour));
+            var obj = m_MonoBehaviour.ToType();
+            if (obj == null)
+            {
+                var nodes = MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
+                obj = m_MonoBehaviour.ToType(nodes);
+            }
+            var str = JsonConvert.SerializeObject(obj, Formatting.Indented);
+            PreviewText(str);
         }
 
         private void PreviewFont(Font m_Font)

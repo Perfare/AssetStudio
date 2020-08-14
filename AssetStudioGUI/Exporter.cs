@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AssetStudio;
+using Newtonsoft.Json;
 using TGASharpLib;
 
 namespace AssetStudioGUI
@@ -113,10 +114,16 @@ namespace AssetStudioGUI
 
         public static bool ExportMonoBehaviour(AssetItem item, string exportPath)
         {
-            if (!TryExportFile(exportPath, item, ".txt", out var exportFullPath))
+            if (!TryExportFile(exportPath, item, ".json", out var exportFullPath))
                 return false;
             var m_MonoBehaviour = (MonoBehaviour)item.Asset;
-            var str = m_MonoBehaviour.Dump() ?? Studio.DeserializeMonoBehaviour(m_MonoBehaviour);
+            var type = m_MonoBehaviour.ToType();
+            if (type == null)
+            {
+                var nodes = Studio.MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
+                type = m_MonoBehaviour.ToType(nodes);
+            }
+            var str = JsonConvert.SerializeObject(type, Formatting.Indented);
             File.WriteAllText(exportFullPath, str);
             return true;
         }
@@ -358,6 +365,11 @@ namespace AssetStudioGUI
             if (!TryExportFile(exportPath, item, ".txt", out var exportFullPath))
                 return false;
             var str = item.Asset.Dump();
+            if (str == null && item.Asset is MonoBehaviour m_MonoBehaviour)
+            {
+                var nodes = Studio.MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
+                str = m_MonoBehaviour.Dump(nodes);
+            }
             if (str != null)
             {
                 File.WriteAllText(exportFullPath, str);

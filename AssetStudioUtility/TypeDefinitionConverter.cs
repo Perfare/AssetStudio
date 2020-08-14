@@ -22,7 +22,7 @@ namespace AssetStudio
             Indent = indent;
         }
 
-        public List<TypeTreeNode> ConvertToTypeTreeNode()
+        public List<TypeTreeNode> ConvertToTypeTreeNodes()
         {
             var nodes = new List<TypeTreeNode>();
 
@@ -302,7 +302,7 @@ namespace AssetStudio
                 nodes.Add(new TypeTreeNode(typeRef.Name, name, indent, align));
                 var typeDef = typeRef.Resolve();
                 var typeDefinitionConverter = new TypeDefinitionConverter(typeDef, Helper, indent + 1);
-                nodes.AddRange(typeDefinitionConverter.ConvertToTypeTreeNode());
+                nodes.AddRange(typeDefinitionConverter.ConvertToTypeTreeNodes());
             }
 
             return nodes;
