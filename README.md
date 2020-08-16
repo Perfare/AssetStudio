@@ -21,27 +21,50 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
   * **MonoBehaviour** : json
   * **Animator** : export to FBX file with bound AnimationClip
 
-## Usage
-### Requirements
+## Requirements
 
 - [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework/net472)
 
-### How to use
+## Usage
 
-* Use **File-Load file**, **File-Load folder** to load assets or assetbundles from multiple files or folder  
-* Use **File-Extract file**, **File-Extract folder** to export assetbundles to assets from multiple files or folder  
-* Export assets: use **Export** menu  
-* Export model:  
-  * Export model from "Scene Hierarchy" using the **Model** menu  
-  * Export Animator from "Asset List" using the **Export** menu  
-  * With AnimationClip:
-    * Select model from "Scene Hierarchy" then select the AnimationClip from "Asset List", using **Model-Export selected objects with AnimationClip** to export
-    * Export Animator will export bound AnimationClip or use **Ctrl** to select Animator and AnimationClip from "Asset List", using **Export-Export Animator with selected AnimationClip** to export
-  
+### Load Assets/AssetBundles
+
+Use **File-Load file** or **File-Load folder**.
+
+When AssetStudio loads AssetBundles, it decompresses and reads it directly in memory, which may cause a large amount of memory to be used. You can use **File-Extract file** or **File-Extract folder** to extract AssetBundles to another folder, and then read.
+
+### Extract/Decompress AssetBundles
+
+Use **File-Extract file** or **File-Extract folder**.
+
+### Export Assets
+
+use **Export** menu.
+
+### Export Model
+
+Export model from "Scene Hierarchy" using the **Model** menu.
+
+Export Animator from "Asset List" using the **Export** menu.
+
+#### With AnimationClip
+
+Select model from "Scene Hierarchy" then select the AnimationClip from "Asset List", using **Model-Export selected objects with AnimationClip** to export.
+
+Export Animator will export bound AnimationClip or use **Ctrl** to select Animator and AnimationClip from "Asset List", using **Export-Export Animator with selected AnimationClip** to export.
+
+### Export MonoBehaviour
+
+When you select an asset of the MonoBehaviour type for the first time, AssetStudio will ask you the directory where the assembly is located, please select the directory where the assembly is located, such as the `Managed` folder.
+
+#### For Il2Cpp
+
+First, use my other program [Il2CppDumper](https://github.com/Perfare/Il2CppDumper) to generate dummy dll, then when using AssetStudio to select the assembly directory, select the dummy dll folder.
+
 ## Build
 
 * Visual Studio 2019 or newer
-* **AssetStudioFBX** uses FBX SDK 2020.0.1 VS2017, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
+* **AssetStudioFBXNative** uses FBX SDK 2020.0.1 VS2017, before building, you need to install the FBX SDK and modify the project file, change include directory and library directory to point to the FBX SDK directory
 
 ## Open source libraries used
 
