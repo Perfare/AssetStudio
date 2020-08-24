@@ -941,22 +941,22 @@ AS_API(int32_t) AsFbxAnimGetCurrentBlendShapeChannelCount(AsFbxAnimContext* pAni
 		return 0;
 	}
 
-	auto lGeometry = dynamic_cast<FbxGeometry*>(pNode->GetNodeAttribute());
-	pAnimContext->lGeometry = lGeometry;
+	auto pMesh = pNode->GetMesh();
+	pAnimContext->pMesh = pMesh;
 
-	if (lGeometry == nullptr)
+	if (pMesh == nullptr)
 	{
 		return 0;
 	}
 
-	auto blendShapeDeformerCount = lGeometry->GetDeformerCount(FbxDeformer::eBlendShape);
+	auto blendShapeDeformerCount = pMesh->GetDeformerCount(FbxDeformer::eBlendShape);
 
 	if (blendShapeDeformerCount <= 0)
 	{
 		return 0;
 	}
 
-	auto lBlendShape = dynamic_cast<FbxBlendShape*>(lGeometry->GetDeformer(0, FbxDeformer::eBlendShape));
+	auto lBlendShape = (FbxBlendShape*)pMesh->GetDeformer(0, FbxDeformer::eBlendShape);
 	pAnimContext->lBlendShape = lBlendShape;
 
 	if (lBlendShape == nullptr)
@@ -991,12 +991,12 @@ AS_API(bool32_t) AsFbxAnimIsBlendShapeChannelMatch(AsFbxAnimContext* pAnimContex
 
 AS_API(void) AsFbxAnimBeginBlendShapeAnimCurve(AsFbxAnimContext* pAnimContext, int32_t channelIndex)
 {
-	if (pAnimContext == nullptr || pAnimContext->lGeometry == nullptr || pAnimContext->lAnimLayer == nullptr)
+	if (pAnimContext == nullptr || pAnimContext->pMesh == nullptr || pAnimContext->lAnimLayer == nullptr)
 	{
 		return;
 	}
 
-	pAnimContext->lAnimCurve = pAnimContext->lGeometry->GetShapeChannel(0, channelIndex, pAnimContext->lAnimLayer, true);
+	pAnimContext->lAnimCurve = pAnimContext->pMesh->GetShapeChannel(0, channelIndex, pAnimContext->lAnimLayer, true);
 	pAnimContext->lAnimCurve->KeyModifyBegin();
 }
 

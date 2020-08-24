@@ -22,7 +22,7 @@ struct AsFbxAnimContext
 	FbxAnimCurve* lCurveTY;
 	FbxAnimCurve* lCurveTZ;
 
-	FbxGeometry* lGeometry;
+	FbxMesh* pMesh;
 	FbxBlendShape* lBlendShape;
 	FbxAnimCurve* lAnimCurve;
 

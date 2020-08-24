@@ -21,7 +21,7 @@ AsFbxAnimContext::AsFbxAnimContext(bool32_t eulerFilter)
 	lCurveTY = nullptr;
 	lCurveTZ = nullptr;
 
-	lGeometry = nullptr;
+	pMesh = nullptr;
 	lBlendShape = nullptr;
 	lAnimCurve = nullptr;
 }
