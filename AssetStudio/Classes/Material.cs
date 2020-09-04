@@ -56,16 +56,18 @@ namespace AssetStudio
         {
             m_Shader = new PPtr<Shader>(reader);
 
-            if (version[0] == 4 && version[1] >= 1) //4.x
-            {
-                var m_ShaderKeywords = reader.ReadStringArray();
-            }
-
             if (version[0] >= 5) //5.0 and up
             {
                 var m_ShaderKeywords = reader.ReadAlignedString();
                 var m_LightmapFlags = reader.ReadUInt32();
             }
+
+            else if (version[0] == 4 && version[1] >= 1) //4.x
+            {
+                var m_ShaderKeywords = reader.ReadStringArray();
+            }
+
+
 
             if (version[0] > 5 || (version[0] == 5 && version[1] >= 6)) //5.6 and up
             {

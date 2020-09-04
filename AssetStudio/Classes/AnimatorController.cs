@@ -279,7 +279,7 @@ namespace AssetStudio
             }
 
             m_ClipID = reader.ReadUInt32();
-            if (version[0] == 4 && version[1] >= 5) //4.5 - 5.0
+            if ((version[0] == 4 && version[1] >= 5) || (version[0] == 5 && version[1] == 0))//4.5 - 5.0
             {
                 m_ClipIndex = reader.ReadUInt32();
             }
