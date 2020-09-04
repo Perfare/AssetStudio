@@ -437,7 +437,7 @@ namespace AssetStudio
                     }
                     else
                     {
-                        //Logger.Error("");
+                        boneType = 2;
                     }
                 }
                 else
