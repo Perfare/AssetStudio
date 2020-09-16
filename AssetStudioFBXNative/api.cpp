@@ -1093,7 +1093,7 @@ AS_API(void) AsFbxMorphAddBlendShapeChannel(AsFbxContext* pContext, AsFbxMorphCo
 	}
 }
 
-AS_API(void) AsFbxMorphAddBlendShapeChannelShape(AsFbxContext* pContext, AsFbxMorphContext* pMorphContext, float weight)
+AS_API(void) AsFbxMorphAddBlendShapeChannelShape(AsFbxContext* pContext, AsFbxMorphContext* pMorphContext, float weight, const char* shapeName)
 {
 	if (pContext == nullptr || pContext->pScene == nullptr)
 	{
@@ -1105,7 +1105,7 @@ AS_API(void) AsFbxMorphAddBlendShapeChannelShape(AsFbxContext* pContext, AsFbxMo
 		return;
 	}
 
-	auto lShape = FbxShape::Create(pContext->pScene, FbxString(weight));
+	auto lShape = FbxShape::Create(pContext->pScene, shapeName);
 	pMorphContext->lShape = lShape;
 
 	if (pMorphContext->lBlendShapeChannel != nullptr) {
@@ -1126,12 +1126,9 @@ AS_API(void) AsFbxMorphCopyBlendShapeControlPoints(AsFbxMorphContext* pMorphCont
 
 	pMorphContext->lShape->InitControlPoints(vectorCount);
 
-	auto dstControlPoints = pMorphContext->lShape->GetControlPoints();
-
 	for (int j = 0; j < vectorCount; j++)
 	{
-		auto vertex = srcControlPoints[j];
-		dstControlPoints[j] = FbxVector4(vertex);
+		pMorphContext->lShape->SetControlPointAt(FbxVector4(srcControlPoints[j]), j);;
 	}
 }
 
@@ -1142,7 +1139,25 @@ AS_API(void) AsFbxMorphSetBlendShapeVertex(AsFbxMorphContext* pMorphContext, uin
 		return;
 	}
 
-	auto pControlPoints = pMorphContext->lShape->GetControlPoints();
+	pMorphContext->lShape->SetControlPointAt(FbxVector4(x, y, z, 0), index);
+}
 
-	pControlPoints[index] = FbxVector4(x, y, z, 0);
+AS_API(void) AsFbxMorphCopyBlendShapeControlPointsNormal(AsFbxMorphContext* pMorphContext)
+{
+	if (pMorphContext == nullptr || pMorphContext->pMesh == nullptr || pMorphContext->lShape == nullptr)
+	{
+		return;
+	}
+
+	pMorphContext->lShape->InitNormals(pMorphContext->pMesh);
+}
+
+AS_API(void) AsFbxMorphSetBlendShapeVertexNormal(AsFbxMorphContext* pMorphContext, uint32_t index, float x, float y, float z)
+{
+	if (pMorphContext == nullptr || pMorphContext->lShape == nullptr)
+	{
+		return;
+	}
+
+	pMorphContext->lShape->SetControlPointNormalAt(FbxVector4(x, y, z, 0), index);
 }
