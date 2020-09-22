@@ -378,7 +378,7 @@ namespace AssetStudioGUI
                         case 1: //container path
                             if (!string.IsNullOrEmpty(asset.Container))
                             {
-                                exportPath = Path.Combine(savePath, Path.GetDirectoryName(asset.Container));
+                                exportPath = Path.Combine(savePath, Path.GetDirectoryName(asset.Container), Path.GetFileNameWithoutExtension(asset.Container));
                             }
                             else
                             {
