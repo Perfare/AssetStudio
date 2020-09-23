@@ -378,7 +378,11 @@ namespace AssetStudioGUI
                         case 1: //container path
                             if (!string.IsNullOrEmpty(asset.Container))
                             {
-                                exportPath = Path.Combine(savePath, Path.GetDirectoryName(asset.Container), Path.GetFileNameWithoutExtension(asset.Container));
+                                string containerPath = Path.GetDirectoryName(asset.Container);
+                                if (Path.GetExtension(asset.Container) == ".prefab") {
+                                    containerPath = Path.Combine(containerPath, Path.GetFileNameWithoutExtension(asset.Container));
+                                }
+                                exportPath = Path.Combine(savePath, containerPath);
                             }
                             else
                             {
