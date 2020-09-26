@@ -500,7 +500,7 @@ namespace AssetStudio
                         crc.Update(bytes, 0, (uint)bytes.Length);
                         morphChannelNames[crc.GetDigest()] = blendShapeName;
 
-                        channel.Name = shapeChannel.name;
+                        channel.Name = shapeChannel.name.Split('.').Last();
                         channel.KeyframeList = new List<ImportedMorphKeyframe>(shapeChannel.frameCount);
                         var frameEnd = shapeChannel.frameIndex + shapeChannel.frameCount;
                         for (int frameIdx = shapeChannel.frameIndex; frameIdx < frameEnd; frameIdx++)

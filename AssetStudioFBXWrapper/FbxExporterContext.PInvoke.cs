@@ -298,14 +298,28 @@ namespace AssetStudio.FbxInterop
         [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
         private static extern void AsFbxMorphAddBlendShapeChannel(IntPtr pContext, IntPtr pMorphContext, IntPtr strChannelName);
 
+        private static void AsFbxMorphAddBlendShapeChannelShape(IntPtr pContext, IntPtr pMorphContext, float weight, string shapeName)
+        {
+            using (var shapeNameUtf8 = new Utf8StringHandle(shapeName))
+            {
+                AsFbxMorphAddBlendShapeChannelShape(pContext, pMorphContext, weight, shapeNameUtf8.DangerousGetHandle());
+            }
+        }
+
         [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
-        private static extern void AsFbxMorphAddBlendShapeChannelShape(IntPtr pContext, IntPtr pMorphContext, float weight);
+        private static extern void AsFbxMorphAddBlendShapeChannelShape(IntPtr pContext, IntPtr pMorphContext, float weight, IntPtr strShapeName);
 
         [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
         private static extern void AsFbxMorphCopyBlendShapeControlPoints(IntPtr pMorphContext);
 
         [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
         private static extern void AsFbxMorphSetBlendShapeVertex(IntPtr pMorphContext, uint index, float x, float y, float z);
+
+        [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
+        private static extern void AsFbxMorphCopyBlendShapeControlPointsNormal(IntPtr pMorphContext);
+
+        [DllImport(FbxDll.DllName, CallingConvention = CallingConvention.Winapi)]
+        private static extern void AsFbxMorphSetBlendShapeVertexNormal(IntPtr pMorphContext, uint index, float x, float y, float z);
 
     }
 }

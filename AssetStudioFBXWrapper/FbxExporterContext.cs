@@ -611,9 +611,11 @@ namespace AssetStudio.FbxInterop
                     {
                         AsFbxMorphAddBlendShapeChannel(_pContext, pMorphContext, channel.Name);
 
-                        foreach (var keyframe in channel.KeyframeList)
+                        for (var i = 0; i < channel.KeyframeList.Count; i++)
                         {
-                            AsFbxMorphAddBlendShapeChannelShape(_pContext, pMorphContext, keyframe.Weight);
+                            var keyframe = channel.KeyframeList[i];
+
+                            AsFbxMorphAddBlendShapeChannelShape(_pContext, pMorphContext, keyframe.Weight, i == 0 ? channel.Name : $"{channel.Name}_{i + 1}");
 
                             AsFbxMorphCopyBlendShapeControlPoints(pMorphContext);
 
@@ -621,6 +623,17 @@ namespace AssetStudio.FbxInterop
                             {
                                 var v = vertex.Vertex.Vertex;
                                 AsFbxMorphSetBlendShapeVertex(pMorphContext, vertex.Index, v.X, v.Y, v.Z);
+                            }
+
+                            if (keyframe.hasNormals)
+                            {
+                                AsFbxMorphCopyBlendShapeControlPointsNormal(pMorphContext);
+
+                                foreach (var vertex in keyframe.VertexList)
+                                {
+                                    var v = vertex.Vertex.Normal;
+                                    AsFbxMorphSetBlendShapeVertexNormal(pMorphContext, vertex.Index, v.X, v.Y, v.Z);
+                                }
                             }
                         }
                     }
