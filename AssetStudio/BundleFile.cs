@@ -174,7 +174,7 @@ namespace AssetStudio
                     file.stream = memoryMappedFile.CreateViewStream();*/
                     var extractPath = path + "_unpacked" + Path.DirectorySeparatorChar;
                     Directory.CreateDirectory(extractPath);
-                    file.stream = File.Create(extractPath + file.fileName);
+                    file.stream = new FileStream(extractPath + file.fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
                 }
                 else
                 {

@@ -65,7 +65,7 @@ namespace AssetStudio
 
         public static FileType CheckFileType(string fileName, out EndianBinaryReader reader)
         {
-            reader = new EndianBinaryReader(File.OpenRead(fileName));
+            reader = new EndianBinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
             return CheckFileType(reader);
         }
 
