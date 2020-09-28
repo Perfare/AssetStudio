@@ -200,6 +200,10 @@ namespace AssetStudio
         private void ReadBlocksInfoAndDirectory(EndianBinaryReader reader)
         {
             byte[] blocksInfoBytes;
+            if (m_Header.version >= 7)
+            {
+                reader.AlignStream(16);
+            }
             if ((m_Header.flags & 0x80) != 0) //kArchiveBlocksInfoAtTheEnd
             {
                 var position = reader.Position;
@@ -209,10 +213,6 @@ namespace AssetStudio
             }
             else //0x40 kArchiveBlocksAndDirectoryInfoCombined
             {
-                if (m_Header.version >= 7)
-                {
-                    reader.AlignStream(16);
-                }
                 blocksInfoBytes = reader.ReadBytes((int)m_Header.compressedBlocksInfoSize);
             }
             var blocksInfoCompressedStream = new MemoryStream(blocksInfoBytes);
