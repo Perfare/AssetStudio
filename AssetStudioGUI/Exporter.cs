@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -16,40 +17,7 @@ namespace AssetStudioGUI
             var m_Texture2D = (Texture2D)item.Asset;
             if (Properties.Settings.Default.convertTexture)
             {
-                var bitmap = m_Texture2D.ConvertToBitmap(true);
-                if (bitmap == null)
-                    return false;
-                ImageFormat format = null;
-                var ext = Properties.Settings.Default.convertType;
-                bool tga = false;
-                switch (ext)
-                {
-                    case "BMP":
-                        format = ImageFormat.Bmp;
-                        break;
-                    case "PNG":
-                        format = ImageFormat.Png;
-                        break;
-                    case "JPEG":
-                        format = ImageFormat.Jpeg;
-                        break;
-                    case "TGA":
-                        tga = true;
-                        break;
-                }
-                if (!TryExportFile(exportPath, item, "." + ext.ToLower(), out var exportFullPath))
-                    return false;
-                if (tga)
-                {
-                    var file = new TGA(bitmap);
-                    file.Save(exportFullPath);
-                }
-                else
-                {
-                    bitmap.Save(exportFullPath, format);
-                }
-                bitmap.Dispose();
-                return true;
+                return ExportBitmap(item, exportPath, m_Texture2D.ConvertToBitmap(true));
             }
             else
             {
@@ -58,6 +26,74 @@ namespace AssetStudioGUI
                 File.WriteAllBytes(exportFullPath, m_Texture2D.image_data.GetData());
                 return true;
             }
+        }
+
+        public static bool ExportTexture2DArray(AssetItem item, string exportPath)
+        {
+            var m_Texture2DArray = (Texture2DArray)item.Asset;
+
+            if (Properties.Settings.Default.convertTexture)
+            {
+                for (var i = 0; i < m_Texture2DArray.m_Depth; i++)
+                {
+                    if (!ExportBitmap(item, exportPath + "_" + i, m_Texture2DArray.ConvertToBitmap(true, i)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                // TODO: Should this export everything as a single file? If so, which file extension?
+                var data = m_Texture2DArray.image_data.GetData();
+                var singleLength = m_Texture2DArray.m_Width * m_Texture2DArray.m_Height;
+                var single = new byte[singleLength];
+                for (var i = 0; i < m_Texture2DArray.m_Depth; i++)
+                {
+                    if (!TryExportFile(exportPath + "_" + i, item, ".tex", out var exportFullPath))
+                        return false;
+                    Array.Copy(data, i * singleLength, single, 0, singleLength);
+                    File.WriteAllBytes(exportFullPath, single);
+                }
+            }
+            return true;
+        }
+
+        private static bool ExportBitmap(AssetItem item, string exportPath, System.Drawing.Bitmap bitmap)
+        {
+            if (bitmap == null)
+                return false;
+            ImageFormat format = null;
+            var ext = Properties.Settings.Default.convertType;
+            bool tga = false;
+            switch (ext)
+            {
+                case "BMP":
+                    format = ImageFormat.Bmp;
+                    break;
+                case "PNG":
+                    format = ImageFormat.Png;
+                    break;
+                case "JPEG":
+                    format = ImageFormat.Jpeg;
+                    break;
+                case "TGA":
+                    tga = true;
+                    break;
+            }
+            if (!TryExportFile(exportPath, item, "." + ext.ToLower(), out var exportFullPath))
+                return false;
+            if (tga)
+            {
+                var file = new TGA(bitmap);
+                file.Save(exportFullPath);
+            }
+            else
+            {
+                bitmap.Save(exportFullPath, format);
+            }
+            bitmap.Dispose();
+            return true;
         }
 
         public static bool ExportAudioClip(AssetItem item, string exportPath)
@@ -384,6 +420,8 @@ namespace AssetStudioGUI
             {
                 case ClassIDType.Texture2D:
                     return ExportTexture2D(item, exportPath);
+                case ClassIDType.Texture2DArray:
+                    return ExportTexture2DArray(item, exportPath);
                 case ClassIDType.AudioClip:
                     return ExportAudioClip(item, exportPath);
                 case ClassIDType.Shader:

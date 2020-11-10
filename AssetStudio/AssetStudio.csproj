@@ -90,6 +90,7 @@
     <Compile Include="Classes\EditorExtension.cs" />
     <Compile Include="Classes\Font.cs" />
     <Compile Include="Classes\GameObject.cs" />
+    <Compile Include="Classes\GLTextureSettings.cs" />
     <Compile Include="Classes\Material.cs" />
     <Compile Include="Classes\Mesh.cs" />
     <Compile Include="Classes\MeshFilter.cs" />
@@ -109,9 +110,11 @@
     <Compile Include="Classes\SkinnedMeshRenderer.cs" />
     <Compile Include="Classes\Sprite.cs" />
     <Compile Include="Classes\SpriteAtlas.cs" />
+    <Compile Include="Classes\StreamingInfo.cs" />
     <Compile Include="Classes\TextAsset.cs" />
     <Compile Include="Classes\Texture.cs" />
     <Compile Include="Classes\Texture2D.cs" />
+    <Compile Include="Classes\Texture2DArray.cs" />
     <Compile Include="Classes\Transform.cs" />
     <Compile Include="Classes\VideoClip.cs" />
     <Compile Include="ClassIDType.cs" />
