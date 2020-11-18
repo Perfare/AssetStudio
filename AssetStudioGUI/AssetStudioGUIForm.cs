@@ -1959,6 +1959,20 @@ namespace AssetStudioGUI
             }
         }
 
+        private void exportAssetListToCSV_Click(object sender, EventArgs e)
+        {
+            var saveFolderDialog = new OpenFolderDialog();
+            if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                string fileName = $"ExportAssetList_{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.csv";
+                string savePath = Path.Combine(saveFolderDialog.Folder, fileName);
+                ListViewToCSV.ExportListViewToCSV(this.assetListView, savePath, false);
+
+                var log = $"export asset list to csv successfully, saved path : {savePath}";
+                StatusStripUpdate(log);
+            }
+        }
+
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (glControl1.Visible)
