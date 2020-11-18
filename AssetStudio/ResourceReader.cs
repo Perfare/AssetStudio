@@ -12,12 +12,12 @@ namespace AssetStudio
         private BinaryReader reader;
 
 
-        public ResourceReader(string path, SerializedFile assetsFile, long offset, int size)
+        public ResourceReader(string path, SerializedFile assetsFile, ulong offset, int size)
         {
             needSearch = true;
             this.path = path;
             this.assetsFile = assetsFile;
-            this.offset = offset;
+            this.offset = (long)offset;
             this.size = size;
         }
 

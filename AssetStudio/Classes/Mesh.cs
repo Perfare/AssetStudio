@@ -446,7 +446,7 @@ namespace AssetStudio
 
     public sealed class Mesh : NamedObject
     {
-        private bool m_Use16BitIndices = true; //3.5.0 and newer always uses 16bit indices;
+        private bool m_Use16BitIndices = true;
         public SubMesh[] m_SubMeshes;
         private uint[] m_IndexBuffer;
         public BlendShapeData m_Shapes;
@@ -550,6 +550,7 @@ namespace AssetStudio
                     ((version[0] == 2017 && version[1] == 3) && m_MeshCompression == 0))//2017.3.xfx with no compression
                 {
                     var m_IndexFormat = reader.ReadInt32();
+                    m_Use16BitIndices = m_IndexFormat == 0;
                 }
 
                 int m_IndexBuffer_size = reader.ReadInt32();

@@ -37,10 +37,10 @@ namespace AssetStudio
             {
                 return null;
             }
-            var handle = GCHandle.Alloc(buff, GCHandleType.Pinned);
-            var scan0 = handle.AddrOfPinnedObject();
-            var bitmap = new Bitmap(m_Width, m_Height, m_Width * 4, PixelFormat.Format32bppArgb, scan0);
-            handle.Free();
+            var bitmap = new Bitmap(m_Width, m_Height, PixelFormat.Format32bppArgb);
+            var bmpData = bitmap.LockBits(new Rectangle(0, 0, m_Width, m_Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            Marshal.Copy(buff, 0, bmpData.Scan0, buff.Length);
+            bitmap.UnlockBits(bmpData);
             if (flip)
             {
                 bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);

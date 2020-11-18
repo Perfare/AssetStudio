@@ -7,6 +7,7 @@
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
+using AssetStudio.PInvoke;
 
 namespace FMOD
 {
@@ -1587,6 +1588,12 @@ namespace FMOD
     */
     public class Factory
     {
+
+        static Factory()
+        {
+            DllLoader.PreloadDll(VERSION.dll);
+        }
+
         public static RESULT System_Create(out System system)
         {
             system = null;

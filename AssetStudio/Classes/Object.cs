@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 
@@ -43,12 +43,40 @@ namespace AssetStudio
 
         public string Dump()
         {
-            reader.Reset();
             if (serializedType?.m_Nodes != null)
             {
                 var sb = new StringBuilder();
                 TypeTreeHelper.ReadTypeString(sb, serializedType.m_Nodes, reader);
                 return sb.ToString();
+            }
+            return null;
+        }
+
+        public string Dump(List<TypeTreeNode> m_Nodes)
+        {
+            if (m_Nodes != null)
+            {
+                var sb = new StringBuilder();
+                TypeTreeHelper.ReadTypeString(sb, m_Nodes, reader);
+                return sb.ToString();
+            }
+            return null;
+        }
+
+        public OrderedDictionary ToType()
+        {
+            if (serializedType?.m_Nodes != null)
+            {
+                return TypeTreeHelper.ReadType(serializedType.m_Nodes, reader);
+            }
+            return null;
+        }
+
+        public OrderedDictionary ToType(List<TypeTreeNode> m_Nodes)
+        {
+            if (m_Nodes != null)
+            {
+                return TypeTreeHelper.ReadType(m_Nodes, reader);
             }
             return null;
         }

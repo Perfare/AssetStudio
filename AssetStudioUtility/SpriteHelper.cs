@@ -37,6 +37,14 @@ namespace AssetStudio
                 {
                     //var spriteImage = originalImage.Clone(textureRect, PixelFormat.Format32bppArgb);
                     var textureRectI = Rectangle.Round(textureRect);
+                    if (textureRectI.Width == 0)
+                    {
+                        textureRectI.Width = 1;
+                    }
+                    if (textureRectI.Height == 0)
+                    {
+                        textureRectI.Height = 1;
+                    }
                     var spriteImage = new Bitmap(textureRectI.Width, textureRectI.Height, PixelFormat.Format32bppArgb);
                     var destRect = new Rectangle(0, 0, textureRectI.Width, textureRectI.Height);
                     using (var graphic = Graphics.FromImage(spriteImage))

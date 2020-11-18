@@ -50,6 +50,10 @@ namespace AssetStudio
                     {
                         var m_RayTracingMode = reader.ReadByte();
                     }
+                    if (version[0] >= 2020) //2020.1 and up
+                    {
+                        var m_RayTraceProcedural = reader.ReadByte();
+                    }
                     reader.AlignStream();
                 }
                 else

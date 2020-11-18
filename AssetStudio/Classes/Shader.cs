@@ -201,6 +201,7 @@ namespace AssetStudio
         public SerializedShaderFloatValue zTest;
         public SerializedShaderFloatValue zWrite;
         public SerializedShaderFloatValue culling;
+        public SerializedShaderFloatValue conservative;
         public SerializedShaderFloatValue offsetFactor;
         public SerializedShaderFloatValue offsetUnits;
         public SerializedShaderFloatValue alphaToMask;
@@ -239,6 +240,10 @@ namespace AssetStudio
             zTest = new SerializedShaderFloatValue(reader);
             zWrite = new SerializedShaderFloatValue(reader);
             culling = new SerializedShaderFloatValue(reader);
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                conservative = new SerializedShaderFloatValue(reader);
+            }
             offsetFactor = new SerializedShaderFloatValue(reader);
             offsetUnits = new SerializedShaderFloatValue(reader);
             alphaToMask = new SerializedShaderFloatValue(reader);
@@ -357,11 +362,18 @@ namespace AssetStudio
     {
         public int m_NameIndex;
         public int m_Index;
+        public int m_ArraySize;
 
-        public BufferBinding(BinaryReader reader)
+        public BufferBinding(ObjectReader reader)
         {
+            var version = reader.version;
+
             m_NameIndex = reader.ReadInt32();
             m_Index = reader.ReadInt32();
+            if (version[0] >= 2020) //2020.1 and up
+            {
+                m_ArraySize = reader.ReadInt32();
+            }
         }
     }
 
@@ -426,28 +438,33 @@ namespace AssetStudio
         kShaderGpuProgramGLES31AEP = 2,
         kShaderGpuProgramGLES31 = 3,
         kShaderGpuProgramGLES3 = 4,
-        kShaderGpuProgramGLES = 5,
-        kShaderGpuProgramGLCore32 = 6,
-        kShaderGpuProgramGLCore41 = 7,
-        kShaderGpuProgramGLCore43 = 8,
-        kShaderGpuProgramDX9VertexSM20 = 9,
-        kShaderGpuProgramDX9VertexSM30 = 10,
-        kShaderGpuProgramDX9PixelSM20 = 11,
-        kShaderGpuProgramDX9PixelSM30 = 12,
-        kShaderGpuProgramDX10Level9Vertex = 13,
+        kShaderGpuProgramGLES = 5, 
+        kShaderGpuProgramGLCore32 = 6, 
+        kShaderGpuProgramGLCore41 = 7, 
+        kShaderGpuProgramGLCore43 = 8, 
+        kShaderGpuProgramDX9VertexSM20 = 9, 
+        kShaderGpuProgramDX9VertexSM30 = 10, 
+        kShaderGpuProgramDX9PixelSM20 = 11, 
+        kShaderGpuProgramDX9PixelSM30 = 12, 
+        kShaderGpuProgramDX10Level9Vertex = 13, 
         kShaderGpuProgramDX10Level9Pixel = 14,
-        kShaderGpuProgramDX11VertexSM40 = 15,
+        kShaderGpuProgramDX11VertexSM40 = 15, 
         kShaderGpuProgramDX11VertexSM50 = 16,
         kShaderGpuProgramDX11PixelSM40 = 17,
-        kShaderGpuProgramDX11PixelSM50 = 18,
+        kShaderGpuProgramDX11PixelSM50 = 18, 
         kShaderGpuProgramDX11GeometrySM40 = 19,
         kShaderGpuProgramDX11GeometrySM50 = 20,
-        kShaderGpuProgramDX11HullSM50 = 21,
-        kShaderGpuProgramDX11DomainSM50 = 22,
-        kShaderGpuProgramMetalVS = 23,
+        kShaderGpuProgramDX11HullSM50 = 21, 
+        kShaderGpuProgramDX11DomainSM50 = 22, 
+        kShaderGpuProgramMetalVS = 23, 
         kShaderGpuProgramMetalFS = 24,
-        kShaderGpuProgramSPIRV = 25,
-        kShaderGpuProgramConsole = 26
+        kShaderGpuProgramSPIRV = 25, 
+        kShaderGpuProgramConsoleVS = 26,
+        kShaderGpuProgramConsoleFS = 27, 
+        kShaderGpuProgramConsoleHS = 28, 
+        kShaderGpuProgramConsoleDS = 29,
+        kShaderGpuProgramConsoleGS = 30, 
+        kShaderGpuProgramRayTracing = 31, 
     };
 
     public class SerializedSubProgram

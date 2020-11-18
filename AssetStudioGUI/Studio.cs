@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using static AssetStudioGUI.Exporter;
@@ -22,73 +23,95 @@ namespace AssetStudioGUI
     internal static class Studio
     {
         public static AssetsManager assetsManager = new AssetsManager();
-        public static ScriptDumper scriptDumper = new ScriptDumper();
+        public static AssemblyLoader assemblyLoader = new AssemblyLoader();
         public static List<AssetItem> exportableAssets = new List<AssetItem>();
         public static List<AssetItem> visibleAssets = new List<AssetItem>();
         internal static Action<string> StatusStripUpdate = x => { };
 
-        public static void ExtractFile(string[] fileNames)
+        public static int ExtractFolder(string path, string savePath)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            int extractedCount = 0;
+            Progress.Reset();
+            var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            for (int i = 0; i < files.Length; i++)
             {
-                int extractedCount = 0;
-                Progress.Reset();
-                for (var i = 0; i < fileNames.Length; i++)
-                {
-                    var fileName = fileNames[i];
-                    var type = ImportHelper.CheckFileType(fileName, out var reader);
-                    if (type == FileType.BundleFile)
-                        extractedCount += ExtractBundleFile(fileName, reader);
-                    else if (type == FileType.WebFile)
-                        extractedCount += ExtractWebDataFile(fileName, reader);
-                    else
-                        reader.Dispose();
-                    Progress.Report(i + 1, fileNames.Length);
-                }
-
-                StatusStripUpdate($"Finished extracting {extractedCount} files.");
-            });
+                var file = files[i];
+                var fileOriPath = Path.GetDirectoryName(file);
+                var fileSavePath = fileOriPath.Replace(path, savePath);
+                extractedCount += ExtractFile(file, fileSavePath);
+                Progress.Report(i + 1, files.Length);
+            }
+            return extractedCount;
         }
 
-        private static int ExtractBundleFile(string bundleFileName, EndianBinaryReader reader)
+        public static int ExtractFile(string[] fileNames, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFileName)} ...");
-            var bundleFile = new BundleFile(reader, bundleFileName);
+            int extractedCount = 0;
+            Progress.Reset();
+            for (var i = 0; i < fileNames.Length; i++)
+            {
+                var fileName = fileNames[i];
+                extractedCount += ExtractFile(fileName, savePath);
+                Progress.Report(i + 1, fileNames.Length);
+            }
+            return extractedCount;
+        }
+
+        public static int ExtractFile(string fileName, string savePath)
+        {
+            int extractedCount = 0;
+            var type = ImportHelper.CheckFileType(fileName, out var reader);
+            if (type == FileType.BundleFile)
+                extractedCount += ExtractBundleFile(fileName, reader, savePath);
+            else if (type == FileType.WebFile)
+                extractedCount += ExtractWebDataFile(fileName, reader, savePath);
+            else
+                reader.Dispose();
+            return extractedCount;
+        }
+
+        private static int ExtractBundleFile(string bundleFilePath, EndianBinaryReader reader, string savePath)
+        {
+            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFilePath)} ...");
+            var bundleFile = new BundleFile(reader, bundleFilePath);
             reader.Dispose();
             if (bundleFile.fileList.Length > 0)
             {
-                var extractPath = bundleFileName + "_unpacked\\";
+                var extractPath = Path.Combine(savePath, Path.GetFileName(bundleFilePath) + "_unpacked");
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractWebDataFile(string webFileName, EndianBinaryReader reader)
+        private static int ExtractWebDataFile(string webFilePath, EndianBinaryReader reader, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(webFileName)} ...");
+            StatusStripUpdate($"Decompressing {Path.GetFileName(webFilePath)} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
             if (webFile.fileList.Length > 0)
             {
-                var extractPath = webFileName + "_unpacked\\";
+                var extractPath = Path.Combine(savePath, Path.GetFileName(webFilePath) + "_unpacked");
                 return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractStreamFile(string extractPath,StreamFile[] fileList)
+        private static int ExtractStreamFile(string extractPath, StreamFile[] fileList)
         {
             int extractedCount = 0;
             foreach (var file in fileList)
             {
-                var filePath = extractPath + file.fileName;
+                var filePath = Path.Combine(extractPath, file.fileName);
                 if (!Directory.Exists(extractPath))
                 {
                     Directory.CreateDirectory(extractPath);
                 }
-                if (!File.Exists(filePath) && file.stream is MemoryStream stream)
+                if (!File.Exists(filePath))
                 {
-                    File.WriteAllBytes(filePath, stream.ToArray());
+                    using (var fileStream = File.Create(filePath))
+                    {
+                        file.stream.CopyTo(fileStream);
+                    }
                     extractedCount += 1;
                 }
                 file.stream.Dispose();
@@ -101,15 +124,13 @@ namespace AssetStudioGUI
             StatusStripUpdate("Building asset list...");
 
             string productName = null;
-            var assetsNameHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var objectCount = assetsManager.assetsFileList.Sum(x => x.Objects.Count);
             var objectAssetItemDic = new Dictionary<Object, AssetItem>(objectCount);
+            var containers = new List<(PPtr<Object>, string)>();
             int i = 0;
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                var tempExportableAssets = new List<AssetItem>();
-                Dictionary<long, string> containers = null;
                 foreach (var asset in assetsFile.Objects)
                 {
                     var assetItem = new AssetItem(asset);
@@ -135,7 +156,7 @@ namespace AssetStudioGUI
                             break;
                         case VideoClip m_VideoClip:
                             if (!string.IsNullOrEmpty(m_VideoClip.m_OriginalPath))
-                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_Size;
+                                assetItem.FullSize = asset.byteSize + (long)m_VideoClip.m_ExternalResources.m_Size;
                             assetItem.Text = m_VideoClip.m_Name;
                             exportable = true;
                             break;
@@ -174,12 +195,23 @@ namespace AssetStudioGUI
                             productName = m_PlayerSettings.productName;
                             break;
                         case AssetBundle m_AssetBundle:
-                            containers = new Dictionary<long, string>();
                             foreach (var m_Container in m_AssetBundle.m_Container)
                             {
-                                containers[m_Container.Value.asset.m_PathID] = m_Container.Key;
+                                var preloadIndex = m_Container.Value.preloadIndex;
+                                var preloadSize = m_Container.Value.preloadSize;
+                                var preloadEnd = preloadIndex + preloadSize;
+                                for (int k = preloadIndex; k < preloadEnd; k++)
+                                {
+                                    containers.Add((m_AssetBundle.m_PreloadTable[k], m_Container.Key));
+                                }
                             }
                             assetItem.Text = m_AssetBundle.m_Name;
+                            break;
+                        case ResourceManager m_ResourceManager:
+                            foreach (var m_Container in m_ResourceManager.m_Container)
+                            {
+                                containers.Add((m_Container.Value, m_Container.Key));
+                            }
                             break;
                         case NamedObject m_NamedObject:
                             assetItem.Text = m_NamedObject.m_Name;
@@ -189,39 +221,27 @@ namespace AssetStudioGUI
                     {
                         assetItem.Text = assetItem.TypeString + assetItem.UniqueID;
                     }
-                    //处理同名文件
-                    if (!assetsNameHash.Add(assetItem.TypeString + assetItem.Text))
-                    {
-                        assetItem.Text += assetItem.UniqueID;
-                    }
-                    //处理非法文件名
-                    assetItem.Text = FixFileName(assetItem.Text);
                     if (Properties.Settings.Default.displayAll || exportable)
                     {
-                        tempExportableAssets.Add(assetItem);
+                        exportableAssets.Add(assetItem);
                     }
                     Progress.Report(++i, objectCount);
                 }
-                foreach (var item in tempExportableAssets)
-                {
-                    if (containers != null)
-                    {
-                        if (containers.TryGetValue(item.Asset.m_PathID, out var container))
-                        {
-                            if (!string.IsNullOrEmpty(container))
-                            {
-                                item.Container = container;
-                            }
-                        }
-                    }
-                    item.SetSubItems();
-                }
-                exportableAssets.AddRange(tempExportableAssets);
-                tempExportableAssets.Clear();
-                containers?.Clear();
             }
+            foreach ((var pptr, var container) in containers)
+            {
+                if (pptr.TryGet(out var obj))
+                {
+                    objectAssetItemDic[obj].Container = container;
+                }
+            }
+            foreach (var tmp in exportableAssets)
+            {
+                tmp.SetSubItems();
+            }
+            containers.Clear();
+
             visibleAssets = exportableAssets;
-            assetsNameHash.Clear();
 
             StatusStripUpdate("Building tree structure...");
 
@@ -328,19 +348,13 @@ namespace AssetStudioGUI
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        items.Add(key, new TypeTreeItem(key, type.m_Nodes));
+                        items[key] = new TypeTreeItem(key, type.m_Nodes);
                     }
                     typeMap.Add(assetsFile.unityVersion, items);
                 }
             }
 
             return typeMap;
-        }
-
-        public static string FixFileName(string str)
-        {
-            if (str.Length >= 260) return Path.GetRandomFileName();
-            return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c, '_'));
         }
 
         public static void ExportAssets(string savePath, List<AssetItem> toExportAssets, ExportType exportType)
@@ -601,23 +615,33 @@ namespace AssetStudioGUI
             }
         }
 
-        public static string GetScriptString(ObjectReader reader)
+        public static List<TypeTreeNode> MonoBehaviourToTypeTreeNodes(MonoBehaviour m_MonoBehaviour)
         {
-            if (scriptDumper == null)
+            if (!assemblyLoader.Loaded)
             {
                 var openFolderDialog = new OpenFolderDialog();
                 openFolderDialog.Title = "Select Assembly Folder";
                 if (openFolderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    scriptDumper = new ScriptDumper(openFolderDialog.Folder);
+                    assemblyLoader.Load(openFolderDialog.Folder);
                 }
                 else
                 {
-                    scriptDumper = new ScriptDumper();
+                    assemblyLoader.Loaded = true;
                 }
             }
+            return m_MonoBehaviour.ConvertToTypeTreeNodes(assemblyLoader);
+        }
 
-            return scriptDumper.DumpScript(reader);
+        public static string DumpAsset(Object obj)
+        {
+            var str = obj.Dump();
+            if (str == null && obj is MonoBehaviour m_MonoBehaviour)
+            {
+                var nodes = MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
+                str = m_MonoBehaviour.Dump(nodes);
+            }
+            return str;
         }
     }
 }

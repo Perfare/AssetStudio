@@ -1,18 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace AssetStudio
 {
     public static class TypeTreeHelper
     {
-        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, BinaryReader reader)
+        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, ObjectReader reader)
         {
+            reader.Reset();
             for (int i = 0; i < members.Count; i++)
             {
                 ReadStringValue(sb, members, reader, ref i);
+            }
+            var readed = reader.Position - reader.byteStart;
+            if (readed != reader.byteSize)
+            {
+                Logger.Error($"Error while read type, read {readed} bytes but expected {reader.byteSize} bytes");
             }
         }
 
@@ -151,14 +156,20 @@ namespace AssetStudio
                 reader.AlignStream();
         }
 
-        public static UType ReadUType(List<TypeTreeNode> members, BinaryReader reader)
+        public static OrderedDictionary ReadType(List<TypeTreeNode> members, ObjectReader reader)
         {
-            var obj = new UType();
+            reader.Reset();
+            var obj = new OrderedDictionary();
             for (int i = 1; i < members.Count; i++)
             {
                 var member = members[i];
                 var varNameStr = member.m_Name;
                 obj[varNameStr] = ReadValue(members, reader, ref i);
+            }
+            var readed = reader.Position - reader.byteStart;
+            if (readed != reader.byteSize)
+            {
+                Logger.Error($"Error while read type, read {readed} bytes but expected {reader.byteSize} bytes");
             }
             return obj;
         }
@@ -266,7 +277,7 @@ namespace AssetStudio
                         {
                             var @class = GetMembers(members, i);
                             i += @class.Count - 1;
-                            var obj = new UType();
+                            var obj = new OrderedDictionary();
                             for (int j = 1; j < @class.Count; j++)
                             {
                                 var classmember = @class[j];
