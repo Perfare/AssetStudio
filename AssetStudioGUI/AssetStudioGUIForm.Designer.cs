@@ -116,7 +116,6 @@
             this.exportAnimatorwithselectedAnimationClipMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goToSceneHierarchyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showOriginalFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exportAssetListToCSV = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -307,7 +306,6 @@
             this.exportAllAssetsMenuItem,
             this.exportSelectedAssetsMenuItem,
             this.exportFilteredAssetsMenuItem,
-            this.exportAssetListToCSV,
             this.toolStripSeparator3,
             this.exportAnimatorWithSelectedAnimationClipToolStripMenuItem,
             this.toolStripSeparator4,
@@ -958,16 +956,8 @@
             this.showOriginalFileToolStripMenuItem.Visible = false;
             this.showOriginalFileToolStripMenuItem.Click += new System.EventHandler(this.showOriginalFileToolStripMenuItem_Click);
             // 
-            // exportAssetListToCSV
-            // 
-            this.exportAssetListToCSV.Name = "exportAssetListToCSV";
-            this.exportAssetListToCSV.Size = new System.Drawing.Size(284, 22);
-            this.exportAssetListToCSV.Text = "Asset List To CSV";
-            this.exportAssetListToCSV.Click += new System.EventHandler(this.exportAssetListToCSV_Click);
-            // 
             // AssetStudioGUIForm
             // 
-            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
@@ -1099,7 +1089,6 @@
         private System.Windows.Forms.ColumnHeader columnHeaderContainer;
         private System.Windows.Forms.ColumnHeader columnHeaderPathID;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem exportAssetListToCSV;
     }
 }
 

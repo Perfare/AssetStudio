@@ -99,61 +99,6 @@ namespace AssetStudioGUI
             Logger.Default = new GUILogger(StatusStripUpdate);
             Progress.Default = new GUIProgress(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
-
-            this.DragDrop += AssetStudioGUIForm_DragDrop;
-            this.DragEnter += AssetStudioGUIForm_DragEnter;
-        }
-
-        private void AssetStudioGUIForm_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effect = DragDropEffects.All;
-            }
-            else
-            {
-                e.Effect = DragDropEffects.None;
-            }
-        }
-
-        private void AssetStudioGUIForm_DragDrop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                HashSet<string> preloadFiles = new HashSet<string>();
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                for (int i = 0; i < files.Length; i++)
-                {
-                    string file = files[i];
-                    Logger.Info(string.Format("drag drop file or directory : {0}", file));
-                    if (File.Exists(file))
-                    {
-                        file = file.Replace("/", "\\");
-                        preloadFiles.Add(file);
-                    }
-                    else
-                    {
-                        var childFiles = Directory.GetFiles(file, "*.*", SearchOption.AllDirectories);
-                        foreach (var childFile in childFiles)
-                        {
-                            var tmpFile = childFile.Replace("/", "\\");
-                            preloadFiles.Add(tmpFile);
-                        }
-                    }
-                }
-
-                if (preloadFiles.Count > 0)
-                {
-                    LoadDragDroppedFiles(preloadFiles.ToArray());
-                }
-            }
-        }
-
-        private async void LoadDragDroppedFiles(string[] files)
-        {
-            ResetForm();
-            await Task.Run(() => assetsManager.LoadFiles(files));
-            BuildAssetStructures();
         }
 
         private async void loadFile_Click(object sender, EventArgs e)
@@ -1950,19 +1895,6 @@ namespace AssetStudioGUI
             GL.BindVertexArray(0);
             GL.Flush();
             glControl1.SwapBuffers();
-        }
-
-        private void exportAssetListToCSV_Click(object sender, EventArgs e)
-        {
-            var saveFolderDialog = new OpenFolderDialog();
-            if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
-            {
-                string savePath = Path.Combine(saveFolderDialog.Folder, "ExportAssetList.csv");
-                ListViewToCSV.ExportListViewToCSV(this.assetListView, savePath, false);
-
-                var log = $"export asset list to csv successfully, saved path : {savePath}";
-                StatusStripUpdate(log);
-            }
         }
 
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)
