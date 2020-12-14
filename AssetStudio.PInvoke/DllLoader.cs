@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -26,7 +27,7 @@ namespace AssetStudio.PInvoke
 
         private static string GetDirectedDllDirectory()
         {
-            var localPath = new Uri(typeof(DllLoader).Assembly.CodeBase).LocalPath;
+            var localPath = Process.GetCurrentProcess().MainModule.FileName;
             var localDir = Path.GetDirectoryName(localPath);
 
             var subDir = Environment.Is64BitProcess ? "x64" : "x86";
