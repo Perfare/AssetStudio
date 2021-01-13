@@ -174,7 +174,7 @@ namespace AssetStudio
                 GetStreams(version);
             }
 
-            m_DataSize = reader.ReadBytes(reader.ReadInt32());
+            m_DataSize = reader.ReadUInt8Array();
             reader.AlignStream();
         }
 
@@ -653,9 +653,9 @@ namespace AssetStudio
 
             if (version[0] >= 5) //5.0 and up
             {
-                var m_BakedConvexCollisionMesh = reader.ReadBytes(reader.ReadInt32());
+                var m_BakedConvexCollisionMesh = reader.ReadUInt8Array();
                 reader.AlignStream();
-                var m_BakedTriangleCollisionMesh = reader.ReadBytes(reader.ReadInt32());
+                var m_BakedTriangleCollisionMesh = reader.ReadUInt8Array();
                 reader.AlignStream();
             }
 

@@ -663,7 +663,7 @@ namespace AssetStudio
                     m_LocalKeywords[i] = reader.ReadAlignedString();
                 }
             }
-            m_ProgramCode = reader.ReadBytes(reader.ReadInt32());
+            m_ProgramCode = reader.ReadUInt8Array();
             reader.AlignStream();
 
             //TODO

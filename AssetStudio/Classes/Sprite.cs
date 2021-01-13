@@ -124,7 +124,7 @@ namespace AssetStudio
                     m_SubMeshes[i] = new SubMesh(reader);
                 }
 
-                m_IndexBuffer = reader.ReadBytes(reader.ReadInt32());
+                m_IndexBuffer = reader.ReadUInt8Array();
                 reader.AlignStream();
 
                 m_VertexData = new VertexData(reader);

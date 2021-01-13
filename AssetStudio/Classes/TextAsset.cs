@@ -12,7 +12,7 @@ namespace AssetStudio
 
         public TextAsset(ObjectReader reader) : base(reader)
         {
-            m_Script = reader.ReadBytes(reader.ReadInt32());
+            m_Script = reader.ReadUInt8Array();
         }
     }
 }

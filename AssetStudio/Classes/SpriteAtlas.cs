@@ -13,6 +13,7 @@ namespace AssetStudio
         public Vector4 uvTransform;
         public float downscaleMultiplier;
         public SpriteSettings settingsRaw;
+        public SecondarySpriteTexture[] secondaryTextures;
 
         public SpriteAtlasData(ObjectReader reader)
         {
@@ -28,6 +29,16 @@ namespace AssetStudio
             uvTransform = reader.ReadVector4();
             downscaleMultiplier = reader.ReadSingle();
             settingsRaw = new SpriteSettings(reader);
+            if (version[0] > 2020 || (version[0] == 2020 && version[1] >= 2)) //2020.2 and up
+            {
+                var secondaryTexturesSize = reader.ReadInt32();
+                secondaryTextures = new SecondarySpriteTexture[secondaryTexturesSize];
+                for (int i = 0; i < secondaryTexturesSize; i++)
+                {
+                    secondaryTextures[i] = new SecondarySpriteTexture(reader);
+                }
+                reader.AlignStream();
+            }
         }
     }
 
