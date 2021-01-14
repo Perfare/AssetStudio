@@ -7,7 +7,7 @@ namespace AssetStudio
     {
         public PPtr<Texture2D> texture;
         public PPtr<Texture2D> alphaTexture;
-        public System.Drawing.RectangleF textureRect;
+        public Rectf textureRect;
         public Vector2 textureRectOffset;
         public Vector2 atlasRectOffset;
         public Vector4 uvTransform;
@@ -20,7 +20,7 @@ namespace AssetStudio
             var version = reader.version;
             texture = new PPtr<Texture2D>(reader);
             alphaTexture = new PPtr<Texture2D>(reader);
-            textureRect = reader.ReadRectangleF();
+            textureRect = new Rectf(reader);
             textureRectOffset = reader.ReadVector2();
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
