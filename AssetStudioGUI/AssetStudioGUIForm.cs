@@ -899,10 +899,15 @@ namespace AssetStudioGUI
             var result = system.createSound(m_AudioData, FMOD.MODE.OPENMEMORY | loopMode, ref exinfo, out sound);
             if (ERRCHECK(result)) return;
 
-            result = sound.getSubSound(0, out var subsound);
-            if (result == FMOD.RESULT.OK)
+            sound.getNumSubSounds(out var numsubsounds);
+
+            if (numsubsounds > 0)
             {
-                sound = subsound;
+                result = sound.getSubSound(0, out var subsound);
+                if (result == FMOD.RESULT.OK)
+                {
+                    sound = subsound;
+                }
             }
 
             result = sound.getLength(out FMODlenms, FMOD.TIMEUNIT.MS);
@@ -1542,7 +1547,7 @@ namespace AssetStudioGUI
                 Application.Exit();
             }
 
-            result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
+            result = system.init(2, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
             if (ERRCHECK(result)) { return; }
 
             result = system.getMasterSoundGroup(out masterSoundGroup);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FMOD;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -18,33 +19,53 @@ namespace AssetStudio
             var m_AudioData = m_AudioClip.m_AudioData.GetData();
             if (m_AudioData == null || m_AudioData.Length == 0)
                 return null;
-            var exinfo = new FMOD.CREATESOUNDEXINFO();
-            var result = FMOD.Factory.System_Create(out var system);
-            if (result != FMOD.RESULT.OK)
+            var exinfo = new CREATESOUNDEXINFO();
+            var result = Factory.System_Create(out var system);
+            if (result != RESULT.OK)
                 return null;
-            result = system.init(1, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
-            if (result != FMOD.RESULT.OK)
+            result = system.init(1, INITFLAGS.NORMAL, IntPtr.Zero);
+            if (result != RESULT.OK)
                 return null;
             exinfo.cbsize = Marshal.SizeOf(exinfo);
             exinfo.length = (uint)m_AudioClip.m_Size;
-            result = system.createSound(m_AudioData, FMOD.MODE.OPENMEMORY, ref exinfo, out var sound);
-            if (result != FMOD.RESULT.OK)
+            result = system.createSound(m_AudioData, MODE.OPENMEMORY, ref exinfo, out var sound);
+            if (result != RESULT.OK)
                 return null;
-            result = sound.getSubSound(0, out var subsound);
-            if (result != FMOD.RESULT.OK)
+            result = sound.getNumSubSounds(out var numsubsounds);
+            if (result != RESULT.OK)
                 return null;
-            result = subsound.getFormat(out var type, out var format, out int channels, out int bits);
-            if (result != FMOD.RESULT.OK)
+            byte[] buff;
+            if (numsubsounds > 0)
+            {
+                result = sound.getSubSound(0, out var subsound);
+                if (result != RESULT.OK)
+                    return null;
+                buff = SoundToWav(subsound);
+                subsound.release();
+            }
+            else
+            {
+                buff = SoundToWav(sound);
+            }
+            sound.release();
+            system.release();
+            return buff;
+        }
+
+        public byte[] SoundToWav(Sound sound)
+        {
+            var result = sound.getFormat(out _, out _, out int channels, out int bits);
+            if (result != RESULT.OK)
                 return null;
-            result = subsound.getDefaults(out var frequency, out int priority);
-            if (result != FMOD.RESULT.OK)
+            result = sound.getDefaults(out var frequency, out _);
+            if (result != RESULT.OK)
                 return null;
             var sampleRate = (int)frequency;
-            result = subsound.getLength(out var length, FMOD.TIMEUNIT.PCMBYTES);
-            if (result != FMOD.RESULT.OK)
+            result = sound.getLength(out var length, TIMEUNIT.PCMBYTES);
+            if (result != RESULT.OK)
                 return null;
-            result = subsound.@lock(0, length, out var ptr1, out var ptr2, out var len1, out var len2);
-            if (result != FMOD.RESULT.OK)
+            result = sound.@lock(0, length, out var ptr1, out var ptr2, out var len1, out var len2);
+            if (result != RESULT.OK)
                 return null;
             byte[] buffer = new byte[len1 + 44];
             //添加wav头
@@ -61,12 +82,9 @@ namespace AssetStudio
             Encoding.UTF8.GetBytes("data").CopyTo(buffer, 36);
             BitConverter.GetBytes(len1).CopyTo(buffer, 40);
             Marshal.Copy(ptr1, buffer, 44, (int)len1);
-            result = subsound.unlock(ptr1, ptr2, len1, len2);
-            if (result != FMOD.RESULT.OK)
+            result = sound.unlock(ptr1, ptr2, len1, len2);
+            if (result != RESULT.OK)
                 return null;
-            subsound.release();
-            sound.release();
-            system.release();
             return buffer;
         }
 
