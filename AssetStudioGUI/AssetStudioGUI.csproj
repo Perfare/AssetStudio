@@ -87,7 +87,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Studio.cs" />
-    <Compile Include="TGASharpLib.cs" />
     <EmbeddedResource Include="AssetStudioGUIForm.resx">
       <DependentUpon>AssetStudioGUIForm.cs</DependentUpon>
     </EmbeddedResource>
