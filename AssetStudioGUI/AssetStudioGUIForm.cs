@@ -658,13 +658,16 @@ namespace AssetStudioGUI
 
         private void classesListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
+            classTextBox.Visible = true;
+            assetInfoLabel.Visible = false;
+            assetInfoLabel.Text = null;
+            textPreviewBox.Visible = false;
+            fontPreviewBox.Visible = false;
+            FMODpanel.Visible = false;
+            glControl1.Visible = false;
+            StatusStripUpdate("");
             if (e.IsSelected)
             {
-                if (!classTextBox.Visible)
-                {
-                    assetInfoLabel.Visible = false;
-                    classTextBox.Visible = true;
-                }
                 classTextBox.Text = ((TypeTreeItem)classesListView.SelectedItems[0]).ToString();
             }
         }
