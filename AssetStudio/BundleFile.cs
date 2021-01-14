@@ -45,12 +45,19 @@ namespace AssetStudio
         {
             m_Header = new Header();
             m_Header.signature = reader.ReadStringToNull();
+            m_Header.version = reader.ReadUInt32();
+            m_Header.unityVersion = reader.ReadStringToNull();
+            m_Header.unityRevision = reader.ReadStringToNull();
             switch (m_Header.signature)
             {
                 case "UnityArchive":
                     break; //TODO
                 case "UnityWeb":
                 case "UnityRaw":
+                    if (m_Header.version == 6)
+                    {
+                        goto case "UnityFS";
+                    }
                     ReadHeaderAndBlocksInfo(reader);
                     using (var blocksStream = CreateBlocksStream(path))
                     {
@@ -73,16 +80,13 @@ namespace AssetStudio
         private void ReadHeaderAndBlocksInfo(EndianBinaryReader reader)
         {
             var isCompressed = m_Header.signature == "UnityWeb";
-            m_Header.version = reader.ReadUInt32();
-            m_Header.unityVersion = reader.ReadStringToNull();
-            m_Header.unityRevision = reader.ReadStringToNull();
             if (m_Header.version >= 4)
             {
                 var hash = reader.ReadBytes(16);
                 var crc = reader.ReadUInt32();
             }
             var minimumStreamedBytes = reader.ReadUInt32();
-            var headerSize = reader.ReadUInt32();
+            m_Header.size = reader.ReadUInt32();
             var numberOfLevelsToDownloadBeforeStreaming = reader.ReadUInt32();
             var levelCount = reader.ReadInt32();
             m_BlocksInfo = new StorageBlock[1];
@@ -107,7 +111,7 @@ namespace AssetStudio
             {
                 var fileInfoHeaderSize = reader.ReadUInt32();
             }
-            reader.Position = headerSize;
+            reader.Position = m_Header.size;
         }
 
         private Stream CreateBlocksStream(string path)
@@ -188,13 +192,14 @@ namespace AssetStudio
 
         private void ReadHeader(EndianBinaryReader reader)
         {
-            m_Header.version = reader.ReadUInt32();
-            m_Header.unityVersion = reader.ReadStringToNull();
-            m_Header.unityRevision = reader.ReadStringToNull();
             m_Header.size = reader.ReadInt64();
             m_Header.compressedBlocksInfoSize = reader.ReadUInt32();
             m_Header.uncompressedBlocksInfoSize = reader.ReadUInt32();
             m_Header.flags = reader.ReadUInt32();
+            if (m_Header.signature != "UnityFS")
+            {
+                reader.ReadByte();
+            }
         }
 
         private void ReadBlocksInfoAndDirectory(EndianBinaryReader reader)
