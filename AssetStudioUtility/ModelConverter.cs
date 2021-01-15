@@ -440,17 +440,17 @@ namespace AssetStudio
                             }
                         }
                     }
-                    else
-                    {
-                        //Logger.Error("");
-                    }
                 }
-                else
+                if (boneType == 0)
                 {
                     //尝试使用m_BoneNameHashes 4.3 and up
                     if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
                     {
-                        boneType = 2;
+                        var verifiedBoneCount = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+                        if (verifiedBoneCount > 0)
+                        {
+                            boneType = 2;
+                        }
                     }
                 }
 
