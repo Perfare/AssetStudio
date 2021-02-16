@@ -1356,27 +1356,26 @@ namespace AssetStudioGUI
 
         private void ExportObjects(bool animation)
         {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var saveFolderDialog = new OpenFolderDialog();
-                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
-                {
-                    var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
-                    List<AssetItem> animationList = null;
-                    if (animation)
-                    {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                        if (animationList.Count == 0)
-                        {
-                            animationList = null;
-                        }
-                    }
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList);
-                }
-            }
-            else
+            if (sceneTreeView.Nodes.Count == 0)
             {
                 StatusStripUpdate("No Objects available for export");
+                return;
+            }
+
+            var saveFolderDialog = new OpenFolderDialog();
+            if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
+                List<AssetItem> animationList = null;
+                if (animation)
+                {
+                    animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                    if (animationList.Count == 0)
+                    {
+                        animationList = null;
+                    }
+                }
+                ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList);
             }
         }
 
@@ -1392,28 +1391,38 @@ namespace AssetStudioGUI
 
         private void ExportMergeObjects(bool animation)
         {
-            if (sceneTreeView.Nodes.Count > 0)
+            if (sceneTreeView.Nodes.Count == 0)
             {
-                var gameObjects = new List<GameObject>();
-                GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
-                saveFileDialog.AddExtension = false;
-                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                StatusStripUpdate("No Objects available for export");
+                return;
+            }
+
+            var gameObjects = new List<GameObject>();
+            GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
+
+            if (gameObjects.Count == 0)
+            {
+                StatusStripUpdate("No Object can be exported.");
+                return;
+            }
+
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
+            saveFileDialog.AddExtension = false;
+            saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                var exportPath = saveFileDialog.FileName;
+                List<AssetItem> animationList = null;
+                if (animation)
                 {
-                    var exportPath = saveFileDialog.FileName;
-                    List<AssetItem> animationList = null;
-                    if (animation)
+                    animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                    if (animationList.Count == 0)
                     {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                        if (animationList.Count == 0)
-                        {
-                            animationList = null;
-                        }
+                        animationList = null;
                     }
-                    ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
                 }
+                ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
             }
         }
 
