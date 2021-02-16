@@ -36,7 +36,7 @@ namespace AssetStudioGUI
             {
                 for (var i = 0; i < m_Texture2DArray.m_Depth; i++)
                 {
-                    if (!ExportBitmap(item, exportPath + "_" + i, m_Texture2DArray.ConvertToBitmap(true, i)))
+                    if (!ExportBitmap(item, exportPath, m_Texture2DArray.ConvertToBitmap(true, i), "_" + i))
                     {
                         return false;
                     }
@@ -50,7 +50,7 @@ namespace AssetStudioGUI
                 var single = new byte[singleLength];
                 for (var i = 0; i < m_Texture2DArray.m_Depth; i++)
                 {
-                    if (!TryExportFile(exportPath + "_" + i, item, ".tex", out var exportFullPath))
+                    if (!TryExportFile(exportPath, item, "_" + i + ".tex", out var exportFullPath))
                         return false;
                     Array.Copy(data, i * singleLength, single, 0, singleLength);
                     File.WriteAllBytes(exportFullPath, single);
@@ -59,7 +59,7 @@ namespace AssetStudioGUI
             return true;
         }
 
-        private static bool ExportBitmap(AssetItem item, string exportPath, System.Drawing.Bitmap bitmap)
+        private static bool ExportBitmap(AssetItem item, string exportPath, System.Drawing.Bitmap bitmap, string postfix = "")
         {
             if (bitmap == null)
                 return false;
@@ -81,7 +81,7 @@ namespace AssetStudioGUI
                     tga = true;
                     break;
             }
-            if (!TryExportFile(exportPath, item, "." + ext.ToLower(), out var exportFullPath))
+            if (!TryExportFile(exportPath, item, postfix + "." + ext.ToLower(), out var exportFullPath))
                 return false;
             if (tga)
             {
