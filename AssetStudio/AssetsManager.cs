@@ -327,6 +327,9 @@ namespace AssetStudio
                             case ClassIDType.Texture2D:
                                 obj = new Texture2D(objectReader);
                                 break;
+                            case ClassIDType.Texture2DArray:
+                                obj = new Texture2DArray(objectReader);
+                                break;
                             case ClassIDType.Transform:
                                 obj = new Transform(objectReader);
                                 break;

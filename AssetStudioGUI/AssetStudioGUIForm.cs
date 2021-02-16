@@ -42,6 +42,7 @@ namespace AssetStudioGUI
         #region TexControl
         private static char[] textureChannelNames = new[] { 'B', 'G', 'R', 'A' };
         private bool[] textureChannels = new[] { true, true, true, true };
+        private static int textureArrayLayer = 0;
         #endregion
 
         #region GLControl
@@ -321,6 +322,14 @@ namespace AssetStudioGUI
                             textureChannels[3] = !textureChannels[3];
                             need = true;
                             break;
+                        case Keys.Left:
+                            textureArrayLayer--;
+                            need = true;
+                            break;
+                        case Keys.Right:
+                            textureArrayLayer++;
+                            need = true;
+                            break;
                     }
                     if (need)
                     {
@@ -374,6 +383,7 @@ namespace AssetStudioGUI
                 switch (lastSelectedItem.Type)
                 {
                     case ClassIDType.Texture2D:
+                    case ClassIDType.Texture2DArray:
                     case ClassIDType.Sprite:
                         {
                             if (enablePreview.Checked && imageTexture != null)
@@ -692,6 +702,9 @@ namespace AssetStudioGUI
                     case Texture2D m_Texture2D:
                         PreviewTexture2D(assetItem, m_Texture2D);
                         break;
+                    case Texture2DArray m_Texture2DArray:
+                        PreviewTexture2DArray(assetItem, m_Texture2DArray);
+                        break;
                     case AudioClip m_AudioClip:
                         PreviewAudioClip(assetItem, m_AudioClip);
                         break;
@@ -739,64 +752,91 @@ namespace AssetStudioGUI
             }
         }
 
-        private void PreviewTexture2D(AssetItem assetItem, Texture2D m_Texture2D)
+        private void PreviewTexture2D(AssetItem assetItem, Texture2D texture2D)
         {
-            var bitmap = m_Texture2D.ConvertToBitmap(true);
+            var bitmap = texture2D.ConvertToBitmap(true);
             if (bitmap != null)
             {
-                assetItem.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
-                switch (m_Texture2D.m_TextureSettings.m_FilterMode)
-                {
-                    case 0: assetItem.InfoText += "\nFilter Mode: Point "; break;
-                    case 1: assetItem.InfoText += "\nFilter Mode: Bilinear "; break;
-                    case 2: assetItem.InfoText += "\nFilter Mode: Trilinear "; break;
-                }
-                assetItem.InfoText += $"\nAnisotropic level: {m_Texture2D.m_TextureSettings.m_Aniso}\nMip map bias: {m_Texture2D.m_TextureSettings.m_MipBias}";
-                switch (m_Texture2D.m_TextureSettings.m_WrapMode)
-                {
-                    case 0: assetItem.InfoText += "\nWrap mode: Repeat"; break;
-                    case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
-                }
-                assetItem.InfoText += "\nChannels: ";
-                int validChannel = 0;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (textureChannels[i])
-                    {
-                        assetItem.InfoText += textureChannelNames[i];
-                        validChannel++;
-                    }
-                }
-                if (validChannel == 0)
-                    assetItem.InfoText += "None";
-                if (validChannel != 4)
-                {
-                    var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                    var bytes = new byte[bitmap.Width * bitmap.Height * 4];
-                    Marshal.Copy(bmpData.Scan0, bytes, 0, bytes.Length);
-                    for (int i = 0; i < bmpData.Height; i++)
-                    {
-                        int offset = Math.Abs(bmpData.Stride) * i;
-                        for (int j = 0; j < bmpData.Width; j++)
-                        {
-                            bytes[offset] = textureChannels[0] ? bytes[offset] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
-                            bytes[offset + 1] = textureChannels[1] ? bytes[offset + 1] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
-                            bytes[offset + 2] = textureChannels[2] ? bytes[offset + 2] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
-                            bytes[offset + 3] = textureChannels[3] ? bytes[offset + 3] : byte.MaxValue;
-                            offset += 4;
-                        }
-                    }
-                    Marshal.Copy(bytes, 0, bmpData.Scan0, bytes.Length);
-                    bitmap.UnlockBits(bmpData);
-                }
-                PreviewTexture(bitmap);
-
+                assetItem.InfoText = $"Width: {texture2D.m_Width}\nHeight: {texture2D.m_Height}\nFormat: {texture2D.m_TextureFormat}";
+                PreviewTextureSettings(assetItem, texture2D.m_TextureSettings);
+                PreviewBitmapWithChannels(assetItem, bitmap);
                 StatusStripUpdate("'Ctrl'+'R'/'G'/'B'/'A' for Channel Toggle");
             }
             else
             {
                 StatusStripUpdate("Unsupported image for preview");
             }
+        }
+
+        private void PreviewTexture2DArray(AssetItem assetItem, Texture2DArray texture2DArray)
+        {
+            textureArrayLayer %= texture2DArray.m_Depth;
+            if (textureArrayLayer < 0) textureArrayLayer += texture2DArray.m_Depth;
+
+            var bitmap = texture2DArray.ConvertToBitmap(true, textureArrayLayer);
+            if (bitmap != null)
+            {
+                assetItem.InfoText = $"Width: {texture2DArray.m_Width}\nHeight: {texture2DArray.m_Height}\nDepth: {texture2DArray.m_Depth} (Currently showing: {textureArrayLayer})\nFormat: {texture2DArray.m_TextureFormat}";
+                PreviewTextureSettings(assetItem, texture2DArray.m_TextureSettings);
+                PreviewBitmapWithChannels(assetItem, bitmap);
+                StatusStripUpdate("'Ctrl'+'R'/'G'/'B'/'A' for Channel Toggle, 'Ctrl'+Left/Right Arrow to Switch Layer");
+            }
+            else
+            {
+                StatusStripUpdate("Unsupported image for preview");
+            }
+        }
+
+        private void PreviewTextureSettings(AssetItem assetItem, GLTextureSettings textureSettings)
+        {
+            switch (textureSettings.m_FilterMode)
+            {
+                case 0: assetItem.InfoText += "\nFilter Mode: Point "; break;
+                case 1: assetItem.InfoText += "\nFilter Mode: Bilinear "; break;
+                case 2: assetItem.InfoText += "\nFilter Mode: Trilinear "; break;
+            }
+            assetItem.InfoText += $"\nAnisotropic level: {textureSettings.m_Aniso}\nMip map bias: {textureSettings.m_MipBias}";
+            switch (textureSettings.m_WrapMode)
+            {
+                case 0: assetItem.InfoText += "\nWrap mode: Repeat"; break;
+                case 1: assetItem.InfoText += "\nWrap mode: Clamp"; break;
+            }
+        }
+
+        private void PreviewBitmapWithChannels(AssetItem assetItem, Bitmap bitmap) {
+            assetItem.InfoText += "\nChannels: ";
+            int validChannel = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if (textureChannels[i])
+                {
+                    assetItem.InfoText += textureChannelNames[i];
+                    validChannel++;
+                }
+            }
+            if (validChannel == 0)
+                assetItem.InfoText += "None";
+            if (validChannel != 4)
+            {
+                var bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                var bytes = new byte[bitmap.Width * bitmap.Height * 4];
+                Marshal.Copy(bmpData.Scan0, bytes, 0, bytes.Length);
+                for (int i = 0; i < bmpData.Height; i++)
+                {
+                    int offset = Math.Abs(bmpData.Stride) * i;
+                    for (int j = 0; j < bmpData.Width; j++)
+                    {
+                        bytes[offset] = textureChannels[0] ? bytes[offset] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                        bytes[offset + 1] = textureChannels[1] ? bytes[offset + 1] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                        bytes[offset + 2] = textureChannels[2] ? bytes[offset + 2] : validChannel == 1 && textureChannels[3] ? byte.MaxValue : byte.MinValue;
+                        bytes[offset + 3] = textureChannels[3] ? bytes[offset + 3] : byte.MaxValue;
+                        offset += 4;
+                    }
+                }
+                Marshal.Copy(bytes, 0, bmpData.Scan0, bytes.Length);
+                bitmap.UnlockBits(bmpData);
+            }
+            PreviewBitmap(bitmap);
         }
 
         private void PreviewAudioClip(AssetItem assetItem, AudioClip m_AudioClip)
@@ -1155,7 +1195,7 @@ namespace AssetStudioGUI
             {
                 assetItem.InfoText = $"Width: {bitmap.Width}\nHeight: {bitmap.Height}\n";
 
-                PreviewTexture(bitmap);
+                PreviewBitmap(bitmap);
             }
             else
             {
@@ -1163,7 +1203,7 @@ namespace AssetStudioGUI
             }
         }
 
-        private void PreviewTexture(Bitmap bitmap)
+        private void PreviewBitmap(Bitmap bitmap)
         {
             imageTexture?.Dispose();
             imageTexture = bitmap;
@@ -1324,27 +1364,26 @@ namespace AssetStudioGUI
 
         private void ExportObjects(bool animation)
         {
-            if (sceneTreeView.Nodes.Count > 0)
-            {
-                var saveFolderDialog = new OpenFolderDialog();
-                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
-                {
-                    var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
-                    List<AssetItem> animationList = null;
-                    if (animation)
-                    {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                        if (animationList.Count == 0)
-                        {
-                            animationList = null;
-                        }
-                    }
-                    ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList);
-                }
-            }
-            else
+            if (sceneTreeView.Nodes.Count == 0)
             {
                 StatusStripUpdate("No Objects available for export");
+                return;
+            }
+
+            var saveFolderDialog = new OpenFolderDialog();
+            if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
+                List<AssetItem> animationList = null;
+                if (animation)
+                {
+                    animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                    if (animationList.Count == 0)
+                    {
+                        animationList = null;
+                    }
+                }
+                ExportObjectsWithAnimationClip(exportPath, sceneTreeView.Nodes, animationList);
             }
         }
 
@@ -1360,28 +1399,38 @@ namespace AssetStudioGUI
 
         private void ExportMergeObjects(bool animation)
         {
-            if (sceneTreeView.Nodes.Count > 0)
+            if (sceneTreeView.Nodes.Count == 0)
             {
-                var gameObjects = new List<GameObject>();
-                GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
-                saveFileDialog.AddExtension = false;
-                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                StatusStripUpdate("No Objects available for export");
+                return;
+            }
+
+            var gameObjects = new List<GameObject>();
+            GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
+
+            if (gameObjects.Count == 0)
+            {
+                StatusStripUpdate("No Object can be exported.");
+                return;
+            }
+
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
+            saveFileDialog.AddExtension = false;
+            saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                var exportPath = saveFileDialog.FileName;
+                List<AssetItem> animationList = null;
+                if (animation)
                 {
-                    var exportPath = saveFileDialog.FileName;
-                    List<AssetItem> animationList = null;
-                    if (animation)
+                    animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                    if (animationList.Count == 0)
                     {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                        if (animationList.Count == 0)
-                        {
-                            animationList = null;
-                        }
+                        animationList = null;
                     }
-                    ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
                 }
+                ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
             }
         }
 

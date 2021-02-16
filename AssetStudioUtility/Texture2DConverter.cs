@@ -28,6 +28,20 @@ namespace AssetStudio
             platform = m_Texture2D.platform;
         }
 
+        public Texture2DConverter(Texture2DArray m_Texture2DArray, int layer)
+        {
+            image_data_size = m_Texture2DArray.m_Width * m_Texture2DArray.m_Height;
+            image_data = new byte[image_data_size];
+
+            Array.Copy(m_Texture2DArray.image_data.GetData(), layer * image_data_size, image_data, 0, image_data_size);
+
+            m_Width = m_Texture2DArray.m_Width;
+            m_Height = m_Texture2DArray.m_Height;
+            m_TextureFormat = m_Texture2DArray.m_TextureFormat;
+            version = m_Texture2DArray.version;
+            platform = m_Texture2DArray.platform;
+        }
+
         public Bitmap ConvertToBitmap(bool flip)
         {
             if (image_data == null || image_data.Length == 0)
