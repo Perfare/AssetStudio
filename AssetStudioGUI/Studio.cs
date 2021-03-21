@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static AssetStudioGUI.Exporter;
 using Object = AssetStudio.Object;
 
@@ -18,6 +18,18 @@ namespace AssetStudioGUI
         Convert,
         Raw,
         Dump
+    }
+
+    internal enum ExportFilter
+    {
+        All,
+        Selected,
+        Filtered
+    }
+
+    internal enum ExportListType
+    {
+        XML
     }
 
     internal static class Studio
@@ -436,6 +448,51 @@ namespace AssetStudioGUI
                 StatusStripUpdate(statusText);
 
                 if (Properties.Settings.Default.openAfterExport && exportedCount > 0)
+                {
+                    Process.Start(savePath);
+                }
+            });
+        }
+
+        public static void ExportAssetsList(string savePath, List<AssetItem> toExportAssets, ExportListType exportListType)
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+                Progress.Reset();
+
+                switch (exportListType)
+                {
+                    case ExportListType.XML:
+                        var filename = Path.Combine(savePath, "assets.xml");
+                        var doc = new XDocument(
+                            new XElement("Assets",
+                                new XAttribute("filename", filename),
+                                new XAttribute("createdAt", DateTime.UtcNow.ToString("s")),
+                                toExportAssets.Select(
+                                    asset => new XElement("Asset",
+                                        new XElement("Name", asset.Text),
+                                        new XElement("Container", asset.Container),
+                                        new XElement("Type", new XAttribute("id", (int)asset.Type), asset.TypeString),
+                                        new XElement("PathID", asset.m_PathID),
+                                        new XElement("Source", asset.SourceFile.fullName),
+                                        new XElement("Size", asset.FullSize)
+                                    )
+                                )
+                            )
+                        );
+
+                        doc.Save(filename);
+
+                        break;
+                }
+
+                var statusText = $"Finished exporting asset list with {toExportAssets.Count()} items.";
+
+                StatusStripUpdate(statusText);
+
+                if (Properties.Settings.Default.openAfterExport && toExportAssets.Count() > 0)
                 {
                     Process.Start(savePath);
                 }
