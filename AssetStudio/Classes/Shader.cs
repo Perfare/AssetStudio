@@ -580,7 +580,14 @@ namespace AssetStudio
             }
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
-                var m_ShaderRequirements = reader.ReadInt32();
+                if (version[0] >= 2021) //2021.1 and up
+                {
+                    var m_ShaderRequirements = reader.ReadInt64();
+                }
+                else
+                {
+                    var m_ShaderRequirements = reader.ReadInt32();
+                }
             }
         }
     }
@@ -729,6 +736,18 @@ namespace AssetStudio
         }
     }
 
+    public class SerializedCustomEditorForRenderPipeline
+    {
+        public string customEditorName;
+        public string renderPipelineType;
+
+        public SerializedCustomEditorForRenderPipeline(BinaryReader reader)
+        {
+            customEditorName = reader.ReadAlignedString();
+            renderPipelineType = reader.ReadAlignedString();
+        }
+    }
+
     public class SerializedShader
     {
         public SerializedProperties m_PropInfo;
@@ -737,10 +756,13 @@ namespace AssetStudio
         public string m_CustomEditorName;
         public string m_FallbackName;
         public SerializedShaderDependency[] m_Dependencies;
+        public SerializedCustomEditorForRenderPipeline[] m_CustomEditorForRenderPipelines;
         public bool m_DisableNoSubshadersMessage;
 
         public SerializedShader(ObjectReader reader)
         {
+            var version = reader.version;
+
             m_PropInfo = new SerializedProperties(reader);
 
             int numSubShaders = reader.ReadInt32();
@@ -759,6 +781,16 @@ namespace AssetStudio
             for (int i = 0; i < numDependencies; i++)
             {
                 m_Dependencies[i] = new SerializedShaderDependency(reader);
+            }
+
+            if (version[0] >= 2021) //2021.1 and up
+            {
+                int m_CustomEditorForRenderPipelinesSize = reader.ReadInt32();
+                m_CustomEditorForRenderPipelines = new SerializedCustomEditorForRenderPipeline[m_CustomEditorForRenderPipelinesSize];
+                for (int i = 0; i < m_CustomEditorForRenderPipelinesSize; i++)
+                {
+                    m_CustomEditorForRenderPipelines[i] = new SerializedCustomEditorForRenderPipeline(reader);
+                }
             }
 
             m_DisableNoSubshadersMessage = reader.ReadBoolean();
@@ -789,7 +821,11 @@ namespace AssetStudio
         kShaderCompPlatformWiiU = 17,
         kShaderCompPlatformVulkan = 18,
         kShaderCompPlatformSwitch = 19,
-        kShaderCompPlatformXboxOneD3D12 = 20
+        kShaderCompPlatformXboxOneD3D12 = 20,
+        kShaderCompPlatformGameCoreXboxOne = 21,
+        kShaderCompPlatformGameCoreScarlett = 22,
+        kShaderCompPlatformPS5 = 23,
+        kShaderCompPlatformPS5NGGC = 24,
     };
 
     public class Shader : NamedObject

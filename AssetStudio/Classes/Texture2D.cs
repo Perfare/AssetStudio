@@ -209,5 +209,8 @@ namespace AssetStudio
         ASTC_HDR_8x8,
         ASTC_HDR_10x10,
         ASTC_HDR_12x12,
+        RG32,
+        RGB48,
+        RGBA64
     }
 }

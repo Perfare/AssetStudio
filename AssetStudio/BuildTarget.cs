@@ -7,7 +7,7 @@ namespace AssetStudio
 {
     public enum BuildTarget
     {
-        UnknownPlatform = 3716,
+        NoTarget = -2,
         DashboardWidget = 1,
         StandaloneOSX = 2,
         StandaloneOSXPPC = 3,
@@ -42,6 +42,12 @@ namespace AssetStudio
         WiiU,
         tvOS,
         Switch,
-        NoTarget = -2
+        Lumin,
+        Stadia,
+        CloudRendering,
+        GameCoreXboxSeries,
+        GameCoreXboxOne,
+        PS5,
+        UnknownPlatform = 9999
     }
 }
