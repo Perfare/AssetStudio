@@ -934,7 +934,8 @@ namespace AssetStudioGUI
         private void PreviewTextAsset(TextAsset m_TextAsset)
         {
             var text = Encoding.UTF8.GetString(m_TextAsset.m_Script);
-            PreviewText(text.Replace("\n", "\r\n"));
+            text = text.Replace("\n", "\r\n").Replace("\0", "");
+            PreviewText(text);
         }
 
         private void PreviewMonoBehaviour(MonoBehaviour m_MonoBehaviour)
