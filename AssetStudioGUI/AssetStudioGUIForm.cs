@@ -1274,7 +1274,7 @@ namespace AssetStudioGUI
 
         private void exportSelectedAssetsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, ExportType.Convert);
+            ExportAssets(ExportFilter.Selected, ExportType.Convert);
         }
 
         private void showOriginalFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1398,47 +1398,62 @@ namespace AssetStudioGUI
 
         private void exportAllAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(1, ExportType.Convert);
+            ExportAssets(ExportFilter.All, ExportType.Convert);
         }
 
         private void exportSelectedAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, ExportType.Convert);
+            ExportAssets(ExportFilter.Selected, ExportType.Convert);
         }
 
         private void exportFilteredAssetsMenuItem_Click(object sender, EventArgs e)
         {
-            ExportAssets(3, ExportType.Convert);
+            ExportAssets(ExportFilter.Filtered, ExportType.Convert);
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-            ExportAssets(1, ExportType.Raw);
+            ExportAssets(ExportFilter.All, ExportType.Raw);
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, ExportType.Raw);
+            ExportAssets(ExportFilter.Selected, ExportType.Raw);
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
-            ExportAssets(3, ExportType.Raw);
+            ExportAssets(ExportFilter.Filtered, ExportType.Raw);
         }
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
         {
-            ExportAssets(1, ExportType.Dump);
+            ExportAssets(ExportFilter.All, ExportType.Dump);
         }
 
         private void toolStripMenuItem8_Click(object sender, EventArgs e)
         {
-            ExportAssets(2, ExportType.Dump);
+            ExportAssets(ExportFilter.Selected, ExportType.Dump);
         }
 
         private void toolStripMenuItem9_Click(object sender, EventArgs e)
         {
-            ExportAssets(3, ExportType.Dump);
+            ExportAssets(ExportFilter.Filtered, ExportType.Dump);
+        }
+
+        private void toolStripMenuItem11_Click(object sender, EventArgs e)
+        {
+            ExportAssetsList(ExportFilter.All);
+        }
+
+        private void toolStripMenuItem12_Click(object sender, EventArgs e)
+        {
+            ExportAssetsList(ExportFilter.Selected);
+        }
+
+        private void toolStripMenuItem13_Click(object sender, EventArgs e)
+        {
+            ExportAssetsList(ExportFilter.Filtered);
         }
 
         private void exportAllObjectssplitToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -1501,7 +1516,7 @@ namespace AssetStudioGUI
             assetListView.EndUpdate();
         }
 
-        private void ExportAssets(int type, ExportType exportType)
+        private void ExportAssets(ExportFilter type, ExportType exportType)
         {
             if (exportableAssets.Count > 0)
             {
@@ -1513,17 +1528,50 @@ namespace AssetStudioGUI
                     List<AssetItem> toExportAssets = null;
                     switch (type)
                     {
-                        case 1: //All Assets
+                        case ExportFilter.All:
                             toExportAssets = exportableAssets;
                             break;
-                        case 2: //Selected Assets
+                        case ExportFilter.Selected:
                             toExportAssets = GetSelectedAssets();
                             break;
-                        case 3: //Filtered Assets
+                        case ExportFilter.Filtered:
                             toExportAssets = visibleAssets;
                             break;
                     }
                     Studio.ExportAssets(saveFolderDialog.Folder, toExportAssets, exportType);
+                }
+            }
+            else
+            {
+                StatusStripUpdate("No exportable assets loaded");
+            }
+        }
+
+        private void ExportAssetsList(ExportFilter type)
+        {
+            // XXX: Only exporting as XML for now, but would JSON(/CSV/other) be useful too?
+
+            if (exportableAssets.Count > 0)
+            {
+                var saveFolderDialog = new OpenFolderDialog();
+                if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    timer.Stop();
+
+                    List<AssetItem> toExportAssets = null;
+                    switch (type)
+                    {
+                        case ExportFilter.All:
+                            toExportAssets = exportableAssets;
+                            break;
+                        case ExportFilter.Selected:
+                            toExportAssets = GetSelectedAssets();
+                            break;
+                        case ExportFilter.Filtered:
+                            toExportAssets = visibleAssets;
+                            break;
+                    }
+                    Studio.ExportAssetsList(saveFolderDialog.Folder, toExportAssets, ExportListType.XML);
                 }
             }
             else
