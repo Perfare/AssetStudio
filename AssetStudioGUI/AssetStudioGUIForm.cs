@@ -96,7 +96,7 @@ namespace AssetStudioGUI
             enablePreview.Checked = Properties.Settings.Default.enablePreview;
             FMODinit();
 
-            Logger.Default = new GUILogger(StatusStripUpdate);
+            Logger.RegistLogger(new GUILogger(StatusStripUpdate));
             Progress.Default = new GUIProgress(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
         }
