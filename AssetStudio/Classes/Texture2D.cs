@@ -120,6 +120,11 @@ namespace AssetStudio
             {
                 var m_ColorSpace = reader.ReadInt32();
             }
+            if (version[0] > 2020 || (version[0] == 2020 && version[1] >= 2)) //2020.2 and up
+            {
+                var m_PlatformBlob = reader.ReadUInt8Array();
+                reader.AlignStream();
+            }
             var image_data_size = reader.ReadInt32();
             if (image_data_size == 0 && ((version[0] == 5 && version[1] >= 3) || version[0] > 5))//5.3.0 and up
             {
@@ -204,5 +209,8 @@ namespace AssetStudio
         ASTC_HDR_8x8,
         ASTC_HDR_10x10,
         ASTC_HDR_12x12,
+        RG32,
+        RGB48,
+        RGBA64
     }
 }

@@ -73,6 +73,7 @@
     <Compile Include="ModelExporter.cs" />
     <Compile Include="MonoBehaviourConverter.cs" />
     <Compile Include="SerializedTypeHelper.cs" />
+    <Compile Include="TGASharpLib.cs" />
     <Compile Include="TypeDefinitionConverter.cs" />
     <Compile Include="MyAssemblyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

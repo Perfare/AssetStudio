@@ -113,7 +113,8 @@ namespace AssetStudio
             {1093, "m_CorrespondingSourceObject"},
             {1121, "m_PrefabInstance"},
             {1138, "m_PrefabAsset"},
-            {1152, "FileSize"}
+            {1152, "FileSize"},
+            {1161, "Hash128"}
         };
     }
 }

@@ -5,6 +5,16 @@ using System.Linq;
 
 namespace AssetStudio
 {
+    public class Hash128
+    {
+        public byte[] bytes;
+
+        public Hash128(BinaryReader reader)
+        {
+            bytes = reader.ReadBytes(16);
+        }
+    }
+
     public class StructParameter
     {
         public MatrixParameter[] m_MatrixParams;
@@ -438,33 +448,33 @@ namespace AssetStudio
         kShaderGpuProgramGLES31AEP = 2,
         kShaderGpuProgramGLES31 = 3,
         kShaderGpuProgramGLES3 = 4,
-        kShaderGpuProgramGLES = 5, 
-        kShaderGpuProgramGLCore32 = 6, 
-        kShaderGpuProgramGLCore41 = 7, 
-        kShaderGpuProgramGLCore43 = 8, 
-        kShaderGpuProgramDX9VertexSM20 = 9, 
-        kShaderGpuProgramDX9VertexSM30 = 10, 
-        kShaderGpuProgramDX9PixelSM20 = 11, 
-        kShaderGpuProgramDX9PixelSM30 = 12, 
-        kShaderGpuProgramDX10Level9Vertex = 13, 
+        kShaderGpuProgramGLES = 5,
+        kShaderGpuProgramGLCore32 = 6,
+        kShaderGpuProgramGLCore41 = 7,
+        kShaderGpuProgramGLCore43 = 8,
+        kShaderGpuProgramDX9VertexSM20 = 9,
+        kShaderGpuProgramDX9VertexSM30 = 10,
+        kShaderGpuProgramDX9PixelSM20 = 11,
+        kShaderGpuProgramDX9PixelSM30 = 12,
+        kShaderGpuProgramDX10Level9Vertex = 13,
         kShaderGpuProgramDX10Level9Pixel = 14,
-        kShaderGpuProgramDX11VertexSM40 = 15, 
+        kShaderGpuProgramDX11VertexSM40 = 15,
         kShaderGpuProgramDX11VertexSM50 = 16,
         kShaderGpuProgramDX11PixelSM40 = 17,
-        kShaderGpuProgramDX11PixelSM50 = 18, 
+        kShaderGpuProgramDX11PixelSM50 = 18,
         kShaderGpuProgramDX11GeometrySM40 = 19,
         kShaderGpuProgramDX11GeometrySM50 = 20,
-        kShaderGpuProgramDX11HullSM50 = 21, 
-        kShaderGpuProgramDX11DomainSM50 = 22, 
-        kShaderGpuProgramMetalVS = 23, 
+        kShaderGpuProgramDX11HullSM50 = 21,
+        kShaderGpuProgramDX11DomainSM50 = 22,
+        kShaderGpuProgramMetalVS = 23,
         kShaderGpuProgramMetalFS = 24,
-        kShaderGpuProgramSPIRV = 25, 
+        kShaderGpuProgramSPIRV = 25,
         kShaderGpuProgramConsoleVS = 26,
-        kShaderGpuProgramConsoleFS = 27, 
-        kShaderGpuProgramConsoleHS = 28, 
+        kShaderGpuProgramConsoleFS = 27,
+        kShaderGpuProgramConsoleHS = 28,
         kShaderGpuProgramConsoleDS = 29,
-        kShaderGpuProgramConsoleGS = 30, 
-        kShaderGpuProgramRayTracing = 31, 
+        kShaderGpuProgramConsoleGS = 30,
+        kShaderGpuProgramRayTracing = 31,
     };
 
     public class SerializedSubProgram
@@ -570,7 +580,14 @@ namespace AssetStudio
             }
             if (version[0] > 2017 || (version[0] == 2017 && version[1] >= 2)) //2017.2 and up
             {
-                var m_ShaderRequirements = reader.ReadInt32();
+                if (version[0] >= 2021) //2021.1 and up
+                {
+                    var m_ShaderRequirements = reader.ReadInt64();
+                }
+                else
+                {
+                    var m_ShaderRequirements = reader.ReadInt32();
+                }
             }
         }
     }
@@ -599,6 +616,10 @@ namespace AssetStudio
 
     public class SerializedPass
     {
+        public Hash128[] m_EditorDataHash;
+        public byte[] m_Platforms;
+        public ushort[] m_LocalKeywordMask;
+        public ushort[] m_GlobalKeywordMask;
         public KeyValuePair<string, int>[] m_NameIndices;
         public PassType m_Type;
         public SerializedShaderState m_State;
@@ -618,6 +639,23 @@ namespace AssetStudio
         public SerializedPass(ObjectReader reader)
         {
             var version = reader.version;
+
+            if (version[0] > 2020 || (version[0] == 2020 && version[1] >= 2)) //2020.2 and up
+            {
+                int numEditorDataHash = reader.ReadInt32();
+                m_EditorDataHash = new Hash128[numEditorDataHash];
+                for (int i = 0; i < numEditorDataHash; i++)
+                {
+                    m_EditorDataHash[i] = new Hash128(reader);
+                }
+                reader.AlignStream();
+                m_Platforms = reader.ReadUInt8Array();
+                reader.AlignStream();
+                m_LocalKeywordMask = reader.ReadUInt16Array();
+                reader.AlignStream();
+                m_GlobalKeywordMask = reader.ReadUInt16Array();
+                reader.AlignStream();
+            }
 
             int numIndices = reader.ReadInt32();
             m_NameIndices = new KeyValuePair<string, int>[numIndices];
@@ -698,6 +736,18 @@ namespace AssetStudio
         }
     }
 
+    public class SerializedCustomEditorForRenderPipeline
+    {
+        public string customEditorName;
+        public string renderPipelineType;
+
+        public SerializedCustomEditorForRenderPipeline(BinaryReader reader)
+        {
+            customEditorName = reader.ReadAlignedString();
+            renderPipelineType = reader.ReadAlignedString();
+        }
+    }
+
     public class SerializedShader
     {
         public SerializedProperties m_PropInfo;
@@ -706,10 +756,13 @@ namespace AssetStudio
         public string m_CustomEditorName;
         public string m_FallbackName;
         public SerializedShaderDependency[] m_Dependencies;
+        public SerializedCustomEditorForRenderPipeline[] m_CustomEditorForRenderPipelines;
         public bool m_DisableNoSubshadersMessage;
 
         public SerializedShader(ObjectReader reader)
         {
+            var version = reader.version;
+
             m_PropInfo = new SerializedProperties(reader);
 
             int numSubShaders = reader.ReadInt32();
@@ -728,6 +781,16 @@ namespace AssetStudio
             for (int i = 0; i < numDependencies; i++)
             {
                 m_Dependencies[i] = new SerializedShaderDependency(reader);
+            }
+
+            if (version[0] >= 2021) //2021.1 and up
+            {
+                int m_CustomEditorForRenderPipelinesSize = reader.ReadInt32();
+                m_CustomEditorForRenderPipelines = new SerializedCustomEditorForRenderPipeline[m_CustomEditorForRenderPipelinesSize];
+                for (int i = 0; i < m_CustomEditorForRenderPipelinesSize; i++)
+                {
+                    m_CustomEditorForRenderPipelines[i] = new SerializedCustomEditorForRenderPipeline(reader);
+                }
             }
 
             m_DisableNoSubshadersMessage = reader.ReadBoolean();
@@ -758,7 +821,11 @@ namespace AssetStudio
         kShaderCompPlatformWiiU = 17,
         kShaderCompPlatformVulkan = 18,
         kShaderCompPlatformSwitch = 19,
-        kShaderCompPlatformXboxOneD3D12 = 20
+        kShaderCompPlatformXboxOneD3D12 = 20,
+        kShaderCompPlatformGameCoreXboxOne = 21,
+        kShaderCompPlatformGameCoreScarlett = 22,
+        kShaderCompPlatformPS5 = 23,
+        kShaderCompPlatformPS5NGGC = 24,
     };
 
     public class Shader : NamedObject
@@ -793,17 +860,17 @@ namespace AssetStudio
                     compressedLengths = reader.ReadUInt32Array();
                     decompressedLengths = reader.ReadUInt32Array();
                 }
-                compressedBlob = reader.ReadBytes(reader.ReadInt32());
+                compressedBlob = reader.ReadUInt8Array();
             }
             else
             {
-                m_Script = reader.ReadBytes(reader.ReadInt32());
+                m_Script = reader.ReadUInt8Array();
                 reader.AlignStream();
                 var m_PathName = reader.ReadAlignedString();
                 if (version[0] == 5 && version[1] >= 3) //5.3 - 5.4
                 {
                     decompressedSize = reader.ReadUInt32();
-                    m_SubProgramBlob = reader.ReadBytes(reader.ReadInt32());
+                    m_SubProgramBlob = reader.ReadUInt8Array();
                 }
             }
         }

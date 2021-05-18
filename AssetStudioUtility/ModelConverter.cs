@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using TGASharpLib;
 
 namespace AssetStudio
 {
@@ -16,6 +17,7 @@ namespace AssetStudio
         public List<ImportedKeyframedAnimation> AnimationList { get; protected set; } = new List<ImportedKeyframedAnimation>();
         public List<ImportedMorph> MorphList { get; protected set; } = new List<ImportedMorph>();
 
+        private string imageFormat;
         private Avatar avatar;
         private HashSet<AnimationClip> animationClipHashSet = new HashSet<AnimationClip>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
@@ -23,8 +25,9 @@ namespace AssetStudio
         private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
         Dictionary<uint, string> morphChannelNames = new Dictionary<uint, string>();
 
-        public ModelConverter(GameObject m_GameObject, AnimationClip[] animationList = null)
+        public ModelConverter(GameObject m_GameObject, string imageFormat, AnimationClip[] animationList = null)
         {
+            this.imageFormat = imageFormat;
             if (m_GameObject.m_Animator != null)
             {
                 InitWithAnimator(m_GameObject.m_Animator);
@@ -47,8 +50,9 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
-        public ModelConverter(string rootName, List<GameObject> m_GameObjects, AnimationClip[] animationList = null)
+        public ModelConverter(string rootName, List<GameObject> m_GameObjects, string imageFormat, AnimationClip[] animationList = null)
         {
+            this.imageFormat = imageFormat;
             RootFrame = CreateFrame(rootName, Vector3.Zero, new Quaternion(0, 0, 0, 0), Vector3.One);
             foreach (var m_GameObject in m_GameObjects)
             {
@@ -76,8 +80,9 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
-        public ModelConverter(Animator m_Animator, AnimationClip[] animationList = null)
+        public ModelConverter(Animator m_Animator, string imageFormat, AnimationClip[] animationList = null)
         {
+            this.imageFormat = imageFormat;
             InitWithAnimator(m_Animator);
             if (animationList == null)
             {
@@ -435,17 +440,17 @@ namespace AssetStudio
                             }
                         }
                     }
-                    else
-                    {
-                        //Logger.Error("");
-                    }
                 }
-                else
+                if (boneType == 0)
                 {
                     //尝试使用m_BoneNameHashes 4.3 and up
                     if (mesh.m_BindPose.Length > 0 && (mesh.m_BindPose.Length == mesh.m_BoneNameHashes?.Length))
                     {
-                        boneType = 2;
+                        var verifiedBoneCount = mesh.m_BoneNameHashes.Count(x => FixBonePath(GetPathFromHash(x)) != null);
+                        if (verifiedBoneCount > 0)
+                        {
+                            boneType = 2;
+                        }
                     }
                 }
 
@@ -689,15 +694,16 @@ namespace AssetStudio
 
                     texture.Dest = dest;
 
+                    var ext = $".{imageFormat.ToLower()}";
                     if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
                     {
                         texture.Name = textureName;
                     }
-                    else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ".png", TextureList) != null) //已有相同名字的图片
+                    else if (ImportedHelpers.FindTexture(m_Texture2D.m_Name + ext, TextureList) != null) //已有相同名字的图片
                     {
                         for (int i = 1; ; i++)
                         {
-                            var name = m_Texture2D.m_Name + $" ({i}).png";
+                            var name = m_Texture2D.m_Name + $" ({i}){ext}";
                             if (ImportedHelpers.FindTexture(name, TextureList) == null)
                             {
                                 texture.Name = name;
@@ -708,7 +714,7 @@ namespace AssetStudio
                     }
                     else
                     {
-                        texture.Name = m_Texture2D.m_Name + ".png";
+                        texture.Name = m_Texture2D.m_Name + ext;
                         textureNameDictionary.Add(m_Texture2D, texture.Name);
                     }
 
@@ -739,7 +745,22 @@ namespace AssetStudio
             {
                 using (var stream = new MemoryStream())
                 {
-                    bitmap.Save(stream, ImageFormat.Png);
+                    switch (imageFormat)
+                    {
+                        case "BMP":
+                            bitmap.Save(stream, ImageFormat.Bmp);
+                            break;
+                        case "PNG":
+                            bitmap.Save(stream, ImageFormat.Png);
+                            break;
+                        case "JPEG":
+                            bitmap.Save(stream, ImageFormat.Jpeg);
+                            break;
+                        case "TGA":
+                            var tga = new TGA(bitmap);
+                            tga.Save(stream);
+                            break;
+                    }
                     iTex = new ImportedTexture(stream, name);
                     TextureList.Add(iTex);
                     bitmap.Dispose();
