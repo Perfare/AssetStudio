@@ -34,15 +34,16 @@ namespace AssetStudio
             return newOutStream;
         }
 
-        public static void StreamDecompress(Stream inStream, Stream outStream, long inSize, long outSize)
+        public static void StreamDecompress(Stream compressedStream, Stream decompressedStream, long compressedSize, long decompressedSize)
         {
+            var basePosition = compressedStream.Position;
             var decoder = new Decoder();
             var properties = new byte[5];
-            if (inStream.Read(properties, 0, 5) != 5)
+            if (compressedStream.Read(properties, 0, 5) != 5)
                 throw new Exception("input .lzma is too short");
             decoder.SetDecoderProperties(properties);
-            inSize -= 5L;
-            decoder.Code(inStream, outStream, inSize, outSize, null);
+            decoder.Code(compressedStream, decompressedStream, compressedSize - 5, decompressedSize, null);
+            compressedStream.Position = basePosition + compressedSize;
         }
     }
 }

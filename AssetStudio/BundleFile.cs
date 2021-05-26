@@ -231,7 +231,9 @@ namespace AssetStudio
                     }
                 case 1: //LZMA
                     {
-                        blocksInfoUncompresseddStream = SevenZipHelper.StreamDecompress(blocksInfoCompressedStream);
+                        blocksInfoUncompresseddStream = new MemoryStream((int)(m_Header.uncompressedBlocksInfoSize));
+                        SevenZipHelper.StreamDecompress(blocksInfoCompressedStream, blocksInfoUncompresseddStream, m_Header.compressedBlocksInfoSize, m_Header.uncompressedBlocksInfoSize);
+                        blocksInfoUncompresseddStream.Position = 0;
                         blocksInfoCompressedStream.Close();
                         break;
                     }
