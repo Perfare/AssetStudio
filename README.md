@@ -59,7 +59,7 @@ When you select an asset of the MonoBehaviour type for the first time, AssetStud
 
 #### For Il2Cpp
 
-First, use my other program [Il2CppDumper](https://github.com/Perfare/Il2CppDumper) to generate dummy dll, then when using AssetStudio to select the assembly directory, select the dummy dll folder.
+First, use my another program [Il2CppDumper](https://github.com/Perfare/Il2CppDumper) to generate dummy dll, then when using AssetStudio to select the assembly directory, select the dummy dll folder.
 
 ## Build
 
