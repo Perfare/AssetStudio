@@ -113,10 +113,11 @@ namespace AssetStudioGUI
             int extractedCount = 0;
             foreach (var file in fileList)
             {
-                var filePath = Path.Combine(extractPath, file.fileName);
-                if (!Directory.Exists(extractPath))
+                var filePath = Path.Combine(extractPath, file.path);
+                var fileDirectory = Path.GetDirectoryName(filePath);
+                if (!Directory.Exists(fileDirectory))
                 {
-                    Directory.CreateDirectory(extractPath);
+                    Directory.CreateDirectory(fileDirectory);
                 }
                 if (!File.Exists(filePath))
                 {

@@ -83,6 +83,7 @@ namespace AssetStudio
             {
                 var data = dataList[i];
                 var file = new StreamFile();
+                file.path = data.path;
                 file.fileName = Path.GetFileName(data.path);
                 reader.BaseStream.Position = data.dataOffset;
                 file.stream = new MemoryStream(reader.ReadBytes(data.dataLength));

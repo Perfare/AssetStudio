@@ -162,7 +162,7 @@ namespace AssetStudio
                     }
                     else
                     {
-                        resourceFileReaders.Add(file.fileName, subReader);
+                        resourceFileReaders[file.fileName] = subReader; //TODO
                     }
                 }
             }
@@ -203,7 +203,7 @@ namespace AssetStudio
                             LoadWebFile(dummyPath, fileReader);
                             break;
                         case FileType.ResourceFile:
-                            resourceFileReaders.Add(file.fileName, fileReader);
+                            resourceFileReaders[file.fileName] = fileReader; //TODO
                             break;
                     }
                 }

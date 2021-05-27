@@ -171,6 +171,7 @@ namespace AssetStudio
                 var node = m_DirectoryInfo[i];
                 var file = new StreamFile();
                 fileList[i] = file;
+                file.path = node.path;
                 file.fileName = Path.GetFileName(node.path);
                 if (node.size >= int.MaxValue)
                 {
