@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using static AssetStudio.ImportHelper;
 
 namespace AssetStudio
@@ -108,10 +109,10 @@ namespace AssetStudio
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    Logger.Error($"Error while reading assets file {fileName}", e);
                     reader.Dispose();
-                    //Logger.Warning($"Unable to load assets file {fileName}");
                 }
             }
             else
@@ -136,9 +137,9 @@ namespace AssetStudio
                     assetsFileList.Add(assetsFile);
                     assetsFileListHash.Add(assetsFile.fileName);
                 }
-                catch
+                catch (Exception e)
                 {
-                    //Logger.Error($"Unable to load assets file {fileName} from {Path.GetFileName(originalPath)}");
+                    Logger.Error($"Error while reading assets file {fileName} from {Path.GetFileName(originalPath)}", e);
                     resourceFileReaders.Add(fileName, reader);
                 }
             }
@@ -165,14 +166,14 @@ namespace AssetStudio
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                /*var str = $"Unable to load bundle file {fileName}";
+                var str = $"Error while reading bundle file {fileName}";
                 if (parentPath != null)
                 {
                     str += $" from {Path.GetFileName(parentPath)}";
                 }
-                Logger.Error(str);*/
+                Logger.Error(str, e);
             }
             finally
             {
@@ -207,9 +208,9 @@ namespace AssetStudio
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                //Logger.Error($"Unable to load web file {fileName}");
+                Logger.Error($"Error while reading web file {fileName}", e);
             }
             finally
             {
@@ -344,13 +345,13 @@ namespace AssetStudio
                     }
                     catch (Exception e)
                     {
-                        /*var sb = new StringBuilder();
+                        var sb = new StringBuilder();
                         sb.AppendLine("Unable to load object")
                             .AppendLine($"Assets {assetsFile.fileName}")
                             .AppendLine($"Type {objectReader.type}")
                             .AppendLine($"PathID {objectInfo.m_PathID}")
                             .Append(e);
-                        Logger.Error(sb.ToString());*/
+                        Logger.Error(sb.ToString());
                     }
 
                     Progress.Report(++i, progressCount);

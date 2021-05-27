@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AssetStudio;
+﻿using AssetStudio;
+using System;
+using System.Windows.Forms;
 
 namespace AssetStudioGUI
 {
@@ -17,7 +15,16 @@ namespace AssetStudioGUI
 
         public void Log(LoggerEvent loggerEvent, string message)
         {
-            action(message);
+            switch (loggerEvent)
+            {
+                case LoggerEvent.Error:
+                    MessageBox.Show(message);
+                    break;
+                default:
+                    action(message);
+                    break;
+            }
+
         }
     }
 }
