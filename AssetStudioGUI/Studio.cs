@@ -399,7 +399,14 @@ namespace AssetStudioGUI
                             }
                             break;
                         case 2: //source file
-                            exportPath = Path.Combine(savePath, asset.SourceFile.fullName + "_export");
+                            if (string.IsNullOrEmpty(asset.SourceFile.originalPath))
+                            {
+                                exportPath = Path.Combine(savePath, asset.SourceFile.fileName + "_export");
+                            }
+                            else
+                            {
+                                exportPath = Path.Combine(savePath, Path.GetFileName(asset.SourceFile.originalPath) + "_export", asset.SourceFile.fileName);
+                            }
                             break;
                         default:
                             exportPath = savePath;
