@@ -167,6 +167,13 @@ namespace AssetStudio
                         sb.Append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platforms, shaderPrograms));
                         sb.Append("}\n");
                     }
+
+                    if (m_Passe.progRayTracing?.m_SubPrograms.Length > 0)
+                    {
+                        sb.Append("Program \"rtp\" {\n");
+                        sb.Append(ConvertSerializedSubPrograms(m_Passe.progRayTracing.m_SubPrograms, platforms, shaderPrograms));
+                        sb.Append("}\n");
+                    }
                 }
                 sb.Append("}\n");
             }
