@@ -11,7 +11,7 @@ namespace AssetStudio
         public string m_Name;
         public int m_ByteSize;
         public int m_Index;
-        public int m_IsArray; //m_TypeFlags
+        public int m_TypeFlags; //m_IsArray
         public int m_Version;
         public int m_MetaFlag;
         public int m_Level;

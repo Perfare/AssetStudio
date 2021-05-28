@@ -301,7 +301,7 @@ namespace AssetStudio
             {
                 typeTreeNode.m_Index = reader.ReadInt32();
             }
-            typeTreeNode.m_IsArray = reader.ReadInt32();
+            typeTreeNode.m_TypeFlags = reader.ReadInt32();
             typeTreeNode.m_Version = reader.ReadInt32();
             if (header.m_Version != SerializedFileFormatVersion.kUnknown_3)
             {
@@ -325,7 +325,7 @@ namespace AssetStudio
                 m_Type.m_Nodes.Add(typeTreeNode);
                 typeTreeNode.m_Version = reader.ReadUInt16();
                 typeTreeNode.m_Level = reader.ReadByte();
-                typeTreeNode.m_IsArray = reader.ReadBoolean() ? 1 : 0;
+                typeTreeNode.m_TypeFlags = reader.ReadByte();
                 typeTreeNode.m_TypeStrOffset = reader.ReadUInt32();
                 typeTreeNode.m_NameStrOffset = reader.ReadUInt32();
                 typeTreeNode.m_ByteSize = reader.ReadInt32();
