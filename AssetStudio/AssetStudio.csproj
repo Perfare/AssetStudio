@@ -135,10 +135,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceReader.cs" />
     <Compile Include="SerializedFile.cs" />
+    <Compile Include="SerializedFileFormatVersion.cs" />
     <Compile Include="SerializedFileHeader.cs" />
     <Compile Include="SerializedType.cs" />
     <Compile Include="SevenZipHelper.cs" />
     <Compile Include="StreamFile.cs" />
+    <Compile Include="TypeTree.cs" />
     <Compile Include="TypeTreeHelper.cs" />
     <Compile Include="TypeTreeNode.cs" />
     <Compile Include="WebFile.cs" />

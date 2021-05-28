@@ -15,7 +15,7 @@ namespace AssetStudio
         public ClassIDType type;
         public SerializedType serializedType;
         public BuildTarget platform;
-        public uint m_Version;
+        public SerializedFileFormatVersion m_Version;
 
         public int[] version => assetsFile.version;
         public BuildType buildType => assetsFile.buildType;

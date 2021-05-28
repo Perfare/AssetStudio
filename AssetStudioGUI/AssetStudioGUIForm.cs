@@ -943,8 +943,8 @@ namespace AssetStudioGUI
             var obj = m_MonoBehaviour.ToType();
             if (obj == null)
             {
-                var nodes = MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
-                obj = m_MonoBehaviour.ToType(nodes);
+                var type = MonoBehaviourToTypeTree(m_MonoBehaviour);
+                obj = m_MonoBehaviour.ToType(type);
             }
             var str = JsonConvert.SerializeObject(obj, Formatting.Indented);
             PreviewText(str);

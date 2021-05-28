@@ -341,27 +341,27 @@ namespace AssetStudioGUI
             {
                 if (typeMap.TryGetValue(assetsFile.unityVersion, out var curVer))
                 {
-                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
+                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Type != null))
                     {
                         var key = type.classID;
                         if (type.m_ScriptTypeIndex >= 0)
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        curVer[key] = new TypeTreeItem(key, type.m_Nodes);
+                        curVer[key] = new TypeTreeItem(key, type.m_Type);
                     }
                 }
                 else
                 {
                     var items = new SortedDictionary<int, TypeTreeItem>();
-                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Nodes != null))
+                    foreach (var type in assetsFile.m_Types.Where(x => x.m_Type != null))
                     {
                         var key = type.classID;
                         if (type.m_ScriptTypeIndex >= 0)
                         {
                             key = -1 - type.m_ScriptTypeIndex;
                         }
-                        items[key] = new TypeTreeItem(key, type.m_Nodes);
+                        items[key] = new TypeTreeItem(key, type.m_Type);
                     }
                     typeMap.Add(assetsFile.unityVersion, items);
                 }
@@ -680,7 +680,7 @@ namespace AssetStudioGUI
             }
         }
 
-        public static List<TypeTreeNode> MonoBehaviourToTypeTreeNodes(MonoBehaviour m_MonoBehaviour)
+        public static TypeTree MonoBehaviourToTypeTree(MonoBehaviour m_MonoBehaviour)
         {
             if (!assemblyLoader.Loaded)
             {
@@ -695,7 +695,7 @@ namespace AssetStudioGUI
                     assemblyLoader.Loaded = true;
                 }
             }
-            return m_MonoBehaviour.ConvertToTypeTreeNodes(assemblyLoader);
+            return m_MonoBehaviour.ConvertToTypeTree(assemblyLoader);
         }
 
         public static string DumpAsset(Object obj)
@@ -703,8 +703,8 @@ namespace AssetStudioGUI
             var str = obj.Dump();
             if (str == null && obj is MonoBehaviour m_MonoBehaviour)
             {
-                var nodes = MonoBehaviourToTypeTreeNodes(m_MonoBehaviour);
-                str = m_MonoBehaviour.Dump(nodes);
+                var type = MonoBehaviourToTypeTree(m_MonoBehaviour);
+                str = m_MonoBehaviour.Dump(type);
             }
             return str;
         }

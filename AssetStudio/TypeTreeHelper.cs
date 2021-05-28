@@ -7,29 +7,32 @@ namespace AssetStudio
 {
     public static class TypeTreeHelper
     {
-        public static void ReadTypeString(StringBuilder sb, List<TypeTreeNode> members, ObjectReader reader)
+        public static string ReadTypeString(TypeTree m_Type, ObjectReader reader)
         {
             reader.Reset();
-            for (int i = 0; i < members.Count; i++)
+            var sb = new StringBuilder();
+            var m_Nodes = m_Type.m_Nodes;
+            for (int i = 0; i < m_Nodes.Count; i++)
             {
-                ReadStringValue(sb, members, reader, ref i);
+                ReadStringValue(sb, m_Nodes, reader, ref i);
             }
             var readed = reader.Position - reader.byteStart;
             if (readed != reader.byteSize)
             {
                 Logger.Info($"Error while read type, read {readed} bytes but expected {reader.byteSize} bytes");
             }
+            return sb.ToString();
         }
 
-        private static void ReadStringValue(StringBuilder sb, List<TypeTreeNode> members, BinaryReader reader, ref int i)
+        private static void ReadStringValue(StringBuilder sb, List<TypeTreeNode> m_Nodes, BinaryReader reader, ref int i)
         {
-            var member = members[i];
-            var level = member.m_Level;
-            var varTypeStr = member.m_Type;
-            var varNameStr = member.m_Name;
+            var m_Node = m_Nodes[i];
+            var level = m_Node.m_Level;
+            var varTypeStr = m_Node.m_Type;
+            var varNameStr = m_Node.m_Name;
             object value = null;
             var append = true;
-            var align = (member.m_MetaFlag & 0x4000) != 0;
+            var align = (m_Node.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
             {
                 case "SInt8":
@@ -82,18 +85,18 @@ namespace AssetStudio
                     break;
                 case "map":
                     {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                        if ((m_Nodes[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
                         append = false;
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
                         sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level + 1)), "Array", "Array");
                         var size = reader.ReadInt32();
                         sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level + 1)), "int", "size", size);
-                        var map = GetMembers(members, i);
+                        var map = GetNodes(m_Nodes, i);
                         i += map.Count - 1;
-                        var first = GetMembers(map, 4);
+                        var first = GetNodes(map, 4);
                         var next = 4 + first.Count;
-                        var second = GetMembers(map, next);
+                        var second = GetNodes(map, next);
                         for (int j = 0; j < size; j++)
                         {
                             sb.AppendFormat("{0}[{1}]\r\n", (new string('\t', level + 2)), j);
@@ -117,16 +120,16 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i < members.Count - 1 && members[i + 1].m_Type == "Array") //Array
+                        if (i < m_Nodes.Count - 1 && m_Nodes[i + 1].m_Type == "Array") //Array
                         {
-                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                            if ((m_Nodes[i + 1].m_MetaFlag & 0x4000) != 0)
                                 align = true;
                             append = false;
                             sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
                             sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level + 1)), "Array", "Array");
                             var size = reader.ReadInt32();
                             sb.AppendFormat("{0}{1} {2} = {3}\r\n", (new string('\t', level + 1)), "int", "size", size);
-                            var vector = GetMembers(members, i);
+                            var vector = GetNodes(m_Nodes, i);
                             i += vector.Count - 1;
                             for (int j = 0; j < size; j++)
                             {
@@ -140,7 +143,7 @@ namespace AssetStudio
                         {
                             append = false;
                             sb.AppendFormat("{0}{1} {2}\r\n", (new string('\t', level)), varTypeStr, varNameStr);
-                            var @class = GetMembers(members, i);
+                            var @class = GetNodes(m_Nodes, i);
                             i += @class.Count - 1;
                             for (int j = 1; j < @class.Count; j++)
                             {
@@ -156,15 +159,16 @@ namespace AssetStudio
                 reader.AlignStream();
         }
 
-        public static OrderedDictionary ReadType(List<TypeTreeNode> members, ObjectReader reader)
+        public static OrderedDictionary ReadType(TypeTree m_Types, ObjectReader reader)
         {
             reader.Reset();
             var obj = new OrderedDictionary();
-            for (int i = 1; i < members.Count; i++)
+            var m_Nodes = m_Types.m_Nodes;
+            for (int i = 1; i < m_Nodes.Count; i++)
             {
-                var member = members[i];
-                var varNameStr = member.m_Name;
-                obj[varNameStr] = ReadValue(members, reader, ref i);
+                var m_Node = m_Nodes[i];
+                var varNameStr = m_Node.m_Name;
+                obj[varNameStr] = ReadValue(m_Nodes, reader, ref i);
             }
             var readed = reader.Position - reader.byteStart;
             if (readed != reader.byteSize)
@@ -174,12 +178,12 @@ namespace AssetStudio
             return obj;
         }
 
-        private static object ReadValue(List<TypeTreeNode> members, BinaryReader reader, ref int i)
+        private static object ReadValue(List<TypeTreeNode> m_Nodes, BinaryReader reader, ref int i)
         {
-            var member = members[i];
-            var varTypeStr = member.m_Type;
+            var m_Node = m_Nodes[i];
+            var varTypeStr = m_Node.m_Type;
             object value;
-            var align = (member.m_MetaFlag & 0x4000) != 0;
+            var align = (m_Node.m_MetaFlag & 0x4000) != 0;
             switch (varTypeStr)
             {
                 case "SInt8":
@@ -230,13 +234,13 @@ namespace AssetStudio
                     break;
                 case "map":
                     {
-                        if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                        if ((m_Nodes[i + 1].m_MetaFlag & 0x4000) != 0)
                             align = true;
-                        var map = GetMembers(members, i);
+                        var map = GetNodes(m_Nodes, i);
                         i += map.Count - 1;
-                        var first = GetMembers(map, 4);
+                        var first = GetNodes(map, 4);
                         var next = 4 + first.Count;
-                        var second = GetMembers(map, next);
+                        var second = GetNodes(map, next);
                         var size = reader.ReadInt32();
                         var dic = new List<KeyValuePair<object, object>>(size);
                         for (int j = 0; j < size; j++)
@@ -257,11 +261,11 @@ namespace AssetStudio
                     }
                 default:
                     {
-                        if (i < members.Count - 1 && members[i + 1].m_Type == "Array") //Array
+                        if (i < m_Nodes.Count - 1 && m_Nodes[i + 1].m_Type == "Array") //Array
                         {
-                            if ((members[i + 1].m_MetaFlag & 0x4000) != 0)
+                            if ((m_Nodes[i + 1].m_MetaFlag & 0x4000) != 0)
                                 align = true;
-                            var vector = GetMembers(members, i);
+                            var vector = GetNodes(m_Nodes, i);
                             i += vector.Count - 1;
                             var size = reader.ReadInt32();
                             var list = new List<object>(size);
@@ -275,7 +279,7 @@ namespace AssetStudio
                         }
                         else //Class
                         {
-                            var @class = GetMembers(members, i);
+                            var @class = GetNodes(m_Nodes, i);
                             i += @class.Count - 1;
                             var obj = new OrderedDictionary();
                             for (int j = 1; j < @class.Count; j++)
@@ -294,22 +298,22 @@ namespace AssetStudio
             return value;
         }
 
-        private static List<TypeTreeNode> GetMembers(List<TypeTreeNode> members, int index)
+        private static List<TypeTreeNode> GetNodes(List<TypeTreeNode> m_Nodes, int index)
         {
-            var member2 = new List<TypeTreeNode>();
-            member2.Add(members[index]);
-            var level = members[index].m_Level;
-            for (int i = index + 1; i < members.Count; i++)
+            var nodes = new List<TypeTreeNode>();
+            nodes.Add(m_Nodes[index]);
+            var level = m_Nodes[index].m_Level;
+            for (int i = index + 1; i < m_Nodes.Count; i++)
             {
-                var member = members[i];
+                var member = m_Nodes[i];
                 var level2 = member.m_Level;
                 if (level2 <= level)
                 {
-                    return member2;
+                    return nodes;
                 }
-                member2.Add(member);
+                nodes.Add(member);
             }
-            return member2;
+            return nodes;
         }
     }
 }

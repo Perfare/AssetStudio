@@ -19,15 +19,17 @@ namespace AssetStudio
         public Dictionary<long, Object> ObjectsDic;
 
         public SerializedFileHeader header;
-        private EndianType m_FileEndianess;
+        private byte m_FileEndianess;
         public string unityVersion = "2.5.0f5";
         public BuildTarget m_TargetPlatform = BuildTarget.UnknownPlatform;
         private bool m_EnableTypeTree = true;
         public List<SerializedType> m_Types;
-        public List<SerializedType> m_RefTypes;
+        public int bigIDEnabled = 0;
         public List<ObjectInfo> m_Objects;
         private List<LocalSerializedObjectIdentifier> m_ScriptTypes;
         public List<FileIdentifier> m_Externals;
+        public List<SerializedType> m_RefTypes;
+        public string userInformation;
 
         public SerializedFile(AssetsManager assetsManager, string fullName, EndianBinaryReader reader)
         {
@@ -36,26 +38,26 @@ namespace AssetStudio
             this.fullName = fullName;
             fileName = Path.GetFileName(fullName);
 
-            //ReadHeader
+            // ReadHeader
             header = new SerializedFileHeader();
             header.m_MetadataSize = reader.ReadUInt32();
             header.m_FileSize = reader.ReadUInt32();
-            header.m_Version = reader.ReadUInt32();
+            header.m_Version = (SerializedFileFormatVersion)reader.ReadUInt32();
             header.m_DataOffset = reader.ReadUInt32();
 
-            if (header.m_Version >= 9)
+            if (header.m_Version >= SerializedFileFormatVersion.kUnknown_9)
             {
                 header.m_Endianess = reader.ReadByte();
                 header.m_Reserved = reader.ReadBytes(3);
-                m_FileEndianess = (EndianType)header.m_Endianess;
+                m_FileEndianess = header.m_Endianess;
             }
             else
             {
                 reader.Position = header.m_FileSize - header.m_MetadataSize;
-                m_FileEndianess = (EndianType)reader.ReadByte();
+                m_FileEndianess = reader.ReadByte();
             }
 
-            if (header.m_Version >= 22)
+            if (header.m_Version >= SerializedFileFormatVersion.kLargeFilesSupport)
             {
                 header.m_MetadataSize = reader.ReadUInt32();
                 header.m_FileSize = reader.ReadInt64();
@@ -63,17 +65,17 @@ namespace AssetStudio
                 reader.ReadInt64(); // unknown
             }
 
-            //ReadMetadata
-            if (m_FileEndianess == EndianType.LittleEndian)
+            // ReadMetadata
+            if (m_FileEndianess == 0)
             {
                 reader.endian = EndianType.LittleEndian;
             }
-            if (header.m_Version >= 7)
+            if (header.m_Version >= SerializedFileFormatVersion.kUnknown_7)
             {
                 unityVersion = reader.ReadStringToNull();
                 SetVersion(unityVersion);
             }
-            if (header.m_Version >= 8)
+            if (header.m_Version >= SerializedFileFormatVersion.kUnknown_8)
             {
                 m_TargetPlatform = (BuildTarget)reader.ReadInt32();
                 if (!Enum.IsDefined(typeof(BuildTarget), m_TargetPlatform))
@@ -81,26 +83,25 @@ namespace AssetStudio
                     m_TargetPlatform = BuildTarget.UnknownPlatform;
                 }
             }
-            if (header.m_Version >= 13)
+            if (header.m_Version >= SerializedFileFormatVersion.kHasTypeTreeHashes)
             {
                 m_EnableTypeTree = reader.ReadBoolean();
             }
 
-            //ReadTypes
+            // Read Types
             int typeCount = reader.ReadInt32();
             m_Types = new List<SerializedType>(typeCount);
             for (int i = 0; i < typeCount; i++)
             {
-                m_Types.Add(ReadSerializedType());
+                m_Types.Add(ReadSerializedType(false));
             }
 
-            var bigIDEnabled = 0;
-            if (header.m_Version >= 7 && header.m_Version < 14)
+            if (header.m_Version >= SerializedFileFormatVersion.kUnknown_7 && header.m_Version < SerializedFileFormatVersion.kUnknown_14)
             {
                 bigIDEnabled = reader.ReadInt32();
             }
 
-            //ReadObjects
+            // Read Objects
             int objectCount = reader.ReadInt32();
             m_Objects = new List<ObjectInfo>(objectCount);
             Objects = new List<Object>(objectCount);
@@ -112,7 +113,7 @@ namespace AssetStudio
                 {
                     objectInfo.m_PathID = reader.ReadInt64();
                 }
-                else if (header.m_Version < 14)
+                else if (header.m_Version < SerializedFileFormatVersion.kUnknown_14)
                 {
                     objectInfo.m_PathID = reader.ReadInt32();
                 }
@@ -122,7 +123,7 @@ namespace AssetStudio
                     objectInfo.m_PathID = reader.ReadInt64();
                 }
 
-                if (header.m_Version >= 22)
+                if (header.m_Version >= SerializedFileFormatVersion.kLargeFilesSupport)
                     objectInfo.byteStart = reader.ReadInt64();
                 else
                     objectInfo.byteStart = reader.ReadUInt32();
@@ -130,7 +131,7 @@ namespace AssetStudio
                 objectInfo.byteStart += header.m_DataOffset;
                 objectInfo.byteSize = reader.ReadUInt32();
                 objectInfo.typeID = reader.ReadInt32();
-                if (header.m_Version < 16)
+                if (header.m_Version < SerializedFileFormatVersion.kRefactoredClassId)
                 {
                     objectInfo.classID = reader.ReadUInt16();
                     objectInfo.serializedType = m_Types.Find(x => x.classID == objectInfo.typeID);
@@ -141,24 +142,24 @@ namespace AssetStudio
                     objectInfo.serializedType = type;
                     objectInfo.classID = type.classID;
                 }
-                if (header.m_Version < 11)
+                if (header.m_Version < SerializedFileFormatVersion.kHasScriptTypeIndex)
                 {
-                    var isDestroyed = reader.ReadUInt16();
+                    objectInfo.isDestroyed = reader.ReadUInt16();
                 }
-                if (header.m_Version >= 11 && header.m_Version < 17)
+                if (header.m_Version >= SerializedFileFormatVersion.kHasScriptTypeIndex && header.m_Version < SerializedFileFormatVersion.kRefactorTypeData)
                 {
                     var m_ScriptTypeIndex = reader.ReadInt16();
                     if (objectInfo.serializedType != null)
                         objectInfo.serializedType.m_ScriptTypeIndex = m_ScriptTypeIndex;
                 }
-                if (header.m_Version == 15 || header.m_Version == 16)
+                if (header.m_Version == SerializedFileFormatVersion.kSupportsStrippedObject || header.m_Version == SerializedFileFormatVersion.kRefactoredClassId)
                 {
-                    var stripped = reader.ReadByte();
+                    objectInfo.stripped = reader.ReadByte();
                 }
                 m_Objects.Add(objectInfo);
             }
 
-            if (header.m_Version >= 11)
+            if (header.m_Version >= SerializedFileFormatVersion.kHasScriptTypeIndex)
             {
                 int scriptCount = reader.ReadInt32();
                 m_ScriptTypes = new List<LocalSerializedObjectIdentifier>(scriptCount);
@@ -166,7 +167,7 @@ namespace AssetStudio
                 {
                     var m_ScriptType = new LocalSerializedObjectIdentifier();
                     m_ScriptType.localSerializedFileIndex = reader.ReadInt32();
-                    if (header.m_Version < 14)
+                    if (header.m_Version < SerializedFileFormatVersion.kUnknown_14)
                     {
                         m_ScriptType.localIdentifierInFile = reader.ReadInt32();
                     }
@@ -184,11 +185,11 @@ namespace AssetStudio
             for (int i = 0; i < externalsCount; i++)
             {
                 var m_External = new FileIdentifier();
-                if (header.m_Version >= 6)
+                if (header.m_Version >= SerializedFileFormatVersion.kUnknown_6)
                 {
                     var tempEmpty = reader.ReadStringToNull();
                 }
-                if (header.m_Version >= 5)
+                if (header.m_Version >= SerializedFileFormatVersion.kUnknown_5)
                 {
                     m_External.guid = new Guid(reader.ReadBytes(16));
                     m_External.type = reader.ReadInt32();
@@ -198,19 +199,19 @@ namespace AssetStudio
                 m_Externals.Add(m_External);
             }
 
-            if (header.m_Version >= 20)
+            if (header.m_Version >= SerializedFileFormatVersion.kSupportsRefObject)
             {
                 int refTypesCount = reader.ReadInt32();
                 m_RefTypes = new List<SerializedType>(refTypesCount);
                 for (int i = 0; i < refTypesCount; i++)
                 {
-                    m_RefTypes.Add(ReadSerializedType());
+                    m_RefTypes.Add(ReadSerializedType(true));
                 }
             }
 
-            if (header.m_Version >= 5)
+            if (header.m_Version >= SerializedFileFormatVersion.kUnknown_5)
             {
-                var userInformation = reader.ReadStringToNull();
+                userInformation = reader.ReadStringToNull();
             }
 
             //reader.AlignStream(16);
@@ -225,73 +226,84 @@ namespace AssetStudio
             version = versionSplit.Select(int.Parse).ToArray();
         }
 
-        private SerializedType ReadSerializedType()
+        private SerializedType ReadSerializedType(bool isRefType)
         {
             var type = new SerializedType();
 
             type.classID = reader.ReadInt32();
 
-            if (header.m_Version >= 16)
+            if (header.m_Version >= SerializedFileFormatVersion.kRefactoredClassId)
             {
                 type.m_IsStrippedType = reader.ReadBoolean();
             }
 
-            if (header.m_Version >= 17)
+            if (header.m_Version >= SerializedFileFormatVersion.kRefactorTypeData)
             {
                 type.m_ScriptTypeIndex = reader.ReadInt16();
             }
 
-            if (header.m_Version >= 13)
+            if (header.m_Version >= SerializedFileFormatVersion.kHasTypeTreeHashes)
             {
-                if ((header.m_Version < 16 && type.classID < 0) || (header.m_Version >= 16 && type.classID == 114))
+                if (isRefType && type.m_ScriptTypeIndex >= 0)
                 {
-                    type.m_ScriptID = reader.ReadBytes(16); //Hash128
+                    type.m_ScriptID = reader.ReadBytes(16);
                 }
-                type.m_OldTypeHash = reader.ReadBytes(16); //Hash128
+                else if ((header.m_Version < SerializedFileFormatVersion.kRefactoredClassId && type.classID < 0) || (header.m_Version >= SerializedFileFormatVersion.kRefactoredClassId && type.classID == 114))
+                {
+                    type.m_ScriptID = reader.ReadBytes(16);
+                }
+                type.m_OldTypeHash = reader.ReadBytes(16);
             }
 
             if (m_EnableTypeTree)
             {
-                var typeTree = new List<TypeTreeNode>();
-                if (header.m_Version >= 12 || header.m_Version == 10)
+                type.m_Type = new TypeTree();
+                type.m_Type.m_Nodes = new List<TypeTreeNode>();
+                if (header.m_Version >= SerializedFileFormatVersion.kUnknown_12 || header.m_Version == SerializedFileFormatVersion.kUnknown_10)
                 {
-                    TypeTreeBlobRead(typeTree);
+                    TypeTreeBlobRead(type.m_Type);
                 }
                 else
                 {
-                    ReadTypeTree(typeTree);
+                    ReadTypeTree(type.m_Type);
                 }
-
-                if (header.m_Version >= 21)
+                if (header.m_Version >= SerializedFileFormatVersion.kStoresTypeDependencies)
                 {
-                    type.m_TypeDependencies = reader.ReadInt32Array();
+                    if (isRefType)
+                    {
+                        type.m_KlassName = reader.ReadStringToNull();
+                        type.m_NameSpace = reader.ReadStringToNull();
+                        type.m_AsmName = reader.ReadStringToNull();
+                    }
+                    else
+                    {
+                        type.m_TypeDependencies = reader.ReadInt32Array();
+                    }
                 }
-
-                type.m_Nodes = typeTree;
             }
 
             return type;
         }
 
-        private void ReadTypeTree(List<TypeTreeNode> typeTree, int level = 0)
+        private void ReadTypeTree(TypeTree m_Type, int level = 0)
         {
             var typeTreeNode = new TypeTreeNode();
-            typeTree.Add(typeTreeNode);
+            m_Type.m_Nodes.Add(typeTreeNode);
             typeTreeNode.m_Level = level;
             typeTreeNode.m_Type = reader.ReadStringToNull();
             typeTreeNode.m_Name = reader.ReadStringToNull();
             typeTreeNode.m_ByteSize = reader.ReadInt32();
-            if (header.m_Version == 2)
+            if (header.m_Version == SerializedFileFormatVersion.kUnknown_2)
             {
                 var variableCount = reader.ReadInt32();
             }
-            if (header.m_Version != 3)
+            if (header.m_Version != SerializedFileFormatVersion.kUnknown_3)
             {
                 typeTreeNode.m_Index = reader.ReadInt32();
             }
             typeTreeNode.m_IsArray = reader.ReadInt32();
             typeTreeNode.m_Version = reader.ReadInt32();
-            if (header.m_Version != 3)
+            if (header.m_Version != SerializedFileFormatVersion.kUnknown_3)
             {
                 typeTreeNode.m_MetaFlag = reader.ReadInt32();
             }
@@ -299,18 +311,18 @@ namespace AssetStudio
             int childrenCount = reader.ReadInt32();
             for (int i = 0; i < childrenCount; i++)
             {
-                ReadTypeTree(typeTree, level + 1);
+                ReadTypeTree(m_Type, level + 1);
             }
         }
 
-        private void TypeTreeBlobRead(List<TypeTreeNode> typeTree)
+        private void TypeTreeBlobRead(TypeTree m_Type)
         {
             int numberOfNodes = reader.ReadInt32();
             int stringBufferSize = reader.ReadInt32();
             for (int i = 0; i < numberOfNodes; i++)
             {
                 var typeTreeNode = new TypeTreeNode();
-                typeTree.Add(typeTreeNode);
+                m_Type.m_Nodes.Add(typeTreeNode);
                 typeTreeNode.m_Version = reader.ReadUInt16();
                 typeTreeNode.m_Level = reader.ReadByte();
                 typeTreeNode.m_IsArray = reader.ReadBoolean() ? 1 : 0;
@@ -319,20 +331,20 @@ namespace AssetStudio
                 typeTreeNode.m_ByteSize = reader.ReadInt32();
                 typeTreeNode.m_Index = reader.ReadInt32();
                 typeTreeNode.m_MetaFlag = reader.ReadInt32();
-                if (header.m_Version >= 19)
+                if (header.m_Version >= SerializedFileFormatVersion.kTypeTreeNodeWithTypeFlags)
                 {
                     typeTreeNode.m_RefTypeHash = reader.ReadUInt64();
                 }
             }
-            var m_StringBuffer = reader.ReadBytes(stringBufferSize);
+            m_Type.m_StringBuffer = reader.ReadBytes(stringBufferSize);
 
-            using (var stringBufferReader = new BinaryReader(new MemoryStream(m_StringBuffer)))
+            using (var stringBufferReader = new BinaryReader(new MemoryStream(m_Type.m_StringBuffer)))
             {
                 for (int i = 0; i < numberOfNodes; i++)
                 {
-                    var typeTreeNode = typeTree[i];
-                    typeTreeNode.m_Type = ReadString(stringBufferReader, typeTreeNode.m_TypeStrOffset);
-                    typeTreeNode.m_Name = ReadString(stringBufferReader, typeTreeNode.m_NameStrOffset);
+                    var m_Node = m_Type.m_Nodes[i];
+                    m_Node.m_Type = ReadString(stringBufferReader, m_Node.m_TypeStrOffset);
+                    m_Node.m_Name = ReadString(stringBufferReader, m_Node.m_NameStrOffset);
                 }
             }
 

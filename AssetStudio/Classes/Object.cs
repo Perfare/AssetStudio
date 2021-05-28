@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Specialized;
 
 namespace AssetStudio
 {
@@ -36,47 +33,38 @@ namespace AssetStudio
             }
         }
 
-        protected bool HasStructMember(string name)
-        {
-            return serializedType?.m_Nodes != null && serializedType.m_Nodes.Any(x => x.m_Name == name);
-        }
-
         public string Dump()
         {
-            if (serializedType?.m_Nodes != null)
+            if (serializedType?.m_Type != null)
             {
-                var sb = new StringBuilder();
-                TypeTreeHelper.ReadTypeString(sb, serializedType.m_Nodes, reader);
-                return sb.ToString();
+                return TypeTreeHelper.ReadTypeString(serializedType.m_Type, reader);
             }
             return null;
         }
 
-        public string Dump(List<TypeTreeNode> m_Nodes)
+        public string Dump(TypeTree m_Type)
         {
-            if (m_Nodes != null)
+            if (m_Type != null)
             {
-                var sb = new StringBuilder();
-                TypeTreeHelper.ReadTypeString(sb, m_Nodes, reader);
-                return sb.ToString();
+                return TypeTreeHelper.ReadTypeString(m_Type, reader);
             }
             return null;
         }
 
         public OrderedDictionary ToType()
         {
-            if (serializedType?.m_Nodes != null)
+            if (serializedType?.m_Type != null)
             {
-                return TypeTreeHelper.ReadType(serializedType.m_Nodes, reader);
+                return TypeTreeHelper.ReadType(serializedType.m_Type, reader);
             }
             return null;
         }
 
-        public OrderedDictionary ToType(List<TypeTreeNode> m_Nodes)
+        public OrderedDictionary ToType(TypeTree m_Type)
         {
-            if (m_Nodes != null)
+            if (m_Type != null)
             {
-                return TypeTreeHelper.ReadType(m_Nodes, reader);
+                return TypeTreeHelper.ReadType(m_Type, reader);
             }
             return null;
         }
