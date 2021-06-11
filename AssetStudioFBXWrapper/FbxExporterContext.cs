@@ -270,6 +270,14 @@ namespace AssetStudio.FbxInterop
                     AsFbxMeshCreateNormalMapUV(mesh, 1);
                 }
 
+                for (int i = 2; i < importedMesh.hasUV.Length; i++)
+                {
+                    if (importedMesh.hasUV[i])
+                    {
+                        AsFbxMeshCreateDiffuseUV(mesh, i);
+                    }
+                }
+
                 if (importedMesh.hasTangent)
                 {
                     AsFbxMeshCreateElementTangent(mesh);
@@ -362,7 +370,7 @@ namespace AssetStudio.FbxInterop
                             AsFbxMeshElementNormalAdd(mesh, 0, normal.X, normal.Y, normal.Z);
                         }
 
-                        for (var uvIndex = 0; uvIndex < 2; uvIndex += 1)
+                        for (var uvIndex = 0; uvIndex < importedMesh.hasUV.Length; uvIndex += 1)
                         {
                             if (importedMesh.hasUV[uvIndex])
                             {
