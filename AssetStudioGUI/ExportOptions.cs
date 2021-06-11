@@ -36,10 +36,12 @@ namespace AssetStudioGUI
             exportAnimations.Checked = Properties.Settings.Default.exportAnimations;
             exportBlendShape.Checked = Properties.Settings.Default.exportBlendShape;
             castToBone.Checked = Properties.Settings.Default.castToBone;
+            exportAllUvsAsDiffuseMaps.Checked = Properties.Settings.Default.exportAllUvsAsDiffuseMaps;
             boneSize.Value = Properties.Settings.Default.boneSize;
             scaleFactor.Value = Properties.Settings.Default.scaleFactor;
             fbxVersion.SelectedIndex = Properties.Settings.Default.fbxVersion;
             fbxFormat.SelectedIndex = Properties.Settings.Default.fbxFormat;
+
         }
 
         private void OKbutton_Click(object sender, EventArgs e)
@@ -64,6 +66,7 @@ namespace AssetStudioGUI
             Properties.Settings.Default.exportAnimations = exportAnimations.Checked;
             Properties.Settings.Default.exportBlendShape = exportBlendShape.Checked;
             Properties.Settings.Default.castToBone = castToBone.Checked;
+            Properties.Settings.Default.exportAllUvsAsDiffuseMaps = exportAllUvsAsDiffuseMaps.Checked;
             Properties.Settings.Default.boneSize = boneSize.Value;
             Properties.Settings.Default.scaleFactor = scaleFactor.Value;
             Properties.Settings.Default.fbxVersion = fbxVersion.SelectedIndex;
@@ -78,5 +81,6 @@ namespace AssetStudioGUI
             DialogResult = DialogResult.Cancel;
             Close();
         }
+
     }
 }

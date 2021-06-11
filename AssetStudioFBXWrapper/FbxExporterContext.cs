@@ -173,12 +173,12 @@ namespace AssetStudio.FbxInterop
             AsFbxPrepareMaterials(_pContext, materialCount, textureCount);
         }
 
-        internal void ExportMeshFromFrame(ImportedFrame rootFrame, ImportedFrame meshFrame, List<ImportedMesh> meshList, List<ImportedMaterial> materialList, List<ImportedTexture> textureList, bool exportSkins)
+        internal void ExportMeshFromFrame(ImportedFrame rootFrame, ImportedFrame meshFrame, List<ImportedMesh> meshList, List<ImportedMaterial> materialList, List<ImportedTexture> textureList, bool exportSkins, bool exportAllUvsAsDiffuseMaps)
         {
             var meshNode = _frameToNode[meshFrame];
             var mesh = ImportedHelpers.FindMesh(meshFrame.Path, meshList);
 
-            ExportMesh(rootFrame, materialList, textureList, meshNode, mesh, exportSkins);
+            ExportMesh(rootFrame, materialList, textureList, meshNode, mesh, exportSkins, exportAllUvsAsDiffuseMaps);
         }
 
         private IntPtr ExportTexture(ImportedTexture texture)
@@ -207,7 +207,7 @@ namespace AssetStudio.FbxInterop
             return pTex;
         }
 
-        private void ExportMesh(ImportedFrame rootFrame, List<ImportedMaterial> materialList, List<ImportedTexture> textureList, IntPtr frameNode, ImportedMesh importedMesh, bool exportSkins)
+        private void ExportMesh(ImportedFrame rootFrame, List<ImportedMaterial> materialList, List<ImportedTexture> textureList, IntPtr frameNode, ImportedMesh importedMesh, bool exportSkins, bool exportAllUvsAsDiffuseMaps)
         {
             var boneList = importedMesh.BoneList;
             var totalBoneCount = 0;
@@ -260,19 +260,15 @@ namespace AssetStudio.FbxInterop
                     AsFbxMeshCreateElementNormal(mesh);
                 }
 
-                if (importedMesh.hasUV[0])
+                for (int i = 0; i < importedMesh.hasUV.Length; i++)
                 {
-                    AsFbxMeshCreateDiffuseUV(mesh, 0);
-                }
+                    if (!importedMesh.hasUV[i]) {continue;}
 
-                if (importedMesh.hasUV[1])
-                {
-                    AsFbxMeshCreateNormalMapUV(mesh, 1);
-                }
-
-                for (int i = 2; i < importedMesh.hasUV.Length; i++)
-                {
-                    if (importedMesh.hasUV[i])
+                    if (i == 1 && !exportAllUvsAsDiffuseMaps)
+                    {
+                        AsFbxMeshCreateNormalMapUV(mesh, 1);
+                    }
+                    else
                     {
                         AsFbxMeshCreateDiffuseUV(mesh, i);
                     }
