@@ -246,14 +246,7 @@ namespace AssetStudio.FbxInterop
 
                 var mesh = AsFbxMeshCreateMesh(_pContext, frameNode);
 
-                var totalVertexCount = 0;
-
-                foreach (var m in importedMesh.SubmeshList)
-                {
-                    totalVertexCount += m.VertexList.Count;
-                }
-
-                AsFbxMeshInitControlPoints(mesh, totalVertexCount);
+                AsFbxMeshInitControlPoints(mesh, importedMesh.VertexList.Count);
 
                 if (importedMesh.hasNormal)
                 {
@@ -281,8 +274,6 @@ namespace AssetStudio.FbxInterop
                 }
 
                 AsFbxMeshCreateElementMaterial(mesh);
-
-                var firstVertex = 0;
 
                 foreach (var meshObj in importedMesh.SubmeshList)
                 {
@@ -345,70 +336,69 @@ namespace AssetStudio.FbxInterop
                         }
                     }
 
-                    var vertexList = meshObj.VertexList;
-
-                    var vertexCount = vertexList.Count;
-
-                    for (var j = 0; j < vertexCount; j += 1)
-                    {
-                        var importedVertex = vertexList[j];
-
-                        var vertex = importedVertex.Vertex;
-                        AsFbxMeshSetControlPoint(mesh, j + firstVertex, vertex.X, vertex.Y, vertex.Z);
-
-                        if (importedMesh.hasNormal)
-                        {
-                            var normal = importedVertex.Normal;
-                            AsFbxMeshElementNormalAdd(mesh, 0, normal.X, normal.Y, normal.Z);
-                        }
-
-                        for (var uvIndex = 0; uvIndex < 2; uvIndex += 1)
-                        {
-                            if (importedMesh.hasUV[uvIndex])
-                            {
-                                var uv = importedVertex.UV[uvIndex];
-                                AsFbxMeshElementUVAdd(mesh, uvIndex, uv[0], uv[1]);
-                            }
-                        }
-
-                        if (importedMesh.hasTangent)
-                        {
-                            var tangent = importedVertex.Tangent;
-                            AsFbxMeshElementTangentAdd(mesh, 0, tangent.X, tangent.Y, tangent.Z, tangent.W);
-                        }
-
-                        if (importedMesh.hasColor)
-                        {
-                            var color = importedVertex.Color;
-                            AsFbxMeshElementVertexColorAdd(mesh, 0, color.R, color.G, color.B, color.A);
-                        }
-
-                        if (hasBones && importedVertex.BoneIndices != null)
-                        {
-                            var boneIndices = importedVertex.BoneIndices;
-                            var boneWeights = importedVertex.Weights;
-
-                            for (var k = 0; k < 4; k += 1)
-                            {
-                                if (boneIndices[k] < totalBoneCount && boneWeights[k] > 0)
-                                {
-                                    AsFbxMeshSetBoneWeight(pClusterArray, boneIndices[k], j + firstVertex, boneWeights[k]);
-                                }
-                            }
-                        }
-                    }
-
                     foreach (var face in meshObj.FaceList)
                     {
-                        var index0 = face.VertexIndices[0] + firstVertex;
-                        var index1 = face.VertexIndices[1] + firstVertex;
-                        var index2 = face.VertexIndices[2] + firstVertex;
+                        var index0 = face.VertexIndices[0] + meshObj.BaseVertex;
+                        var index1 = face.VertexIndices[1] + meshObj.BaseVertex;
+                        var index2 = face.VertexIndices[2] + meshObj.BaseVertex;
 
                         AsFbxMeshAddPolygon(mesh, materialIndex, index0, index1, index2);
                     }
-
-                    firstVertex += vertexCount;
                 }
+
+                var vertexList = importedMesh.VertexList;
+
+                var vertexCount = vertexList.Count;
+
+                for (var j = 0; j < vertexCount; j += 1)
+                {
+                    var importedVertex = vertexList[j];
+
+                    var vertex = importedVertex.Vertex;
+                    AsFbxMeshSetControlPoint(mesh, j, vertex.X, vertex.Y, vertex.Z);
+
+                    if (importedMesh.hasNormal)
+                    {
+                        var normal = importedVertex.Normal;
+                        AsFbxMeshElementNormalAdd(mesh, 0, normal.X, normal.Y, normal.Z);
+                    }
+
+                    for (var uvIndex = 0; uvIndex < 2; uvIndex += 1)
+                    {
+                        if (importedMesh.hasUV[uvIndex])
+                        {
+                            var uv = importedVertex.UV[uvIndex];
+                            AsFbxMeshElementUVAdd(mesh, uvIndex, uv[0], uv[1]);
+                        }
+                    }
+
+                    if (importedMesh.hasTangent)
+                    {
+                        var tangent = importedVertex.Tangent;
+                        AsFbxMeshElementTangentAdd(mesh, 0, tangent.X, tangent.Y, tangent.Z, tangent.W);
+                    }
+
+                    if (importedMesh.hasColor)
+                    {
+                        var color = importedVertex.Color;
+                        AsFbxMeshElementVertexColorAdd(mesh, 0, color.R, color.G, color.B, color.A);
+                    }
+
+                    if (hasBones && importedVertex.BoneIndices != null)
+                    {
+                        var boneIndices = importedVertex.BoneIndices;
+                        var boneWeights = importedVertex.Weights;
+
+                        for (var k = 0; k < 4; k += 1)
+                        {
+                            if (boneIndices[k] < totalBoneCount && boneWeights[k] > 0)
+                            {
+                                AsFbxMeshSetBoneWeight(pClusterArray, boneIndices[k], j, boneWeights[k]);
+                            }
+                        }
+                    }
+                }
+
 
                 if (hasBones)
                 {
