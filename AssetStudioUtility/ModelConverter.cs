@@ -319,79 +319,8 @@ namespace AssetStudio
                 }
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
-                iSubmesh.VertexList = new List<ImportedVertex>((int)submesh.vertexCount);
-                for (var j = mesh.m_SubMeshes[i].firstVertex; j < mesh.m_SubMeshes[i].firstVertex + mesh.m_SubMeshes[i].vertexCount; j++)
-                {
-                    var iVertex = new ImportedVertex();
-                    //Vertices
-                    int c = 3;
-                    if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
-                    {
-                        c = 4;
-                    }
-                    iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
-                    //Normals
-                    if (iMesh.hasNormal)
-                    {
-                        if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
-                        {
-                            c = 3;
-                        }
-                        else if (mesh.m_Normals.Length == mesh.m_VertexCount * 4)
-                        {
-                            c = 4;
-                        }
-                        iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
-                    }
-                    //UV
-                    iVertex.UV = new float[8][];
-                    for (int uv = 0; uv < 8; uv++)
-                    {
-                        if (iMesh.hasUV[uv])
-                        {
-                            var m_UV = mesh.GetUV(uv);
-                            if (m_UV.Length == mesh.m_VertexCount * 2)
-                            {
-                                c = 2;
-                            }
-                            else if (m_UV.Length == mesh.m_VertexCount * 3)
-                            {
-                                c = 3;
-                            }
-                            iVertex.UV[uv] = new[] { m_UV[j * c], m_UV[j * c + 1] };
-                        }
-                    }
-                    //Tangent
-                    if (iMesh.hasTangent)
-                    {
-                        iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
-                    }
-                    //Colors
-                    if (iMesh.hasColor)
-                    {
-                        if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
-                        {
-                            iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
-                        }
-                        else
-                        {
-                            iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
-                        }
-                    }
-                    //BoneInfluence
-                    if (mesh.m_Skin?.Length > 0)
-                    {
-                        var inf = mesh.m_Skin[j];
-                        iVertex.BoneIndices = new int[4];
-                        iVertex.Weights = new float[4];
-                        for (var k = 0; k < 4; k++)
-                        {
-                            iVertex.BoneIndices[k] = inf.boneIndex[k];
-                            iVertex.Weights[k] = inf.weight[k];
-                        }
-                    }
-                    iSubmesh.VertexList.Add(iVertex);
-                }
+                iSubmesh.BaseVertex = (int) mesh.m_SubMeshes[i].firstVertex;
+
                 //Face
                 iSubmesh.FaceList = new List<ImportedFace>(numFaces);
                 var end = firstFace + numFaces;
@@ -405,7 +334,83 @@ namespace AssetStudio
                     iSubmesh.FaceList.Add(face);
                 }
                 firstFace = end;
+
                 iMesh.SubmeshList.Add(iSubmesh);
+            }
+
+            // Shared vertex list
+            iMesh.VertexList = new List<ImportedVertex>((int)mesh.m_VertexCount);
+            for (var j = 0; j < mesh.m_VertexCount; j++)
+            {
+                var iVertex = new ImportedVertex();
+                //Vertices
+                int c = 3;
+                if (mesh.m_Vertices.Length == mesh.m_VertexCount * 4)
+                {
+                    c = 4;
+                }
+                iVertex.Vertex = new Vector3(-mesh.m_Vertices[j * c], mesh.m_Vertices[j * c + 1], mesh.m_Vertices[j * c + 2]);
+                //Normals
+                if (iMesh.hasNormal)
+                {
+                    if (mesh.m_Normals.Length == mesh.m_VertexCount * 3)
+                    {
+                        c = 3;
+                    }
+                    else if (mesh.m_Normals.Length == mesh.m_VertexCount * 4)
+                    {
+                        c = 4;
+                    }
+                    iVertex.Normal = new Vector3(-mesh.m_Normals[j * c], mesh.m_Normals[j * c + 1], mesh.m_Normals[j * c + 2]);
+                }
+                //UV
+                iVertex.UV = new float[8][];
+                for (int uv = 0; uv < 8; uv++)
+                {
+                    if (iMesh.hasUV[uv])
+                    {
+                        var m_UV = mesh.GetUV(uv);
+                        if (m_UV.Length == mesh.m_VertexCount * 2)
+                        {
+                            c = 2;
+                        }
+                        else if (m_UV.Length == mesh.m_VertexCount * 3)
+                        {
+                            c = 3;
+                        }
+                        iVertex.UV[uv] = new[] { m_UV[j * c], m_UV[j * c + 1] };
+                    }
+                }
+                //Tangent
+                if (iMesh.hasTangent)
+                {
+                    iVertex.Tangent = new Vector4(-mesh.m_Tangents[j * 4], mesh.m_Tangents[j * 4 + 1], mesh.m_Tangents[j * 4 + 2], mesh.m_Tangents[j * 4 + 3]);
+                }
+                //Colors
+                if (iMesh.hasColor)
+                {
+                    if (mesh.m_Colors.Length == mesh.m_VertexCount * 3)
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 3], mesh.m_Colors[j * 3 + 1], mesh.m_Colors[j * 3 + 2], 1.0f);
+                    }
+                    else
+                    {
+                        iVertex.Color = new Color(mesh.m_Colors[j * 4], mesh.m_Colors[j * 4 + 1], mesh.m_Colors[j * 4 + 2], mesh.m_Colors[j * 4 + 3]);
+                    }
+                }
+                //BoneInfluence
+                if (mesh.m_Skin?.Length > 0)
+                {
+                    var inf = mesh.m_Skin[j];
+                    iVertex.BoneIndices = new int[4];
+                    iVertex.Weights = new float[4];
+                    for (var k = 0; k < 4; k++)
+                    {
+                        iVertex.BoneIndices[k] = inf.boneIndex[k];
+                        iVertex.Weights[k] = inf.weight[k];
+                    }
+                }
+                iMesh.VertexList.Add(iVertex);
             }
 
             if (meshR is SkinnedMeshRenderer sMesh)
@@ -524,7 +529,7 @@ namespace AssetStudio
                                 keyframe.VertexList.Add(destVertex);
                                 var morphVertex = mesh.m_Shapes.vertices[j];
                                 destVertex.Index = morphVertex.index;
-                                var sourceVertex = GetSourceVertex(iMesh.SubmeshList, (int)morphVertex.index);
+                                var sourceVertex = iMesh.VertexList[(int)morphVertex.index];
                                 destVertex.Vertex = new ImportedVertex();
                                 var morphPos = morphVertex.vertex;
                                 destVertex.Vertex.Vertex = sourceVertex.Vertex + new Vector3(-morphPos.X, morphPos.Y, morphPos.Z);
@@ -1012,20 +1017,6 @@ namespace AssetStudio
                 boneName = "unknown " + hash;
             }
             return boneName;
-        }
-
-        private static ImportedVertex GetSourceVertex(List<ImportedSubmesh> submeshList, int morphVertIndex)
-        {
-            foreach (var submesh in submeshList)
-            {
-                var vertList = submesh.VertexList;
-                if (morphVertIndex < vertList.Count)
-                {
-                    return vertList[morphVertIndex];
-                }
-                morphVertIndex -= vertList.Count;
-            }
-            return null;
         }
 
         private void CreateBonePathHash(Transform m_Transform)

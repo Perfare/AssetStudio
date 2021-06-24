@@ -132,6 +132,7 @@ namespace AssetStudio
     public class ImportedMesh
     {
         public string Path { get; set; }
+        public List<ImportedVertex> VertexList { get; set; }
         public List<ImportedSubmesh> SubmeshList { get; set; }
         public List<ImportedBone> BoneList { get; set; }
         public bool hasNormal { get; set; }
@@ -142,9 +143,9 @@ namespace AssetStudio
 
     public class ImportedSubmesh
     {
-        public List<ImportedVertex> VertexList { get; set; }
         public List<ImportedFace> FaceList { get; set; }
         public string Material { get; set; }
+        public int BaseVertex { get; set; }
     }
 
     public class ImportedVertex
