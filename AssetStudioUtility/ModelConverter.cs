@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Text;
-using TGASharpLib;
 
 namespace AssetStudio
 {
@@ -17,7 +14,7 @@ namespace AssetStudio
         public List<ImportedKeyframedAnimation> AnimationList { get; protected set; } = new List<ImportedKeyframedAnimation>();
         public List<ImportedMorph> MorphList { get; protected set; } = new List<ImportedMorph>();
 
-        private string imageFormat;
+        private ImageFormat imageFormat;
         private Avatar avatar;
         private HashSet<AnimationClip> animationClipHashSet = new HashSet<AnimationClip>();
         private Dictionary<uint, string> bonePathHash = new Dictionary<uint, string>();
@@ -25,7 +22,7 @@ namespace AssetStudio
         private Dictionary<Transform, ImportedFrame> transformDictionary = new Dictionary<Transform, ImportedFrame>();
         Dictionary<uint, string> morphChannelNames = new Dictionary<uint, string>();
 
-        public ModelConverter(GameObject m_GameObject, string imageFormat, AnimationClip[] animationList = null)
+        public ModelConverter(GameObject m_GameObject, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
             this.imageFormat = imageFormat;
             if (m_GameObject.m_Animator != null)
@@ -50,7 +47,7 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
-        public ModelConverter(string rootName, List<GameObject> m_GameObjects, string imageFormat, AnimationClip[] animationList = null)
+        public ModelConverter(string rootName, List<GameObject> m_GameObjects, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
             this.imageFormat = imageFormat;
             RootFrame = CreateFrame(rootName, Vector3.Zero, new Quaternion(0, 0, 0, 0), Vector3.One);
@@ -80,7 +77,7 @@ namespace AssetStudio
             ConvertAnimations();
         }
 
-        public ModelConverter(Animator m_Animator, string imageFormat, AnimationClip[] animationList = null)
+        public ModelConverter(Animator m_Animator, ImageFormat imageFormat, AnimationClip[] animationList = null)
         {
             this.imageFormat = imageFormat;
             InitWithAnimator(m_Animator);
@@ -319,7 +316,7 @@ namespace AssetStudio
                 }
                 ImportedMaterial iMat = ConvertMaterial(mat);
                 iSubmesh.Material = iMat.Name;
-                iSubmesh.BaseVertex = (int) mesh.m_SubMeshes[i].firstVertex;
+                iSubmesh.BaseVertex = (int)mesh.m_SubMeshes[i].firstVertex;
 
                 //Face
                 iSubmesh.FaceList = new List<ImportedFace>(numFaces);
@@ -699,7 +696,7 @@ namespace AssetStudio
 
                     texture.Dest = dest;
 
-                    var ext = $".{imageFormat.ToLower()}";
+                    var ext = $".{imageFormat.ToString().ToLower()}";
                     if (textureNameDictionary.TryGetValue(m_Texture2D, out var textureName))
                     {
                         texture.Name = textureName;
@@ -745,30 +742,13 @@ namespace AssetStudio
                 return;
             }
 
-            var bitmap = m_Texture2D.ConvertToBitmap(true);
-            if (bitmap != null)
+            var stream = m_Texture2D.ConvertToStream(imageFormat, true);
+            if (stream != null)
             {
-                using (var stream = new MemoryStream())
+                using (stream)
                 {
-                    switch (imageFormat)
-                    {
-                        case "BMP":
-                            bitmap.Save(stream, ImageFormat.Bmp);
-                            break;
-                        case "PNG":
-                            bitmap.Save(stream, ImageFormat.Png);
-                            break;
-                        case "JPEG":
-                            bitmap.Save(stream, ImageFormat.Jpeg);
-                            break;
-                        case "TGA":
-                            var tga = new TGA(bitmap);
-                            tga.Save(stream);
-                            break;
-                    }
                     iTex = new ImportedTexture(stream, name);
                     TextureList.Add(iTex);
-                    bitmap.Dispose();
                 }
             }
         }

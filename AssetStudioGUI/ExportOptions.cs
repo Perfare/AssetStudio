@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using AssetStudio;
+using System;
 using System.Windows.Forms;
 
 namespace AssetStudioGUI
@@ -19,7 +13,7 @@ namespace AssetStudioGUI
             restoreExtensionName.Checked = Properties.Settings.Default.restoreExtensionName;
             converttexture.Checked = Properties.Settings.Default.convertTexture;
             convertAudio.Checked = Properties.Settings.Default.convertAudio;
-            var str = Properties.Settings.Default.convertType;
+            var str = Properties.Settings.Default.convertType.ToString();
             foreach (Control c in panel1.Controls)
             {
                 if (c.Text == str)
@@ -54,7 +48,7 @@ namespace AssetStudioGUI
             {
                 if (((RadioButton)c).Checked)
                 {
-                    Properties.Settings.Default.convertType = c.Text;
+                    Properties.Settings.Default.convertType = (ImageFormat)Enum.Parse(typeof(ImageFormat), c.Text);
                     break;
                 }
             }

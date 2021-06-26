@@ -23,8 +23,8 @@
     <Setting Name="convertAudio" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="convertType" Type="System.String" Scope="User">
-      <Value Profile="(Default)">PNG</Value>
+    <Setting Name="convertType" Type="AssetStudio.ImageFormat" Scope="User">
+      <Value Profile="(Default)">Png</Value>
     </Setting>
     <Setting Name="eulerFilter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

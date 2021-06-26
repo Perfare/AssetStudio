@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Drawing.Imaging;
+﻿using AssetStudio;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AssetStudio;
-using Newtonsoft.Json;
-using TGASharpLib;
 
 namespace AssetStudioGUI
 {
@@ -16,40 +14,17 @@ namespace AssetStudioGUI
             var m_Texture2D = (Texture2D)item.Asset;
             if (Properties.Settings.Default.convertTexture)
             {
-                var bitmap = m_Texture2D.ConvertToBitmap(true);
-                if (bitmap == null)
+                var type = Properties.Settings.Default.convertType;
+                if (!TryExportFile(exportPath, item, "." + type.ToString().ToLower(), out var exportFullPath))
                     return false;
-                ImageFormat format = null;
-                var ext = Properties.Settings.Default.convertType;
-                bool tga = false;
-                switch (ext)
-                {
-                    case "BMP":
-                        format = ImageFormat.Bmp;
-                        break;
-                    case "PNG":
-                        format = ImageFormat.Png;
-                        break;
-                    case "JPEG":
-                        format = ImageFormat.Jpeg;
-                        break;
-                    case "TGA":
-                        tga = true;
-                        break;
-                }
-                if (!TryExportFile(exportPath, item, "." + ext.ToLower(), out var exportFullPath))
+                var stream = m_Texture2D.ConvertToStream(type, true);
+                if (stream == null)
                     return false;
-                if (tga)
+                using (stream)
                 {
-                    var file = new TGA(bitmap);
-                    file.Save(exportFullPath);
+                    File.WriteAllBytes(exportFullPath, stream.ToArray());
+                    return true;
                 }
-                else
-                {
-                    bitmap.Save(exportFullPath, format);
-                }
-                bitmap.Dispose();
-                return true;
             }
             else
             {
@@ -252,40 +227,17 @@ namespace AssetStudioGUI
 
         public static bool ExportSprite(AssetItem item, string exportPath)
         {
-            ImageFormat format = null;
             var type = Properties.Settings.Default.convertType;
-            bool tga = false;
-            switch (type)
-            {
-                case "BMP":
-                    format = ImageFormat.Bmp;
-                    break;
-                case "PNG":
-                    format = ImageFormat.Png;
-                    break;
-                case "JPEG":
-                    format = ImageFormat.Jpeg;
-                    break;
-                case "TGA":
-                    tga = true;
-                    break;
-            }
-            if (!TryExportFile(exportPath, item, "." + type.ToLower(), out var exportFullPath))
+            if (!TryExportFile(exportPath, item, "." + type.ToString().ToLower(), out var exportFullPath))
                 return false;
-            var bitmap = ((Sprite)item.Asset).GetImage();
-            if (bitmap != null)
+            var stream = ((Sprite)item.Asset).GetImage(type);
+            if (stream != null)
             {
-                if (tga)
+                using (stream)
                 {
-                    var file = new TGA(bitmap);
-                    file.Save(exportFullPath);
+                    File.WriteAllBytes(exportFullPath, stream.ToArray());
+                    return true;
                 }
-                else
-                {
-                    bitmap.Save(exportFullPath, format);
-                }
-                bitmap.Dispose();
-                return true;
             }
             return false;
         }
