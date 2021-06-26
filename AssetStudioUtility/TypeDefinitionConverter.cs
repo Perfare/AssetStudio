@@ -26,22 +26,22 @@ namespace AssetStudio
         {
             var nodes = new List<TypeTreeNode>();
 
-            Stack<TypeReference> baseTypes = new Stack<TypeReference>();
-            TypeReference baseType = TypeDef.BaseType;
-            while (!UnitySerializationLogic.IsNonSerialized(baseType))
+            var baseTypes = new Stack<TypeReference>();
+            var lastBaseType = TypeDef.BaseType;
+            while (!UnitySerializationLogic.IsNonSerialized(lastBaseType))
             {
-                GenericInstanceType genericInstanceType = baseType as GenericInstanceType;
+                var genericInstanceType = lastBaseType as GenericInstanceType;
                 if (genericInstanceType != null)
                 {
                     TypeResolver.Add(genericInstanceType);
                 }
-                baseTypes.Push(baseType);
-                baseType = baseType.Resolve().BaseType;
+                baseTypes.Push(lastBaseType);
+                lastBaseType = lastBaseType.Resolve().BaseType;
             }
             while (baseTypes.Count > 0)
             {
-                TypeReference typeReference = baseTypes.Pop();
-                TypeDefinition typeDefinition = typeReference.Resolve();
+                var typeReference = baseTypes.Pop();
+                var typeDefinition = typeReference.Resolve();
                 foreach (var fieldDefinition in typeDefinition.Fields.Where(WillUnitySerialize))
                 {
                     if (!IsHiddenByParentClass(baseTypes, fieldDefinition, TypeDef))
@@ -50,15 +50,15 @@ namespace AssetStudio
                     }
                 }
 
-                var genericInstanceType2 = typeReference as GenericInstanceType;
-                if (genericInstanceType2 != null)
+                var genericInstanceType = typeReference as GenericInstanceType;
+                if (genericInstanceType != null)
                 {
-                    TypeResolver.Remove(genericInstanceType2);
+                    TypeResolver.Remove(genericInstanceType);
                 }
             }
-            foreach (FieldDefinition fieldDefinition2 in FilteredFields())
+            foreach (var field in FilteredFields())
             {
-                nodes.AddRange(ProcessingFieldRef(fieldDefinition2));
+                nodes.AddRange(ProcessingFieldRef(field));
             }
 
             return nodes;
@@ -66,75 +66,60 @@ namespace AssetStudio
 
         private bool WillUnitySerialize(FieldDefinition fieldDefinition)
         {
-            bool result;
             try
             {
-                TypeReference typeReference = TypeResolver.Resolve(fieldDefinition.FieldType);
-                if (UnitySerializationLogic.ShouldNotTryToResolve(typeReference))
+                var resolvedFieldType = TypeResolver.Resolve(fieldDefinition.FieldType);
+                if (UnitySerializationLogic.ShouldNotTryToResolve(resolvedFieldType))
                 {
-                    result = false;
+                    return false;
                 }
-                else
+                if (!UnityEngineTypePredicates.IsUnityEngineObject(resolvedFieldType))
                 {
-                    if (!UnityEngineTypePredicates.IsUnityEngineObject(typeReference))
+                    if (resolvedFieldType.FullName == fieldDefinition.DeclaringType.FullName)
                     {
-                        if (typeReference.FullName == fieldDefinition.DeclaringType.FullName)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    result = UnitySerializationLogic.WillUnitySerialize(fieldDefinition, TypeResolver);
                 }
+                return UnitySerializationLogic.WillUnitySerialize(fieldDefinition, TypeResolver);
             }
             catch (Exception ex)
             {
                 throw new Exception(string.Format("Exception while processing {0} {1}, error {2}", fieldDefinition.FieldType.FullName, fieldDefinition.FullName, ex.Message));
             }
-            return result;
         }
 
         private static bool IsHiddenByParentClass(IEnumerable<TypeReference> parentTypes, FieldDefinition fieldDefinition, TypeDefinition processingType)
         {
-            return processingType.Fields.Any((FieldDefinition f) => f.Name == fieldDefinition.Name) || parentTypes.Any((TypeReference t) => t.Resolve().Fields.Any((FieldDefinition f) => f.Name == fieldDefinition.Name));
+            return processingType.Fields.Any(f => f.Name == fieldDefinition.Name) || parentTypes.Any(t => t.Resolve().Fields.Any(f => f.Name == fieldDefinition.Name));
         }
 
         private IEnumerable<FieldDefinition> FilteredFields()
         {
-            foreach (var f in TypeDef.Fields.Where(WillUnitySerialize))
-            {
-                if (UnitySerializationLogic.IsSupportedCollection(f.FieldType) || !f.FieldType.IsGenericInstance || UnitySerializationLogic.ShouldImplementIDeserializable(f.FieldType.Resolve()))
-                {
-                    yield return f;
-                }
-            }
-
-            yield break;
+            return TypeDef.Fields.Where(WillUnitySerialize).Where(f =>
+                UnitySerializationLogic.IsSupportedCollection(f.FieldType) ||
+                !f.FieldType.IsGenericInstance ||
+                UnitySerializationLogic.ShouldImplementIDeserializable(f.FieldType.Resolve()));
         }
 
         private FieldReference ResolveGenericFieldReference(FieldReference fieldRef)
         {
-            FieldReference field = new FieldReference(fieldRef.Name, fieldRef.FieldType, ResolveDeclaringType(fieldRef.DeclaringType));
+            var field = new FieldReference(fieldRef.Name, fieldRef.FieldType, ResolveDeclaringType(fieldRef.DeclaringType));
             return TypeDef.Module.ImportReference(field);
         }
 
         private TypeReference ResolveDeclaringType(TypeReference declaringType)
         {
-            TypeDefinition typeDefinition = declaringType.Resolve();
-            TypeReference result;
+            var typeDefinition = declaringType.Resolve();
             if (typeDefinition == null || !typeDefinition.HasGenericParameters)
             {
-                result = typeDefinition;
+                return typeDefinition;
             }
-            else
+            var genericInstanceType = new GenericInstanceType(typeDefinition);
+            foreach (var genericParameter in typeDefinition.GenericParameters)
             {
-                GenericInstanceType genericInstanceType = new GenericInstanceType(typeDefinition);
-                foreach (GenericParameter item in typeDefinition.GenericParameters)
-                {
-                    genericInstanceType.GenericArguments.Add(item);
-                }
-                result = TypeResolver.Resolve(genericInstanceType);
+                genericInstanceType.GenericArguments.Add(genericParameter);
             }
-            return result;
+            return TypeResolver.Resolve(genericInstanceType);
         }
 
         private List<TypeTreeNode> ProcessingFieldRef(FieldReference fieldDef)
@@ -155,7 +140,6 @@ namespace AssetStudio
 
         private static bool RequiresAlignment(TypeReference typeRef)
         {
-            bool result;
             switch (typeRef.MetadataType)
             {
                 case MetadataType.Boolean:
@@ -164,13 +148,10 @@ namespace AssetStudio
                 case MetadataType.Byte:
                 case MetadataType.Int16:
                 case MetadataType.UInt16:
-                    result = true;
-                    break;
+                    return true;
                 default:
-                    result = (UnitySerializationLogic.IsSupportedCollection(typeRef) && RequiresAlignment(CecilUtils.ElementTypeOfCollection(typeRef)));
-                    break;
+                    return UnitySerializationLogic.IsSupportedCollection(typeRef) && RequiresAlignment(CecilUtils.ElementTypeOfCollection(typeRef));
             }
-            return result;
         }
 
         private static bool IsSystemString(TypeReference typeRef)
