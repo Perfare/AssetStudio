@@ -3,20 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{422FEC21-EF60-4F29-AA56-95DFDA23C913}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetStudio", "AssetStudio\AssetStudio.csproj", "{422FEC21-EF60-4F29-AA56-95DFDA23C913}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio.PInvoke", "AssetStudio.PInvoke\AssetStudio.PInvoke.csproj", "{0B2BE613-3049-4021-85D1-21C325F729F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetStudio.PInvoke", "AssetStudio.PInvoke\AssetStudio.PInvoke.csproj", "{0B2BE613-3049-4021-85D1-21C325F729F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioFBXWrapper", "AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj", "{E301AFEA-84E7-4BCE-8D65-A2576D8D105B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetStudioFBXWrapper", "AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj", "{E301AFEA-84E7-4BCE-8D65-A2576D8D105B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027} = {11EA25A3-ED68-40EE-A9D0-7FDE3B583027}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioGUI", "AssetStudioGUI\AssetStudioGUI.csproj", "{29EAD018-1C67-497A-AB8E-727D595AD756}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetStudioGUI", "AssetStudioGUI\AssetStudioGUI.csproj", "{29EAD018-1C67-497A-AB8E-727D595AD756}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioUtility", "AssetStudioUtility\AssetStudioUtility.csproj", "{65EAFFA3-01D3-4EF5-B092-8B4647E9A1FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetStudioUtility", "AssetStudioUtility\AssetStudioUtility.csproj", "{65EAFFA3-01D3-4EF5-B092-8B4647E9A1FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Texture2DDecoderWrapper", "Texture2DDecoderWrapper\Texture2DDecoderWrapper.csproj", "{6438FEC1-56B0-488C-A5E2-FBDB23E9574B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Texture2DDecoderWrapper", "Texture2DDecoderWrapper\Texture2DDecoderWrapper.csproj", "{6438FEC1-56B0-488C-A5E2-FBDB23E9574B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{29356642-C46E-4144-83D8-22DC09D0D7FD} = {29356642-C46E-4144-83D8-22DC09D0D7FD}
 	EndProjectSection
@@ -108,21 +108,25 @@ Global
 		{6438FEC1-56B0-488C-A5E2-FBDB23E9574B}.Release|x86.ActiveCfg = Release|Any CPU
 		{6438FEC1-56B0-488C-A5E2-FBDB23E9574B}.Release|x86.Build.0 = Release|Any CPU
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|Any CPU.Build.0 = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.ActiveCfg = Debug|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.Build.0 = Debug|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.ActiveCfg = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.Build.0 = Debug|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|Any CPU.ActiveCfg = Release|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|Any CPU.Build.0 = Release|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.ActiveCfg = Release|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.Build.0 = Release|x64
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x86.ActiveCfg = Release|Win32
 		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x86.Build.0 = Release|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|Any CPU.Build.0 = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x64.ActiveCfg = Debug|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x64.Build.0 = Debug|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x86.ActiveCfg = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Debug|x86.Build.0 = Debug|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|Any CPU.Build.0 = Release|Win32
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x64.ActiveCfg = Release|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x64.Build.0 = Release|x64
 		{29356642-C46E-4144-83D8-22DC09D0D7FD}.Release|x86.ActiveCfg = Release|Win32
