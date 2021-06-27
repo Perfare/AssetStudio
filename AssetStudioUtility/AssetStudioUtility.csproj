@@ -1,154 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{80AEC261-21EE-4E4F-A93B-7A744DC84888}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AssetStudioUtility</RootNamespace>
-    <AssemblyName>AssetStudioUtility</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
+    <AssemblyVersion>0.15.0.0</AssemblyVersion>
+    <FileVersion>0.15.0.0</FileVersion>
+    <Copyright>Copyright © Perfare 2018-2021</Copyright>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.Fonts.1.0.0-beta15\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
-    </Reference>
-    <Reference Include="SixLabors.ImageSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.1.0.3\lib\net472\SixLabors.ImageSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta13\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.UnmanagedMemoryStream, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.UnmanagedMemoryStream.4.3.0\lib\net46\System.IO.UnmanagedMemoryStream.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="AssemblyLoader.cs" />
-    <Compile Include="AudioClipConverter.cs" />
-    <Compile Include="CSspv\Disassembler.cs" />
-    <Compile Include="CSspv\EnumValuesExtensions.cs" />
-    <Compile Include="CSspv\Instruction.cs" />
-    <Compile Include="CSspv\Module.cs" />
-    <Compile Include="CSspv\OperandType.cs" />
-    <Compile Include="CSspv\ParsedInstruction.cs" />
-    <Compile Include="CSspv\Reader.cs" />
-    <Compile Include="CSspv\SpirV.Core.Grammar.cs" />
-    <Compile Include="CSspv\SpirV.Meta.cs" />
-    <Compile Include="CSspv\Types.cs" />
-    <Compile Include="FMOD Studio API\fmod.cs" />
-    <Compile Include="FMOD Studio API\fmod_dsp.cs" />
-    <Compile Include="FMOD Studio API\fmod_errors.cs" />
-    <Compile Include="ImageExtensions.cs" />
-    <Compile Include="ImageFormat.cs" />
-    <Compile Include="ModelConverter.cs" />
-    <Compile Include="ModelExporter.cs" />
-    <Compile Include="MonoBehaviourConverter.cs" />
-    <Compile Include="SerializedTypeHelper.cs" />
-    <Compile Include="TypeDefinitionConverter.cs" />
-    <Compile Include="MyAssemblyResolver.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShaderConverter.cs" />
-    <Compile Include="Smolv\OpData.cs" />
-    <Compile Include="Smolv\SmolvDecoder.cs" />
-    <Compile Include="Smolv\SpvOp.cs" />
-    <Compile Include="SpirVShaderConverter.cs" />
-    <Compile Include="SpriteHelper.cs" />
-    <Compile Include="Texture2DConverter.cs" />
-    <Compile Include="Texture2DExtensions.cs" />
-    <Compile Include="Unity.CecilTools\CecilUtils.cs" />
-    <Compile Include="Unity.CecilTools\ElementType.cs" />
-    <Compile Include="Unity.CecilTools\Extensions\MethodDefinitionExtensions.cs" />
-    <Compile Include="Unity.CecilTools\Extensions\ResolutionExtensions.cs" />
-    <Compile Include="Unity.CecilTools\Extensions\TypeDefinitionExtensions.cs" />
-    <Compile Include="Unity.CecilTools\Extensions\TypeReferenceExtensions.cs" />
-    <Compile Include="Unity.SerializationLogic\UnityEngineTypePredicates.cs" />
-    <Compile Include="Unity.SerializationLogic\UnitySerializationLogic.cs" />
+    <ProjectReference Include="..\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj" />
+    <ProjectReference Include="..\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj" />
+    <ProjectReference Include="..\AssetStudio\AssetStudio.csproj" />
+    <ProjectReference Include="..\Texture2DDecoderWrapper\Texture2DDecoderWrapper.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj">
-      <Project>{40c796b5-88ce-4adc-acd6-2f4862b7f136}</Project>
-      <Name>AssetStudio.PInvoke</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj">
-      <Project>{bd76e63f-1517-47fa-8233-33e853a3acee}</Project>
-      <Name>AssetStudioFBXWrapper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AssetStudio\AssetStudio.csproj">
-      <Project>{7662f8c2-7bfd-442e-a948-a43b4f7eb06e}</Project>
-      <Name>AssetStudio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Texture2DDecoderWrapper\Texture2DDecoderWrapper.csproj">
-      <Project>{2afce830-b463-49b3-a026-877e5eafc0a4}</Project>
-      <Name>Texture2DDecoderWrapper</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>
