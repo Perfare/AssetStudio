@@ -3,6 +3,7 @@ using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,8 +52,13 @@ namespace AssetStudio
             {
                 using (originalImage)
                 {
-                    var rectf = new RectangleF(textureRect.x, textureRect.y, textureRect.width, textureRect.height);
-                    var rect = Rectangle.Ceiling(rectf);
+                    var rectX = (int)Math.Floor(textureRect.x);
+                    var rectY = (int)Math.Floor(textureRect.y);
+                    var rectRight = (int)Math.Ceiling(textureRect.x + textureRect.width);
+                    var rectBottom = (int)Math.Ceiling(textureRect.y + textureRect.height);
+                    rectRight = Math.Min(rectRight, m_Texture2D.m_Width);
+                    rectBottom = Math.Min(rectBottom, m_Texture2D.m_Height);
+                    var rect = new Rectangle(rectX, rectY, rectRight - rectX, rectBottom - rectY);
                     var spriteImage = originalImage.Clone(x => x.Crop(rect));
                     if (settingsRaw.packed == 1)
                     {
