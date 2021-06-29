@@ -219,11 +219,14 @@ namespace AssetStudio
 
         public void SetVersion(string stringVersion)
         {
-            unityVersion = stringVersion;
-            var buildSplit = Regex.Replace(stringVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-            buildType = new BuildType(buildSplit[0]);
-            var versionSplit = Regex.Replace(stringVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-            version = versionSplit.Select(int.Parse).ToArray();
+            if (stringVersion != strippedVersion)
+            {
+                unityVersion = stringVersion;
+                var buildSplit = Regex.Replace(stringVersion, @"\d", "").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                buildType = new BuildType(buildSplit[0]);
+                var versionSplit = Regex.Replace(stringVersion, @"\D", ".").Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                version = versionSplit.Select(int.Parse).ToArray();
+            }
         }
 
         private SerializedType ReadSerializedType(bool isRefType)
@@ -370,6 +373,10 @@ namespace AssetStudio
             Objects.Add(obj);
             ObjectsDic.Add(obj.m_PathID, obj);
         }
+
+        public bool IsVersionStripped => unityVersion == strippedVersion;
+
+        private const string strippedVersion = "0.0.0";
 
         public static bool IsSerializedFile(EndianBinaryReader reader)
         {

@@ -116,7 +116,7 @@ namespace AssetStudioGUI
             if (paths.Length > 0)
             {
                 ResetForm();
-
+                assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
                 if (paths.Length == 1 && Directory.Exists(paths[0]))
                 {
                     await Task.Run(() => assetsManager.LoadFolder(paths[0]));
@@ -125,7 +125,6 @@ namespace AssetStudioGUI
                 {
                     await Task.Run(() => assetsManager.LoadFiles(paths));
                 }
-
                 BuildAssetStructures();
             }
         }
@@ -135,6 +134,7 @@ namespace AssetStudioGUI
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 ResetForm();
+                assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
                 await Task.Run(() => assetsManager.LoadFiles(openFileDialog1.FileNames));
                 BuildAssetStructures();
             }
@@ -146,6 +146,7 @@ namespace AssetStudioGUI
             if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
             {
                 ResetForm();
+                assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
                 await Task.Run(() => assetsManager.LoadFolder(openFolderDialog.Folder));
                 BuildAssetStructures();
             }

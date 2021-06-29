@@ -9,6 +9,7 @@ namespace AssetStudio
 {
     public class AssetsManager
     {
+        public string SpecifyUnityVersion;
         public List<SerializedFile> assetsFileList = new List<SerializedFile>();
         internal Dictionary<string, int> assetsFileIndexCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         internal Dictionary<string, BinaryReader> resourceFileReaders = new Dictionary<string, BinaryReader>(StringComparer.OrdinalIgnoreCase);
@@ -82,6 +83,7 @@ namespace AssetStudio
                 try
                 {
                     var assetsFile = new SerializedFile(this, fullName, reader);
+                    CheckStrippedVersion(assetsFile);
                     assetsFileList.Add(assetsFile);
                     assetsFileListHash.Add(assetsFile.fileName);
 
@@ -130,10 +132,11 @@ namespace AssetStudio
                 {
                     var assetsFile = new SerializedFile(this, fullName, reader);
                     assetsFile.originalPath = originalPath;
-                    if (assetsFile.header.m_Version < SerializedFileFormatVersion.kUnknown_7)
+                    if (!string.IsNullOrEmpty(unityVersion) && assetsFile.header.m_Version < SerializedFileFormatVersion.kUnknown_7)
                     {
                         assetsFile.SetVersion(unityVersion);
                     }
+                    CheckStrippedVersion(assetsFile);
                     assetsFileList.Add(assetsFile);
                     assetsFileListHash.Add(assetsFile.fileName);
                 }
@@ -215,6 +218,18 @@ namespace AssetStudio
             finally
             {
                 reader.Dispose();
+            }
+        }
+
+        public void CheckStrippedVersion(SerializedFile assetsFile)
+        {
+            if (assetsFile.IsVersionStripped && string.IsNullOrEmpty(SpecifyUnityVersion))
+            {
+                throw new Exception("The Unity version has been stripped, please set the version in the options");
+            }
+            if (!string.IsNullOrEmpty(SpecifyUnityVersion))
+            {
+                assetsFile.SetVersion(SpecifyUnityVersion);
             }
         }
 

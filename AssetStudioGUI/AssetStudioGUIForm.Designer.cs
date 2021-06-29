@@ -41,6 +41,8 @@
             this.displayAll = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePreview = new System.Windows.Forms.ToolStripMenuItem();
             this.displayInfo = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem14 = new System.Windows.Forms.ToolStripMenuItem();
+            this.specifyUnityVersion = new System.Windows.Forms.ToolStripTextBox();
             this.showExpOpt = new System.Windows.Forms.ToolStripMenuItem();
             this.modelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportAllObjectssplitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -210,6 +212,7 @@
             this.displayAll,
             this.enablePreview,
             this.displayInfo,
+            this.toolStripMenuItem14,
             this.showExpOpt});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(66, 21);
@@ -248,6 +251,20 @@
             this.displayInfo.ToolTipText = "Toggle the overlay that shows information about each asset, eg. image size, forma" +
     "t, audio bitrate, etc.";
             this.displayInfo.CheckedChanged += new System.EventHandler(this.displayAssetInfo_Check);
+            // 
+            // toolStripMenuItem14
+            // 
+            this.toolStripMenuItem14.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.specifyUnityVersion});
+            this.toolStripMenuItem14.Name = "toolStripMenuItem14";
+            this.toolStripMenuItem14.Size = new System.Drawing.Size(223, 22);
+            this.toolStripMenuItem14.Text = "Specify Unity version";
+            // 
+            // specifyUnityVersion
+            // 
+            this.specifyUnityVersion.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F);
+            this.specifyUnityVersion.Name = "specifyUnityVersion";
+            this.specifyUnityVersion.Size = new System.Drawing.Size(100, 23);
             // 
             // showExpOpt
             // 
@@ -429,7 +446,7 @@
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(396, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(281, 6);
             // 
             // toolStripMenuItem10
             // 
@@ -438,27 +455,27 @@
             this.toolStripMenuItem12,
             this.toolStripMenuItem13});
             this.toolStripMenuItem10.Name = "toolStripMenuItem10";
-            this.toolStripMenuItem10.Size = new System.Drawing.Size(399, 34);
+            this.toolStripMenuItem10.Size = new System.Drawing.Size(284, 22);
             this.toolStripMenuItem10.Text = "Asset list to XML";
             // 
             // toolStripMenuItem11
             // 
             this.toolStripMenuItem11.Name = "toolStripMenuItem11";
-            this.toolStripMenuItem11.Size = new System.Drawing.Size(270, 34);
+            this.toolStripMenuItem11.Size = new System.Drawing.Size(165, 22);
             this.toolStripMenuItem11.Text = "All assets";
             this.toolStripMenuItem11.Click += new System.EventHandler(this.toolStripMenuItem11_Click);
             // 
             // toolStripMenuItem12
             // 
             this.toolStripMenuItem12.Name = "toolStripMenuItem12";
-            this.toolStripMenuItem12.Size = new System.Drawing.Size(270, 34);
+            this.toolStripMenuItem12.Size = new System.Drawing.Size(165, 22);
             this.toolStripMenuItem12.Text = "Selected assets";
             this.toolStripMenuItem12.Click += new System.EventHandler(this.toolStripMenuItem12_Click);
             // 
             // toolStripMenuItem13
             // 
             this.toolStripMenuItem13.Name = "toolStripMenuItem13";
-            this.toolStripMenuItem13.Size = new System.Drawing.Size(270, 34);
+            this.toolStripMenuItem13.Size = new System.Drawing.Size(165, 22);
             this.toolStripMenuItem13.Text = "Filtered assets";
             this.toolStripMenuItem13.Click += new System.EventHandler(this.toolStripMenuItem13_Click);
             // 
@@ -1178,6 +1195,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem11;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem12;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem13;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem14;
+        private System.Windows.Forms.ToolStripTextBox specifyUnityVersion;
     }
 }
 
