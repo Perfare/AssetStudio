@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
+    <Version>0.15.0.0</Version>
     <AssemblyVersion>0.15.0.0</AssemblyVersion>
     <FileVersion>0.15.0.0</FileVersion>
     <Copyright>Copyright © Perfare 2018-2021</Copyright>
