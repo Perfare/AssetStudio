@@ -29,9 +29,11 @@ namespace AssetStudioGUI
             frm.GetOptions(out var options);
             options |= NativeMethods.FOS_PICKFOLDERS | NativeMethods.FOS_FORCEFILESYSTEM | NativeMethods.FOS_NOVALIDATE | NativeMethods.FOS_NOTESTFILECREATE | NativeMethods.FOS_DONTADDTORECENT;
             frm.SetOptions(options);
-            if (Title != null)
+            if (!string.IsNullOrEmpty(Title))
+            {
                 frm.SetTitle(Title);
-            if (InitialFolder != null)
+            }
+            if (!string.IsNullOrEmpty(InitialFolder))
             {
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
                 if (NativeMethods.SHCreateItemFromParsingName(InitialFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)
@@ -39,7 +41,7 @@ namespace AssetStudioGUI
                     frm.SetFolder(directoryShellItem);
                 }
             }
-            if (DefaultFolder != null)
+            if (!string.IsNullOrEmpty(DefaultFolder))
             {
                 var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem  
                 if (NativeMethods.SHCreateItemFromParsingName(DefaultFolder, IntPtr.Zero, ref riid, out var directoryShellItem) == NativeMethods.S_OK)

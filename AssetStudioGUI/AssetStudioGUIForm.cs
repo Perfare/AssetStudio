@@ -82,6 +82,9 @@ namespace AssetStudioGUI
         private int nextGObject;
         private List<TreeNode> treeSrcResults = new List<TreeNode>();
 
+        private string openDirectoryBackup = string.Empty;
+        private string saveDirectoryBackup = string.Empty;
+
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -131,9 +134,11 @@ namespace AssetStudioGUI
 
         private async void loadFile_Click(object sender, EventArgs e)
         {
+            openFileDialog1.InitialDirectory = openDirectoryBackup;
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 ResetForm();
+                openDirectoryBackup = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
                 assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
                 await Task.Run(() => assetsManager.LoadFiles(openFileDialog1.FileNames));
                 BuildAssetStructures();
@@ -143,9 +148,11 @@ namespace AssetStudioGUI
         private async void loadFolder_Click(object sender, EventArgs e)
         {
             var openFolderDialog = new OpenFolderDialog();
+            openFolderDialog.InitialFolder = openDirectoryBackup;
             if (openFolderDialog.ShowDialog(this) == DialogResult.OK)
             {
                 ResetForm();
+                openDirectoryBackup = openFolderDialog.Folder;
                 assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
                 await Task.Run(() => assetsManager.LoadFolder(openFolderDialog.Folder));
                 BuildAssetStructures();
@@ -352,7 +359,7 @@ namespace AssetStudioGUI
                         var versionPath = Path.Combine(savePath, item.Group.Header);
                         Directory.CreateDirectory(versionPath);
 
-                        var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
+                        var saveFile = $"{versionPath}{Path.DirectorySeparatorChar}{item.SubItems[1].Text} {item.Text}.txt";
                         File.WriteAllText(saveFile, item.ToString());
 
                         Progress.Report(++i, count);
@@ -1308,9 +1315,11 @@ namespace AssetStudioGUI
             if (animator != null)
             {
                 var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.InitialFolder = saveDirectoryBackup;
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var exportPath = saveFolderDialog.Folder + "\\Animator\\";
+                    saveDirectoryBackup = saveFolderDialog.Folder;
+                    var exportPath = Path.Combine(saveFolderDialog.Folder, "Animator") + Path.DirectorySeparatorChar;
                     ExportAnimatorWithAnimationClip(animator, animationList, exportPath);
                 }
             }
@@ -1331,9 +1340,11 @@ namespace AssetStudioGUI
             if (sceneTreeView.Nodes.Count > 0)
             {
                 var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.InitialFolder = saveDirectoryBackup;
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var exportPath = saveFolderDialog.Folder + "\\GameObject\\";
+                    saveDirectoryBackup = saveFolderDialog.Folder;
+                    var exportPath = Path.Combine(saveFolderDialog.Folder, "GameObject") + Path.DirectorySeparatorChar;
                     List<AssetItem> animationList = null;
                     if (animation)
                     {
@@ -1372,8 +1383,10 @@ namespace AssetStudioGUI
                 saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
                 saveFileDialog.AddExtension = false;
                 saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+                saveFileDialog.InitialDirectory = saveDirectoryBackup;
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    saveDirectoryBackup = Path.GetDirectoryName(saveFileDialog.FileName);
                     var exportPath = saveFileDialog.FileName;
                     List<AssetItem> animationList = null;
                     if (animation)
@@ -1464,8 +1477,10 @@ namespace AssetStudioGUI
             if (sceneTreeView.Nodes.Count > 0)
             {
                 var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.InitialFolder = saveDirectoryBackup;
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
+                    saveDirectoryBackup = saveFolderDialog.Folder;
                     var savePath = saveFolderDialog.Folder + Path.DirectorySeparatorChar;
                     ExportSplitObjects(savePath, sceneTreeView.Nodes);
                 }
@@ -1524,10 +1539,11 @@ namespace AssetStudioGUI
             if (exportableAssets.Count > 0)
             {
                 var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.InitialFolder = saveDirectoryBackup;
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
                     timer.Stop();
-
+                    saveDirectoryBackup = saveFolderDialog.Folder;
                     List<AssetItem> toExportAssets = null;
                     switch (type)
                     {
@@ -1557,10 +1573,11 @@ namespace AssetStudioGUI
             if (exportableAssets.Count > 0)
             {
                 var saveFolderDialog = new OpenFolderDialog();
+                saveFolderDialog.InitialFolder = saveDirectoryBackup;
                 if (saveFolderDialog.ShowDialog(this) == DialogResult.OK)
                 {
                     timer.Stop();
-
+                    saveDirectoryBackup = saveFolderDialog.Folder;
                     List<AssetItem> toExportAssets = null;
                     switch (type)
                     {

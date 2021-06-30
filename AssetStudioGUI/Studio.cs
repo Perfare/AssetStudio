@@ -531,13 +531,13 @@ namespace AssetStudioGUI
                         //处理非法文件名
                         var filename = FixFileName(j.Text);
                         //每个文件存放在单独的文件夹
-                        var targetPath = $"{savePath}{filename}\\";
+                        var targetPath = $"{savePath}{filename}{Path.DirectorySeparatorChar}";
                         //重名文件处理
                         for (int i = 1; ; i++)
                         {
                             if (Directory.Exists(targetPath))
                             {
-                                targetPath = $"{savePath}{filename} ({i})\\";
+                                targetPath = $"{savePath}{filename} ({i}){Path.DirectorySeparatorChar}";
                             }
                             else
                             {
