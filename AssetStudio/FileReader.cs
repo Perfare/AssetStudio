@@ -15,10 +15,10 @@ namespace AssetStudio
         {
             FullPath = Path.GetFullPath(path);
             FileName = Path.GetFileName(path);
-            CheckFileType();
+            FileType = CheckFileType();
         }
 
-        private void CheckFileType()
+        private FileType CheckFileType()
         {
             var signature = this.ReadStringToNull(20);
             Position = 0;
@@ -28,38 +28,37 @@ namespace AssetStudio
                 case "UnityRaw":
                 case "UnityArchive":
                 case "UnityFS":
-                    FileType = FileType.BundleFile;
-                    break;
+                    return FileType.BundleFile;
                 case "UnityWebData1.0":
-                    FileType = FileType.WebFile;
-                    break;
+                    return FileType.WebFile;
                 default:
-                    var magic = ReadBytes(2);
-                    Position = 0;
-                    if (WebFile.gzipMagic.SequenceEqual(magic))
                     {
-                        FileType = FileType.WebFile;
+                        var magic = ReadBytes(2);
+                        Position = 0;
+                        if (WebFile.gzipMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
+                        Position = 0x20;
+                        magic = ReadBytes(6);
+                        Position = 0;
+                        if (WebFile.brotliMagic.SequenceEqual(magic))
+                        {
+                            return FileType.WebFile;
+                        }
+                        if (IsSerializedFile())
+                        {
+                            return FileType.AssetsFile;
+                        }
+                        else
+                        {
+                            return FileType.ResourceFile;
+                        }
                     }
-                    Position = 0x20;
-                    magic = ReadBytes(6);
-                    Position = 0;
-                    if (WebFile.brotliMagic.SequenceEqual(magic))
-                    {
-                        FileType = FileType.WebFile;
-                    }
-                    if (IsSerializedFile())
-                    {
-                        FileType = FileType.AssetsFile;
-                    }
-                    else
-                    {
-                        FileType = FileType.ResourceFile;
-                    }
-                    break;
             }
         }
 
-        private bool IsSerializedFile()
+        public bool IsSerializedFile()
         {
             var fileSize = BaseStream.Length;
             if (fileSize < 20)
