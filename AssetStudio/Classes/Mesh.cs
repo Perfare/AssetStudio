@@ -681,7 +681,7 @@ namespace AssetStudio
             {
                 if (m_VertexData.m_VertexCount > 0)
                 {
-                    var resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
+                    var resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, m_StreamData.size);
                     m_VertexData.m_DataSize = resourceReader.GetData();
                 }
             }

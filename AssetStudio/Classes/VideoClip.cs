@@ -5,14 +5,14 @@ namespace AssetStudio
     public class StreamedResource
     {
         public string m_Source;
-        public ulong m_Offset;
-        public ulong m_Size;
+        public long m_Offset; //ulong
+        public long m_Size; //ulong
 
         public StreamedResource(BinaryReader reader)
         {
             m_Source = reader.ReadAlignedString();
-            m_Offset = reader.ReadUInt64();
-            m_Size = reader.ReadUInt64();
+            m_Offset = reader.ReadInt64();
+            m_Size = reader.ReadInt64();
         }
     }
 
@@ -60,11 +60,11 @@ namespace AssetStudio
             ResourceReader resourceReader;
             if (!string.IsNullOrEmpty(m_ExternalResources.m_Source))
             {
-                resourceReader = new ResourceReader(m_ExternalResources.m_Source, assetsFile, m_ExternalResources.m_Offset, (int)m_ExternalResources.m_Size);
+                resourceReader = new ResourceReader(m_ExternalResources.m_Source, assetsFile, m_ExternalResources.m_Offset, m_ExternalResources.m_Size);
             }
             else
             {
-                resourceReader = new ResourceReader(reader, reader.BaseStream.Position, (int)m_ExternalResources.m_Size);
+                resourceReader = new ResourceReader(reader, reader.BaseStream.Position, m_ExternalResources.m_Size);
             }
             m_VideoData = resourceReader;
         }

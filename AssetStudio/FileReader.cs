@@ -58,7 +58,7 @@ namespace AssetStudio
             }
         }
 
-        public bool IsSerializedFile()
+        private bool IsSerializedFile()
         {
             var fileSize = BaseStream.Length;
             if (fileSize < 20)

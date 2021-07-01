@@ -4,7 +4,7 @@ namespace AssetStudio
 {
     public class StreamingInfo
     {
-        public ulong offset;
+        public long offset; //ulong
         public uint size;
         public string path;
 
@@ -14,7 +14,7 @@ namespace AssetStudio
 
             if (version[0] >= 2020) //2020.1 and up
             {
-                offset = reader.ReadUInt64();
+                offset = reader.ReadInt64();
             }
             else
             {
@@ -134,7 +134,7 @@ namespace AssetStudio
             ResourceReader resourceReader;
             if (!string.IsNullOrEmpty(m_StreamData?.path))
             {
-                resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, (int)m_StreamData.size);
+                resourceReader = new ResourceReader(m_StreamData.path, assetsFile, m_StreamData.offset, m_StreamData.size);
             }
             else
             {

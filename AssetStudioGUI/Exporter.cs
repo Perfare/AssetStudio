@@ -205,12 +205,11 @@ namespace AssetStudioGUI
         public static bool ExportVideoClip(AssetItem item, string exportPath)
         {
             var m_VideoClip = (VideoClip)item.Asset;
-            var m_VideoData = m_VideoClip.m_VideoData.GetData();
-            if (m_VideoData != null && m_VideoData.Length != 0)
+            if (m_VideoClip.m_ExternalResources.m_Size > 0)
             {
                 if (!TryExportFile(exportPath, item, Path.GetExtension(m_VideoClip.m_OriginalPath), out var exportFullPath))
                     return false;
-                File.WriteAllBytes(exportFullPath, m_VideoData);
+                m_VideoClip.m_VideoData.WriteData(exportFullPath);
                 return true;
             }
             return false;
