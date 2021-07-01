@@ -72,37 +72,37 @@ namespace AssetStudioGUI
         public static int ExtractFile(string fileName, string savePath)
         {
             int extractedCount = 0;
-            var type = ImportHelper.CheckFileType(fileName, out var reader);
-            if (type == FileType.BundleFile)
-                extractedCount += ExtractBundleFile(fileName, reader, savePath);
-            else if (type == FileType.WebFile)
-                extractedCount += ExtractWebDataFile(fileName, reader, savePath);
+            var reader = new FileReader(fileName);
+            if (reader.FileType == FileType.BundleFile)
+                extractedCount += ExtractBundleFile(reader, savePath);
+            else if (reader.FileType == FileType.WebFile)
+                extractedCount += ExtractWebDataFile(reader, savePath);
             else
                 reader.Dispose();
             return extractedCount;
         }
 
-        private static int ExtractBundleFile(string bundleFilePath, EndianBinaryReader reader, string savePath)
+        private static int ExtractBundleFile(FileReader reader, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(bundleFilePath)} ...");
-            var bundleFile = new BundleFile(reader, bundleFilePath);
+            StatusStripUpdate($"Decompressing {reader.FileName} ...");
+            var bundleFile = new BundleFile(reader);
             reader.Dispose();
             if (bundleFile.fileList.Length > 0)
             {
-                var extractPath = Path.Combine(savePath, Path.GetFileName(bundleFilePath) + "_unpacked");
+                var extractPath = Path.Combine(savePath, reader.FileName + "_unpacked");
                 return ExtractStreamFile(extractPath, bundleFile.fileList);
             }
             return 0;
         }
 
-        private static int ExtractWebDataFile(string webFilePath, EndianBinaryReader reader, string savePath)
+        private static int ExtractWebDataFile(FileReader reader, string savePath)
         {
-            StatusStripUpdate($"Decompressing {Path.GetFileName(webFilePath)} ...");
+            StatusStripUpdate($"Decompressing {reader.FileName} ...");
             var webFile = new WebFile(reader);
             reader.Dispose();
             if (webFile.fileList.Length > 0)
             {
-                var extractPath = Path.Combine(savePath, Path.GetFileName(webFilePath) + "_unpacked");
+                var extractPath = Path.Combine(savePath, reader.FileName + "_unpacked");
                 return ExtractStreamFile(extractPath, webFile.fileList);
             }
             return 0;

@@ -9,7 +9,7 @@ namespace AssetStudio
     public class SerializedFile
     {
         public AssetsManager assetsManager;
-        public EndianBinaryReader reader;
+        public FileReader reader;
         public string fullName;
         public string originalPath;
         public string fileName;
@@ -31,12 +31,12 @@ namespace AssetStudio
         public List<SerializedType> m_RefTypes;
         public string userInformation;
 
-        public SerializedFile(AssetsManager assetsManager, string fullName, EndianBinaryReader reader)
+        public SerializedFile(FileReader reader, AssetsManager assetsManager)
         {
             this.assetsManager = assetsManager;
             this.reader = reader;
-            this.fullName = fullName;
-            fileName = Path.GetFileName(fullName);
+            fullName = reader.FullPath;
+            fileName = reader.FileName;
 
             // ReadHeader
             header = new SerializedFileHeader();
@@ -377,42 +377,5 @@ namespace AssetStudio
         public bool IsVersionStripped => unityVersion == strippedVersion;
 
         private const string strippedVersion = "0.0.0";
-
-        public static bool IsSerializedFile(EndianBinaryReader reader)
-        {
-            var fileSize = reader.BaseStream.Length;
-            if (fileSize < 20)
-            {
-                return false;
-            }
-            var m_MetadataSize = reader.ReadUInt32();
-            long m_FileSize = reader.ReadUInt32();
-            var m_Version = reader.ReadUInt32();
-            long m_DataOffset = reader.ReadUInt32();
-            var m_Endianess = reader.ReadByte();
-            var m_Reserved = reader.ReadBytes(3);
-            if (m_Version >= 22)
-            {
-                if (fileSize < 48)
-                {
-                    return false;
-                }
-                m_MetadataSize = reader.ReadUInt32();
-                m_FileSize = reader.ReadInt64();
-                m_DataOffset = reader.ReadInt64();
-            }
-            if (m_FileSize != fileSize)
-            {
-                reader.Position = 0;
-                return false;
-            }
-            if (m_DataOffset > fileSize)
-            {
-                reader.Position = 0;
-                return false;
-            }
-            reader.Position = 0;
-            return true;
-        }
     }
 }

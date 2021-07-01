@@ -41,7 +41,7 @@ namespace AssetStudio
 
         public StreamFile[] fileList;
 
-        public BundleFile(EndianBinaryReader reader, string path)
+        public BundleFile(FileReader reader)
         {
             m_Header = new Header();
             m_Header.signature = reader.ReadStringToNull();
@@ -59,19 +59,19 @@ namespace AssetStudio
                         goto case "UnityFS";
                     }
                     ReadHeaderAndBlocksInfo(reader);
-                    using (var blocksStream = CreateBlocksStream(path))
+                    using (var blocksStream = CreateBlocksStream(reader.FullPath))
                     {
                         ReadBlocksAndDirectory(reader, blocksStream);
-                        ReadFiles(blocksStream, path);
+                        ReadFiles(blocksStream, reader.FullPath);
                     }
                     break;
                 case "UnityFS":
                     ReadHeader(reader);
                     ReadBlocksInfoAndDirectory(reader);
-                    using (var blocksStream = CreateBlocksStream(path))
+                    using (var blocksStream = CreateBlocksStream(reader.FullPath))
                     {
                         ReadBlocks(reader, blocksStream);
-                        ReadFiles(blocksStream, path);
+                        ReadFiles(blocksStream, reader.FullPath);
                     }
                     break;
             }
@@ -120,7 +120,7 @@ namespace AssetStudio
             var uncompressedSizeSum = m_BlocksInfo.Sum(x => x.uncompressedSize);
             if (uncompressedSizeSum >= int.MaxValue)
             {
-                /*var memoryMappedFile = MemoryMappedFile.CreateNew(Path.GetFileName(path), uncompressedSizeSum);
+                /*var memoryMappedFile = MemoryMappedFile.CreateNew(null, uncompressedSizeSum);
                 assetsDataStream = memoryMappedFile.CreateViewStream();*/
                 blocksStream = new FileStream(path + ".temp", FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             }
@@ -175,7 +175,7 @@ namespace AssetStudio
                 file.fileName = Path.GetFileName(node.path);
                 if (node.size >= int.MaxValue)
                 {
-                    /*var memoryMappedFile = MemoryMappedFile.CreateNew(file.fileName, entryinfo_size);
+                    /*var memoryMappedFile = MemoryMappedFile.CreateNew(null, entryinfo_size);
                     file.stream = memoryMappedFile.CreateViewStream();*/
                     var extractPath = path + "_unpacked" + Path.DirectorySeparatorChar;
                     Directory.CreateDirectory(extractPath);
