@@ -85,6 +85,8 @@ namespace AssetStudioGUI
         private string openDirectoryBackup = string.Empty;
         private string saveDirectoryBackup = string.Empty;
 
+        private GUILogger logger;
+
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
@@ -100,7 +102,8 @@ namespace AssetStudioGUI
             enablePreview.Checked = Properties.Settings.Default.enablePreview;
             FMODinit();
 
-            Logger.Default = new GUILogger(StatusStripUpdate);
+            logger = new GUILogger(StatusStripUpdate);
+            Logger.Default = logger;
             Progress.Default = new GUIProgress(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
         }
@@ -2034,6 +2037,11 @@ namespace AssetStudioGUI
             {
                 dumpTextBox.Text = DumpAsset(lastSelectedItem.Asset);
             }
+        }
+
+        private void toolStripMenuItem15_Click(object sender, EventArgs e)
+        {
+            logger.ShowErrorMessage = toolStripMenuItem15.Checked;
         }
 
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)
