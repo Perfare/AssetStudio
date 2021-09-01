@@ -149,6 +149,7 @@ namespace AssetStudioGUI
             #region UV
             if (m_Mesh.m_UV0?.Length > 0)
             {
+                c = 4;
                 if (m_Mesh.m_UV0.Length == m_Mesh.m_VertexCount * 2)
                 {
                     c = 2;
