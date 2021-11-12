@@ -164,7 +164,10 @@ namespace AssetStudio
                 {
                     if (animation.TryGet(out var animationClip))
                     {
-                        boundAnimationPathDic.Add(animationClip, GetTransformPath(m_Transform));
+                        if (!boundAnimationPathDic.ContainsKey(animationClip))
+                        {
+                            boundAnimationPathDic.Add(animationClip, GetTransformPath(m_Transform));
+                        }
                         animationClipHashSet.Add(animationClip);
                     }
                 }
