@@ -199,7 +199,7 @@ namespace AssetStudioGUI
         {
             if (assetsManager.assetsFileList.Count == 0)
             {
-                StatusStripUpdate("No file was loaded.");
+                StatusStripUpdate("No Unity file can be loaded.");
                 return;
             }
 
