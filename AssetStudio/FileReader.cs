@@ -9,6 +9,9 @@ namespace AssetStudio
         public string FileName;
         public FileType FileType;
 
+        private static readonly byte[] gzipMagic = { 0x1f, 0x8b };
+        private static readonly byte[] brotliMagic = { 0x62, 0x72, 0x6F, 0x74, 0x6C, 0x69 };
+
         public FileReader(string path) : this(path, File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) { }
 
         public FileReader(string path, Stream stream) : base(stream, EndianType.BigEndian)
@@ -35,16 +38,16 @@ namespace AssetStudio
                     {
                         var magic = ReadBytes(2);
                         Position = 0;
-                        if (WebFile.gzipMagic.SequenceEqual(magic))
+                        if (gzipMagic.SequenceEqual(magic))
                         {
-                            return FileType.WebFile;
+                            return FileType.GZipFile;
                         }
                         Position = 0x20;
                         magic = ReadBytes(6);
                         Position = 0;
-                        if (WebFile.brotliMagic.SequenceEqual(magic))
+                        if (brotliMagic.SequenceEqual(magic))
                         {
-                            return FileType.WebFile;
+                            return FileType.BrotliFile;
                         }
                         if (IsSerializedFile())
                         {

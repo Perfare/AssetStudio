@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Org.Brotli.Dec;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 namespace AssetStudio
@@ -47,6 +49,34 @@ namespace AssetStudio
                 }
             }
             return selectFile.Distinct().ToArray();
+        }
+
+        public static FileReader DecompressGZip(FileReader reader)
+        {
+            using (reader)
+            {
+                var stream = new MemoryStream();
+                using (var gs = new GZipStream(reader.BaseStream, CompressionMode.Decompress))
+                {
+                    gs.CopyTo(stream);
+                }
+                stream.Position = 0;
+                return new FileReader(reader.FullPath, stream);
+            }
+        }
+
+        public static FileReader DecompressBrotli(FileReader reader)
+        {
+            using (reader)
+            {
+                var stream = new MemoryStream();
+                using (var brotliStream = new BrotliInputStream(reader.BaseStream))
+                {
+                    brotliStream.CopyTo(stream);
+                }
+                stream.Position = 0;
+                return new FileReader(reader.FullPath, stream);
+            }
         }
     }
 }

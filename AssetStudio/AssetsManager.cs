@@ -62,6 +62,11 @@ namespace AssetStudio
         private void LoadFile(string fullName)
         {
             var reader = new FileReader(fullName);
+            LoadFile(reader);
+        }
+
+        private void LoadFile(FileReader reader)
+        {
             switch (reader.FileType)
             {
                 case FileType.AssetsFile:
@@ -72,6 +77,12 @@ namespace AssetStudio
                     break;
                 case FileType.WebFile:
                     LoadWebFile(reader);
+                    break;
+                case FileType.GZipFile:
+                    LoadFile(DecompressGZip(reader));
+                    break;
+                case FileType.BrotliFile:
+                    LoadFile(DecompressBrotli(reader));
                     break;
             }
         }
