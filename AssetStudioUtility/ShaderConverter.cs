@@ -915,7 +915,8 @@ namespace AssetStudio
             //201609010 - Unity 5.6, 2017.1 & 2017.2
             //201708220 - Unity 2017.3, Unity 2017.4 & Unity 2018.1
             //201802150 - Unity 2018.2 & Unity 2018.3
-            //201806140 - Unity 2019.1~2020.1
+            //201806140 - Unity 2019.1~2021.1
+            //202012090 - Unity 2021.2
             m_Version = reader.ReadInt32();
             m_ProgramType = (ShaderGpuProgramType)reader.ReadInt32();
             reader.BaseStream.Position += 12;
@@ -929,7 +930,7 @@ namespace AssetStudio
             {
                 m_Keywords[i] = reader.ReadAlignedString();
             }
-            if (m_Version >= 201806140)
+            if (m_Version >= 201806140 && m_Version < 202012090)
             {
                 var m_LocalKeywordsSize = reader.ReadInt32();
                 m_LocalKeywords = new string[m_LocalKeywordsSize];
