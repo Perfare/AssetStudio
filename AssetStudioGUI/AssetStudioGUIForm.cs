@@ -21,9 +21,14 @@ using static AssetStudioGUI.Studio;
 using Font = AssetStudio.Font;
 using ImageFormat = AssetStudio.ImageFormat;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
+#if NET472
 using Vector3 = OpenTK.Vector3;
 using Vector4 = OpenTK.Vector4;
-
+#else
+using Vector3 = OpenTK.Mathematics.Vector3;
+using Vector4 = OpenTK.Mathematics.Vector4;
+using Matrix4 = OpenTK.Mathematics.Matrix4;
+#endif
 namespace AssetStudioGUI
 {
     partial class AssetStudioGUIForm : Form

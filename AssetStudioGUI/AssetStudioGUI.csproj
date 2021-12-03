@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFrameworks>net472;net5.0-windows</TargetFrameworks>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationIcon>Resources\as.ico</ApplicationIcon>
 		<Version>0.16.0.0</Version>
@@ -51,10 +51,20 @@
 		</ContentWithTargetPath>
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net5.0-windows' ">
+		<PackageReference Include="OpenTK" Version="4.6.7" />
+		<Reference Include="OpenTK.WinForms">
+			<HintPath>Libraries\OpenTK.WinForms.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
 		<PackageReference Include="OpenTK" Version="3.1.0" />
 		<PackageReference Include="OpenTK.GLControl" Version="3.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
 
 	<Target Name="CustomAfterBuild" AfterTargets="AfterBuild">
