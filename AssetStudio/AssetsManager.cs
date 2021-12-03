@@ -21,7 +21,7 @@ namespace AssetStudio
 
         public void LoadFiles(params string[] files)
         {
-            var path = Path.GetDirectoryName(files[0]);
+            var path = Path.GetDirectoryName(Path.GetFullPath(files[0]));
             MergeSplitAssets(path);
             var toReadFile = ProcessingSplitFiles(files.ToList());
             Load(toReadFile);
