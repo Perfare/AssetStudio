@@ -29,6 +29,7 @@ using Vector3 = OpenTK.Mathematics.Vector3;
 using Vector4 = OpenTK.Mathematics.Vector4;
 using Matrix4 = OpenTK.Mathematics.Matrix4;
 #endif
+
 namespace AssetStudioGUI
 {
     partial class AssetStudioGUIForm : Form
