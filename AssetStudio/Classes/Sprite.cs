@@ -197,7 +197,7 @@ namespace AssetStudio
         public Vector2 m_Offset;
         public Vector4 m_Border;
         public float m_PixelsToUnits;
-        public Vector2 m_Pivot;
+        public Vector2 m_Pivot = new Vector2(0.5f, 0.5f);
         public uint m_Extrude;
         public bool m_IsPolygon;
         public KeyValuePair<Guid, long> m_RenderDataKey;

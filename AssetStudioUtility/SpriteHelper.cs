@@ -89,29 +89,25 @@ namespace AssetStudio
                             var polygons = triangles.Select(x => new Polygon(new LinearLineSegment(x.Select(y => new PointF(y.X, y.Y)).ToArray()))).ToArray();
                             IPathCollection path = new PathCollection(polygons);
                             var matrix = Matrix3x2.CreateScale(m_Sprite.m_PixelsToUnits);
-                            var version = m_Sprite.version;
-                            if (version[0] < 5
-                               || (version[0] == 5 && version[1] < 4)
-                               || (version[0] == 5 && version[1] == 4 && version[2] <= 1)) //5.4.1p3 down
-                            {
-                                matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * 0.5f - textureRectOffset.X, m_Sprite.m_Rect.height * 0.5f - textureRectOffset.Y);
-                            }
-                            else
-                            {
-                                matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
-                            }
+                            matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
                             path = path.Transform(matrix);
+                            var graphicsOptions = new GraphicsOptions
+                            {
+                                Antialias = false,
+                                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+                            };
                             var options = new DrawingOptions
                             {
-                                GraphicsOptions = new GraphicsOptions()
-                                {
-                                    AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
-                                }
+                                GraphicsOptions = graphicsOptions
                             };
-                            var rectP = new RectangularPolygon(0, 0, rect.Width, rect.Height);
-                            spriteImage.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, rectP.Clip(path)));
-                            spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
-                            return spriteImage;
+                            using (var mask = new Image<Argb32>(rect.Width, rect.Height, SixLabors.ImageSharp.Color.Black))
+                            {
+                                mask.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, path));
+                                var bursh = new ImageBrush(mask);
+                                spriteImage.Mutate(x => x.Fill(graphicsOptions, bursh));
+                                spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
+                                return spriteImage;
+                            }
                         }
                         catch
                         {
