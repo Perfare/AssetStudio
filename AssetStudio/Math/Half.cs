@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
-namespace System
+namespace AssetStudio
 {
     /// <summary>
     /// Represents a half-precision floating point number. 

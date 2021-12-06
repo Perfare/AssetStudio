@@ -21,7 +21,7 @@ namespace AssetStudio
 
         public void LoadFiles(params string[] files)
         {
-            var path = Path.GetDirectoryName(files[0]);
+            var path = Path.GetDirectoryName(Path.GetFullPath(files[0]));
             MergeSplitAssets(path);
             var toReadFile = ProcessingSplitFiles(files.ToList());
             Load(toReadFile);
@@ -62,6 +62,11 @@ namespace AssetStudio
         private void LoadFile(string fullName)
         {
             var reader = new FileReader(fullName);
+            LoadFile(reader);
+        }
+
+        private void LoadFile(FileReader reader)
+        {
             switch (reader.FileType)
             {
                 case FileType.AssetsFile:
@@ -72,6 +77,12 @@ namespace AssetStudio
                     break;
                 case FileType.WebFile:
                     LoadWebFile(reader);
+                    break;
+                case FileType.GZipFile:
+                    LoadFile(DecompressGZip(reader));
+                    break;
+                case FileType.BrotliFile:
+                    LoadFile(DecompressBrotli(reader));
                     break;
             }
         }
@@ -413,6 +424,10 @@ namespace AssetStudio
                     }
                     else if (obj is SpriteAtlas m_SpriteAtlas)
                     {
+                        if (m_SpriteAtlas.m_IsVariant)
+                        {
+                            continue;
+                        }
                         foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
                         {
                             if (m_PackedSprite.TryGet(out var m_Sprite))

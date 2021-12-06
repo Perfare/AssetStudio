@@ -15,18 +15,18 @@ namespace AssetStudio
             var resolver = new MyAssemblyResolver();
             var readerParameters = new ReaderParameters();
             readerParameters.AssemblyResolver = resolver;
-            try
+            foreach (var file in files)
             {
-                foreach (var file in files)
+                try
                 {
                     var assembly = AssemblyDefinition.ReadAssembly(file, readerParameters);
                     resolver.Register(assembly);
                     moduleDic.Add(assembly.MainModule.Name, assembly.MainModule);
                 }
-            }
-            catch
-            {
-                // ignored
+                catch
+                {
+                    // ignored
+                }
             }
             Loaded = true;
         }

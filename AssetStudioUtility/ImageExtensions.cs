@@ -1,39 +1,55 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Tga;
+using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace AssetStudio
 {
     public static class ImageExtensions
     {
-        public static MemoryStream ConvertToStream(this Image image, ImageFormat imageFormat)
+        public static void WriteToStream(this Image image, Stream stream, ImageFormat imageFormat)
         {
-            var outputStream = new MemoryStream();
             switch (imageFormat)
             {
                 case ImageFormat.Jpeg:
-                    image.SaveAsJpeg(outputStream);
+                    image.SaveAsJpeg(stream);
                     break;
                 case ImageFormat.Png:
-                    image.SaveAsPng(outputStream);
+                    image.SaveAsPng(stream);
                     break;
                 case ImageFormat.Bmp:
-                    image.Save(outputStream, new BmpEncoder
+                    image.Save(stream, new BmpEncoder
                     {
                         BitsPerPixel = BmpBitsPerPixel.Pixel32,
                         SupportTransparency = true
                     });
                     break;
                 case ImageFormat.Tga:
-                    image.Save(outputStream, new TgaEncoder
+                    image.Save(stream, new TgaEncoder
                     {
                         BitsPerPixel = TgaBitsPerPixel.Pixel32,
                         Compression = TgaCompression.None
                     });
                     break;
             }
-            return outputStream;
+        }
+
+        public static MemoryStream ConvertToStream(this Image image, ImageFormat imageFormat)
+        {
+            var stream = new MemoryStream();
+            image.WriteToStream(stream, imageFormat);
+            return stream;
+        }
+
+        public static byte[] ConvertToBgra32Bytes(this Image<Bgra32> image)
+        {
+            if (image.TryGetSinglePixelSpan(out var pixelSpan))
+            {
+                return MemoryMarshal.AsBytes(pixelSpan).ToArray();
+            }
+            return null;
         }
     }
 }
