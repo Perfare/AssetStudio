@@ -1,10 +1,10 @@
-﻿using System;
+﻿using K4os.Compression.LZ4;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Lz4;
 
 namespace AssetStudio
 {
@@ -15,10 +15,7 @@ namespace AssetStudio
             if (shader.m_SubProgramBlob != null) //5.3 - 5.4
             {
                 var decompressedBytes = new byte[shader.decompressedSize];
-                using (var decoder = new Lz4DecoderStream(new MemoryStream(shader.m_SubProgramBlob)))
-                {
-                    decoder.Read(decompressedBytes, 0, (int)shader.decompressedSize);
-                }
+                LZ4Codec.Decode(shader.m_SubProgramBlob, decompressedBytes);
                 using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                 {
                     var program = new ShaderProgram(blobReader, shader.version);
@@ -42,10 +39,7 @@ namespace AssetStudio
                 var compressedBytes = new byte[shader.compressedLengths[i]];
                 Buffer.BlockCopy(shader.compressedBlob, (int)shader.offsets[i], compressedBytes, 0, (int)shader.compressedLengths[i]);
                 var decompressedBytes = new byte[shader.decompressedLengths[i]];
-                using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
-                {
-                    decoder.Read(decompressedBytes, 0, (int)shader.decompressedLengths[i]);
-                }
+                LZ4Codec.Decode(compressedBytes, decompressedBytes);
                 using (var blobReader = new BinaryReader(new MemoryStream(decompressedBytes)))
                 {
                     shaderPrograms[i] = new ShaderProgram(blobReader, shader.version);

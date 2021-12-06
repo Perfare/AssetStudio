@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using K4os.Compression.LZ4;
 using System.IO;
 using System.Linq;
-using Lz4;
 
 namespace AssetStudio
 {
@@ -221,30 +219,33 @@ namespace AssetStudio
             {
                 blocksInfoBytes = reader.ReadBytes((int)m_Header.compressedBlocksInfoSize);
             }
-            var blocksInfoCompressedStream = new MemoryStream(blocksInfoBytes);
             MemoryStream blocksInfoUncompresseddStream;
+            var uncompressedSize = m_Header.uncompressedBlocksInfoSize;
             switch (m_Header.flags & 0x3F) //kArchiveCompressionTypeMask
             {
                 default: //None
                     {
-                        blocksInfoUncompresseddStream = blocksInfoCompressedStream;
+                        blocksInfoUncompresseddStream = new MemoryStream(blocksInfoBytes);
                         break;
                     }
                 case 1: //LZMA
                     {
-                        blocksInfoUncompresseddStream = new MemoryStream((int)(m_Header.uncompressedBlocksInfoSize));
-                        SevenZipHelper.StreamDecompress(blocksInfoCompressedStream, blocksInfoUncompresseddStream, m_Header.compressedBlocksInfoSize, m_Header.uncompressedBlocksInfoSize);
+                        blocksInfoUncompresseddStream = new MemoryStream((int)(uncompressedSize));
+                        using (var blocksInfoCompressedStream = new MemoryStream(blocksInfoBytes))
+                        {
+                            SevenZipHelper.StreamDecompress(blocksInfoCompressedStream, blocksInfoUncompresseddStream, m_Header.compressedBlocksInfoSize, m_Header.uncompressedBlocksInfoSize);
+                        }
                         blocksInfoUncompresseddStream.Position = 0;
-                        blocksInfoCompressedStream.Close();
                         break;
                     }
                 case 2: //LZ4
                 case 3: //LZ4HC
                     {
-                        var uncompressedBytes = new byte[m_Header.uncompressedBlocksInfoSize];
-                        using (var decoder = new Lz4DecoderStream(blocksInfoCompressedStream))
+                        var uncompressedBytes = new byte[uncompressedSize];
+                        var numWrite = LZ4Codec.Decode(blocksInfoBytes, uncompressedBytes);
+                        if (numWrite != uncompressedSize)
                         {
-                            decoder.Read(uncompressedBytes, 0, uncompressedBytes.Length);
+                            throw new IOException($"Lz4 decompression error, write {numWrite} bytes but expected {uncompressedSize} bytes");
                         }
                         blocksInfoUncompresseddStream = new MemoryStream(uncompressedBytes);
                         break;
@@ -299,11 +300,19 @@ namespace AssetStudio
                     case 2: //LZ4
                     case 3: //LZ4HC
                         {
-                            var compressedStream = new MemoryStream(reader.ReadBytes((int)blockInfo.compressedSize));
-                            using (var lz4Stream = new Lz4DecoderStream(compressedStream))
+                            var compressedSize = (int)blockInfo.compressedSize;
+                            var compressedBytes = BigArrayPool<byte>.Shared.Rent(compressedSize);
+                            reader.Read(compressedBytes, 0, compressedSize);
+                            var uncompressedSize = (int)blockInfo.uncompressedSize;
+                            var uncompressedBytes = BigArrayPool<byte>.Shared.Rent(uncompressedSize);
+                            var numWrite = LZ4Codec.Decode(compressedBytes, 0, compressedSize, uncompressedBytes, 0, uncompressedSize);
+                            if (numWrite != uncompressedSize)
                             {
-                                lz4Stream.CopyTo(blocksStream, blockInfo.uncompressedSize);
+                                throw new IOException($"Lz4 decompression error, write {numWrite} bytes but expected {uncompressedSize} bytes");
                             }
+                            blocksStream.Write(uncompressedBytes, 0, uncompressedSize);
+                            BigArrayPool<byte>.Shared.Return(compressedBytes);
+                            BigArrayPool<byte>.Shared.Return(uncompressedBytes);
                             break;
                         }
                 }

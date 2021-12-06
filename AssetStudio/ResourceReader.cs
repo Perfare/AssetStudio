@@ -11,6 +11,8 @@ namespace AssetStudio
         private long size;
         private BinaryReader reader;
 
+        public int Size { get => (int)size; }
+
         public ResourceReader(string path, SerializedFile assetsFile, long offset, long size)
         {
             needSearch = true;
@@ -67,6 +69,13 @@ namespace AssetStudio
             var binaryReader = GetReader();
             binaryReader.BaseStream.Position = offset;
             return binaryReader.ReadBytes((int)size);
+        }
+
+        public void GetData(byte[] buff)
+        {
+            var binaryReader = GetReader();
+            binaryReader.BaseStream.Position = offset;
+            binaryReader.Read(buff, 0, (int)size);
         }
 
         public void WriteData(string path)

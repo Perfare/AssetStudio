@@ -8,4 +8,13 @@
     <Copyright>Copyright © Perfare 2018-2021</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="K4os.Compression.LZ4" Version="1.1.11" />
+  </ItemGroup>
+
 </Project>
