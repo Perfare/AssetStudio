@@ -109,7 +109,7 @@ namespace AssetStudio
             {
                 var buff = ReadBytes(8);
                 Array.Reverse(buff);
-                return BitConverter.ToUInt64(buff, 0);
+                return BitConverter.ToDouble(buff, 0);
             }
             return base.ReadDouble();
         }

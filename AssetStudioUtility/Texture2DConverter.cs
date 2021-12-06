@@ -203,7 +203,7 @@ namespace AssetStudio
         {
             if (platform == BuildTarget.XBOX360)
             {
-                for (var i = 0; i < image_data.Length / 2; i++)
+                for (var i = 0; i < reader.Size / 2; i++)
                 {
                     var b = image_data[i * 2];
                     image_data[i * 2] = image_data[i * 2 + 1];
