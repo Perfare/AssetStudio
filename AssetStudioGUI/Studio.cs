@@ -413,7 +413,7 @@ namespace AssetStudioGUI
                             break;
                     }
                     exportPath += Path.DirectorySeparatorChar;
-                    StatusStripUpdate($"Exporting {asset.TypeString}: {asset.Text}");
+                    StatusStripUpdate($"[{exportedCount}/{toExportCount}] Exporting {asset.TypeString}: {asset.Text}");
                     try
                     {
                         switch (exportType)
