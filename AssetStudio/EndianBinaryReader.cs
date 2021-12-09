@@ -1,23 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Buffers.Binary;
 using System.IO;
 
 namespace AssetStudio
 {
-    public enum EndianType
-    {
-        LittleEndian,
-        BigEndian
-    }
-
     public class EndianBinaryReader : BinaryReader
     {
-        public EndianType endian;
+        private readonly byte[] buffer;
+
+        public EndianType Endian;
 
         public EndianBinaryReader(Stream stream, EndianType endian = EndianType.BigEndian) : base(stream)
         {
-            this.endian = endian;
+            Endian = endian;
+            buffer = new byte[8];
         }
 
         public long Position
@@ -28,88 +24,82 @@ namespace AssetStudio
 
         public override short ReadInt16()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(2);
-                Array.Reverse(buff);
-                return BitConverter.ToInt16(buff, 0);
+                Read(buffer, 0, 2);
+                return BinaryPrimitives.ReadInt16BigEndian(buffer);
             }
             return base.ReadInt16();
         }
 
         public override int ReadInt32()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(4);
-                Array.Reverse(buff);
-                return BitConverter.ToInt32(buff, 0);
+                Read(buffer, 0, 4);
+                return BinaryPrimitives.ReadInt32BigEndian(buffer);
             }
             return base.ReadInt32();
         }
 
         public override long ReadInt64()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(8);
-                Array.Reverse(buff);
-                return BitConverter.ToInt64(buff, 0);
+                Read(buffer, 0, 8);
+                return BinaryPrimitives.ReadInt64BigEndian(buffer);
             }
             return base.ReadInt64();
         }
 
         public override ushort ReadUInt16()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(2);
-                Array.Reverse(buff);
-                return BitConverter.ToUInt16(buff, 0);
+                Read(buffer, 0, 2);
+                return BinaryPrimitives.ReadUInt16BigEndian(buffer);
             }
             return base.ReadUInt16();
         }
 
         public override uint ReadUInt32()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(4);
-                Array.Reverse(buff);
-                return BitConverter.ToUInt32(buff, 0);
+                Read(buffer, 0, 4);
+                return BinaryPrimitives.ReadUInt32BigEndian(buffer);
             }
             return base.ReadUInt32();
         }
 
         public override ulong ReadUInt64()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(8);
-                Array.Reverse(buff);
-                return BitConverter.ToUInt64(buff, 0);
+                Read(buffer, 0, 8);
+                return BinaryPrimitives.ReadUInt64BigEndian(buffer);
             }
             return base.ReadUInt64();
         }
 
         public override float ReadSingle()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(4);
-                Array.Reverse(buff);
-                return BitConverter.ToSingle(buff, 0);
+                Read(buffer, 0, 4);
+                Array.Reverse(buffer, 0, 4);
+                return BitConverter.ToSingle(buffer, 0);
             }
             return base.ReadSingle();
         }
 
         public override double ReadDouble()
         {
-            if (endian == EndianType.BigEndian)
+            if (Endian == EndianType.BigEndian)
             {
-                var buff = ReadBytes(8);
-                Array.Reverse(buff);
-                return BitConverter.ToDouble(buff, 0);
+                Read(buffer, 0, 8);
+                Array.Reverse(buffer);
+                return BitConverter.ToDouble(buffer, 0);
             }
             return base.ReadDouble();
         }

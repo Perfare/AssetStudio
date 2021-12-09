@@ -17,7 +17,7 @@ namespace AssetStudio
 
         public WebFile(EndianBinaryReader reader)
         {
-            reader.endian = EndianType.LittleEndian;
+            reader.Endian = EndianType.LittleEndian;
             var signature = reader.ReadStringToNull();
             var headLength = reader.ReadInt32();
             var dataList = new List<WebData>();

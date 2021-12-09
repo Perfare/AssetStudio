@@ -20,7 +20,7 @@ namespace AssetStudio
         public int[] version => assetsFile.version;
         public BuildType buildType => assetsFile.buildType;
 
-        public ObjectReader(EndianBinaryReader reader, SerializedFile assetsFile, ObjectInfo objectInfo) : base(reader.BaseStream, reader.endian)
+        public ObjectReader(EndianBinaryReader reader, SerializedFile assetsFile, ObjectInfo objectInfo) : base(reader.BaseStream, reader.Endian)
         {
             this.assetsFile = assetsFile;
             m_PathID = objectInfo.m_PathID;
