@@ -154,7 +154,7 @@ namespace AssetStudio
                 }
                 catch (Exception e)
                 {
-                    Logger.Error($"Error while reading assets file {reader.FileName} from {Path.GetFileName(originalPath)}", e);
+                    Logger.Error($"Error while reading assets file {reader.FullPath} from {Path.GetFileName(originalPath)}", e);
                     resourceFileReaders.Add(reader.FileName, reader);
                 }
             }
