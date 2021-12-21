@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using static AssetStudio.ImportHelper;
@@ -83,6 +84,9 @@ namespace AssetStudio
                     break;
                 case FileType.BrotliFile:
                     LoadFile(DecompressBrotli(reader));
+                    break;
+                case FileType.ZipFile:
+                    LoadZipFile(reader);
                     break;
             }
         }
@@ -224,6 +228,52 @@ namespace AssetStudio
             catch (Exception e)
             {
                 Logger.Error($"Error while reading web file {reader.FileName}", e);
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+        }
+
+        private void LoadZipFile(FileReader reader)
+        {
+            Logger.Info("Loading " + reader.FileName);
+            try
+            {
+                using (ZipArchive archive = new ZipArchive(reader.BaseStream, ZipArchiveMode.Read))
+                {
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        string dummyPath = Path.Combine(Path.GetDirectoryName(reader.FullPath), reader.FileName, entry.FullName);
+                        // create a new stream
+                        // - to store the deflated stream in
+                        // - to keep the data for later extraction
+                        Stream streamReader = new MemoryStream();
+                        entry.Open().CopyTo(streamReader);
+                        streamReader.Position = 0;
+
+                        FileReader entryReader = new FileReader(dummyPath, streamReader);
+                        switch (entryReader.FileType)
+                        {
+                            case FileType.AssetsFile:
+                                LoadAssetsFromMemory(entryReader, reader.FullPath);
+                                break;
+                            case FileType.BundleFile:
+                                LoadBundleFile(entryReader, reader.FullPath);
+                                break;
+                            case FileType.WebFile:
+                                LoadWebFile(entryReader);
+                                break;
+                            case FileType.ResourceFile:
+                                resourceFileReaders[entry.Name] = entryReader; //TODO
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Error while reading zip file {reader.FileName}", e);
             }
             finally
             {
