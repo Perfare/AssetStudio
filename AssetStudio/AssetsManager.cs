@@ -244,16 +244,27 @@ namespace AssetStudio
                 {
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
-                        string dummyPath = Path.Combine(Path.GetDirectoryName(reader.FullPath), reader.FileName, entry.FullName);
-                        // create a new stream
-                        // - to store the deflated stream in
-                        // - to keep the data for later extraction
-                        Stream streamReader = new MemoryStream();
-                        entry.Open().CopyTo(streamReader);
-                        streamReader.Position = 0;
+                        try
+                        {
+                            string dummyPath = Path.Combine(Path.GetDirectoryName(reader.FullPath), reader.FileName, entry.FullName);
+                            // create a new stream
+                            // - to store the deflated stream in
+                            // - to keep the data for later extraction
+                            Stream streamReader = new MemoryStream();
+                            entry.Open().CopyTo(streamReader);
+                            streamReader.Position = 0;
 
-                        FileReader entryReader = new FileReader(dummyPath, streamReader);
-                        LoadFile(entryReader);
+                            FileReader entryReader = new FileReader(dummyPath, streamReader);
+                            LoadFile(entryReader);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error($"Error while reading zip entry {entry.FullName}", e);
+                        }
+                        finally
+                        {
+                            reader.Dispose();
+                        }
                     }
                 }
             }
