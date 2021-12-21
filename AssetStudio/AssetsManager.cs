@@ -253,21 +253,7 @@ namespace AssetStudio
                         streamReader.Position = 0;
 
                         FileReader entryReader = new FileReader(dummyPath, streamReader);
-                        switch (entryReader.FileType)
-                        {
-                            case FileType.AssetsFile:
-                                LoadAssetsFromMemory(entryReader, reader.FullPath);
-                                break;
-                            case FileType.BundleFile:
-                                LoadBundleFile(entryReader, reader.FullPath);
-                                break;
-                            case FileType.WebFile:
-                                LoadWebFile(entryReader);
-                                break;
-                            case FileType.ResourceFile:
-                                resourceFileReaders[entry.Name] = entryReader; //TODO
-                                break;
-                        }
+                        LoadFile(entryReader);
                     }
                 }
             }
