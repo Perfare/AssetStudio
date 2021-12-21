@@ -17,4 +17,5 @@
     <PackageReference Include="System.IO.Compression" Version="4.0.0" />
     <PackageReference Include="K4os.Compression.LZ4" Version="1.1.11" />
   </ItemGroup>
+
 </Project>
