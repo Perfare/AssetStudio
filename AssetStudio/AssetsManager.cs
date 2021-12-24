@@ -251,7 +251,10 @@ namespace AssetStudio
                             // - to store the deflated stream in
                             // - to keep the data for later extraction
                             Stream streamReader = new MemoryStream();
-                            entry.Open().CopyTo(streamReader);
+                            using (Stream entryStream = entry.Open())
+                            {
+                                entryStream.CopyTo(streamReader);
+                            }
                             streamReader.Position = 0;
 
                             FileReader entryReader = new FileReader(dummyPath, streamReader);
@@ -260,10 +263,6 @@ namespace AssetStudio
                         catch (Exception e)
                         {
                             Logger.Error($"Error while reading zip entry {entry.FullName}", e);
-                        }
-                        finally
-                        {
-                            reader.Dispose();
                         }
                     }
                 }
