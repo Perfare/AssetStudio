@@ -242,8 +242,55 @@ namespace AssetStudio
             {
                 using (ZipArchive archive = new ZipArchive(reader.BaseStream, ZipArchiveMode.Read))
                 {
+                    List<string> splitFiles = new List<string>();
+                    // register all files before parsing the assets so that the external references can be found
+                    // and find split files
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
+                        if (entry.Name.Contains(".split"))
+                        {
+                            string baseName = Path.GetFileNameWithoutExtension(entry.Name);
+                            string basePath = Path.Combine(Path.GetDirectoryName(entry.Name), baseName);
+                            if (!splitFiles.Contains(basePath))
+                            {
+                                splitFiles.Add(basePath);
+                                importFilesHash.Add(baseName);
+                            }
+                        }
+                        else
+                        {
+                            importFilesHash.Add(entry.Name);
+                        }
+                    }
+
+                    // merge split files and load the result
+                    foreach (string basePath in splitFiles)
+                    {
+                        try
+                        {
+                            Stream splitStream = new MemoryStream();
+                            int i = 0;
+                            while (true) {
+                                string path = $"{basePath}.split{i++}";
+                                ZipArchiveEntry entry = archive.GetEntry(path);
+                                if (entry == null)
+                                    break;
+                                using (Stream entryStream = entry.Open())
+                                {
+                                    entryStream.CopyTo(splitStream);
+                                }
+                            }
+                            splitStream.Seek(0, SeekOrigin.Begin);
+                            FileReader entryReader = new FileReader(basePath, splitStream);
+                            LoadFile(entryReader);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error($"Error while reading zip split file {basePath}", e);
+                        }
+                    }
+                    // load all entries
+                    foreach (ZipArchiveEntry entry in archive.Entries)
                         try
                         {
                             string dummyPath = Path.Combine(Path.GetDirectoryName(reader.FullPath), reader.FileName, entry.FullName);
@@ -259,13 +306,20 @@ namespace AssetStudio
 
                             FileReader entryReader = new FileReader(dummyPath, streamReader);
                             LoadFile(entryReader);
+                            if (entryReader.FileType == FileType.ResourceFile)
+                            {
+                                entryReader.Position = 0;
+                                if (!resourceFileReaders.ContainsKey(entry.Name))
+                                {
+                                    resourceFileReaders.Add(entry.Name, entryReader);
+                                }
+                            }
                         }
                         catch (Exception e)
                         {
                             Logger.Error($"Error while reading zip entry {entry.FullName}", e);
                         }
                     }
-                }
             }
             catch (Exception e)
             {
