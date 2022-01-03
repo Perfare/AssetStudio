@@ -337,6 +337,7 @@ namespace AssetStudio
                 reader.Dispose();
             }
         }
+
         public void CheckStrippedVersion(SerializedFile assetsFile)
         {
             if (assetsFile.IsVersionStripped && string.IsNullOrEmpty(SpecifyUnityVersion))
