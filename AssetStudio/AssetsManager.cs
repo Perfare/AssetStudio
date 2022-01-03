@@ -253,7 +253,7 @@ namespace AssetStudio
                         if (entry.Name.Contains(".split"))
                         {
                             string baseName = Path.GetFileNameWithoutExtension(entry.Name);
-                            string basePath = Path.Combine(Path.GetDirectoryName(entry.Name), baseName);
+                            string basePath = Path.Combine(Path.GetDirectoryName(entry.FullName), baseName);
                             if (!splitFiles.Contains(basePath))
                             {
                                 splitFiles.Add(basePath);
