@@ -161,9 +161,9 @@ namespace AssetStudio
                     Logger.Error($"Error while reading assets file {reader.FullPath} from {Path.GetFileName(originalPath)}", e);
                     resourceFileReaders.Add(reader.FileName, reader);
                 }
-                else
-                    Logger.Info($"Skipping {originalPath} ({reader.FileName})");
             }
+            else
+                Logger.Info($"Skipping {originalPath} ({reader.FileName})");
         }
 
         private void LoadBundleFile(FileReader reader, string originalPath = null)
@@ -273,7 +273,8 @@ namespace AssetStudio
                         {
                             Stream splitStream = new MemoryStream();
                             int i = 0;
-                            while (true) {
+                            while (true)
+                            {
                                 string path = $"{basePath}.split{i++}";
                                 ZipArchiveEntry entry = archive.GetEntry(path);
                                 if (entry == null)
@@ -292,8 +293,10 @@ namespace AssetStudio
                             Logger.Error($"Error while reading zip split file {basePath}", e);
                         }
                     }
+
                     // load all entries
                     foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
                         try
                         {
                             string dummyPath = Path.Combine(Path.GetDirectoryName(reader.FullPath), reader.FileName, entry.FullName);
@@ -323,6 +326,7 @@ namespace AssetStudio
                             Logger.Error($"Error while reading zip entry {entry.FullName}", e);
                         }
                     }
+                }
             }
             catch (Exception e)
             {
@@ -333,7 +337,6 @@ namespace AssetStudio
                 reader.Dispose();
             }
         }
-
         public void CheckStrippedVersion(SerializedFile assetsFile)
         {
             if (assetsFile.IsVersionStripped && string.IsNullOrEmpty(SpecifyUnityVersion))
