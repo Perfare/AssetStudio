@@ -13,6 +13,7 @@ namespace AssetStudio
         WebFile,
         ResourceFile,
         GZipFile,
-        BrotliFile
+        BrotliFile,
+        ZipFile
     }
 }
