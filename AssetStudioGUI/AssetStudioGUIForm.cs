@@ -1384,6 +1384,11 @@ namespace AssetStudioGUI
             {
                 var gameObjects = new List<GameObject>();
                 GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
+                if (gameObjects.Count <= 0)
+                {
+                    StatusStripUpdate("No Object can be exported");
+                    return;
+                }
                 var saveFileDialog = new SaveFileDialog();
                 saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
                 saveFileDialog.AddExtension = false;
