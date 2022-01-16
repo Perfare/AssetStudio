@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Globalization;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -43,7 +42,6 @@ namespace AssetStudioGUI
         private FMOD.MODE loopMode = FMOD.MODE.LOOP_OFF;
         private uint FMODlenms;
         private float FMODVolume = 0.8f;
-        
 
         #region TexControl
         private static char[] textureChannelNames = new[] { 'B', 'G', 'R', 'A' };
@@ -92,16 +90,12 @@ namespace AssetStudioGUI
 
         private GUILogger logger;
 
-        private System.Configuration.Configuration cfg=ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
 
         public AssetStudioGUIForm()
         {
-            string language = cfg.AppSettings.Settings["language"].Value;
-            Thread.CurrentThread.CurrentCulture = new CultureInfo(language);
-            Thread.CurrentThread.CurrentUICulture= new CultureInfo(language);
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             InitializeComponent();
             Text = $"AssetStudioGUI v{Application.ProductVersion}";
             delayTimer = new System.Timers.Timer(800);
@@ -2056,34 +2050,6 @@ namespace AssetStudioGUI
         {
             logger.ShowErrorMessage = toolStripMenuItem15.Checked;
         }
-
-        private void englieshToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ChangeLanguage(LanguageType.English);
-        }
-
-        private void chineseToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ChangeLanguage(LanguageType.Chinese);
-        }
-
-        private void ChangeLanguage(LanguageType lang)
-        {
-            switch (lang)
-            {
-                case LanguageType.Chinese:
-                    cfg.AppSettings.Settings["language"].Value = "zh-Hans";
-                    cfg.Save();
-                    break;
-                default:
-                    cfg.AppSettings.Settings["language"].Value = "";
-                    cfg.Save();
-                    break;
-            }
-            MessageBox.Show("Please restart the software to set the application language");
-        }
-
-
 
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)
         {
