@@ -605,7 +605,7 @@ namespace AssetStudio
             if ((version[0] == 2020 && version[1] > 3) ||
                (version[0] == 2020 && version[1] == 3 && version[2] >= 2) || //2020.3.2f1 and up
                (version[0] == 2021 && version[1] > 1) ||
-               (version[0] == 2021 && version[1] == 1 && version[2] >= 4)) //2021.1.4f1 and up
+               (version[0] == 2021 && version[1] == 1 && version[2] >= 1)) //2021.1.1f1 and up
             {
                 m_Parameters = new SerializedProgramParameters(reader);
             }
@@ -704,7 +704,7 @@ namespace AssetStudio
             if ((version[0] == 2020 && version[1] > 3) ||
                (version[0] == 2020 && version[1] == 3 && version[2] >= 2) || //2020.3.2f1 and up
                (version[0] == 2021 && version[1] > 1) ||
-               (version[0] == 2021 && version[1] == 1 && version[2] >= 4)) //2021.1.4f1 and up
+               (version[0] == 2021 && version[1] == 1 && version[2] >= 1)) //2021.1.1f1 and up
             {
                 m_CommonParameters = new SerializedProgramParameters(reader);
             }
