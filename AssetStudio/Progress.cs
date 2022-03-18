@@ -1,8 +1,10 @@
-﻿namespace AssetStudio
+﻿using System;
+
+namespace AssetStudio
 {
     public static class Progress
     {
-        public static IProgress Default = new DummyProgress();
+        public static IProgress<int> Default = new Progress<int>();
         private static int preValue;
 
         public static void Reset()

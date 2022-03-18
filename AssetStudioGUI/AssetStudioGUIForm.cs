@@ -107,7 +107,7 @@ namespace AssetStudioGUI
 
             logger = new GUILogger(StatusStripUpdate);
             Logger.Default = logger;
-            Progress.Default = new GUIProgress(SetProgressBarValue);
+            Progress.Default = new Progress<int>(SetProgressBarValue);
             Studio.StatusStripUpdate = StatusStripUpdate;
         }
 
