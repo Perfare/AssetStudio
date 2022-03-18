@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -190,8 +191,10 @@ namespace AssetStudio
                     value = reader.ReadSByte();
                     break;
                 case "UInt8":
-                case "char":
                     value = reader.ReadByte();
+                    break;
+                case "char":
+                    value = BitConverter.ToChar(reader.ReadBytes(2), 0);
                     break;
                 case "short":
                 case "SInt16":
