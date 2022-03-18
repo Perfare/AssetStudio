@@ -532,10 +532,6 @@ namespace AssetStudio
                     }
                     else if (obj is SpriteAtlas m_SpriteAtlas)
                     {
-                        if (m_SpriteAtlas.m_IsVariant)
-                        {
-                            continue;
-                        }
                         foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
                         {
                             if (m_PackedSprite.TryGet(out var m_Sprite))
@@ -543,6 +539,14 @@ namespace AssetStudio
                                 if (m_Sprite.m_SpriteAtlas.IsNull)
                                 {
                                     m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
+                                }
+                                else
+                                {
+                                    m_Sprite.m_SpriteAtlas.TryGet(out var m_SpriteAtlaOld);
+                                    if (m_SpriteAtlaOld.m_IsVariant)
+                                    {
+                                        m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
+                                    }
                                 }
                             }
                         }
