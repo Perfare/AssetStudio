@@ -1,0 +1,57 @@
+name: AssetStudioBuild
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: microsoft/setup-msbuild@v1.1
+      
+      - name: Download FBX SDK
+        run: |
+          md fbx
+          cd fbx
+          Invoke-WebRequest "https://damassets.autodesk.net/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2019_win.exe" -OutFile "fbxsdk.exe"
+          Start-Process -FilePath "fbxsdk.exe" /S -Wait
+          Invoke-WebRequest "https://damassets.autodesk.net/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2019_pdbs.exe" -OutFile "fbxpdb.exe"
+          Start-Process -FilePath "fbxpdb.exe" /S -Wait
+          cd ..
+
+      - name: Nuget Restore
+        run: nuget restore
+      
+      - name: Build .Net472
+        run: msbuild /p:Configuration=Release /p:TargetFramework=net472 /verbosity:minimal
+
+      - name: Build .Net5
+        run: msbuild /t:AssetStudioGUI:publish /p:Configuration=Release /p:TargetFramework=net5.0-windows /p:SelfContained=false /verbosity:minimal
+
+      - name: Build .Net6
+        run: msbuild /t:AssetStudioGUI:publish /p:Configuration=Release /p:TargetFramework=net6.0-windows /p:SelfContained=false /verbosity:minimal
+
+      - name: Upload .Net472 Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: AssetStudio.net472
+          path: AssetStudioGUI/bin/Release/net472
+
+      - name: Upload .Net5 Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: AssetStudio.net5
+          path: AssetStudioGUI/bin/Release/net5.0-windows/publish
+
+      - name: Upload .Net6 Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: AssetStudio.net6
+          path: AssetStudioGUI/bin/Release/net6.0-windows/publish
