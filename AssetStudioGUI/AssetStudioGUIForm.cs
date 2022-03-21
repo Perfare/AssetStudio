@@ -759,7 +759,7 @@ namespace AssetStudioGUI
             var image = m_Texture2D.ConvertToImage(true);
             if (image != null)
             {
-                var bitmap = new DirectBitmap(image.ConvertToBgra32Bytes(), m_Texture2D.m_Width, m_Texture2D.m_Height);
+                var bitmap = new DirectBitmap(image.ConvertToBytes(), m_Texture2D.m_Width, m_Texture2D.m_Height);
                 image.Dispose();
                 assetItem.InfoText = $"Width: {m_Texture2D.m_Width}\nHeight: {m_Texture2D.m_Height}\nFormat: {m_Texture2D.m_TextureFormat}";
                 switch (m_Texture2D.m_TextureSettings.m_FilterMode)
@@ -1167,7 +1167,7 @@ namespace AssetStudioGUI
             var image = m_Sprite.GetImage();
             if (image != null)
             {
-                var bitmap = new DirectBitmap(image.ConvertToBgra32Bytes(), image.Width, image.Height);
+                var bitmap = new DirectBitmap(image.ConvertToBytes(), image.Width, image.Height);
                 image.Dispose();
                 assetItem.InfoText = $"Width: {bitmap.Width}\nHeight: {bitmap.Height}\n";
                 PreviewTexture(bitmap);
