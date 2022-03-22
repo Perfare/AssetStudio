@@ -959,9 +959,9 @@ namespace AssetStudio
         //5.5 and up
         public SerializedShader m_ParsedForm;
         public ShaderCompilerPlatform[] platforms;
-        public uint[] offsets;
-        public uint[] compressedLengths;
-        public uint[] decompressedLengths;
+        public uint[][] offsets;
+        public uint[][] compressedLengths;
+        public uint[][] decompressedLengths;
         public byte[] compressedBlob;
 
         public Shader(ObjectReader reader) : base(reader)
@@ -972,15 +972,15 @@ namespace AssetStudio
                 platforms = reader.ReadUInt32Array().Select(x => (ShaderCompilerPlatform)x).ToArray();
                 if (version[0] > 2019 || (version[0] == 2019 && version[1] >= 3)) //2019.3 and up
                 {
-                    offsets = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
-                    compressedLengths = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
-                    decompressedLengths = reader.ReadUInt32ArrayArray().Select(x => x[0]).ToArray();
+                    offsets = reader.ReadUInt32ArrayArray();
+                    compressedLengths = reader.ReadUInt32ArrayArray();
+                    decompressedLengths = reader.ReadUInt32ArrayArray();
                 }
                 else
                 {
-                    offsets = reader.ReadUInt32Array();
-                    compressedLengths = reader.ReadUInt32Array();
-                    decompressedLengths = reader.ReadUInt32Array();
+                    offsets = reader.ReadUInt32Array().Select(x => new[] { x }).ToArray();
+                    compressedLengths = reader.ReadUInt32Array().Select(x => new[] { x }).ToArray();
+                    decompressedLengths = reader.ReadUInt32Array().Select(x => new[] { x }).ToArray();
                 }
                 compressedBlob = reader.ReadUInt8Array();
                 reader.AlignStream();
