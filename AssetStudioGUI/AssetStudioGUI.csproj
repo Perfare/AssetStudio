@@ -67,6 +67,16 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="System.Configuration" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="App.config">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 	<Target Name="CopyExtraFiles" AfterTargets="AfterBuild">
 		<Copy SourceFiles="$(SolutionDir)AssetStudioFBXNative\bin\Win32\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)x86" ContinueOnError="true" />
 		<Copy SourceFiles="$(SolutionDir)AssetStudioFBXNative\bin\x64\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)x64" ContinueOnError="true" />
