@@ -265,7 +265,7 @@ namespace AssetStudioGUI
             Progress.Reset();
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                var fileNode = new GameObjectTreeNode(assetsFile.fileName); //RootNode
+                var fileNode = new TreeNode(assetsFile.fileName); //RootNode
 
                 foreach (var obj in assetsFile.Objects)
                 {
@@ -307,11 +307,12 @@ namespace AssetStudioGUI
                             {
                                 if (m_Father.m_GameObject.TryGet(out var parentGameObject))
                                 {
-                                    if (!treeNodeDictionary.TryGetValue(parentGameObject, out parentNode))
+                                    if (!treeNodeDictionary.TryGetValue(parentGameObject, out var parentGameObjectNode))
                                     {
-                                        parentNode = new GameObjectTreeNode(parentGameObject);
-                                        treeNodeDictionary.Add(parentGameObject, parentNode);
+                                        parentGameObjectNode = new GameObjectTreeNode(parentGameObject);
+                                        treeNodeDictionary.Add(parentGameObject, parentGameObjectNode);
                                     }
+                                    parentNode = parentGameObjectNode;
                                 }
                             }
                         }
@@ -514,7 +515,7 @@ namespace AssetStudioGUI
                 var count = nodes.Cast<TreeNode>().Sum(x => x.Nodes.Count);
                 int k = 0;
                 Progress.Reset();
-                foreach (GameObjectTreeNode node in nodes)
+                foreach (TreeNode node in nodes)
                 {
                     //遍历一级子节点
                     foreach (GameObjectTreeNode j in node.Nodes)
@@ -635,7 +636,7 @@ namespace AssetStudioGUI
                 }
                 else
                 {
-                    StatusStripUpdate("No Object can be exported.");
+                    StatusStripUpdate("No Object selected for export.");
                 }
             });
         }
@@ -667,11 +668,11 @@ namespace AssetStudioGUI
 
         public static void GetSelectedParentNode(TreeNodeCollection nodes, List<GameObject> gameObjects)
         {
-            foreach (GameObjectTreeNode i in nodes)
+            foreach (TreeNode i in nodes)
             {
-                if (i.Checked)
+                if (i is GameObjectTreeNode gameObjectTreeNode && i.Checked)
                 {
-                    gameObjects.Add(i.gameObject);
+                    gameObjects.Add(gameObjectTreeNode.gameObject);
                 }
                 else
                 {

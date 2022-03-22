@@ -82,7 +82,7 @@ namespace AssetStudio
                             var polygons = triangles.Select(x => new Polygon(new LinearLineSegment(x.Select(y => new PointF(y.X, y.Y)).ToArray()))).ToArray();
                             IPathCollection path = new PathCollection(polygons);
                             var matrix = Matrix3x2.CreateScale(m_Sprite.m_PixelsToUnits);
-                            matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
+                            matrix *= Matrix3x2.CreateTranslation(textureRect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, textureRect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
                             path = path.Transform(matrix);
                             var graphicsOptions = new GraphicsOptions
                             {

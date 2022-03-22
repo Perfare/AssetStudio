@@ -141,7 +141,7 @@ namespace AssetStudioGUI
         private async void loadFile_Click(object sender, EventArgs e)
         {
             openFileDialog1.InitialDirectory = openDirectoryBackup;
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 ResetForm();
                 openDirectoryBackup = Path.GetDirectoryName(openFileDialog1.FileNames[0]);
@@ -167,7 +167,7 @@ namespace AssetStudioGUI
 
         private async void extractFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 var saveFolderDialog = new OpenFolderDialog();
                 saveFolderDialog.Title = "Select the save folder";
@@ -222,10 +222,6 @@ namespace AssetStudioGUI
 
             sceneTreeView.BeginUpdate();
             sceneTreeView.Nodes.AddRange(treeNodeCollection.ToArray());
-            foreach (var node in treeNodeCollection)
-            {
-                node.HideCheckBox();
-            }
             sceneTreeView.EndUpdate();
             treeNodeCollection.Clear();
 
@@ -461,7 +457,7 @@ namespace AssetStudioGUI
         private void showExpOpt_Click(object sender, EventArgs e)
         {
             var exportOpt = new ExportOptions();
-            exportOpt.ShowDialog();
+            exportOpt.ShowDialog(this);
         }
 
         private void assetListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -1384,25 +1380,32 @@ namespace AssetStudioGUI
             {
                 var gameObjects = new List<GameObject>();
                 GetSelectedParentNode(sceneTreeView.Nodes, gameObjects);
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
-                saveFileDialog.AddExtension = false;
-                saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
-                saveFileDialog.InitialDirectory = saveDirectoryBackup;
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                if (gameObjects.Count > 0)
                 {
-                    saveDirectoryBackup = Path.GetDirectoryName(saveFileDialog.FileName);
-                    var exportPath = saveFileDialog.FileName;
-                    List<AssetItem> animationList = null;
-                    if (animation)
+                    var saveFileDialog = new SaveFileDialog();
+                    saveFileDialog.FileName = gameObjects[0].m_Name + " (merge).fbx";
+                    saveFileDialog.AddExtension = false;
+                    saveFileDialog.Filter = "Fbx file (*.fbx)|*.fbx";
+                    saveFileDialog.InitialDirectory = saveDirectoryBackup;
+                    if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
                     {
-                        animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
-                        if (animationList.Count == 0)
+                        saveDirectoryBackup = Path.GetDirectoryName(saveFileDialog.FileName);
+                        var exportPath = saveFileDialog.FileName;
+                        List<AssetItem> animationList = null;
+                        if (animation)
                         {
-                            animationList = null;
+                            animationList = GetSelectedAssets().Where(x => x.Type == ClassIDType.AnimationClip).ToList();
+                            if (animationList.Count == 0)
+                            {
+                                animationList = null;
+                            }
                         }
+                        ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
                     }
-                    ExportObjectsMergeWithAnimationClip(exportPath, gameObjects, animationList);
+                }
+                else
+                {
+                    StatusStripUpdate("No Object selected for export.");
                 }
             }
         }
