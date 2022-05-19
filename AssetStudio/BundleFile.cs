@@ -300,6 +300,7 @@ namespace AssetStudio
                     case 2: //LZ4
                     case 3: //LZ4HC
                         {
+                            JumpToNotZero(reader.BaseStream);
                             var compressedSize = (int)blockInfo.compressedSize;
                             var compressedBytes = BigArrayPool<byte>.Shared.Rent(compressedSize);
                             reader.Read(compressedBytes, 0, compressedSize);
@@ -318,6 +319,22 @@ namespace AssetStudio
                 }
             }
             blocksStream.Position = 0;
+        }
+
+        public static int JumpToNotZero(Stream stream)
+        {
+            var offset = 0;
+            for (int i = 0; i < stream.Length; i++)
+            {
+                var currentByte = stream.ReadByte();
+                if (currentByte != 0)
+                {
+                    offset = i;
+                    stream.Position -= 1;
+                    break;
+                }
+            }
+            return offset;
         }
     }
 }
