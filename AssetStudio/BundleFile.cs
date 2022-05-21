@@ -208,6 +208,7 @@ namespace AssetStudio
             {
                 reader.AlignStream(16);
             }
+            var start = reader.Position;
             if ((m_Header.flags & 0x80) != 0) //kArchiveBlocksInfoAtTheEnd
             {
                 var position = reader.Position;
@@ -279,6 +280,10 @@ namespace AssetStudio
                     };
                 }
             }
+            //https://issuetracker.unity3d.com/issues/files-within-assetbundles-do-not-start-on-aligned-boundaries-breaking-patching-on-nintendo-switch
+            var blockSize = m_BlocksInfo.Sum(x => x.compressedSize);
+            var padding = reader.BaseStream.Length - start - m_Header.compressedBlocksInfoSize - blockSize;
+            reader.Position += padding;
         }
 
         private void ReadBlocks(EndianBinaryReader reader, Stream blocksStream)
