@@ -17,8 +17,8 @@ namespace AssetStudio
         internal Dictionary<string, BinaryReader> resourceFileReaders = new Dictionary<string, BinaryReader>(StringComparer.OrdinalIgnoreCase);
 
         private List<string> importFiles = new List<string>();
-        private List<string> noexistFiles = new List<string>();
         private HashSet<string> importFilesHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> noexistFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> assetsFileListHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public void LoadFiles(params string[] files)
@@ -122,7 +122,6 @@ namespace AssetStudio
                                         sharedFilePath = findFiles[0];
                                     }
                                 }
-
                                 if (File.Exists(sharedFilePath))
                                 {
                                     importFiles.Add(sharedFilePath);
