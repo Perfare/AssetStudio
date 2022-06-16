@@ -7,7 +7,7 @@ AssetStudio is a tool for exploring, extracting and exporting assets and assetbu
 
 ## Features
 * Support version:
-  * 3.4 - 2021.2
+  * 3.4 - 2022.1
 * Support asset types:
   * **Texture2D** : convert to png, tga, jpeg, bmp
   * **Sprite** : crop Texture2D to png, tga, jpeg, bmp

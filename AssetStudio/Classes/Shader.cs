@@ -428,6 +428,7 @@ namespace AssetStudio
 
             if ((version[0] == 2020 && version[1] > 3) ||
                (version[0] == 2020 && version[1] == 3 && version[2] >= 2) || //2020.3.2f1 and up
+               (version[0] > 2021) ||
                (version[0] == 2021 && version[1] > 1) ||
                (version[0] == 2021 && version[1] == 1 && version[2] >= 4)) //2021.1.4f1 and up
             {
@@ -605,6 +606,7 @@ namespace AssetStudio
 
             if ((version[0] == 2020 && version[1] > 3) ||
                (version[0] == 2020 && version[1] == 3 && version[2] >= 2) || //2020.3.2f1 and up
+               (version[0] > 2021) ||
                (version[0] == 2021 && version[1] > 1) ||
                (version[0] == 2021 && version[1] == 1 && version[2] >= 1)) //2021.1.1f1 and up
             {
@@ -690,6 +692,7 @@ namespace AssetStudio
     {
         public SerializedSubProgram[] m_SubPrograms;
         public SerializedProgramParameters m_CommonParameters;
+        public ushort[] m_SerializedKeywordStateMask;
 
         public SerializedProgram(ObjectReader reader)
         {
@@ -704,10 +707,17 @@ namespace AssetStudio
 
             if ((version[0] == 2020 && version[1] > 3) ||
                (version[0] == 2020 && version[1] == 3 && version[2] >= 2) || //2020.3.2f1 and up
+               (version[0] > 2021) ||
                (version[0] == 2021 && version[1] > 1) ||
                (version[0] == 2021 && version[1] == 1 && version[2] >= 1)) //2021.1.1f1 and up
             {
                 m_CommonParameters = new SerializedProgramParameters(reader);
+            }
+
+            if (version[0] > 2022 || (version[0] == 2022 && version[1] >= 1)) //2022.1 and up
+            {
+                m_SerializedKeywordStateMask = reader.ReadUInt16Array();
+                reader.AlignStream();
             }
         }
     }
@@ -795,7 +805,7 @@ namespace AssetStudio
             m_Name = reader.ReadAlignedString();
             m_TextureName = reader.ReadAlignedString();
             m_Tags = new SerializedTagMap(reader);
-            if (version[0] > 2021 || (version[0] == 2021 && version[1] >= 2)) //2021.2 and up
+            if (version[0] == 2021 && version[1] >= 2) //2021.2 ~2021.x
             {
                 m_SerializedKeywordStateMask = reader.ReadUInt16Array();
                 reader.AlignStream();

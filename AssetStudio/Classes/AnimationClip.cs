@@ -797,6 +797,7 @@ namespace AssetStudio
         public ClassIDType typeID;
         public byte customType;
         public byte isPPtrCurve;
+        public byte isIntCurve;
 
         public GenericBinding() { }
 
@@ -816,6 +817,10 @@ namespace AssetStudio
             }
             customType = reader.ReadByte();
             isPPtrCurve = reader.ReadByte();
+            if (version[0] > 2022 || (version[0] == 2022 && version[1] >= 1)) //2022.1 and up
+            {
+                isIntCurve = reader.ReadByte();
+            }
             reader.AlignStream();
         }
     }

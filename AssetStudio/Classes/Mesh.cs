@@ -651,6 +651,11 @@ namespace AssetStudio
 
             int m_MeshUsageFlags = reader.ReadInt32();
 
+            if (version[0] > 2022 || (version[0] == 2022 && version[1] >= 1)) //2022.1 and up
+            {
+                int m_CookingOptions = reader.ReadInt32();
+            }
+
             if (version[0] >= 5) //5.0 and up
             {
                 var m_BakedConvexCollisionMesh = reader.ReadUInt8Array();
