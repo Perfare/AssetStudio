@@ -909,9 +909,9 @@ namespace AssetStudio
 
     public enum AnimationType
     {
-        kLegacy = 1,
-        kGeneric = 2,
-        kHumanoid = 3
+        Legacy = 1,
+        Generic = 2,
+        Humanoid = 3
     };
 
     public sealed class AnimationClip : NamedObject
@@ -945,7 +945,7 @@ namespace AssetStudio
             else if (version[0] >= 4)//4.0 and up
             {
                 m_AnimationType = (AnimationType)reader.ReadInt32();
-                if (m_AnimationType == AnimationType.kLegacy)
+                if (m_AnimationType == AnimationType.Legacy)
                     m_Legacy = true;
             }
             else

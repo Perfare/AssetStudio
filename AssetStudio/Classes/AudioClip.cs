@@ -9,7 +9,7 @@ namespace AssetStudio
     public sealed class AudioClip : NamedObject
     {
         public int m_Format;
-        public AudioType m_Type;
+        public FMODSoundType m_Type;
         public bool m_3D;
         public bool m_UseHardware;
 
@@ -36,7 +36,7 @@ namespace AssetStudio
             if (version[0] < 5)
             {
                 m_Format = reader.ReadInt32();
-                m_Type = (AudioType)reader.ReadInt32();
+                m_Type = (FMODSoundType)reader.ReadInt32();
                 m_3D = reader.ReadBoolean();
                 m_UseHardware = reader.ReadBoolean();
                 reader.AlignStream();
@@ -92,34 +92,51 @@ namespace AssetStudio
         }
     }
 
-    public enum AudioType
+    public enum FMODSoundType
     {
-        UNKNOWN,
-        ACC,
-        AIFF,
+        UNKNOWN = 0,
+        ACC = 1,
+        AIFF = 2,
+        ASF = 3,
+        AT3 = 4,
+        CDDA = 5,
+        DLS = 6,
+        FLAC = 7,
+        FSB = 8,
+        GCADPCM = 9,
         IT = 10,
+        MIDI = 11,
         MOD = 12,
-        MPEG,
-        OGGVORBIS,
+        MPEG = 13,
+        OGGVORBIS = 14,
+        PLAYLIST = 15,
+        RAW = 16,
         S3M = 17,
+        SF2 = 18,
+        USER = 19,
         WAV = 20,
-        XM,
-        XMA,
-        VAG,
-        AUDIOQUEUE
+        XM = 21,
+        XMA = 22,
+        VAG = 23,
+        AUDIOQUEUE = 24,
+        XWMA = 25,
+        BCWAV = 26,
+        AT9 = 27,
+        VORBIS = 28,
+        MEDIA_FOUNDATION = 29
     }
 
     public enum AudioCompressionFormat
     {
-        PCM,
-        Vorbis,
-        ADPCM,
-        MP3,
-        VAG,
-        HEVAG,
-        XMA,
-        AAC,
-        GCADPCM,
-        ATRAC9
+        PCM = 0,
+        Vorbis = 1,
+        ADPCM = 2,
+        MP3 = 3,
+        PSMVAG = 4,
+        HEVAG = 5,
+        XMA = 6,
+        AAC = 7,
+        GCADPCM = 8,
+        ATRAC9 = 9
     }
 }

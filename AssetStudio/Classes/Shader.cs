@@ -56,15 +56,14 @@ namespace AssetStudio
     }
     public enum TextureDimension
     {
-        kTexDimUnknown = -1,
-        kTexDimNone = 0,
-        kTexDimAny = 1,
-        kTexDim2D = 2,
-        kTexDim3D = 3,
-        kTexDimCUBE = 4,
-        kTexDim2DArray = 5,
-        kTexDimCubeArray = 6,
-        kTexDimForce32Bit = 2147483647
+        Unknown = -1,
+        None = 0,
+        Any = 1,
+        Tex2D = 2,
+        Tex3D = 3,
+        Cube = 4,
+        Tex2DArray = 5,
+        CubeArray = 6
     };
 
     public class SerializedTextureProperty
@@ -81,11 +80,12 @@ namespace AssetStudio
 
     public enum SerializedPropertyType
     {
-        kColor = 0,
-        kVector = 1,
-        kFloat = 2,
-        kRange = 3,
-        kTexture = 4
+        Color = 0,
+        Vector = 1,
+        Float = 2,
+        Range = 3,
+        Texture = 4,
+        Int = 5
     };
 
     public class SerializedProperty
@@ -195,11 +195,11 @@ namespace AssetStudio
 
     public enum FogMode
     {
-        kFogUnknown = -1,
-        kFogDisabled = 0,
-        kFogLinear = 1,
-        kFogExp = 2,
-        kFogExp2 = 3
+        Unknown = -1,
+        Disabled = 0,
+        Linear = 1,
+        Exp = 2,
+        Exp2 = 3
     };
 
     public class SerializedShaderState
@@ -453,38 +453,39 @@ namespace AssetStudio
 
     public enum ShaderGpuProgramType
     {
-        kShaderGpuProgramUnknown = 0,
-        kShaderGpuProgramGLLegacy = 1,
-        kShaderGpuProgramGLES31AEP = 2,
-        kShaderGpuProgramGLES31 = 3,
-        kShaderGpuProgramGLES3 = 4,
-        kShaderGpuProgramGLES = 5,
-        kShaderGpuProgramGLCore32 = 6,
-        kShaderGpuProgramGLCore41 = 7,
-        kShaderGpuProgramGLCore43 = 8,
-        kShaderGpuProgramDX9VertexSM20 = 9,
-        kShaderGpuProgramDX9VertexSM30 = 10,
-        kShaderGpuProgramDX9PixelSM20 = 11,
-        kShaderGpuProgramDX9PixelSM30 = 12,
-        kShaderGpuProgramDX10Level9Vertex = 13,
-        kShaderGpuProgramDX10Level9Pixel = 14,
-        kShaderGpuProgramDX11VertexSM40 = 15,
-        kShaderGpuProgramDX11VertexSM50 = 16,
-        kShaderGpuProgramDX11PixelSM40 = 17,
-        kShaderGpuProgramDX11PixelSM50 = 18,
-        kShaderGpuProgramDX11GeometrySM40 = 19,
-        kShaderGpuProgramDX11GeometrySM50 = 20,
-        kShaderGpuProgramDX11HullSM50 = 21,
-        kShaderGpuProgramDX11DomainSM50 = 22,
-        kShaderGpuProgramMetalVS = 23,
-        kShaderGpuProgramMetalFS = 24,
-        kShaderGpuProgramSPIRV = 25,
-        kShaderGpuProgramConsoleVS = 26,
-        kShaderGpuProgramConsoleFS = 27,
-        kShaderGpuProgramConsoleHS = 28,
-        kShaderGpuProgramConsoleDS = 29,
-        kShaderGpuProgramConsoleGS = 30,
-        kShaderGpuProgramRayTracing = 31,
+        Unknown = 0,
+        GLLegacy = 1,
+        GLES31AEP = 2,
+        GLES31 = 3,
+        GLES3 = 4,
+        GLES = 5,
+        GLCore32 = 6,
+        GLCore41 = 7,
+        GLCore43 = 8,
+        DX9VertexSM20 = 9,
+        DX9VertexSM30 = 10,
+        DX9PixelSM20 = 11,
+        DX9PixelSM30 = 12,
+        DX10Level9Vertex = 13,
+        DX10Level9Pixel = 14,
+        DX11VertexSM40 = 15,
+        DX11VertexSM50 = 16,
+        DX11PixelSM40 = 17,
+        DX11PixelSM50 = 18,
+        DX11GeometrySM40 = 19,
+        DX11GeometrySM50 = 20,
+        DX11HullSM50 = 21,
+        DX11DomainSM50 = 22,
+        MetalVS = 23,
+        MetalFS = 24,
+        SPIRV = 25,
+        ConsoleVS = 26,
+        ConsoleFS = 27,
+        ConsoleHS = 28,
+        ConsoleDS = 29,
+        ConsoleGS = 30,
+        RayTracing = 31,
+        PS5NGGC = 32
     };
 
     public class SerializedProgramParameters
@@ -713,9 +714,9 @@ namespace AssetStudio
 
     public enum PassType
     {
-        kPassTypeNormal = 0,
-        kPassTypeUse = 1,
-        kPassTypeGrab = 2
+        Normal = 0,
+        Use = 1,
+        Grab = 2
     };
 
     public class SerializedPass
@@ -922,32 +923,32 @@ namespace AssetStudio
 
     public enum ShaderCompilerPlatform
     {
-        kShaderCompPlatformNone = -1,
-        kShaderCompPlatformGL = 0,
-        kShaderCompPlatformD3D9 = 1,
-        kShaderCompPlatformXbox360 = 2,
-        kShaderCompPlatformPS3 = 3,
-        kShaderCompPlatformD3D11 = 4,
-        kShaderCompPlatformGLES20 = 5,
-        kShaderCompPlatformNaCl = 6,
-        kShaderCompPlatformFlash = 7,
-        kShaderCompPlatformD3D11_9x = 8,
-        kShaderCompPlatformGLES3Plus = 9,
-        kShaderCompPlatformPSP2 = 10,
-        kShaderCompPlatformPS4 = 11,
-        kShaderCompPlatformXboxOne = 12,
-        kShaderCompPlatformPSM = 13,
-        kShaderCompPlatformMetal = 14,
-        kShaderCompPlatformOpenGLCore = 15,
-        kShaderCompPlatformN3DS = 16,
-        kShaderCompPlatformWiiU = 17,
-        kShaderCompPlatformVulkan = 18,
-        kShaderCompPlatformSwitch = 19,
-        kShaderCompPlatformXboxOneD3D12 = 20,
-        kShaderCompPlatformGameCoreXboxOne = 21,
-        kShaderCompPlatformGameCoreScarlett = 22,
-        kShaderCompPlatformPS5 = 23,
-        kShaderCompPlatformPS5NGGC = 24,
+        None = -1,
+        GL = 0,
+        D3D9 = 1,
+        Xbox360 = 2,
+        PS3 = 3,
+        D3D11 = 4,
+        GLES20 = 5,
+        NaCl = 6,
+        Flash = 7,
+        D3D11_9x = 8,
+        GLES3Plus = 9,
+        PSP2 = 10,
+        PS4 = 11,
+        XboxOne = 12,
+        PSM = 13,
+        Metal = 14,
+        OpenGLCore = 15,
+        N3DS = 16,
+        WiiU = 17,
+        Vulkan = 18,
+        Switch = 19,
+        XboxOneD3D12 = 20,
+        GameCoreXboxOne = 21,
+        GameCoreScarlett = 22,
+        PS5 = 23,
+        PS5NGGC = 24
     };
 
     public class Shader : NamedObject

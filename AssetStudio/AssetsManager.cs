@@ -156,7 +156,7 @@ namespace AssetStudio
                 {
                     var assetsFile = new SerializedFile(reader, this);
                     assetsFile.originalPath = originalPath;
-                    if (!string.IsNullOrEmpty(unityVersion) && assetsFile.header.m_Version < SerializedFileFormatVersion.kUnknown_7)
+                    if (!string.IsNullOrEmpty(unityVersion) && assetsFile.header.m_Version < SerializedFileFormatVersion.Unknown_7)
                     {
                         assetsFile.SetVersion(unityVersion);
                     }
