@@ -191,6 +191,24 @@ namespace AssetStudio
         }
     }
 
+    public class SpriteBone
+    {
+        public string name;
+        public Vector3 position;
+        public Quaternion rotation;
+        public float length;
+        public int parentId;
+
+        public SpriteBone(BinaryReader reader)
+        {
+            name = reader.ReadAlignedString();
+            position = reader.ReadVector3();
+            rotation = reader.ReadQuaternion();
+            length = reader.ReadSingle();
+            parentId = reader.ReadInt32();
+        }
+    }
+
     public sealed class Sprite : NamedObject
     {
         public Rectf m_Rect;
@@ -205,7 +223,7 @@ namespace AssetStudio
         public PPtr<SpriteAtlas> m_SpriteAtlas;
         public SpriteRenderData m_RD;
         public Vector2[][] m_PhysicsShape;
-
+        public SpriteBone[] m_Bones;
         public Sprite(ObjectReader reader) : base(reader)
         {
             m_Rect = new Rectf(reader);
@@ -255,6 +273,15 @@ namespace AssetStudio
             }
 
             //vector m_Bones 2018 and up
+            if (version[0] >= 2018)
+            {
+                var m_BonesSize = reader.ReadInt32();
+                m_Bones = new SpriteBone[m_BonesSize];
+                for (int i = 0;i < m_BonesSize;i++)
+                {
+                    m_Bones[i] = new SpriteBone(reader);
+                }
+            }
         }
     }
 }
