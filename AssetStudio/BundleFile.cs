@@ -1,9 +1,36 @@
 ﻿using K4os.Compression.LZ4;
+using System;
 using System.IO;
 using System.Linq;
 
 namespace AssetStudio
 {
+    [Flags]
+    public enum ArchiveFlags
+    {
+        CompressionTypeMask = 0x3f,
+        BlocksAndDirectoryInfoCombined = 0x40,
+        BlocksInfoAtTheEnd = 0x80,
+        OldWebPluginCompatibility = 0x100,
+        BlockInfoNeedPaddingAtStart = 0x200
+    }
+
+    [Flags]
+    public enum StorageBlockFlags
+    {
+        CompressionTypeMask = 0x3f,
+        Streamed = 0x40
+    }
+
+    public enum CompressionType
+    {
+        None,
+        Lzma,
+        Lz4,
+        Lz4HC,
+        Lzham
+    }
+
     public class BundleFile
     {
         public class Header
@@ -15,14 +42,14 @@ namespace AssetStudio
             public long size;
             public uint compressedBlocksInfoSize;
             public uint uncompressedBlocksInfoSize;
-            public uint flags;
+            public ArchiveFlags flags;
         }
 
         public class StorageBlock
         {
             public uint compressedSize;
             public uint uncompressedSize;
-            public ushort flags;
+            public StorageBlockFlags flags;
         }
 
         public class Node
@@ -77,7 +104,6 @@ namespace AssetStudio
 
         private void ReadHeaderAndBlocksInfo(EndianBinaryReader reader)
         {
-            var isCompressed = m_Header.signature == "UnityWeb";
             if (m_Header.version >= 4)
             {
                 var hash = reader.ReadBytes(16);
@@ -94,7 +120,6 @@ namespace AssetStudio
                 {
                     compressedSize = reader.ReadUInt32(),
                     uncompressedSize = reader.ReadUInt32(),
-                    flags = (ushort)(isCompressed ? 1 : 0)
                 };
                 if (i == levelCount - 1)
                 {
@@ -131,10 +156,11 @@ namespace AssetStudio
 
         private void ReadBlocksAndDirectory(EndianBinaryReader reader, Stream blocksStream)
         {
+            var isCompressed = m_Header.signature == "UnityWeb";
             foreach (var blockInfo in m_BlocksInfo)
             {
                 var uncompressedBytes = reader.ReadBytes((int)blockInfo.compressedSize);
-                if (blockInfo.flags == 1)
+                if (isCompressed)
                 {
                     using (var memoryStream = new MemoryStream(uncompressedBytes))
                     {
@@ -194,7 +220,7 @@ namespace AssetStudio
             m_Header.size = reader.ReadInt64();
             m_Header.compressedBlocksInfoSize = reader.ReadUInt32();
             m_Header.uncompressedBlocksInfoSize = reader.ReadUInt32();
-            m_Header.flags = reader.ReadUInt32();
+            m_Header.flags = (ArchiveFlags)reader.ReadUInt32();
             if (m_Header.signature != "UnityFS")
             {
                 reader.ReadByte();
@@ -208,27 +234,28 @@ namespace AssetStudio
             {
                 reader.AlignStream(16);
             }
-            if ((m_Header.flags & 0x80) != 0) //kArchiveBlocksInfoAtTheEnd
+            if ((m_Header.flags & ArchiveFlags.BlocksInfoAtTheEnd) != 0)
             {
                 var position = reader.Position;
                 reader.Position = reader.BaseStream.Length - m_Header.compressedBlocksInfoSize;
                 blocksInfoBytes = reader.ReadBytes((int)m_Header.compressedBlocksInfoSize);
                 reader.Position = position;
             }
-            else //0x40 kArchiveBlocksAndDirectoryInfoCombined
+            else //0x40 BlocksAndDirectoryInfoCombined
             {
                 blocksInfoBytes = reader.ReadBytes((int)m_Header.compressedBlocksInfoSize);
             }
             MemoryStream blocksInfoUncompresseddStream;
             var uncompressedSize = m_Header.uncompressedBlocksInfoSize;
-            switch (m_Header.flags & 0x3F) //kArchiveCompressionTypeMask
+            var compressionType = (CompressionType)(m_Header.flags & ArchiveFlags.CompressionTypeMask);
+            switch (compressionType)
             {
-                default: //None
+                case CompressionType.None:
                     {
                         blocksInfoUncompresseddStream = new MemoryStream(blocksInfoBytes);
                         break;
                     }
-                case 1: //LZMA
+                case CompressionType.Lzma:
                     {
                         blocksInfoUncompresseddStream = new MemoryStream((int)(uncompressedSize));
                         using (var blocksInfoCompressedStream = new MemoryStream(blocksInfoBytes))
@@ -238,8 +265,8 @@ namespace AssetStudio
                         blocksInfoUncompresseddStream.Position = 0;
                         break;
                     }
-                case 2: //LZ4
-                case 3: //LZ4HC
+                case CompressionType.Lz4:
+                case CompressionType.Lz4HC:
                     {
                         var uncompressedBytes = new byte[uncompressedSize];
                         var numWrite = LZ4Codec.Decode(blocksInfoBytes, uncompressedBytes);
@@ -250,6 +277,8 @@ namespace AssetStudio
                         blocksInfoUncompresseddStream = new MemoryStream(uncompressedBytes);
                         break;
                     }
+                default:
+                    throw new IOException($"Unsupported compression type {compressionType}");
             }
             using (var blocksInfoReader = new EndianBinaryReader(blocksInfoUncompresseddStream))
             {
@@ -262,7 +291,7 @@ namespace AssetStudio
                     {
                         uncompressedSize = blocksInfoReader.ReadUInt32(),
                         compressedSize = blocksInfoReader.ReadUInt32(),
-                        flags = blocksInfoReader.ReadUInt16()
+                        flags = (StorageBlockFlags)blocksInfoReader.ReadUInt16()
                     };
                 }
 
@@ -279,26 +308,31 @@ namespace AssetStudio
                     };
                 }
             }
+            if ((m_Header.flags & ArchiveFlags.BlockInfoNeedPaddingAtStart) != 0)
+            {
+                reader.AlignStream(16);
+            }
         }
 
         private void ReadBlocks(EndianBinaryReader reader, Stream blocksStream)
         {
             foreach (var blockInfo in m_BlocksInfo)
             {
-                switch (blockInfo.flags & 0x3F) //kStorageBlockCompressionTypeMask
+                var compressionType = (CompressionType)(blockInfo.flags & StorageBlockFlags.CompressionTypeMask);
+                switch (compressionType)
                 {
-                    default: //None
+                    case CompressionType.None:
                         {
                             reader.BaseStream.CopyTo(blocksStream, blockInfo.compressedSize);
                             break;
                         }
-                    case 1: //LZMA
+                    case CompressionType.Lzma:
                         {
                             SevenZipHelper.StreamDecompress(reader.BaseStream, blocksStream, blockInfo.compressedSize, blockInfo.uncompressedSize);
                             break;
                         }
-                    case 2: //LZ4
-                    case 3: //LZ4HC
+                    case CompressionType.Lz4:
+                    case CompressionType.Lz4HC:
                         {
                             var compressedSize = (int)blockInfo.compressedSize;
                             var compressedBytes = BigArrayPool<byte>.Shared.Rent(compressedSize);
@@ -315,6 +349,8 @@ namespace AssetStudio
                             BigArrayPool<byte>.Shared.Return(uncompressedBytes);
                             break;
                         }
+                    default:
+                        throw new IOException($"Unsupported compression type {compressionType}");
                 }
             }
             blocksStream.Position = 0;

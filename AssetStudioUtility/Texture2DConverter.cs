@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Texture2DDecoder;
 
 namespace AssetStudio
@@ -11,6 +12,7 @@ namespace AssetStudio
         private TextureFormat m_TextureFormat;
         private int[] version;
         private BuildTarget platform;
+        private int outPutSize;
 
         public Texture2DConverter(Texture2D m_Texture2D)
         {
@@ -20,6 +22,7 @@ namespace AssetStudio
             m_TextureFormat = m_Texture2D.m_TextureFormat;
             version = m_Texture2D.version;
             platform = m_Texture2D.platform;
+            outPutSize = m_Width * m_Height * 4;
         }
 
         public bool DecodeTexture2D(byte[] bytes)
@@ -60,6 +63,8 @@ namespace AssetStudio
                     SwapBytesForXbox(buff);
                     flag = DecodeDXT1(buff, bytes);
                     break;
+                case TextureFormat.DXT3:
+                    break;
                 case TextureFormat.DXT5: //test pass
                     SwapBytesForXbox(buff);
                     flag = DecodeDXT5(buff, bytes);
@@ -94,17 +99,17 @@ namespace AssetStudio
                 case TextureFormat.RGB9e5Float: //test pass
                     flag = DecodeRGB9e5Float(buff, bytes);
                     break;
-                case TextureFormat.BC4: //test pass
-                    flag = DecodeBC4(buff, bytes);
-                    break;
-                case TextureFormat.BC5: //test pass
-                    flag = DecodeBC5(buff, bytes);
-                    break;
                 case TextureFormat.BC6H: //test pass
                     flag = DecodeBC6H(buff, bytes);
                     break;
                 case TextureFormat.BC7: //test pass
                     flag = DecodeBC7(buff, bytes);
+                    break;
+                case TextureFormat.BC4: //test pass
+                    flag = DecodeBC4(buff, bytes);
+                    break;
+                case TextureFormat.BC5: //test pass
+                    flag = DecodeBC5(buff, bytes);
                     break;
                 case TextureFormat.DXT1Crunched: //test pass
                     flag = DecodeDXT1Crunched(buff, bytes);
@@ -194,6 +199,15 @@ namespace AssetStudio
                 case TextureFormat.ETC2_RGBA8Crunched: //test pass
                     flag = DecodeETC2A8Crunched(buff, bytes);
                     break;
+                case TextureFormat.RG32: //test pass
+                    flag = DecodeRG32(buff, bytes);
+                    break;
+                case TextureFormat.RGB48: //test pass
+                    flag = DecodeRGB48(buff, bytes);
+                    break;
+                case TextureFormat.RGBA64: //test pass
+                    flag = DecodeRGBA64(buff, bytes);
+                    break;
             }
             BigArrayPool<byte>.Shared.Return(buff);
             return flag;
@@ -214,9 +228,10 @@ namespace AssetStudio
 
         private bool DecodeAlpha8(byte[] image_data, byte[] buff)
         {
+            var size = m_Width * m_Height;
             var span = new Span<byte>(buff);
             span.Fill(0xFF);
-            for (var i = 0; i < m_Width * m_Height; i++)
+            for (var i = 0; i < size; i++)
             {
                 buff[i * 4 + 3] = image_data[i];
             }
@@ -225,8 +240,9 @@ namespace AssetStudio
 
         private bool DecodeARGB4444(byte[] image_data, byte[] buff)
         {
+            var size = m_Width * m_Height;
             var pixelNew = new byte[4];
-            for (var i = 0; i < m_Width * m_Height; i++)
+            for (var i = 0; i < size; i++)
             {
                 var pixelOldShort = BitConverter.ToUInt16(image_data, i * 2);
                 pixelNew[0] = (byte)(pixelOldShort & 0x000f);
@@ -242,7 +258,8 @@ namespace AssetStudio
 
         private bool DecodeRGB24(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < m_Width * m_Height; i++)
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
             {
                 buff[i * 4] = image_data[i * 3 + 2];
                 buff[i * 4 + 1] = image_data[i * 3 + 1];
@@ -254,7 +271,7 @@ namespace AssetStudio
 
         private bool DecodeRGBA32(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = image_data[i + 2];
                 buff[i + 1] = image_data[i + 1];
@@ -266,7 +283,7 @@ namespace AssetStudio
 
         private bool DecodeARGB32(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = image_data[i + 3];
                 buff[i + 1] = image_data[i + 2];
@@ -278,7 +295,8 @@ namespace AssetStudio
 
         private bool DecodeRGB565(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < m_Width * m_Height; i++)
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
             {
                 var p = BitConverter.ToUInt16(image_data, i * 2);
                 buff[i * 4] = (byte)((p << 3) | (p >> 2 & 7));
@@ -291,11 +309,12 @@ namespace AssetStudio
 
         private bool DecodeR16(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < m_Width * m_Height; i++)
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
             {
                 buff[i * 4] = 0; //b
                 buff[i * 4 + 1] = 0; //g
-                buff[i * 4 + 2] = image_data[i * 2 + 1]; //r
+                buff[i * 4 + 2] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 2)); //r
                 buff[i * 4 + 3] = 255; //a
             }
             return true;
@@ -313,8 +332,9 @@ namespace AssetStudio
 
         private bool DecodeRGBA4444(byte[] image_data, byte[] buff)
         {
+            var size = m_Width * m_Height;
             var pixelNew = new byte[4];
-            for (var i = 0; i < m_Width * m_Height; i++)
+            for (var i = 0; i < size; i++)
             {
                 var pixelOldShort = BitConverter.ToUInt16(image_data, i * 2);
                 pixelNew[0] = (byte)((pixelOldShort & 0x00f0) >> 4);
@@ -330,7 +350,7 @@ namespace AssetStudio
 
         private bool DecodeBGRA32(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = image_data[i];
                 buff[i + 1] = image_data[i + 1];
@@ -342,7 +362,7 @@ namespace AssetStudio
 
         private bool DecodeRHalf(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = 0;
                 buff[i + 1] = 0;
@@ -354,7 +374,7 @@ namespace AssetStudio
 
         private bool DecodeRGHalf(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = 0;
                 buff[i + 1] = (byte)Math.Round(Half.ToHalf(image_data, i + 2) * 255f);
@@ -366,7 +386,7 @@ namespace AssetStudio
 
         private bool DecodeRGBAHalf(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = (byte)Math.Round(Half.ToHalf(image_data, i * 2 + 4) * 255f);
                 buff[i + 1] = (byte)Math.Round(Half.ToHalf(image_data, i * 2 + 2) * 255f);
@@ -378,7 +398,7 @@ namespace AssetStudio
 
         private bool DecodeRFloat(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = 0;
                 buff[i + 1] = 0;
@@ -390,7 +410,7 @@ namespace AssetStudio
 
         private bool DecodeRGFloat(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = 0;
                 buff[i + 1] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 2 + 4) * 255f);
@@ -402,7 +422,7 @@ namespace AssetStudio
 
         private bool DecodeRGBAFloat(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 buff[i] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4 + 8) * 255f);
                 buff[i + 1] = (byte)Math.Round(BitConverter.ToSingle(image_data, i * 4 + 4) * 255f);
@@ -412,6 +432,7 @@ namespace AssetStudio
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte ClampByte(int x)
         {
             return (byte)(byte.MaxValue < x ? byte.MaxValue : (x > byte.MinValue ? x : byte.MinValue));
@@ -449,7 +470,7 @@ namespace AssetStudio
 
         private bool DecodeRGB9e5Float(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < buff.Length; i += 4)
+            for (var i = 0; i < outPutSize; i += 4)
             {
                 var n = BitConverter.ToInt32(image_data, i);
                 var scale = n >> 27 & 0x1f;
@@ -571,19 +592,21 @@ namespace AssetStudio
 
         private bool DecodeRG16(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < m_Width * m_Height; i += 2)
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
             {
-                buff[i * 2] = 0; //B
-                buff[i * 2 + 1] = image_data[i + 1];//G
-                buff[i * 2 + 2] = image_data[i];//R
-                buff[i * 2 + 3] = 255;//A
+                buff[i * 4] = 0; //B
+                buff[i * 4 + 1] = image_data[i * 2 + 1];//G
+                buff[i * 4 + 2] = image_data[i * 2];//R
+                buff[i * 4 + 3] = 255;//A
             }
             return true;
         }
 
         private bool DecodeR8(byte[] image_data, byte[] buff)
         {
-            for (var i = 0; i < m_Width * m_Height; i++)
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
             {
                 buff[i * 4] = 0; //B
                 buff[i * 4 + 1] = 0; //G
@@ -615,6 +638,49 @@ namespace AssetStudio
                 }
             }
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte DownScaleFrom16BitTo8Bit(ushort component)
+        {
+            return (byte)(((component * 255) + 32895) >> 16);
+        }
+
+        private bool DecodeRG32(byte[] image_data, byte[] buff)
+        {
+            for (var i = 0; i < outPutSize; i += 4)
+            {
+                buff[i] = 0;                                                                          //b
+                buff[i + 1] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i + 2));     //g
+                buff[i + 2] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i));         //r
+                buff[i + 3] = byte.MaxValue;                                                          //a
+            }
+            return true;
+        }
+
+        private bool DecodeRGB48(byte[] image_data, byte[] buff)
+        {
+            var size = m_Width * m_Height;
+            for (var i = 0; i < size; i++)
+            {
+                buff[i * 4] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 6 + 4));     //b
+                buff[i * 4 + 1] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 6 + 2)); //g
+                buff[i * 4 + 2] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 6));     //r
+                buff[i * 4 + 3] = byte.MaxValue;                                                          //a
+            }
+            return true;
+        }
+
+        private bool DecodeRGBA64(byte[] image_data, byte[] buff)
+        {
+            for (var i = 0; i < outPutSize; i += 4)
+            {
+                buff[i] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 2 + 4));     //b
+                buff[i + 1] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 2 + 2)); //g
+                buff[i + 2] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 2));     //r
+                buff[i + 3] = DownScaleFrom16BitTo8Bit(BitConverter.ToUInt16(image_data, i * 2 + 6)); //a
+            }
+            return true;
         }
 
         private bool UnpackCrunch(byte[] image_data, out byte[] result)

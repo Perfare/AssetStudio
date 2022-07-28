@@ -6,7 +6,8 @@
     <Version>0.16.0.0</Version>
     <AssemblyVersion>0.16.0.0</AssemblyVersion>
     <FileVersion>0.16.0.0</FileVersion>
-    <Copyright>Copyright © Perfare 2018-2021; Copyright © hozuki 2020</Copyright>
+    <Copyright>Copyright © Perfare 2018-2022; Copyright © hozuki 2020</Copyright>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

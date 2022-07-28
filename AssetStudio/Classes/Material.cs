@@ -74,9 +74,18 @@ namespace AssetStudio
                 var m_ShaderKeywords = reader.ReadStringArray();
             }
 
-            if (version[0] >= 5) //5.0 and up
+            if (version[0] > 2021 || (version[0] == 2021 && version[1] >= 3)) //2021.3 and up
+            {
+                var m_ValidKeywords = reader.ReadStringArray();
+                var m_InvalidKeywords = reader.ReadStringArray();
+            }
+            else if (version[0] >= 5) //5.0 ~ 2021.2
             {
                 var m_ShaderKeywords = reader.ReadAlignedString();
+            }
+
+            if (version[0] >= 5) //5.0 and up
+            {
                 var m_LightmapFlags = reader.ReadUInt32();
             }
 

@@ -1063,26 +1063,21 @@ namespace AssetStudio
                 else
                 {
                     transformName = strs.Last();
-                    var parentFrameName = strs[strs.Length - 2];
-                    parentFrame = RootFrame.FindChild(parentFrameName);
-                    //var parentFramePath = path.Substring(0, path.LastIndexOf('/'));
-                    //parentFrame = RootFrame.FindFrameByPath(parentFramePath);
+                    var parentFramePath = path.Substring(0, path.LastIndexOf('/'));
+                    parentFrame = RootFrame.FindRelativeFrameWithPath(parentFramePath);
                 }
-
                 var skeletonPose = avatar.m_Avatar.m_DefaultPose;
                 var xform = skeletonPose.m_X[i];
-
                 var frame = RootFrame.FindChild(transformName);
                 if (frame != null)
                 {
                     SetFrame(frame, xform.t, xform.q, xform.s);
-                    parentFrame.AddChild(frame);
                 }
                 else
                 {
                     frame = CreateFrame(transformName, xform.t, xform.q, xform.s);
-                    parentFrame.AddChild(frame);
                 }
+                parentFrame.AddChild(frame);
             }
         }
 

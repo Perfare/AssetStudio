@@ -7,11 +7,6 @@ namespace AssetStudioGUI
     {
         public GameObject gameObject;
 
-        public GameObjectTreeNode(string name)
-        {
-            Text = name;
-        }
-
         public GameObjectTreeNode(GameObject gameObject)
         {
             this.gameObject = gameObject;

@@ -13,7 +13,7 @@ namespace AssetStudio
         public PPtr(ObjectReader reader)
         {
             m_FileID = reader.ReadInt32();
-            m_PathID = reader.m_Version < SerializedFileFormatVersion.kUnknown_14 ? reader.ReadInt32() : reader.ReadInt64();
+            m_PathID = reader.m_Version < SerializedFileFormatVersion.Unknown_14 ? reader.ReadInt32() : reader.ReadInt64();
             assetsFile = reader.assetsFile;
         }
 

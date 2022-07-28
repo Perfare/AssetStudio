@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -18,6 +18,7 @@ namespace AssetStudio
 
         private List<string> importFiles = new List<string>();
         private HashSet<string> importFilesHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> noexistFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> assetsFileListHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public void LoadFiles(params string[] files)
@@ -54,6 +55,7 @@ namespace AssetStudio
 
             importFiles.Clear();
             importFilesHash.Clear();
+            noexistFiles.Clear();
             assetsFileListHash.Clear();
 
             ReadAssets();
@@ -110,19 +112,25 @@ namespace AssetStudio
                         if (!importFilesHash.Contains(sharedFileName))
                         {
                             var sharedFilePath = Path.Combine(Path.GetDirectoryName(reader.FullPath), sharedFileName);
-                            if (!File.Exists(sharedFilePath))
+                            if (!noexistFiles.Contains(sharedFilePath))
                             {
-                                var findFiles = Directory.GetFiles(Path.GetDirectoryName(reader.FullPath), sharedFileName, SearchOption.AllDirectories);
-                                if (findFiles.Length > 0)
+                                if (!File.Exists(sharedFilePath))
                                 {
-                                    sharedFilePath = findFiles[0];
+                                    var findFiles = Directory.GetFiles(Path.GetDirectoryName(reader.FullPath), sharedFileName, SearchOption.AllDirectories);
+                                    if (findFiles.Length > 0)
+                                    {
+                                        sharedFilePath = findFiles[0];
+                                    }
                                 }
-                            }
-
-                            if (File.Exists(sharedFilePath))
-                            {
-                                importFiles.Add(sharedFilePath);
-                                importFilesHash.Add(sharedFileName);
+                                if (File.Exists(sharedFilePath))
+                                {
+                                    importFiles.Add(sharedFilePath);
+                                    importFilesHash.Add(sharedFileName);
+                                }
+                                else
+                                {
+                                    noexistFiles.Add(sharedFilePath);
+                                }
                             }
                         }
                     }
@@ -148,7 +156,7 @@ namespace AssetStudio
                 {
                     var assetsFile = new SerializedFile(reader, this);
                     assetsFile.originalPath = originalPath;
-                    if (!string.IsNullOrEmpty(unityVersion) && assetsFile.header.m_Version < SerializedFileFormatVersion.kUnknown_7)
+                    if (!string.IsNullOrEmpty(unityVersion) && assetsFile.header.m_Version < SerializedFileFormatVersion.Unknown_7)
                     {
                         assetsFile.SetVersion(unityVersion);
                     }
@@ -245,6 +253,56 @@ namespace AssetStudio
             {
                 using (ZipArchive archive = new ZipArchive(reader.BaseStream, ZipArchiveMode.Read))
                 {
+                    List<string> splitFiles = new List<string>();
+                    // register all files before parsing the assets so that the external references can be found
+                    // and find split files
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.Name.Contains(".split"))
+                        {
+                            string baseName = Path.GetFileNameWithoutExtension(entry.Name);
+                            string basePath = Path.Combine(Path.GetDirectoryName(entry.FullName), baseName);
+                            if (!splitFiles.Contains(basePath))
+                            {
+                                splitFiles.Add(basePath);
+                                importFilesHash.Add(baseName);
+                            }
+                        }
+                        else
+                        {
+                            importFilesHash.Add(entry.Name);
+                        }
+                    }
+
+                    // merge split files and load the result
+                    foreach (string basePath in splitFiles)
+                    {
+                        try
+                        {
+                            Stream splitStream = new MemoryStream();
+                            int i = 0;
+                            while (true)
+                            {
+                                string path = $"{basePath}.split{i++}";
+                                ZipArchiveEntry entry = archive.GetEntry(path);
+                                if (entry == null)
+                                    break;
+                                using (Stream entryStream = entry.Open())
+                                {
+                                    entryStream.CopyTo(splitStream);
+                                }
+                            }
+                            splitStream.Seek(0, SeekOrigin.Begin);
+                            FileReader entryReader = new FileReader(basePath, splitStream);
+                            LoadFile(entryReader);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error($"Error while reading zip split file {basePath}", e);
+                        }
+                    }
+
+                    // load all entries
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
                         try
@@ -262,6 +320,14 @@ namespace AssetStudio
 
                             FileReader entryReader = new FileReader(dummyPath, streamReader);
                             LoadFile(entryReader);
+                            if (entryReader.FileType == FileType.ResourceFile)
+                            {
+                                entryReader.Position = 0;
+                                if (!resourceFileReaders.ContainsKey(entry.Name))
+                                {
+                                    resourceFileReaders.Add(entry.Name, entryReader);
+                                }
+                            }
                         }
                         catch (Exception e)
                         {
@@ -474,10 +540,6 @@ namespace AssetStudio
                     }
                     else if (obj is SpriteAtlas m_SpriteAtlas)
                     {
-                        if (m_SpriteAtlas.m_IsVariant)
-                        {
-                            continue;
-                        }
                         foreach (var m_PackedSprite in m_SpriteAtlas.m_PackedSprites)
                         {
                             if (m_PackedSprite.TryGet(out var m_Sprite))
@@ -485,6 +547,14 @@ namespace AssetStudio
                                 if (m_Sprite.m_SpriteAtlas.IsNull)
                                 {
                                     m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
+                                }
+                                else
+                                {
+                                    m_Sprite.m_SpriteAtlas.TryGet(out var m_SpriteAtlaOld);
+                                    if (m_SpriteAtlaOld.m_IsVariant)
+                                    {
+                                        m_Sprite.m_SpriteAtlas.Set(m_SpriteAtlas);
+                                    }
                                 }
                             }
                         }

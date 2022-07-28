@@ -43,7 +43,7 @@ namespace AssetStudio
             return stream;
         }
 
-        public static byte[] ConvertToBgra32Bytes(this Image<Bgra32> image)
+        public static byte[] ConvertToBytes<TPixel>(this Image<TPixel> image) where TPixel : unmanaged, IPixel<TPixel>
         {
             if (image.TryGetSinglePixelSpan(out var pixelSpan))
             {

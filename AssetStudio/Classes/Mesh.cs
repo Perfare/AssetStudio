@@ -396,14 +396,14 @@ namespace AssetStudio
         }
     }
 
-    public enum GfxPrimitiveType : int
+    public enum GfxPrimitiveType
     {
-        kPrimitiveTriangles = 0,
-        kPrimitiveTriangleStrip = 1,
-        kPrimitiveQuads = 2,
-        kPrimitiveLines = 3,
-        kPrimitiveLineStrip = 4,
-        kPrimitivePoints = 5,
+        Triangles = 0,
+        TriangleStrip = 1,
+        Quads = 2,
+        Lines = 3,
+        LineStrip = 4,
+        Points = 5
     };
 
     public class SubMesh
@@ -650,6 +650,11 @@ namespace AssetStudio
             }
 
             int m_MeshUsageFlags = reader.ReadInt32();
+
+            if (version[0] > 2022 || (version[0] == 2022 && version[1] >= 1)) //2022.1 and up
+            {
+                int m_CookingOptions = reader.ReadInt32();
+            }
 
             if (version[0] >= 5) //5.0 and up
             {
@@ -1060,7 +1065,7 @@ namespace AssetStudio
                 }
                 var indexCount = m_SubMesh.indexCount;
                 var topology = m_SubMesh.topology;
-                if (topology == GfxPrimitiveType.kPrimitiveTriangles)
+                if (topology == GfxPrimitiveType.Triangles)
                 {
                     for (int i = 0; i < indexCount; i += 3)
                     {
@@ -1069,7 +1074,7 @@ namespace AssetStudio
                         m_Indices.Add(m_IndexBuffer[firstIndex + i + 2]);
                     }
                 }
-                else if (version[0] < 4 || topology == GfxPrimitiveType.kPrimitiveTriangleStrip)
+                else if (version[0] < 4 || topology == GfxPrimitiveType.TriangleStrip)
                 {
                     // de-stripify :
                     uint triIndex = 0;
@@ -1100,7 +1105,7 @@ namespace AssetStudio
                     //fix indexCount
                     m_SubMesh.indexCount = triIndex;
                 }
-                else if (topology == GfxPrimitiveType.kPrimitiveQuads)
+                else if (topology == GfxPrimitiveType.Quads)
                 {
                     for (int q = 0; q < indexCount; q += 4)
                     {
@@ -1193,44 +1198,44 @@ namespace AssetStudio
     {
         public enum VertexChannelFormat
         {
-            kChannelFormatFloat,
-            kChannelFormatFloat16,
-            kChannelFormatColor,
-            kChannelFormatByte,
-            kChannelFormatUInt32
+            Float,
+            Float16,
+            Color,
+            Byte,
+            UInt32
         }
 
         public enum VertexFormat2017
         {
-            kVertexFormatFloat,
-            kVertexFormatFloat16,
-            kVertexFormatColor,
-            kVertexFormatUNorm8,
-            kVertexFormatSNorm8,
-            kVertexFormatUNorm16,
-            kVertexFormatSNorm16,
-            kVertexFormatUInt8,
-            kVertexFormatSInt8,
-            kVertexFormatUInt16,
-            kVertexFormatSInt16,
-            kVertexFormatUInt32,
-            kVertexFormatSInt32
+            Float,
+            Float16,
+            Color,
+            UNorm8,
+            SNorm8,
+            UNorm16,
+            SNorm16,
+            UInt8,
+            SInt8,
+            UInt16,
+            SInt16,
+            UInt32,
+            SInt32
         }
 
         public enum VertexFormat
         {
-            kVertexFormatFloat,
-            kVertexFormatFloat16,
-            kVertexFormatUNorm8,
-            kVertexFormatSNorm8,
-            kVertexFormatUNorm16,
-            kVertexFormatSNorm16,
-            kVertexFormatUInt8,
-            kVertexFormatSInt8,
-            kVertexFormatUInt16,
-            kVertexFormatSInt16,
-            kVertexFormatUInt32,
-            kVertexFormatSInt32
+            Float,
+            Float16,
+            UNorm8,
+            SNorm8,
+            UNorm16,
+            SNorm16,
+            UInt8,
+            SInt8,
+            UInt16,
+            SInt16,
+            UInt32,
+            SInt32
         }
 
         public static VertexFormat ToVertexFormat(int format, int[] version)
@@ -1239,16 +1244,16 @@ namespace AssetStudio
             {
                 switch ((VertexChannelFormat)format)
                 {
-                    case VertexChannelFormat.kChannelFormatFloat:
-                        return VertexFormat.kVertexFormatFloat;
-                    case VertexChannelFormat.kChannelFormatFloat16:
-                        return VertexFormat.kVertexFormatFloat16;
-                    case VertexChannelFormat.kChannelFormatColor: //in 4.x is size 4
-                        return VertexFormat.kVertexFormatUNorm8;
-                    case VertexChannelFormat.kChannelFormatByte:
-                        return VertexFormat.kVertexFormatUInt8;
-                    case VertexChannelFormat.kChannelFormatUInt32: //in 5.x
-                        return VertexFormat.kVertexFormatUInt32;
+                    case VertexChannelFormat.Float:
+                        return VertexFormat.Float;
+                    case VertexChannelFormat.Float16:
+                        return VertexFormat.Float16;
+                    case VertexChannelFormat.Color: //in 4.x is size 4
+                        return VertexFormat.UNorm8;
+                    case VertexChannelFormat.Byte:
+                        return VertexFormat.UInt8;
+                    case VertexChannelFormat.UInt32: //in 5.x
+                        return VertexFormat.UInt32;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(format), format, null);
                 }
@@ -1257,31 +1262,31 @@ namespace AssetStudio
             {
                 switch ((VertexFormat2017)format)
                 {
-                    case VertexFormat2017.kVertexFormatFloat:
-                        return VertexFormat.kVertexFormatFloat;
-                    case VertexFormat2017.kVertexFormatFloat16:
-                        return VertexFormat.kVertexFormatFloat16;
-                    case VertexFormat2017.kVertexFormatColor:
-                    case VertexFormat2017.kVertexFormatUNorm8:
-                        return VertexFormat.kVertexFormatUNorm8;
-                    case VertexFormat2017.kVertexFormatSNorm8:
-                        return VertexFormat.kVertexFormatSNorm8;
-                    case VertexFormat2017.kVertexFormatUNorm16:
-                        return VertexFormat.kVertexFormatUNorm16;
-                    case VertexFormat2017.kVertexFormatSNorm16:
-                        return VertexFormat.kVertexFormatSNorm16;
-                    case VertexFormat2017.kVertexFormatUInt8:
-                        return VertexFormat.kVertexFormatUInt8;
-                    case VertexFormat2017.kVertexFormatSInt8:
-                        return VertexFormat.kVertexFormatSInt8;
-                    case VertexFormat2017.kVertexFormatUInt16:
-                        return VertexFormat.kVertexFormatUInt16;
-                    case VertexFormat2017.kVertexFormatSInt16:
-                        return VertexFormat.kVertexFormatSInt16;
-                    case VertexFormat2017.kVertexFormatUInt32:
-                        return VertexFormat.kVertexFormatUInt32;
-                    case VertexFormat2017.kVertexFormatSInt32:
-                        return VertexFormat.kVertexFormatSInt32;
+                    case VertexFormat2017.Float:
+                        return VertexFormat.Float;
+                    case VertexFormat2017.Float16:
+                        return VertexFormat.Float16;
+                    case VertexFormat2017.Color:
+                    case VertexFormat2017.UNorm8:
+                        return VertexFormat.UNorm8;
+                    case VertexFormat2017.SNorm8:
+                        return VertexFormat.SNorm8;
+                    case VertexFormat2017.UNorm16:
+                        return VertexFormat.UNorm16;
+                    case VertexFormat2017.SNorm16:
+                        return VertexFormat.SNorm16;
+                    case VertexFormat2017.UInt8:
+                        return VertexFormat.UInt8;
+                    case VertexFormat2017.SInt8:
+                        return VertexFormat.SInt8;
+                    case VertexFormat2017.UInt16:
+                        return VertexFormat.UInt16;
+                    case VertexFormat2017.SInt16:
+                        return VertexFormat.SInt16;
+                    case VertexFormat2017.UInt32:
+                        return VertexFormat.UInt32;
+                    case VertexFormat2017.SInt32:
+                        return VertexFormat.SInt32;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(format), format, null);
                 }
@@ -1297,20 +1302,20 @@ namespace AssetStudio
         {
             switch (format)
             {
-                case VertexFormat.kVertexFormatFloat:
-                case VertexFormat.kVertexFormatUInt32:
-                case VertexFormat.kVertexFormatSInt32:
+                case VertexFormat.Float:
+                case VertexFormat.UInt32:
+                case VertexFormat.SInt32:
                     return 4u;
-                case VertexFormat.kVertexFormatFloat16:
-                case VertexFormat.kVertexFormatUNorm16:
-                case VertexFormat.kVertexFormatSNorm16:
-                case VertexFormat.kVertexFormatUInt16:
-                case VertexFormat.kVertexFormatSInt16:
+                case VertexFormat.Float16:
+                case VertexFormat.UNorm16:
+                case VertexFormat.SNorm16:
+                case VertexFormat.UInt16:
+                case VertexFormat.SInt16:
                     return 2u;
-                case VertexFormat.kVertexFormatUNorm8:
-                case VertexFormat.kVertexFormatSNorm8:
-                case VertexFormat.kVertexFormatUInt8:
-                case VertexFormat.kVertexFormatSInt8:
+                case VertexFormat.UNorm8:
+                case VertexFormat.SNorm8:
+                case VertexFormat.UInt8:
+                case VertexFormat.SInt8:
                     return 1u;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(format), format, null);
@@ -1319,7 +1324,7 @@ namespace AssetStudio
 
         public static bool IsIntFormat(VertexFormat format)
         {
-            return format >= VertexFormat.kVertexFormatUInt8;
+            return format >= VertexFormat.UInt8;
         }
 
         public static float[] BytesToFloatArray(byte[] inputBytes, VertexFormat format)
@@ -1331,22 +1336,22 @@ namespace AssetStudio
             {
                 switch (format)
                 {
-                    case VertexFormat.kVertexFormatFloat:
+                    case VertexFormat.Float:
                         result[i] = BitConverter.ToSingle(inputBytes, i * 4);
                         break;
-                    case VertexFormat.kVertexFormatFloat16:
+                    case VertexFormat.Float16:
                         result[i] = Half.ToHalf(inputBytes, i * 2);
                         break;
-                    case VertexFormat.kVertexFormatUNorm8:
+                    case VertexFormat.UNorm8:
                         result[i] = inputBytes[i] / 255f;
                         break;
-                    case VertexFormat.kVertexFormatSNorm8:
+                    case VertexFormat.SNorm8:
                         result[i] = Math.Max((sbyte)inputBytes[i] / 127f, -1f);
                         break;
-                    case VertexFormat.kVertexFormatUNorm16:
+                    case VertexFormat.UNorm16:
                         result[i] = BitConverter.ToUInt16(inputBytes, i * 2) / 65535f;
                         break;
-                    case VertexFormat.kVertexFormatSNorm16:
+                    case VertexFormat.SNorm16:
                         result[i] = Math.Max(BitConverter.ToInt16(inputBytes, i * 2) / 32767f, -1f);
                         break;
                 }
@@ -1363,16 +1368,16 @@ namespace AssetStudio
             {
                 switch (format)
                 {
-                    case VertexFormat.kVertexFormatUInt8:
-                    case VertexFormat.kVertexFormatSInt8:
+                    case VertexFormat.UInt8:
+                    case VertexFormat.SInt8:
                         result[i] = inputBytes[i];
                         break;
-                    case VertexFormat.kVertexFormatUInt16:
-                    case VertexFormat.kVertexFormatSInt16:
+                    case VertexFormat.UInt16:
+                    case VertexFormat.SInt16:
                         result[i] = BitConverter.ToInt16(inputBytes, i * 2);
                         break;
-                    case VertexFormat.kVertexFormatUInt32:
-                    case VertexFormat.kVertexFormatSInt32:
+                    case VertexFormat.UInt32:
+                    case VertexFormat.SInt32:
                         result[i] = BitConverter.ToInt32(inputBytes, i * 4);
                         break;
                 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -39,8 +40,10 @@ namespace AssetStudio
                     value = reader.ReadSByte();
                     break;
                 case "UInt8":
-                case "char":
                     value = reader.ReadByte();
+                    break;
+                case "char":
+                    value = BitConverter.ToChar(reader.ReadBytes(2), 0);
                     break;
                 case "short":
                 case "SInt16":
@@ -81,7 +84,8 @@ namespace AssetStudio
                     append = false;
                     var str = reader.ReadAlignedString();
                     sb.AppendFormat("{0}{1} {2} = \"{3}\"\r\n", (new string('\t', level)), varTypeStr, varNameStr, str);
-                    i += 3;
+                    var toSkip = GetNodes(m_Nodes, i);
+                    i += toSkip.Count - 1;
                     break;
                 case "map":
                     {
@@ -190,8 +194,10 @@ namespace AssetStudio
                     value = reader.ReadSByte();
                     break;
                 case "UInt8":
-                case "char":
                     value = reader.ReadByte();
+                    break;
+                case "char":
+                    value = BitConverter.ToChar(reader.ReadBytes(2), 0);
                     break;
                 case "short":
                 case "SInt16":
@@ -230,7 +236,8 @@ namespace AssetStudio
                     break;
                 case "string":
                     value = reader.ReadAlignedString();
-                    i += 3;
+                    var toSkip = GetNodes(m_Nodes, i);
+                    i += toSkip.Count - 1;
                     break;
                 case "map":
                     {

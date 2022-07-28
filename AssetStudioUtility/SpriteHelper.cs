@@ -19,32 +19,38 @@ namespace AssetStudio
             {
                 if (m_SpriteAtlas.m_RenderDataMap.TryGetValue(m_Sprite.m_RenderDataKey, out var spriteAtlasData) && spriteAtlasData.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite, spriteAtlasData.textureRect, spriteAtlasData.textureRectOffset, spriteAtlasData.settingsRaw);
+                    return CutImage(m_Sprite, m_Texture2D, spriteAtlasData.textureRect, spriteAtlasData.textureRectOffset, spriteAtlasData.downscaleMultiplier, spriteAtlasData.settingsRaw);
                 }
             }
             else
             {
                 if (m_Sprite.m_RD.texture.TryGet(out var m_Texture2D))
                 {
-                    return CutImage(m_Texture2D, m_Sprite, m_Sprite.m_RD.textureRect, m_Sprite.m_RD.textureRectOffset, m_Sprite.m_RD.settingsRaw);
+                    return CutImage(m_Sprite, m_Texture2D, m_Sprite.m_RD.textureRect, m_Sprite.m_RD.textureRectOffset, m_Sprite.m_RD.downscaleMultiplier, m_Sprite.m_RD.settingsRaw);
                 }
             }
             return null;
         }
 
-        private static Image<Bgra32> CutImage(Texture2D m_Texture2D, Sprite m_Sprite, Rectf textureRect, Vector2 textureRectOffset, SpriteSettings settingsRaw)
+        private static Image<Bgra32> CutImage(Sprite m_Sprite, Texture2D m_Texture2D, Rectf textureRect, Vector2 textureRectOffset, float downscaleMultiplier, SpriteSettings settingsRaw)
         {
             var originalImage = m_Texture2D.ConvertToImage(false);
             if (originalImage != null)
             {
                 using (originalImage)
                 {
+                    if (downscaleMultiplier > 0f && downscaleMultiplier != 1f)
+                    {
+                        var width = (int)(m_Texture2D.m_Width / downscaleMultiplier);
+                        var height = (int)(m_Texture2D.m_Height / downscaleMultiplier);
+                        originalImage.Mutate(x => x.Resize(width, height));
+                    }
                     var rectX = (int)Math.Floor(textureRect.x);
                     var rectY = (int)Math.Floor(textureRect.y);
                     var rectRight = (int)Math.Ceiling(textureRect.x + textureRect.width);
                     var rectBottom = (int)Math.Ceiling(textureRect.y + textureRect.height);
-                    rectRight = Math.Min(rectRight, m_Texture2D.m_Width);
-                    rectBottom = Math.Min(rectBottom, m_Texture2D.m_Height);
+                    rectRight = Math.Min(rectRight, originalImage.Width);
+                    rectBottom = Math.Min(rectBottom, originalImage.Height);
                     var rect = new Rectangle(rectX, rectY, rectRight - rectX, rectBottom - rectY);
                     var spriteImage = originalImage.Clone(x => x.Crop(rect));
                     if (settingsRaw.packed == 1)
@@ -52,23 +58,23 @@ namespace AssetStudio
                         //RotateAndFlip
                         switch (settingsRaw.packingRotation)
                         {
-                            case SpritePackingRotation.kSPRFlipHorizontal:
+                            case SpritePackingRotation.FlipHorizontal:
                                 spriteImage.Mutate(x => x.Flip(FlipMode.Horizontal));
                                 break;
-                            case SpritePackingRotation.kSPRFlipVertical:
+                            case SpritePackingRotation.FlipVertical:
                                 spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
                                 break;
-                            case SpritePackingRotation.kSPRRotate180:
+                            case SpritePackingRotation.Rotate180:
                                 spriteImage.Mutate(x => x.Rotate(180));
                                 break;
-                            case SpritePackingRotation.kSPRRotate90:
+                            case SpritePackingRotation.Rotate90:
                                 spriteImage.Mutate(x => x.Rotate(270));
                                 break;
                         }
                     }
 
                     //Tight
-                    if (settingsRaw.packingMode == SpritePackingMode.kSPMTight)
+                    if (settingsRaw.packingMode == SpritePackingMode.Tight)
                     {
                         try
                         {
