@@ -63,7 +63,7 @@ namespace AssetStudio
             m_RenderDataMap = new Dictionary<KeyValuePair<Guid, long>, SpriteAtlasData>(m_RenderDataMapSize);
             for (int i = 0; i < m_RenderDataMapSize; i++)
             {
-                var first = new Guid(reader.ReadBytes(16));
+                var first = UnityGuidHelper.UnityGuidToGuid(reader.ReadBytes(16));
                 var second = reader.ReadInt64();
                 var value = new SpriteAtlasData(reader);
                 m_RenderDataMap.Add(new KeyValuePair<Guid, long>(first, second), value);
